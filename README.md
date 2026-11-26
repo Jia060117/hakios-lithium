@@ -6,6 +6,31 @@
 
 [中文](#项目简介) · [English](#english)
 
+## 真机展示 / On-device photos
+
+以下图片来自本项目已归档的 MIX 一代实机记录，保留原图。桌面照片为 R20 阶段；白苹果画面与 UEFI 摘要为更早的 R4 阶段，其中白苹果图片是实机录像截图。当前进度见下方表格。
+
+These images come from this project's archived Mi MIX hardware sessions and are reproduced unchanged. The desktop photo is from R20; the Apple-logo frame and UEFI summary are from the earlier R4 session. The Apple-logo image is a frame captured from a real-device video. See the status table below for current progress.
+
+<p align="center">
+  <img src="docs/images/mi-mix-ios-desktop-r20.jpg" width="480" alt="小米 MIX 一代真机显示 iOS 桌面 / iOS desktop on a real first-generation Xiaomi Mi MIX">
+</p>
+
+<p align="center"><strong>iOS 桌面 · iOS desktop</strong><br>R20 · 2026-11-19 归档 / Archived November 19, 2026</p>
+
+<table>
+  <tr>
+    <td align="center" width="50%"><img src="docs/images/mi-mix-apple-logo-r4.png" width="320" alt="MIX 一代实机白苹果启动画面，来自录像截图 / Apple-logo boot frame from a real Mi MIX video"></td>
+    <td align="center" width="50%"><img src="docs/images/mi-mix-uefi-summary-r4.jpg" width="320" alt="MIX 一代实机 HakiOS UEFI 调试摘要 / HakiOS UEFI diagnostic summary on a real Mi MIX"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>白苹果启动画面 / Apple-logo boot screen</strong><br>R4 · 2026-11-16</td>
+    <td align="center"><strong>UEFI 调试摘要 / UEFI diagnostic summary</strong><br>R4 · 2026-11-16</td>
+  </tr>
+</table>
+
+图片来源及 SHA-256 见 [`docs/images/PROVENANCE.json`](docs/images/PROVENANCE.json)。Photos and SHA-256 hashes are documented in the provenance file.
+
 ## 项目简介
 
 `hakios-lithium` 是面向小米 MIX 一代（代号 `lithium`，高通 MSM8996 / Snapdragon 821）的 HakiOS / Darwin 移植项目，当前目标系统为 iOS 16.5。本仓库公开现阶段的平台适配源码、内核补丁、引导固件源码、构建与打包脚本、测试和阶段报告。
