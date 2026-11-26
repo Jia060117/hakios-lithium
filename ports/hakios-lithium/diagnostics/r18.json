@@ -1,0 +1,63 @@
+{
+  "revision": 18,
+  "base_revision": 17,
+  "runtime_reference_revision": 16,
+  "before_sha256": {
+    "xnuloader/loader.c": "3c0ebf6bd92bedb19f15760bbf602cb91f3feb160a5ff757de497f06b5282bc4",
+    "userland/src/inject_sb.c": "ddf7251c0d0062c8a6a9c4da0ab8eba6c538c6da0e315a2cef1fd1fe92a583d8"
+  },
+  "after_sha256": {
+    "xnuloader/loader.c": "addecda569872ba830c435cbd8507bf1957b642bf1934b45ef5451a7482f11d9",
+    "userland/src/inject_sb.c": "b1dc87973adb010b90ff7e31a7bbc66d73c6d23e2a1f548ec896447374d9f81d"
+  },
+  "patch": "patches/0018-lithium-early-display-profile.patch",
+  "backup": {
+    "branch": "archive/ios16-display-before-r18-20261118",
+    "archive": "E:\\IOS-MIX1-artifacts\\ios16-d22ap\\display-before-r18-20261118\\dirty-source.zip",
+    "sha256": "3b0cfbdcbad265dbaa4baedfa041e8765dceb4392ebcfaf67d74b1fdd408b6b6",
+    "packages": {
+      "15": {
+        "path": "E:\\IOS-MIX1-artifacts\\ios16-d22ap\\display-before-r18-20261118\\baseline-r15.img",
+        "sha256": "ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55"
+      },
+      "16": {
+        "path": "E:\\IOS-MIX1-artifacts\\ios16-d22ap\\display-before-r18-20261118\\baseline-r16.img",
+        "sha256": "bd466615ab19ccd44eb23ec87273a23a499681d954d64e6b88c23676ffb8f94b"
+      },
+      "17": {
+        "path": "E:\\IOS-MIX1-artifacts\\ios16-d22ap\\display-before-r18-20261118\\baseline-r17.img",
+        "sha256": "0c2bf3b78253e5b8cebd8a40ff548a68f1d520fbeebede7a441b6d75f591aa50"
+      }
+    },
+    "phone_operations": false
+  },
+  "payload_boot_args": "bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=750 fbheight=1334 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1",
+  "payload_arguments_preserved_from_r15": true,
+  "render": [
+    750,
+    1334
+  ],
+  "scale": 2,
+  "subtype": 1334,
+  "points": [
+    375,
+    667
+  ],
+  "panel": [
+    1080,
+    2040
+  ],
+  "panel_stride": 3240,
+  "panel_format": "BGR24",
+  "surface_format": "BGRA32",
+  "bootcpu": 1,
+  "cpus": 1,
+  "expected_affinity": "0x1",
+  "hardware_verified": false,
+  "display_acceptance_verified": false,
+  "physical_stride_changed": false,
+  "compositor_changed": false,
+  "new_boot_args": false,
+  "userdata_reinstall_required": false,
+  "notes": "Correct flattened DT producer before XNU; exact reason MG retained3 in R16 is not yet hardware-verified."
+}

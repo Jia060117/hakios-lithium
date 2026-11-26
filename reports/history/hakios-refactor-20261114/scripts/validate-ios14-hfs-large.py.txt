@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+"""Exercise real >4GiB allocation and detect the original uint32 wraparound."""
+import json
+from pathlib import Path
+import shutil
+import struct
+import subprocess
+import tempfile
+
+ROOT=Path(__file__).resolve().parents[1]
+BASE=Path('/home/jia/ios-mix1-build')
+
+def run_test(image,tool,expect_wrap=False):
+    with image.open('xb') as f:f.truncate(6*1024**3)
+    subprocess.run([BASE/'hfsprogs/sbin/mkfs.hfsplus','-s','-J',image],check=True,capture_output=True)
+    with image.open('r+b') as f:
+        f.seek(1024);vh=bytearray(f.read(512));bs,blocks=struct.unpack_from('>II',vh,40)
+        allocation,alen=struct.unpack_from('>II',vh,128)
+        assert bs==4096 and alen*bs>=blocks//8
+        f.seek(allocation*bs);bitmap=f.read((blocks+7)//8)
+        high_delta=(1<<32)//bs
+        free=lambda n:not bitmap[n//8] & (1<<(7-n%8))
+        low=next(n for n in range(4096,blocks-high_delta-512,4096) if free(n) and free(n+high_delta))
+        high=low+high_delta
+        struct.pack_into('>I',vh,52,high)
+        for offset in (1024,blocks*bs-1024):f.seek(offset);f.write(vh)
+        sentinel=b'LOW-OFFSET-MUST-NOT-BE-ZEROED'.ljust(bs,b'!')
+        f.seek(low*bs);f.write(sentinel)
+    manifest=BASE/'hfs-fixture-v3-mmap.manifest.bin'
+    subprocess.run([tool,image,manifest,'import'],check=True,capture_output=True)
+    with image.open('rb') as f:f.seek(low*bs);kept=f.read(bs)==sentinel
+    assert kept!=expect_wrap,('guard result',kept,'expect wrap',expect_wrap)
+    if not expect_wrap:
+        subprocess.run([tool,image,manifest,'verify'],check=True,capture_output=True)
+        checked=subprocess.run([BASE/'hfsprogs/sbin/fsck.hfsplus','-f','-n',image],capture_output=True,text=True)
+        assert checked.returncode==0,checked.stdout+checked.stderr
+    return dict(high_allocation_byte=high*bs,low_guard_byte=low*bs,low_guard_preserved=kept,
+                contents_verified=not expect_wrap,fsck_passed=not expect_wrap)
+
+def main():
+    work=BASE/'hfs-host'
+    with tempfile.TemporaryDirectory(prefix='lithium-hfs-large-',dir=BASE) as temp:
+        temp=Path(temp)
+        positive=run_test(temp/'fixed.img',work/'build/hfs-root-copy')
+        negative=temp/'negative';negative.mkdir()
+        for name in ('hfs','common','includes'):shutil.copytree(work/name,negative/name)
+        shutil.copyfile(work/'CMakeLists.txt',negative/'CMakeLists.txt')
+        p=negative/'hfs/rawfile.c';s=p.read_text()
+        anchor='(off_t)curBlock * volume->volumeHeader->blockSize'
+        assert s.count(anchor)==1;p.write_text(s.replace(anchor,'curBlock * volume->volumeHeader->blockSize'))
+        subprocess.run(['cmake','-S',negative,'-B',negative/'build','-DCMAKE_BUILD_TYPE=Release'],check=True,capture_output=True)
+        subprocess.run(['cmake','--build',negative/'build','--target','hfs-root-copy','-j','2'],check=True,capture_output=True)
+        rejected=run_test(temp/'original-offset.img',negative/'build/hfs-root-copy',expect_wrap=True)
+    record=dict(passed=True,corrected=positive,original_uint32_wrap_reproduced=rejected,
+                device_operations=False,qemu_used=False)
+    (ROOT/'reports/ios14-hfs-large-validation.json').write_text(json.dumps(record,indent=2)+'\n')
+    print(json.dumps(record),flush=True)
+
+if __name__=='__main__':main()

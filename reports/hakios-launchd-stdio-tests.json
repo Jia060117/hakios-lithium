@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "actual_stdio_helper_exercised": true,
+  "real_host_descriptors": true,
+  "darwin_ioctl_mapped_to_host_tcgetattr": false,
+  "actual_target_mmioctl_exercised": true,
+  "target_source_sha256": "04c36eb5964a87b99ee3a936da07f1299eca4bce93ac5d02ea8711124819c89a",
+  "cases": 8,
+  "source_sha256": "b3bc18b9397ca2ec906c933ce70f3cb1dc9c4e7cbbc8b5571c007496d799e596",
+  "test_source_sha256": "742f1e9f030a26ad5813f450d150f2af2090db2fe39a66d7b612f6217c626170",
+  "checks": [
+    "PASS real descriptors: stdin EOF, stdout nonterminal sink, stderr retained, temporary fd closed",
+    "PASS actual target XNU mmioctl returns ENODEV19 and permits nonterminal handoff",
+    "PASS ENOTTY25 also permits nonterminal handoff",
+    "PASS open failure refuses handoff without success marker",
+    "PASS dup0 and dup1 failures refuse handoff and preserve errno",
+    "PASS successful terminal query refuses handoff",
+    "PASS EBADF and EIO queries refuse handoff",
+    "PASS all successful descriptor steps remain on stderr after stdout redirection"
+  ],
+  "sanitizer": "address,undefined",
+  "hardware_verified": false,
+  "qemu_used": false
+}

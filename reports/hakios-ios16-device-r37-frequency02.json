@@ -1,0 +1,180 @@
+{
+  "schema": 1,
+  "revision": "R37-frequency02",
+  "runtime": {
+    "schema": 1,
+    "revision": "R37-ram-measure",
+    "phase": "frequency",
+    "attempt_id": "r37-frequency-02",
+    "started_at": "2026-11-20T22:27:51.420004+08:00",
+    "package": "F:\\IOS-MIX1\\artifacts\\hakios\\lithium-ios16\\phase4-r37-ram-frequency-02",
+    "candidate": "R37-frequency-02",
+    "profile": "r37-frequency",
+    "image_sha256": "b22cadc64cf4934df125f0076edc0acd27bc5f7293a3df683ab9099856b8cd0b",
+    "image_bytes": 16330752,
+    "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_freq_diag=1",
+    "preflight_passed": true,
+    "boot_attempted": true,
+    "command_accepted": true,
+    "automatic_retry": false,
+    "partition_commands": 0,
+    "flash_commands": 0,
+    "erase_commands": 0,
+    "adb_commands": 0,
+    "android_recovery_boots": 0,
+    "qemu": false,
+    "preflight": {
+      "passed": true,
+      "finished_at": "2026-11-20T22:27:51.613339+08:00",
+      "device_commands": 5,
+      "retry": false
+    },
+    "private_image": "F:\\IOS-MIX1\\reports\\local\\r37-attempts\\r37-frequency-02\\lithium-hakios-ios16-r37-ram-frequency-02.img",
+    "usb_capture_started_at": "2026-11-20T22:27:51.941352+08:00",
+    "boot_output": "Sending 'boot.img' (15948 KB)                      OKAY [  0.385s]\nBooting                                            OKAY [  0.835s]\nFinished. Total time: 1.226s\n",
+    "boot_returncode": 0,
+    "accepted_at": "2026-11-20T22:27:53.190178+08:00",
+    "outcome": "normal_timer_drained_uefi_retained_smp_return_affinity",
+    "automatic_fastboot_verified": false,
+    "return_verification": "one_query_empty_no_retry",
+    "cpu_frequency_mhz": {
+      "0x1": null,
+      "0x100": null,
+      "0x101": 19.193
+    },
+    "frequency_valid_samples": {
+      "0x1": 0,
+      "0x100": 0,
+      "0x101": 5
+    },
+    "clock_source": "unverified",
+    "hardware_clock_voltage_writes": false,
+    "physical_terminal": "UEFI summary; retained reason smp_return_affinity",
+    "physical_terminal_evidence": "screen-terminal-evidence.json",
+    "firmware_reset_attempted": false
+  },
+  "usb_audit": {
+    "raw_bytes": 13975,
+    "console_bytes": 12311,
+    "frames": 52,
+    "raw_sha256": "d0c691192b7cc5a12cb745c52d6896040709b54ffd6cf6976b096bf01ef075c3",
+    "console_sha256": "93deca5255e10c38fe197093b170186eccd38679f118ae3f12916f7f06178025",
+    "first_offset": 0,
+    "final_offset": 12311,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "incomplete_frame_bytes": 0,
+    "device_lost_max": 0,
+    "frames_reporting_device_loss": 0,
+    "independent_parser_agrees_with_frozen_receiver": true,
+    "frozen_redecode_equals_complete_console": true,
+    "transport_verified": true,
+    "kernel_banner_offset": 0,
+    "timer_offset": 11819,
+    "normal_return_offset": 12195,
+    "drain_success": true,
+    "drain_records": [
+      {
+        "offset": 12262,
+        "drained": 1,
+        "target": 12262
+      }
+    ],
+    "emitted_kernel_stream_through_timer_verified": true,
+    "all_firmware_daemon_and_original_printf_logs_complete": false,
+    "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
+  },
+  "return_verification": {
+    "started_at": "2026-11-20T22:32:34.658856+08:00",
+    "elapsed_seconds": 281.468678,
+    "devices_query_count": 1,
+    "product_query_count": 0,
+    "device_rows": [],
+    "same_serial_fastboot": false,
+    "observed_product": null,
+    "product_verified": false,
+    "passed": false,
+    "retry": false,
+    "attempt_id": "r37-frequency-02",
+    "phase": "frequency",
+    "failure": "expected sole Fastboot target not found; product query skipped",
+    "capture_stop_requested": true,
+    "finished_at": "2026-11-20T22:32:34.757619+08:00"
+  },
+  "prior_frequency01_return_cause": "manual_hardware_restart_confirmed_by_user",
+  "prior_invalid_package_defect": {
+    "old_payload_bytes": 23411528,
+    "new_payload_bytes": 23445896,
+    "literal_offset": 408,
+    "observed_copy_bytes": 23411536,
+    "required_copy_bytes": 23445904,
+    "copy_literal_correct": false,
+    "uncovered_bytes": 34368
+  },
+  "remaining": {
+    "per_core_frequency": "partial: only physical101 valid",
+    "timer_migration": "unverified; candidate built but not booted",
+    "springboard_schedule": "unverified; RAM hold does not start SpringBoard",
+    "slowcores_idle": "host implementation only; target effect unverified",
+    "clock_and_voltage": "source evidence only, effective mux/voltage unverified",
+    "fixed_frequency_design": "withheld pending tasks 1-5"
+  },
+  "next_device_action": "Photo archived and stop branch confirmed; await user manual Fastboot readiness, then test already-built frequency03 once. No new permission needed and no automatic retry.",
+  "host_next_packages": {
+    "frequency-03": {
+      "image": {
+        "path": "lithium-hakios-ios16-r37-ram-frequency-03.img",
+        "bytes": 16330752,
+        "sha256": "2b55d7ec6df743009ac2b9ed5805c695f1b9fbfd22d863b6105f1f601daf17b6"
+      },
+      "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_freq_diag=1 cpu_freq_pmu_borrow=1",
+      "device_booted": false
+    },
+    "timer-02": {
+      "image": {
+        "path": "lithium-hakios-ios16-r37-ram-timer-02.img",
+        "bytes": 16330752,
+        "sha256": "5d384b4d5bf73f5a92db87858aacd187de5401ebd10cb7d673bbb54019c81ef2"
+      },
+      "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 timer_migrate_diag=1",
+      "device_booted": false
+    }
+  },
+  "host_kernel_sha256": "2a65728bf0520d6c4a01ca739e68b76a97c52740050bd41cd53c9e0a9c77f290",
+  "screen_terminal_evidence": {
+    "recorded_at": "2026-11-20T22:49:32.120099+08:00",
+    "source": "C:\\Users\\Jia33\\Documents\\xwechat_files\\wxid_b5zmjhm8jlaq22_3c0d\\temp\\RWTemp\\2026-11\\9e20f478899dc29eb19741386f9343c8\\f23a8da5222ec6d4f9fedf5e84986704.jpg",
+    "archived_original": "reports/local/r37-attempts/r37-frequency-02/screen-terminal-original.jpg",
+    "sha256": "420ae5949f74d6ec3a0d6bf08ee66d1f1a17f5a06ed23f4392b470bc2acc513e",
+    "bytes": 157360,
+    "capture_timestamp": "unknown; recorded_at is host archival time",
+    "reading_method": "manual reading of user-supplied photograph; normalized field spelling",
+    "terminal": "UEFI normal timer summary retained due to smp_return_affinity",
+    "visible": {
+      "raw_retained_bytes": 34734,
+      "normal_timer": true,
+      "no_panic_text_in_retained_log": true,
+      "return_logical_cpu": 0,
+      "return_affinity": "0x1",
+      "usb_drain": 1,
+      "usb_target": 12262,
+      "retained_reason": "smp_return_affinity",
+      "instruction": "USE POWER VOLUME DOWN FOR FASTBOOT"
+    },
+    "conclusion": "Old loader affinity guard returned before firmware Prepare/Commit; reset hardware was not exercised by this branch.",
+    "old_loader_source": {
+      "path": "/home/jia/ios-mix1-build/r37-ram-smp-support/loader/devices/lithium/return-fastboot/loader.inc",
+      "sha256": "1d65e9a5485e196d5ce3378d822257290d0d094c6eaf7f5c7580c60fd95924b2",
+      "condition_line": 94,
+      "retained_message_line": 95
+    },
+    "prepared_fix_source": {
+      "path": "ports/hakios-lithium/return-fastboot/loader.inc",
+      "owner_seed_line": 36,
+      "owner_compare_line": 96,
+      "hardware_verified": false
+    },
+    "scope_note": "Retained UEFI raw bytes and USB console bytes cover different scopes. Their difference is not evidence of lost USB transport.",
+    "new_device_operations": 0
+  }
+}

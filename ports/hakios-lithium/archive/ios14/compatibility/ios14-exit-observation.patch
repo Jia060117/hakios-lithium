@@ -1,0 +1,58 @@
+--- a/bsd/kern/kern_exit.c
++++ b/bsd/kern/kern_exit.c
+@@ -1583,6 +1583,21 @@
+ 	proc_transend(p, 1);
+ 	proc_unlock(p);
+ 
++#if defined(LITHIUM_ARMV8_0)
++	/* Preserve the existing committed reason; do not alter exit or signature policy. */
++	int lithium_dynamic = 0;
++	if (proc_getpid(p) > 1 && proc_getpid(p) <= 3 &&
++	    PE_parse_boot_argn("lithium_ios14_test", &lithium_dynamic, sizeof(lithium_dynamic)) && lithium_dynamic) {
++		char line[192];
++		extern void loader_log_line(const char *line);
++		snprintf(line, sizeof(line), "LITHIUM P2 DYNEXIT pid=%d signal=%d namespace=%u code=%llx csflags=%llx\n",
++		    proc_getpid(p), WTERMSIG(rv), exit_reason ? exit_reason->osr_namespace : 0,
++		    exit_reason ? (unsigned long long)exit_reason->osr_code : 0,
++		    (unsigned long long)proc_getcsflags(p));
++		loader_log_line(line);
++	}
++#endif
++
+ 	proc_prepareexit(p, rv, perf_notify);
+ 
+ 	/* Last thread to terminate will call proc_exit() */
+--- a/osfmk/vm/vm_fault.c
++++ b/osfmk/vm/vm_fault.c
+@@ -62,6 +62,9 @@
+  *	Page fault handling module.
+  */
+ 
++#if defined(LITHIUM_ARMV8_0)
++#include <pexpert/pexpert.h>
++#endif
+ #include <libkern/OSAtomic.h>
+ 
+ #include <mach/mach_types.h>
+@@ -2928,6 +2931,21 @@
+ 		 * will deal with the segmentation fault.
+ 		 */
+ 		if (cs_killed) {
++#if defined(LITHIUM_ARMV8_0)
++			int lithium_dynamic = 0;
++			if (pid > 1 && pid <= 3 &&
++			    PE_parse_boot_argn("lithium_ios14_test", &lithium_dynamic, sizeof(lithium_dynamic)) && lithium_dynamic) {
++				char line[256];
++				extern void loader_log_line(const char *line);
++				snprintf(line, sizeof(line), "LITHIUM P2 DYNCS pid=%d address=%llx offset=%llx validated=%d tainted=%d\n",
++				    pid, (unsigned long long)vaddr, (unsigned long long)file_offset,
++				    VMP_CS_VALIDATED(m, fault_page_size, fault_phys_offset),
++				    VMP_CS_TAINTED(m, fault_page_size, fault_phys_offset));
++				loader_log_line(line);
++				snprintf(line, sizeof(line), "LITHIUM P2 DYNCSFILE pid=%d %s\n", pid, pathname ? pathname : "UNKNOWN");
++				loader_log_line(line);
++			}
++#endif
+ 			KDBG(BSDDBG_CODE(DBG_BSD_PROC, BSD_PROC_EXITREASON_CREATE) | DBG_FUNC_NONE,
+ 			    pid, OS_REASON_CODESIGNING, CODESIGNING_EXIT_REASON_INVALID_PAGE);
+ 

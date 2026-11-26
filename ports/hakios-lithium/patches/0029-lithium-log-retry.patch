@@ -1,0 +1,22 @@
+--- a/xnu/files/osfmk/arm64/loader_return.c
++++ b/xnu/files/osfmk/arm64/loader_return.c
+@@ -112,5 +112,9 @@
+ 
+ static uint64_t lithium_log_contention_dropped_bytes;
++/* Optional bounded retry for concurrent diagnostic output. Keep the source
++ * loss counter and Fastboot's no-loss gate; never write unlocked on failure.
++ * Holder masks IRQ/FIQ and copies at most 256 bytes per acquisition. */
++static TUNABLE(uint32_t, lithium_log_retry, "lithium_log_retry", 0);
+ #if defined(LITHIUM_ARMV8_0)
+ #include "../../../../devices/lithium/return-fastboot/kernel.inc"
+ #endif
+@@ -125,7 +129,8 @@
+ 		uint64_t daif = __builtin_arm_rsr64("DAIF");
+ 		bool locked = false;
+ 		__builtin_arm_wsr("DAIFSet", DAIFSC_IRQF | DAIFSC_FIQF);
+-		for (uint32_t tries = 0; !locked && tries < 64; tries++)
++		const uint32_t retry_limit = lithium_log_retry == 1 ? 4096u : 64u;
++		for (uint32_t tries = 0; !locked && tries < retry_limit; tries++)
+ 			locked = os_atomic_cmpxchg(&loader_log_lock, 0, 1, acquire);
+ 		if (locked) {
+ 			for (unsigned i = 0; i < take; i++)

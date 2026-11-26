@@ -1,0 +1,33 @@
+{
+  "passed": true,
+  "checks": [
+    "PASS original16 canonical swap and guards preserved",
+    "PASS exact14 three-layer fields translated, fourth layer empty",
+    "PASS malformed swap lengths and null input rejected without writes",
+    "PASS stalled UI returns retained failure at initial deadline",
+    "PASS new progress extends once, unchanged progress does not loop",
+    "PASS startup extensions bounded at thirty minutes total",
+    "PASS pixel-copy plus SB-queue candidate retained without desktop acceptance",
+    "PASS legacy timer behavior preserved outside integrated mode",
+    "PASS actual14 result serializer, plane stride, extended pixels and exact buffer bounds",
+    "PASS short14 result rejected without writes; shared offsets statically match original getters",
+    "PASS actual14 lock/unlock envelope returns live address and seed through upstream ownership",
+    "PASS method-form use counts balance without underflow, release reuses upstream helper",
+    "PASS stale IDs and malformed14 lock requests refused",
+    "PASS actual combined UI screen retains diagnostics and child abort without legacy scroll",
+    "PASS UI panic and missing progress remain distinct from a deadline return"
+  ],
+  "actual_swap_adapter_exercised": true,
+  "actual_deadline_callback_exercised": true,
+  "sanitizer": "address,undefined",
+  "framebuffer_source_sha256": "6d047b75ca5f8d38114b380d2b86c8046df3127fce39312f7626a3db8e308a8d",
+  "deadline_source_sha256": "6e00fb60f4d3fee7ffb392fe1e24ffb52f97ef8d94c733e5c3b15112adcb71fb",
+  "patch_sha256": "87593a023f868f9cdaaefd1b1bc3ef16e9c34b589b198f3cc1f09f9845dc3442",
+  "surface_patch_sha256": {
+    "0017-lithium-ios14-surface-abi.patch": "dd0d0ff308cf1f963458e17e06b12b271533032e288ef758fd39ca0f483b083d",
+    "0018-lithium-ios14-surface-methods.patch": "058fc3578aef08d6ca7e7283e07b220b16dd3ccb7cd5b17437e506f7087accbb"
+  },
+  "actual_surface_serializer_and_envelopes_exercised": true,
+  "source_sha256": "1d2a91cfb4fd7e72d9090d64b5df775e06cd849fb26720cc7755755cc7ff699d",
+  "hardware_verified": false
+}

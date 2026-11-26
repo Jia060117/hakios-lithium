@@ -1,0 +1,18 @@
+From: ios14-lithium
+Subject: [build] use the POSIX function syntax in the header generator
+
+The original /bin/sh script used the bash-only `function name()` form.
+Linux /bin/sh is dash. This changes no generated definitions.
+
+diff --git a/bsd/sys/make_posix_availability.sh b/bsd/sys/make_posix_availability.sh
+--- a/bsd/sys/make_posix_availability.sh
++++ b/bsd/sys/make_posix_availability.sh
+@@ -22,7 +22,7 @@
+ # @APPLE_OSREFERENCE_LICENSE_HEADER_END@
+ #
+ 
+-function usage() {
++usage() {
+     echo "Usage: $0 <output>" 1>&2
+     exit 1
+ }

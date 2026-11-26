@@ -1,0 +1,38 @@
+{
+  "recorded_at": "2026-11-20T18:29:41.575849+08:00",
+  "revision": "R36-touch-smp",
+  "host_ready": true,
+  "device_booted": false,
+  "device_operations_during_host_phase": 0,
+  "image": "artifacts/hakios/lithium-ios16/phase4-r36-touch-smp/lithium-hakios-ios16-r36-touch-smp.img",
+  "image_sha256": "d4f2d0ee4f4be24952d7439b17834d0d159fa76e78da40bec59622b6623b5669",
+  "image_bytes": 16318464,
+  "kernel_sha256": "b36b86bd944f1a6bd871d8e175c1e65941edab00b0fb9fcf17a00247bd9d9daa",
+  "cmdline": "bootcpu=1 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1 touch_smp=1",
+  "focused_tests": 68,
+  "actual_kernel_incremental_build": true,
+  "package_written_layers_readback": {
+    "android_header_and_sha1": true,
+    "gzip_dtb_fat": true,
+    "shim_literal_and_mu": true,
+    "xnup_exact_entries": true,
+    "fat_loader": true,
+    "all_written_components": true
+  },
+  "unchanged_userspace_and_firmware_reused": true,
+  "feature_default_off": true,
+  "new_opt_in": "touch_smp=1",
+  "cpu_scope": "init and every poll bind logical0, verify affinity1, restore prior binding",
+  "smp_touch_hardware_verified": false,
+  "cpu_governor_fixed": false,
+  "ui_performance_fixed": false,
+  "cpu_mhz_measured": false,
+  "ufs_automatic_fastboot": false,
+  "normal_boot_may_write_data": true,
+  "agents": {
+    "Harvey": "saved-log CPU evidence; main checked actual lines",
+    "Nietzsche": "68 focused cases and wrapper review; main checked hashes and sources"
+  },
+  "first_compile_failure": "opaque processor_t and missing private declarations; corrected to processor_info API with exact source signatures",
+  "next_step": "manual Fastboot readiness, then one explicit R36 test; no automatic retry"
+}

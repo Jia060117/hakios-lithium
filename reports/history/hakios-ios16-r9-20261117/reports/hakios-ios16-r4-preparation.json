@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "revision": 4,
+  "recorded_at": "2026-11-16T22:13:46.047685+08:00",
+  "passed": true,
+  "image_path": "artifacts/hakios/lithium-ios16/phase4-r4/lithium-hakios-ios16-r4.img",
+  "image_sha256": "8a3230840e8b5636be18fa92e13cef781811e45f057632072a95b6ea2a1bad6d",
+  "kernel_sha256": "ad5ac24a71d183dcb66628771d0cc55c08292beb5bee0beab8218a5356cd137d",
+  "image_bytes": 16228352,
+  "ready_report": "reports/hakios-ios16-boot-ready.json",
+  "r3_evidence_archive": "reports/history/hakios-ios16-phase4-r3-20261116",
+  "changes": [
+    "Capture actual BSD console through _cnputc/_cnputs, including screen-disabled output; remove duplicate kmoutput capture",
+    "Keep early direct kprintf capture; use usertraps=1 without global systrace",
+    "Distinguish explicit timer return, panic body and unknown return in retained summary; panic takes precedence",
+    "Clear prior hardware verification when a new boot command is accepted"
+  ],
+  "validation": [
+    "Full HakiOS kernel, real D22AP loader and Mu built",
+    "46 instruction checks; real console and summary ASan/UBSan checks passed",
+    "R3 userspace exact-output check and R4 dual APFS freeze passed",
+    "16 real package roundtrip/rejection/copy-boundary cases passed",
+    "All frozen evidence SHA256 values and actual image checked again"
+  ],
+  "limitations": [
+    "No R4 boot issued at preparation record time",
+    "No confirmed R3 return cause",
+    "Actual SpringBoard frames, container RPC, physical touch and A530 acceleration unverified",
+    "2880MiB and single CPU remain active; full 6GB is an open goal"
+  ],
+  "legacy_7195_used": false,
+  "qemu_used": false,
+  "apple_binaries_shareable": false,
+  "userdata_reflash_required": false
+}

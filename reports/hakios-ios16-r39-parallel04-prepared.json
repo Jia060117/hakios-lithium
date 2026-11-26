@@ -1,0 +1,50 @@
+{
+  "scope": "three concurrent bound workers, 90-second correctness screening, not final long stability",
+  "kernel_sha256": "bee740c2a9e36d927fe3cf38468a079f79c48bca75b783b1e2535b4c9bafdd2d",
+  "worker_guard": {
+    "batch_interval": 256,
+    "yield_ms": 1,
+    "max_software_temperature_age_ms": 10000,
+    "cutoff_mC": 75000
+  },
+  "source_logger_retries": 4096,
+  "source_drop_gate_preserved": true,
+  "physical_UFS": false,
+  "voltage_writes": 0,
+  "S11_inherited_digital_uv": 905000,
+  "CPU_policy_model_uv": 585000,
+  "candidates": [
+    {
+      "attempt": "20",
+      "hz": 384000000,
+      "image": {
+        "path": "lithium-hakios-ios16-r37-ram-frequency-20.img",
+        "bytes": 16347136,
+        "sha256": "0fb0ed316f9c24c38ed45dc77301d393a26fc3ea0586032c1cb1021234ca6319"
+      },
+      "args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_clock_diag=1 cpu_power_diag=1 cpu_freq_pmu_setup=0 cpu_sanity=1 cpu_spmi_diag=1 cpu_perf_fixed=1 cpu_thermal_diag=1 cpu_perf_hz=384000000 cpu_inherited_supply_r39=1 cpu_rate_soak=1 cpu_rate_soak_parallel=1 lithium_log_retry=1 cpu_freq_diag=1"
+    },
+    {
+      "attempt": "21",
+      "hz": 460800000,
+      "image": {
+        "path": "lithium-hakios-ios16-r37-ram-frequency-21.img",
+        "bytes": 16347136,
+        "sha256": "490d93b4e112b157173f2719254a8cd15884d23e4d5151a5b0149d5c6cb2d11c"
+      },
+      "args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_clock_diag=1 cpu_power_diag=1 cpu_freq_pmu_setup=0 cpu_sanity=1 cpu_spmi_diag=1 cpu_perf_fixed=1 cpu_thermal_diag=1 cpu_perf_hz=460800000 cpu_inherited_supply_r39=1 cpu_rate_soak=1 cpu_rate_soak_parallel=1 lithium_log_retry=1 cpu_freq_diag=1"
+    },
+    {
+      "attempt": "22",
+      "hz": 537600000,
+      "image": {
+        "path": "lithium-hakios-ios16-r37-ram-frequency-22.img",
+        "bytes": 16347136,
+        "sha256": "01676c9bd26235fbe39ac608f361888fbdd7eaae8199ac2acccab5056aea494e"
+      },
+      "args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_clock_diag=1 cpu_power_diag=1 cpu_freq_pmu_setup=0 cpu_sanity=1 cpu_spmi_diag=1 cpu_perf_fixed=1 cpu_thermal_diag=1 cpu_perf_hz=537600000 cpu_inherited_supply_r39=1 cpu_rate_soak=1 cpu_rate_soak_parallel=1 lithium_log_retry=1 cpu_freq_diag=1"
+    }
+  ],
+  "device_operations": 0,
+  "runtime_verified": false
+}

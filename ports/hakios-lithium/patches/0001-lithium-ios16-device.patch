@@ -1,0 +1,2096 @@
+--- a/drivers/storage/hakios.ufs.c
++++ b/drivers/storage/hakios.ufs.c
+@@ -893,6 +893,9 @@
+ {
+ 	uint32_t part = (uint32_t)minor(buf_device(bp));
+ 	uint64_t offset, len, size;
++#if defined(LITHIUM_ARMV8_0)
++	caddr_t mapped;
++#endif
+ 	int error;
+ 
+ 	if (ufs_is_data(buf_device(bp))) {
+@@ -921,7 +924,15 @@
+ 	if (offset + len > size) {
+ 		len = size - offset;
+ 	}
++#if defined(LITHIUM_ARMV8_0)
++	/* Reuse ufs_data_strategy's mapping for cluster pages without a kernel address. */
++	if ((error = buf_map(bp, &mapped)) == 0) {
++		error = ufs_read(part, offset, (uint8_t *)mapped, len);
++		buf_unmap(bp);
++	}
++#else
+ 	error = ufs_read(part, offset, (uint8_t *)buf_dataptr(bp), len);
++#endif
+ 	buf_setresid(bp, (uint32_t)(buf_count(bp) - (error ? 0 : len)));
+ 	if (error) {
+ 		buf_seterror(bp, error);
+--- a/userland/build.sh
++++ b/userland/build.sh
+@@ -104,7 +104,7 @@
+ 	exit 1
+ done
+ # The stock Darwin jobs given to launchd, roughly in the order they were brought up.
+-DARWIN_JOBS=${JOBS-"
++DARWIN_JOBS=${HAKIOS_DARWIN_JOBS-"
+ 	com.apple.notifyd com.apple.cfprefsd.xpc.daemon com.apple.cfprefsd.xpc.daemon.system com.apple.logd
+ 	com.apple.syslogd com.apple.distnoted.xpc.daemon com.apple.diagnosticd com.apple.fseventsd
+ 	com.apple.containermanagerd com.apple.containermanagerd.system com.apple.runningboardd
+--- a/xnu/files/iokit/Kernel/MiniIOMobileFramebuffer.cpp
++++ b/xnu/files/iokit/Kernel/MiniIOMobileFramebuffer.cpp
+@@ -1,3 +1,5 @@
++/* MIX physical panel ownership; IOSurface remains the upstream iOS16 ABI. */
++extern "C" { unsigned int lithium_display_owns_console; }
+ /*
+  * MiniIOMobileFramebuffer: a stand-in for Apple's display driver family, as seen by
+  * IOMobileFramebuffer.framework (and through it by CoreAnimation's window server).
+@@ -347,7 +349,7 @@
+ public:
+ 	IOLock *        fLock;
+ 	uint8_t *       fBase;                  /* the boot framebuffer: the panel */
+-	uint32_t        fPanelWidth, fPanelHeight, fRowBytes;
++	uint32_t        fPanelWidth, fPanelHeight, fRowBytes, fPixelBytes;
+ 	uint32_t        fWidth, fHeight;        /* the display as user space sees it */
+ 	MiniIOSurface * fDefaultSurface;
+ 	uint32_t        fSwapID;
+@@ -569,7 +571,9 @@
+ 	if (!IOService::start(provider)) {
+ 		return false;
+ 	}
+-	if (vinfo.v_baseaddr == 0 || vinfo.v_width == 0 || vinfo.v_height == 0 || vinfo.v_depth != 32) {
++	if (vinfo.v_baseaddr == 0 || vinfo.v_width == 0 || vinfo.v_height == 0 ||
++	    (vinfo.v_depth != 32 && vinfo.v_depth != 24) ||
++	    (uint64_t) vinfo.v_rowbytes < (uint64_t) vinfo.v_width * (vinfo.v_depth / 8)) {
+ 		IOLog("MiniIOMobileFramebuffer: no usable boot framebuffer (%ux%u, depth %u)\n", vinfo.v_width, vinfo.v_height,
+ 		    vinfo.v_depth);
+ 		return false;
+@@ -603,6 +607,7 @@
+ 	fPanelWidth = vinfo.v_width;
+ 	fPanelHeight = vinfo.v_height;
+ 	fRowBytes = vinfo.v_rowbytes;
++	fPixelBytes = vinfo.v_depth / 8;
+ 	fWidth = gFBWidth ? gFBWidth : fPanelWidth;
+ 	fHeight = gFBHeight ? gFBHeight : fPanelHeight;
+ 	if (gFBScale != 0 && gFBScale != kFBDefaultScale) {
+@@ -837,10 +842,21 @@
+ 		if (y < 0 || (uint32_t) y >= fPanelHeight) {
+ 			continue;
+ 		}
++		lithium_display_owns_console = 1;
+ 		to = (uint32_t *) (fBase + (size_t) y * fRowBytes);
+ 		if (job->unscaled) {
+ 			/* not scaled at all */
+-			memcpy(to + px0, pixels + (size_t) (sy + y - py0) * stride + (size_t) sx * 4, (size_t) sw * 4);
++			const uint32_t * source = (const uint32_t *) (pixels + (size_t) (sy + y - py0) * stride) + sx;
++			if (fPixelBytes == 3) {
++				uint8_t * dest = fBase + (size_t) y * fRowBytes + (size_t) px0 * 3;
++				for (int32_t x = 0; x < sw; x++) {
++					dest[x * 3] = source[x];
++					dest[x * 3 + 1] = source[x] >> 8;
++					dest[x * 3 + 2] = source[x] >> 16;
++				}
++			} else {
++				memcpy(to + px0, source, (size_t) sw * 4);
++			}
+ 			continue;
+ 		}
+ 		if (filter) {
+@@ -865,6 +881,23 @@
+ 			}
+ 		} else {
+ 			from = (const uint32_t *) (pixels + (size_t) (sy + (int64_t) (y - py0) * sh / (py1 - py0)) * stride);
++		}
++		/* IOSurface stays BGRA32; only the physical panel storage is BGR24. */
++		if (fPixelBytes == 3) {
++			uint8_t * dest = fBase + (size_t) y * fRowBytes;
++			for (int32_t x = cx0; x < cx1; x++) {
++				uint32_t value = filter ? blend(from[fColumn[x]], from[fColumn[x] + (fColumnWeight[x] != 0)], fColumnWeight[x]) : from[fColumn[x]];
++				uint8_t * pixel = dest + (size_t) x * 3;
++				if (fDiff && (pixel[0] != (uint8_t) value || pixel[1] != (uint8_t) (value >> 8) || pixel[2] != (uint8_t) (value >> 16))) {
++					fDiffPixels++;
++					fDiffLeft = (uint32_t) x < fDiffLeft ? (uint32_t) x : fDiffLeft;
++					fDiffRight = (uint32_t) x > fDiffRight ? (uint32_t) x : fDiffRight;
++					fDiffTop = (uint32_t) y < fDiffTop ? (uint32_t) y : fDiffTop;
++					fDiffBottom = (uint32_t) y > fDiffBottom ? (uint32_t) y : fDiffBottom;
++				}
++				pixel[0] = value; pixel[1] = value >> 8; pixel[2] = value >> 16;
++			}
++			continue;
+ 		}
+ 		if (fDiff) {
+ 			for (int32_t x = cx0; x < cx1; x++) {
+@@ -1511,7 +1544,7 @@
+ 			/* the bottom layer taken away: nothing is shown, the screen is black */
+ 			if (layer == 0 && (set & 1) && fGraphics) {
+ 				for (uint32_t y = 0; y < fPanelHeight; y++) {
+-					bzero(fBase + (size_t) y * fRowBytes, (size_t) fPanelWidth * 4);
++					bzero(fBase + (size_t) y * fRowBytes, (size_t) fPanelWidth * fPixelBytes);
+ 				}
+ 			}
+ 			continue;
+@@ -2043,12 +2076,22 @@
+ 	uint32_t columns = width < vinfo.v_width ? width : (uint32_t) vinfo.v_width;
+ 	uint32_t rows = height < vinfo.v_height ? height : (uint32_t) vinfo.v_height;
+ 
+-	if (vinfo.v_baseaddr == 0 || vinfo.v_depth != 32) {
++	if (vinfo.v_baseaddr == 0 || pixels == NULL ||
++	    (vinfo.v_depth != 32 && vinfo.v_depth != 24) ||
++	    (uint64_t) rowBytes < (uint64_t) columns * 4 ||
++	    (uint64_t) vinfo.v_rowbytes < (uint64_t) vinfo.v_width * (vinfo.v_depth / 8)) {
+ 		return;
+ 	}
+ 	for (uint32_t y = 0; y < rows; y++) {
+-		memcpy((void *) (vinfo.v_baseaddr + (size_t) y * vinfo.v_rowbytes), pixels + (size_t) y * rowBytes,
+-		    (size_t) columns * 4);
++		uint8_t * dest = (uint8_t *) (vinfo.v_baseaddr + (size_t) y * vinfo.v_rowbytes);
++		const uint8_t * source = pixels + (size_t) y * rowBytes;
++		if (vinfo.v_depth == 24) {
++			for (uint32_t x = 0; x < columns; x++) {
++				memcpy(dest + (size_t) x * 3, source + (size_t) x * 4, 3);
++			}
++		} else {
++			memcpy(dest, source, (size_t) columns * 4);
++		}
+ 	}
+ }
+ 
+--- a/xnu/files/osfmk/arm64/gic_v3_irq.c
++++ b/xnu/files/osfmk/arm64/gic_v3_irq.c
+@@ -55,6 +55,7 @@
+ #define GICD_IGRPMODR(n)        (0x0d00 + 4 * (n))
+ #define GICD_IROUTER(n)         (0x6000 + 8 * (n))
+ 
++static uint32_t gicr_frame_stride = 0x20000; /* optional ADT redistributor-stride */
+ #define GICR_FRAME_SIZE         0x20000     /* RD_base + SGI_base per CPU */
+ #define GICR_TYPER              0x0008
+ #define GICR_TYPER_LAST         (1u << 4)
+@@ -94,6 +95,17 @@
+ uint64_t        gic_unhandled_count;
+ uint32_t        gic_last_unhandled;
+ 
++#if defined(LITHIUM_ARMV8_0)
++/* Board bring-up observation: only an acknowledged timer PPI increments this. */
++static _Atomic uint64_t lithium_vtimer_irqs;
++uint64_t lithium_vtimer_irq_count(void);
++uint64_t
++lithium_vtimer_irq_count(void)
++{
++	return os_atomic_load(&lithium_vtimer_irqs, relaxed);
++}
++#endif
++
+ /*
+  * The attached SPIs. A slot is filled before its interrupt is enabled and emptied after it has
+  * been disabled and no handler of it runs any more (busy), so the handler path reads the table
+@@ -311,6 +323,9 @@
+ 		gic_active_iar[cpu] = iar | GIC_IAR_TAKEN;
+ 
+ 		if (intid == GIC_INTID_VTIMER) {
++#if defined(LITHIUM_ARMV8_0)
++			os_atomic_inc(&lithium_vtimer_irqs, relaxed);
++#endif
+ 			/* same sequence as the FIQ path in sleh_fiq() */
+ 			getCpuDatap()->cpu_decrementer = -1; /* Large */
+ 			rtclock_intr(TRUE);
+@@ -399,7 +414,7 @@
+ 	/* GICR_TYPER[63:32] packs Aff3.Aff2.Aff1.Aff0 */
+ 	uint32_t affinity = (uint32_t)(((mpidr >> 32) & 0xff) << 24 | (mpidr & 0xffffff));
+ 
+-	for (vm_offset_t frame = gicr_base; frame + GICR_FRAME_SIZE <= gicr_base + gicr_size; frame += GICR_FRAME_SIZE) {
++	for (vm_offset_t frame = gicr_base; frame + GICR_FRAME_SIZE <= gicr_base + gicr_size; frame += gicr_frame_stride) {
+ 		uint64_t typer = *(volatile uint64_t *)(frame + GICR_TYPER);
+ 
+ 		if ((uint32_t)(typer >> 32) == affinity) {
+@@ -437,6 +452,13 @@
+ 		gicd_base = ml_io_map(soc_base + reg[0], reg[1]);
+ 		gicr_base = ml_io_map(soc_base + reg[2], reg[3]);
+ 		gicr_size = reg[3];
++		if (SecureDTGetProperty(entry, "redistributor-stride", &prop, &prop_size) == kSuccess) {
++			if (prop_size != sizeof(uint32_t)) panic("gic: bad redistributor-stride size");
++			uint32_t stride = *(const uint32_t *)prop;
++			if (stride < GICR_FRAME_SIZE || stride > gicr_size || (stride & 0xffff))
++				panic("gic: bad redistributor-stride value");
++			gicr_frame_stride = stride;
++		}
+ 		if (gicd_base == 0 || gicr_base == 0) {
+ 			panic("gic: cannot map the distributor/redistributor");
+ 		}
+--- /dev/null
++++ b/xnu/files/pexpert/arm/pe_serial.c
+@@ -0,0 +1,1342 @@
++/*
++ * Copyright (c) 2000-2020 Apple Inc. All rights reserved.
++ *
++ * This file contains the low-level serial drivers used on ARM/ARM64 devices.
++ * The generic serial console code in osfmk/console/serial_console.c will call
++ * into this code to transmit and receive serial data.
++ *
++ * Logging can be performed on multiple serial interfaces at once through a
++ * method called serial multiplexing. This is implemented by enumerating which
++ * serial interfaces are available on boot and registering them into a linked
++ * list of interfaces pointed to by gPESF. When outputting or receiving
++ * characters, each interface is queried in turn.
++ *
++ * Please view doc/arm_serial.md for an in-depth description of these drivers.
++ */
++#include <kern/clock.h>
++#include <kern/debug.h>
++#include <libkern/OSBase.h>
++#include <libkern/section_keywords.h>
++#include <mach/mach_time.h>
++#include <machine/atomic.h>
++#include <machine/machine_routines.h>
++#include <pexpert/pexpert.h>
++#include <pexpert/protos.h>
++#include <pexpert/device_tree.h>
++#include <pexpert/arm/consistent_debug.h>
++#include <pexpert/arm64/board_config.h>
++#include <arm64/proc_reg.h>
++#include <pexpert/arm/protos.h>
++#include <kern/sched_prim.h>
++#if HIBERNATION
++#include <machine/pal_hibernate.h>
++#endif /* HIBERNATION */
++
++struct pe_serial_functions {
++	/* Initialize the underlying serial hardware. */
++	void (*init) (void);
++
++	/* Return a non-zero value if the serial interface is ready to send more data. */
++	unsigned int (*transmit_ready) (void);
++
++	/* Write a single byte of data to serial. */
++	void (*transmit_data) (uint8_t c);
++
++	/* Return a non-zero value if there's a byte of data available. */
++	unsigned int (*receive_ready) (void);
++
++	/* Read a single byte from serial. */
++	uint8_t (*receive_data) (void);
++
++	/* Enables IRQs from this device. */
++	void (*enable_irq) (void);
++
++	/* Disables IRQs from this device and reports whether IRQs were enabled. */
++	bool (*disable_irq) (void);
++
++	/* Clears this device's IRQs targeting this agent, returning true if at least one IRQ was cleared. */
++	bool (*acknowledge_irq) (void);
++
++	/**
++	 * Whether this serial driver can handle irqs. This value should be set by
++	 * querying the device tree to see if the serial device has interrupts
++	 * associated with it.
++	 *
++	 * For a device to support IRQs:
++	 *   - enable_irq, disable_irq, and acknowledge_irq must be non-null
++	 *   - The AppleSerialShim kext must be able to match to the serial device
++	 *     in the IORegistry and call serial_enable_irq with the proper
++	 *     serial_device_t
++	 *   - The device tree entry for the serial device should have an interrupt
++	 *     associated with it.
++	 */
++	bool has_irq;
++
++	/* enum identifying which serial device these functions belong to. */
++	serial_device_t device;
++
++	/* Pointer to the next serial interface in the linked-list. */
++	struct pe_serial_functions *next;
++};
++
++MARK_AS_HIBERNATE_DATA_CONST_LATE static struct pe_serial_functions* gPESF = NULL;
++
++/**
++ * Whether uart has been initialized already. This value is kept across a
++ * sleep/wake cycle so we know we need to reinitialize when serial_init is
++ * called again after wake.
++ */
++MARK_AS_HIBERNATE_DATA static bool uart_initted = false;
++
++/* Whether uart should run in simple mode that works during hibernation resume. */
++MARK_AS_HIBERNATE_DATA static bool uart_hibernation = false;
++
++/** Set <=> transmission is authorized.
++ * Always set, unless SERIALMODE_ON_DEMAND is provided at boot,
++ * and no data has yet been received.
++ * Originaly meant to be a per-pe_serial_functions variable,
++ * but the data protection on the structs prevents it. */
++static bool serial_do_transmit = 1;
++
++/**
++ * Used to track if all IRQs have been initialized. Each bit of this variable
++ * represents whether or not a serial device that reports supporting IRQs has
++ * been initialized yet (1 -> not initialized, 0 -> initialized)
++ */
++static uint32_t serial_irq_status = 0;
++
++/**
++ * Set by the 'disable-uart-irq' boot-arg to force serial IRQs into polling mode
++ * by preventing the serial driver shim kext from registering itself with
++ * serial_enable_irq.
++ */
++static bool disable_uart_irq = 0;
++
++/**
++ * Indicates whether or not a given device's irqs have been set up by calling
++ * serial_enable_irq for that particular device.
++ *
++ * @param device_fns Serial functions for the device that is being checked
++ * @return Whether or not the irqs have been initialized for that device
++ */
++static bool
++irq_initialized(struct pe_serial_functions *device_fns)
++{
++	return (serial_irq_status & device_fns->device) == 0;
++}
++
++/**
++ * Indicates whether or not a given device supports irqs and if they are ready
++ * to be used.
++ *
++ * @param device_fns Serial functions for the device that is being checked
++ * @return Whether or not the device can and will send IRQs.
++ */
++static bool
++irq_available_and_ready(struct pe_serial_functions *device_fns)
++{
++	return device_fns->has_irq && irq_initialized(device_fns);
++}
++
++/**
++ * Searches through the global serial functions list and returns the serial function for a particular device
++ *
++ * @param device The device identifier to search for
++ * @return Serial functions for the specified device
++ */
++static struct pe_serial_functions *
++get_serial_functions(serial_device_t device)
++{
++	struct pe_serial_functions *fns = gPESF;
++	while (fns != NULL) {
++		if (fns->device == device) {
++			return fns;
++		}
++		fns = fns->next;
++	}
++	return NULL;
++}
++
++/**
++ * The action to take when polling and waiting for a serial device to be ready
++ * for output. On ARM64, takes a WFE because the WFE timeout will wake us up in
++ * the worst case. On ARMv7 devices, we need to hot poll.
++ */
++static void
++serial_poll(void)
++{
++	#if __arm64__
++	__builtin_arm_wfe();
++	#endif
++}
++
++/**
++ * This ensures that if we have a future product that supports hibernation, but
++ * doesn't support either UART serial or dock-channels, then hibernation will
++ * gracefully fall back to the serial method that is supported.
++ */
++#if HIBERNATION || defined(APPLE_UART)
++MARK_AS_HIBERNATE_DATA static volatile apple_uart_registers_t *apple_uart_registers = 0;
++#endif /* HIBERNATION || defined(APPLE_UART) */
++
++#if HIBERNATION || defined(DOCKCHANNEL_UART)
++MARK_AS_HIBERNATE_DATA static vm_offset_t dockchannel_uart_base = 0;
++#endif /* HIBERNATION || defined(DOCKCHANNEL_UART) */
++
++/*****************************************************************************/
++
++#ifdef APPLE_UART
++static int32_t dt_sampling  = -1;
++static int32_t dt_ubrdiv    = -1;
++
++static void apple_uart_set_baud_rate(uint32_t baud_rate);
++
++/**
++ * The Apple UART is configured to use 115200-8-N-1 communication.
++ */
++static void
++apple_uart_init(void)
++{
++	ucon_t ucon = { .raw = 0 };
++	// Use NCLK (which is constant) instead of PCLK (which is variable).
++	ucon.clock_selection = UCON_CLOCK_SELECTION_NCLK;
++	ucon.transmit_mode = UCON_TRANSMIT_MODE_INTERRUPT_OR_POLLING;
++	ucon.receive_mode = UCON_RECEIVE_MODE_INTERRUPT_OR_POLLING;
++	apple_uart_registers->ucon = ucon;
++
++	// Configure 8-N-1 communication.
++	ulcon_t ulcon = { .raw = 0 };
++	ulcon.word_length = ULCON_WORD_LENGTH_8_BITS;
++	ulcon.parity_mode = ULCON_PARITY_MODE_NONE;
++	ulcon.number_of_stop_bits = ULCON_STOP_BITS_1;
++	apple_uart_registers->ulcon = ulcon;
++
++	apple_uart_set_baud_rate(115200);
++
++	// Enable and reset FIFOs.
++	ufcon_t ufcon = { .raw = 0 };
++	ufcon.fifo_enable = 1;
++	ufcon.tx_fifo_reset = 1;
++	ufcon.rx_fifo_reset = 1;
++	apple_uart_registers->ufcon = ufcon;
++}
++
++static void
++apple_uart_enable_irq(void)
++{
++	// Set the Tx FIFO interrupt trigger level to 0 bytes so interrupts occur when
++	// the Tx FIFO is completely empty; this leads to higher Tx throughput.
++	apple_uart_registers->ufcon.tx_fifo_interrupt_trigger_level_dma_watermark = UFCON_TX_FIFO_ITL_0_BYTES;
++
++	// Enable Tx interrupts.
++	apple_uart_registers->ucon.transmit_interrupt = 1;
++}
++
++static bool
++apple_uart_disable_irq(void)
++{
++	/* Disables Tx interrupts */
++	ucon_t ucon = apple_uart_registers->ucon;
++	const bool irqs_were_enabled = ucon.transmit_interrupt;
++
++	if (irqs_were_enabled) {
++		ucon.transmit_interrupt = 0;
++		apple_uart_registers->ucon = ucon;
++	}
++
++	return irqs_were_enabled;
++}
++
++static bool
++apple_uart_ack_irq(void)
++{
++	apple_uart_registers->utrstat.transmit_interrupt_status = 1;
++	return true;
++}
++
++static void
++apple_uart_drain_fifo(void)
++{
++	while (({
++		ufstat_t ufstat = apple_uart_registers->ufstat;
++		ufstat.tx_fifo_full || ufstat.tx_fifo_count;
++	})) {
++		serial_poll();
++	}
++}
++
++static void
++apple_uart_set_baud_rate(uint32_t baud_rate)
++{
++	uint32_t div = 0;
++	const uint32_t uart_clock = (uint32_t)gPEClockFrequencyInfo.fix_frequency_hz;
++	uint32_t sample_rate = 16;
++
++	if (baud_rate < 300) {
++		baud_rate = 9600;
++	}
++
++	if (dt_sampling != -1) {
++		// Use the sampling rate specified in the Device Tree
++		sample_rate = dt_sampling & 0xf;
++	}
++
++	if (dt_ubrdiv != -1) {
++		// Use the ubrdiv specified in the Device Tree
++		div = dt_ubrdiv & 0xffff;
++	} else {
++		// Calculate ubrdiv. UBRDIV = (SourceClock / (BPS * Sample Rate)) - 1
++		div = uart_clock / (baud_rate * sample_rate);
++
++		uint32_t actual_baud = uart_clock / ((div + 0) * sample_rate);
++		uint32_t baud_low    = uart_clock / ((div + 1) * sample_rate);
++
++		// Adjust div to get the closest target baudrate
++		if ((baud_rate - baud_low) > (actual_baud - baud_rate)) {
++			div--;
++		}
++	}
++
++	ubrdiv_t ubrdiv = apple_uart_registers->ubrdiv;
++	ubrdiv.sample_rate = 16 - sample_rate;
++	ubrdiv.ubr_div = div;
++	apple_uart_registers->ubrdiv = ubrdiv;
++}
++
++MARK_AS_HIBERNATE_TEXT static unsigned int
++apple_uart_transmit_ready(void)
++{
++	return !apple_uart_registers->ufstat.tx_fifo_full;
++}
++
++MARK_AS_HIBERNATE_TEXT static void
++apple_uart_transmit_data(uint8_t c)
++{
++	apple_uart_registers->utxh.txdata = c;
++}
++
++static unsigned int
++apple_uart_receive_ready(void)
++{
++	const ufstat_t ufstat = apple_uart_registers->ufstat;
++	return ufstat.rx_fifo_full || ufstat.rx_fifo_count;
++}
++
++static uint8_t
++apple_uart_receive_data(void)
++{
++	return apple_uart_registers->urxh.rxdata;
++}
++
++MARK_AS_HIBERNATE_DATA_CONST_LATE
++static struct pe_serial_functions apple_serial_functions =
++{
++	.init = apple_uart_init,
++	.transmit_ready = apple_uart_transmit_ready,
++	.transmit_data = apple_uart_transmit_data,
++	.receive_ready = apple_uart_receive_ready,
++	.receive_data = apple_uart_receive_data,
++	.enable_irq = apple_uart_enable_irq,
++	.disable_irq = apple_uart_disable_irq,
++	.acknowledge_irq = apple_uart_ack_irq,
++	.device = SERIAL_APPLE_UART
++};
++
++#endif /* APPLE_UART */
++
++/*****************************************************************************/
++
++#ifdef DOCKCHANNEL_UART
++#define DOCKCHANNEL_WR_MAX_STALL_US (30*1000)
++
++static vm_offset_t      dock_agent_base;
++static uint32_t         max_dockchannel_drain_period;
++static uint64_t         dockchannel_drain_deadline;  // Deadline for external agent to drain before a software drain occurs
++static bool             use_sw_drain;
++static uint32_t         dock_wstat_mask;
++static uint64_t         prev_dockchannel_spaces;        // Previous w_stat level of the DockChannel.
++static uint64_t         dockchannel_stall_grace;
++MARK_AS_HIBERNATE_DATA static bool     use_sw_drain;
++MARK_AS_HIBERNATE_DATA static uint32_t dock_wstat_mask;
++
++// forward reference
++static struct pe_serial_functions dockchannel_serial_functions;
++
++//=======================
++// Local funtions
++//=======================
++
++static int
++dockchannel_drain_on_stall()
++{
++	// Called when DockChannel runs out of spaces.
++	// Check if the DockChannel reader has stalled. If so, empty the DockChannel ourselves.
++	// Return number of bytes drained.
++
++	if (mach_absolute_time() >= dockchannel_drain_deadline) {
++		// It's been more than DOCKCHANEL_WR_MAX_STALL_US and nobody read from the FIFO
++		// Drop a character.
++		(void)rDOCKCHANNELS_DOCK_RDATA1(DOCKCHANNEL_UART_CHANNEL);
++		os_atomic_inc(&prev_dockchannel_spaces, relaxed);
++		return 1;
++	}
++	return 0;
++}
++
++static void
++dockchannel_clear_intr(void)
++{
++	rDOCKCHANNELS_AGENT_AP_INTR_CTRL &= ~(0x3);
++	rDOCKCHANNELS_AGENT_AP_INTR_STATUS |= 0x3;
++	rDOCKCHANNELS_AGENT_AP_ERR_INTR_CTRL &= ~(0x3);
++	rDOCKCHANNELS_AGENT_AP_ERR_INTR_STATUS |= 0x3;
++}
++
++static bool
++dockchannel_disable_irq(void)
++{
++	const uint32_t ap_intr_ctrl = rDOCKCHANNELS_AGENT_AP_INTR_CTRL;
++	const bool irqs_were_enabled = ap_intr_ctrl & 0x1;
++	if (irqs_were_enabled) {
++		rDOCKCHANNELS_AGENT_AP_INTR_CTRL = ap_intr_ctrl & ~(0x1);
++	}
++	return irqs_were_enabled;
++}
++
++static void
++dockchannel_enable_irq(void)
++{
++	// set interrupt to be when fifo has 255 empty
++	rDOCKCHANNELS_DEV_WR_WATERMARK(DOCKCHANNEL_UART_CHANNEL) = 0xFF;
++	rDOCKCHANNELS_AGENT_AP_INTR_CTRL |= 0x1;
++}
++
++static bool
++dockchannel_ack_irq(void)
++{
++	/* First check if the IRQ is for the kernel */
++	if (rDOCKCHANNELS_AGENT_AP_INTR_STATUS & 0x1) {
++		rDOCKCHANNELS_AGENT_AP_INTR_STATUS |= 0x1;
++		return true;
++	}
++	return false;
++}
++
++MARK_AS_HIBERNATE_TEXT static void
++dockchannel_transmit_data(uint8_t c)
++{
++	rDOCKCHANNELS_DEV_WDATA1(DOCKCHANNEL_UART_CHANNEL) = (unsigned)c;
++
++	if (use_sw_drain && !uart_hibernation) {
++		os_atomic_dec(&prev_dockchannel_spaces, relaxed); // After writing a byte we have one fewer space than previously expected.
++	}
++}
++
++static unsigned int
++dockchannel_receive_ready(void)
++{
++	return rDOCKCHANNELS_DEV_RDATA0(DOCKCHANNEL_UART_CHANNEL) & 0x7f;
++}
++
++static uint8_t
++dockchannel_receive_data(void)
++{
++	return (uint8_t)((rDOCKCHANNELS_DEV_RDATA1(DOCKCHANNEL_UART_CHANNEL) >> 8) & 0xff);
++}
++
++MARK_AS_HIBERNATE_TEXT static unsigned int
++dockchannel_transmit_ready(void)
++{
++	uint32_t spaces = rDOCKCHANNELS_DEV_WSTAT(DOCKCHANNEL_UART_CHANNEL) & dock_wstat_mask;
++
++	if (!uart_hibernation) {
++		if (use_sw_drain) {
++			if (spaces > prev_dockchannel_spaces) {
++				// More spaces showed up. That can only mean someone read the FIFO.
++				// Note that if the DockFIFO is empty we cannot tell if someone is listening,
++				// we can only give them the benefit of the doubt.
++				dockchannel_drain_deadline = mach_absolute_time() + dockchannel_stall_grace;
++			}
++			prev_dockchannel_spaces = spaces;
++			return spaces || dockchannel_drain_on_stall();
++		}
++	}
++
++	return spaces;
++}
++
++static void
++dockchannel_init(void)
++{
++	if (use_sw_drain) {
++		nanoseconds_to_absolutetime(DOCKCHANNEL_WR_MAX_STALL_US * NSEC_PER_USEC, &dockchannel_stall_grace);
++	}
++
++	// Clear all interrupt enable and status bits
++	dockchannel_clear_intr();
++
++	// Setup DRAIN timer
++	rDOCKCHANNELS_DEV_DRAIN_CFG(DOCKCHANNEL_UART_CHANNEL) = max_dockchannel_drain_period;
++
++	// Drain timer doesn't get loaded with value from drain period register if fifo
++	// is already full. Drop a character from the fifo.
++	rDOCKCHANNELS_DOCK_RDATA1(DOCKCHANNEL_UART_CHANNEL);
++}
++
++MARK_AS_HIBERNATE_DATA_CONST_LATE
++static struct pe_serial_functions dockchannel_serial_functions =
++{
++	.init = dockchannel_init,
++	.transmit_ready = dockchannel_transmit_ready,
++	.transmit_data = dockchannel_transmit_data,
++	.receive_ready = dockchannel_receive_ready,
++	.receive_data = dockchannel_receive_data,
++	.enable_irq = dockchannel_enable_irq,
++	.disable_irq = dockchannel_disable_irq,
++	.acknowledge_irq = dockchannel_ack_irq,
++	.device = SERIAL_DOCKCHANNEL
++};
++
++#endif /* DOCKCHANNEL_UART */
++
++/****************************************************************************/
++#ifdef PI3_UART
++vm_offset_t pi3_gpio_base_vaddr = 0;
++vm_offset_t pi3_aux_base_vaddr = 0;
++static unsigned int
++pi3_uart_tr0(void)
++{
++	return (unsigned int) BCM2837_GET32(BCM2837_AUX_MU_LSR_REG_V) & 0x20;
++}
++
++static void
++pi3_uart_td0(uint8_t c)
++{
++	BCM2837_PUT32(BCM2837_AUX_MU_IO_REG_V, (uint32_t) c);
++}
++
++static unsigned int
++pi3_uart_rr0(void)
++{
++	return (unsigned int) BCM2837_GET32(BCM2837_AUX_MU_LSR_REG_V) & 0x01;
++}
++
++static uint8_t
++pi3_uart_rd0(void)
++{
++	return (uint8_t) BCM2837_GET32(BCM2837_AUX_MU_IO_REG_V);
++}
++
++static void
++pi3_uart_init(void)
++{
++	// Scratch variable
++	uint32_t i;
++
++	// Reset mini uart registers
++	BCM2837_PUT32(BCM2837_AUX_ENABLES_V, 1);
++	BCM2837_PUT32(BCM2837_AUX_MU_CNTL_REG_V, 0);
++	BCM2837_PUT32(BCM2837_AUX_MU_LCR_REG_V, 3);
++	BCM2837_PUT32(BCM2837_AUX_MU_MCR_REG_V, 0);
++	BCM2837_PUT32(BCM2837_AUX_MU_IER_REG_V, 0);
++	BCM2837_PUT32(BCM2837_AUX_MU_IIR_REG_V, 0xC6);
++	BCM2837_PUT32(BCM2837_AUX_MU_BAUD_REG_V, 270);
++
++	i = (uint32_t)BCM2837_FSEL_REG(14);
++	// Configure GPIOs 14 & 15 for alternate function 5
++	i &= ~(BCM2837_FSEL_MASK(14));
++	i |= (BCM2837_FSEL_ALT5 << BCM2837_FSEL_OFFS(14));
++	i &= ~(BCM2837_FSEL_MASK(15));
++	i |= (BCM2837_FSEL_ALT5 << BCM2837_FSEL_OFFS(15));
++
++	BCM2837_PUT32(BCM2837_FSEL_REG(14), i);
++
++	BCM2837_PUT32(BCM2837_GPPUD_V, 0);
++
++	// Barrier before AP spinning for 150 cycles
++	__builtin_arm_isb(ISB_SY);
++
++	for (i = 0; i < 150; i++) {
++		asm volatile ("add x0, x0, xzr");
++	}
++
++	__builtin_arm_isb(ISB_SY);
++
++	BCM2837_PUT32(BCM2837_GPPUDCLK0_V, (1 << 14) | (1 << 15));
++
++	__builtin_arm_isb(ISB_SY);
++
++	for (i = 0; i < 150; i++) {
++		asm volatile ("add x0, x0, xzr");
++	}
++
++	__builtin_arm_isb(ISB_SY);
++
++	BCM2837_PUT32(BCM2837_GPPUDCLK0_V, 0);
++
++	BCM2837_PUT32(BCM2837_AUX_MU_CNTL_REG_V, 3);
++}
++
++SECURITY_READ_ONLY_LATE(static struct pe_serial_functions) pi3_uart_serial_functions =
++{
++	.init = pi3_uart_init,
++	.transmit_ready = pi3_uart_tr0,
++	.transmit_data = pi3_uart_td0,
++	.receive_ready = pi3_uart_rr0,
++	.receive_data = pi3_uart_rd0,
++	.device = SERIAL_PI3_UART
++};
++
++#endif /* PI3_UART */
++
++/*****************************************************************************/
++
++#ifdef VMAPPLE_UART
++
++static vm_offset_t vmapple_uart0_base_vaddr = 0;
++
++#define PL011_LCR_WORD_LENGTH_8  0x60u
++#define PL011_LCR_FIFO_DISABLE   0x00u
++
++#define PL011_LCR_FIFO_ENABLE    0x10u
++
++#define PL011_LCR_ONE_STOP_BIT   0x00u
++#define PL011_LCR_PARITY_DISABLE 0x00u
++#define PL011_LCR_BREAK_DISABLE  0x00u
++#define PL011_IBRD_DIV_38400     0x27u
++#define PL011_FBRD_DIV_38400     0x09u
++#define PL011_ICR_CLR_ALL_IRQS   0x07ffu
++#define PL011_CR_UART_ENABLE     0x01u
++#define PL011_CR_TX_ENABLE       0x100u
++#define PL011_CR_RX_ENABLE       0x200u
++
++#define VMAPPLE_UART0_DR         *((volatile uint32_t *) (vmapple_uart0_base_vaddr + 0x00))
++#define VMAPPLE_UART0_ECR        *((volatile uint32_t *) (vmapple_uart0_base_vaddr + 0x04))
++#define VMAPPLE_UART0_FR         *((volatile uint32_t *) (vmapple_uart0_base_vaddr + 0x18))
++#define VMAPPLE_UART0_IBRD       *((volatile uint32_t *) (vmapple_uart0_base_vaddr + 0x24))
++#define VMAPPLE_UART0_FBRD       *((volatile uint32_t *) (vmapple_uart0_base_vaddr + 0x28))
++#define VMAPPLE_UART0_LCR_H      *((volatile uint32_t *) (vmapple_uart0_base_vaddr + 0x2c))
++#define VMAPPLE_UART0_CR         *((volatile uint32_t *) (vmapple_uart0_base_vaddr + 0x30))
++#define VMAPPLE_UART0_TIMSC      *((volatile uint32_t *) (vmapple_uart0_base_vaddr + 0x38))
++#define VMAPPLE_UART0_ICR        *((volatile uint32_t *) (vmapple_uart0_base_vaddr + 0x44))
++
++static unsigned int
++vmapple_uart_transmit_ready(void)
++{
++	return (unsigned int) !(VMAPPLE_UART0_FR & 0x20);
++}
++
++static void
++vmapple_uart_transmit_data(uint8_t c)
++{
++	VMAPPLE_UART0_DR = (uint32_t) c;
++}
++
++static unsigned int
++vmapple_uart_receive_ready(void)
++{
++	return (unsigned int) !(VMAPPLE_UART0_FR & 0x10);
++}
++
++static uint8_t
++vmapple_uart_receive_data(void)
++{
++	return (uint8_t) (VMAPPLE_UART0_DR & 0xff);
++}
++
++static void
++vmapple_uart_init(void)
++{
++	VMAPPLE_UART0_CR = 0x0;
++	VMAPPLE_UART0_ECR = 0x0;
++	VMAPPLE_UART0_LCR_H = (
++		PL011_LCR_WORD_LENGTH_8 |
++		PL011_LCR_FIFO_ENABLE |
++		PL011_LCR_ONE_STOP_BIT |
++		PL011_LCR_PARITY_DISABLE |
++		PL011_LCR_BREAK_DISABLE
++		);
++	VMAPPLE_UART0_IBRD = PL011_IBRD_DIV_38400;
++	VMAPPLE_UART0_FBRD = PL011_FBRD_DIV_38400;
++	VMAPPLE_UART0_TIMSC = 0x0;
++	VMAPPLE_UART0_ICR = PL011_ICR_CLR_ALL_IRQS;
++	VMAPPLE_UART0_CR = (
++		PL011_CR_UART_ENABLE |
++		PL011_CR_TX_ENABLE |
++		PL011_CR_RX_ENABLE
++		);
++}
++
++SECURITY_READ_ONLY_LATE(static struct pe_serial_functions) vmapple_uart_serial_functions =
++{
++	.init = vmapple_uart_init,
++	.transmit_ready = vmapple_uart_transmit_ready,
++	.transmit_data = vmapple_uart_transmit_data,
++	.receive_ready = vmapple_uart_receive_ready,
++	.receive_data = vmapple_uart_receive_data,
++	.device = SERIAL_VMAPPLE_UART
++};
++
++#endif /* VMAPPLE_UART */
++
++/*****************************************************************************/
++
++/**
++ * Output @str onto every registered serial interface by polling.
++ *
++ * @param str The stringto output.
++ */
++static void uart_sends_force_poll(
++	const char *str
++	);
++
++static void
++register_serial_functions(struct pe_serial_functions *fns)
++{
++	fns->next = gPESF;
++	gPESF = fns;
++}
++
++#if defined(LITHIUM_ARMV8_0)
++/*****************************************************************************/
++
++/*
++ * lithium: framebuffer "serial" for boards with no usable UART (the Redmi Note
++ * 10 Pro's debug UART engine runs in SPI mode). kprintf output is drawn onto
++ * the boot framebuffer described by the ADT node "lithium-fbcon":
++ *   reg    = <phys size>       absolute physical address, not arm-io relative
++ *   width, height              pixels
++ *   stride                     bytes per line, 24bpp
++ * Lines wrap back to the top instead of scrolling; the line after the cursor
++ * is kept blank so the newest output is easy to find.
++ */
++
++extern unsigned char iso_font[256 * 16];
++
++#define FBCON_SCALE     2
++#define FBCON_FG        0xffffffffu
++#define FBCON_BG        0xff000000u
++
++static volatile uint8_t *fbcon_base;
++static uint32_t fbcon_width, fbcon_height, fbcon_stride;
++static uint32_t fbcon_cols, fbcon_rows, fbcon_col, fbcon_row;
++
++static void
++fbcon_clear_row(uint32_t row)
++{
++	for (uint32_t y = row * 16 * FBCON_SCALE; y < (row + 1) * 16 * FBCON_SCALE; y++) {
++		volatile uint8_t *line = fbcon_base + y * fbcon_stride;
++		for (uint32_t x = 0; x < fbcon_width; x++) {
++			line[x * 3] = 0; line[x * 3 + 1] = 0; line[x * 3 + 2] = 0;
++		}
++	}
++}
++
++static void
++fbcon_newline(void)
++{
++	fbcon_col = 0;
++	fbcon_row = (fbcon_row + 1) % fbcon_rows;
++	fbcon_clear_row(fbcon_row);
++	fbcon_clear_row((fbcon_row + 1) % fbcon_rows);
++}
++
++static void
++fbcon_init(void)
++{
++	fbcon_cols = fbcon_width / (8 * FBCON_SCALE);
++	fbcon_rows = fbcon_height / (16 * FBCON_SCALE);
++	fbcon_col = fbcon_row = 0;
++	for (uint32_t r = 0; r < fbcon_rows; r++) {
++		fbcon_clear_row(r);
++	}
++}
++
++static unsigned int
++fbcon_transmit_ready(void)
++{
++	return 1;
++}
++
++static void
++fbcon_transmit_data(uint8_t c)
++{
++    extern uint32_t lithium_display_owns_console;
++    if (lithium_display_owns_console) return;
++	if (c == '\r') {
++		fbcon_col = 0;
++		return;
++	}
++	if (c == '\n') {
++		fbcon_newline();
++		return;
++	}
++	if (fbcon_col >= fbcon_cols) {
++		fbcon_newline();
++	}
++	const unsigned char *glyph = iso_font + c * 16;
++	uint32_t x0 = fbcon_col * 8 * FBCON_SCALE, y0 = fbcon_row * 16 * FBCON_SCALE;
++	for (uint32_t gy = 0; gy < 16; gy++) {
++		for (uint32_t sy = 0; sy < FBCON_SCALE; sy++) {
++			volatile uint8_t *line = fbcon_base + (y0 + gy * FBCON_SCALE + sy) * fbcon_stride + x0 * 3;
++			for (uint32_t gx = 0; gx < 8; gx++) {
++				uint32_t px = (glyph[gy] & (1u << gx)) ? FBCON_FG : FBCON_BG;
++				for (uint32_t sx = 0; sx < FBCON_SCALE; sx++) {
++					uint32_t off = (gx * FBCON_SCALE + sx) * 3;
++					line[off] = (uint8_t)px; line[off + 1] = (uint8_t)(px >> 8); line[off + 2] = (uint8_t)(px >> 16);
++				}
++			}
++		}
++	}
++	fbcon_col++;
++}
++
++static unsigned int
++fbcon_receive_ready(void)
++{
++	return 0;
++}
++
++static uint8_t
++fbcon_receive_data(void)
++{
++	return 0;
++}
++
++SECURITY_READ_ONLY_LATE(static struct pe_serial_functions) lithium_fbcon_serial_functions =
++{
++	.init = fbcon_init,
++	.transmit_ready = fbcon_transmit_ready,
++	.transmit_data = fbcon_transmit_data,
++	.receive_ready = fbcon_receive_ready,
++	.receive_data = fbcon_receive_data,
++	.device = SERIAL_LITHIUM_FBCON
++};
++
++static void
++fbcon_probe(void)
++{
++	DTEntry entry;
++	uint64_t const *reg;
++	uint32_t const *val;
++	unsigned int size;
++
++	if (SecureDTFindEntry("name", "lithium-fbcon", &entry) != kSuccess ||
++	    SecureDTGetProperty(entry, "reg", (void const **)&reg, &size) != kSuccess || size < 16) {
++		return;
++	}
++	if (SecureDTGetProperty(entry, "width", (void const **)&val, &size) == kSuccess) {
++		fbcon_width = *val;
++	}
++	if (SecureDTGetProperty(entry, "height", (void const **)&val, &size) == kSuccess) {
++		fbcon_height = *val;
++	}
++	if (SecureDTGetProperty(entry, "stride", (void const **)&val, &size) == kSuccess) {
++		fbcon_stride = *val;
++	}
++	if (fbcon_width < 16 || fbcon_width > 1080 || fbcon_height < 32 || fbcon_height > 2040 ||
++	    fbcon_stride < fbcon_width * 3 || fbcon_stride > 3240 ||
++	    reg[0] != 0x83401000ULL || reg[1] < (uint64_t)fbcon_stride * fbcon_height) {
++		return;
++	}
++	fbcon_base = (volatile uint8_t *)ml_io_map_wcomb(reg[0], reg[1]);
++	if (fbcon_base != NULL) {
++		register_serial_functions(&lithium_fbcon_serial_functions);
++	}
++}
++
++#endif
++
++#if HIBERNATION
++/**
++ * Transitions the serial driver into a mode that can be run in the hibernation
++ * resume context. In this mode, the serial driver runs at a barebones level
++ * without making sure the serial devices are properly initialized or utilizing
++ * features such as the software drain timer for dockchannels.
++ *
++ * Upon the next call to serial_init (once the hibernation image has been
++ * loaded), this mode is exited and we return to the normal operation of the
++ * driver.
++ */
++MARK_AS_HIBERNATE_TEXT void
++serial_hibernation_init(void)
++{
++	uart_hibernation = true;
++#if defined(APPLE_UART)
++	apple_uart_registers = (apple_uart_registers_t *)gHibernateGlobals.hibUartRegPhysBase;
++#endif /* defined(APPLE_UART) */
++#if defined(DOCKCHANNEL_UART)
++	dockchannel_uart_base = gHibernateGlobals.dockChannelRegPhysBase;
++#endif /* defined(DOCKCHANNEL_UART) */
++}
++
++/**
++ * Transitions the serial driver back to non-hibernation mode so it can resume
++ * normal operations. Should only be called from serial_init on a hibernation
++ * resume.
++ */
++MARK_AS_HIBERNATE_TEXT static void
++serial_hibernation_cleanup(void)
++{
++	uart_hibernation = false;
++#if defined(APPLE_UART)
++	apple_uart_registers = (apple_uart_registers_t *)gHibernateGlobals.hibUartRegVirtBase;
++#endif /* defined(APPLE_UART) */
++#if defined(DOCKCHANNEL_UART)
++	dockchannel_uart_base = gHibernateGlobals.dockChannelRegVirtBase;
++#endif /* defined(DOCKCHANNEL_UART) */
++}
++#endif /* HIBERNATION */
++
++int
++serial_init(void)
++{
++	DTEntry         entryP = NULL;
++	uint32_t        prop_size;
++	vm_offset_t     soc_base;
++	uintptr_t const *reg_prop;
++	uint32_t const  *prop_value __unused = NULL;
++
++	struct pe_serial_functions *fns = gPESF;
++
++	/**
++	 * Even if the serial devices have already been initialized on cold boot,
++	 * when coming out of a sleep/wake, they'll need to be re-initialized. Since
++	 * the uart_initted value is kept across a sleep/wake, always re-initialize
++	 * to be safe.
++	 */
++	if (uart_initted) {
++#if HIBERNATION
++		if (uart_hibernation) {
++			serial_hibernation_cleanup();
++		}
++#endif /* HIBERNATION */
++		while (fns != NULL) {
++			fns->init();
++			fns = fns->next;
++		}
++
++		return 1;
++	}
++
++	soc_base = pe_arm_get_soc_base_phys();
++
++	if (soc_base == 0) {
++		return 0;
++	}
++
++	PE_parse_boot_argn("disable-uart-irq", &disable_uart_irq, sizeof(disable_uart_irq));
++#if defined(LITHIUM_ARMV8_0)
++	fbcon_probe();
++#endif
++
++#ifdef PI3_UART
++	if (SecureDTFindEntry("name", "gpio", &entryP) == kSuccess) {
++		SecureDTGetProperty(entryP, "reg", (void const **)&reg_prop, &prop_size);
++		pi3_gpio_base_vaddr = ml_io_map(soc_base + *reg_prop, *(reg_prop + 1));
++	}
++	if (SecureDTFindEntry("name", "aux", &entryP) == kSuccess) {
++		SecureDTGetProperty(entryP, "reg", (void const **)&reg_prop, &prop_size);
++		pi3_aux_base_vaddr = ml_io_map(soc_base + *reg_prop, *(reg_prop + 1));
++	}
++	if ((pi3_gpio_base_vaddr != 0) && (pi3_aux_base_vaddr != 0)) {
++		register_serial_functions(&pi3_uart_serial_functions);
++	}
++#endif /* PI3_UART */
++
++#ifdef VMAPPLE_UART
++	if (SecureDTFindEntry("name", "uart0", &entryP) == kSuccess) {
++		SecureDTGetProperty(entryP, "reg", (void const **)&reg_prop, &prop_size);
++		vmapple_uart0_base_vaddr = ml_io_map(soc_base + *reg_prop, *(reg_prop + 1));
++	}
++
++	if (vmapple_uart0_base_vaddr != 0) {
++		register_serial_functions(&vmapple_uart_serial_functions);
++	}
++#endif /* VMAPPLE_UART */
++
++#ifdef DOCKCHANNEL_UART
++	uint32_t no_dockchannel_uart = 0;
++	if (SecureDTFindEntry("name", "dockchannel-uart", &entryP) == kSuccess) {
++		SecureDTGetProperty(entryP, "reg", (void const **)&reg_prop, &prop_size);
++		// Should be two reg entries
++		if (prop_size / sizeof(uintptr_t) != 4) {
++			panic("Malformed dockchannel-uart property");
++		}
++		dockchannel_uart_base = ml_io_map(soc_base + *reg_prop, *(reg_prop + 1));
++		dock_agent_base = ml_io_map(soc_base + *(reg_prop + 2), *(reg_prop + 3));
++		PE_parse_boot_argn("no-dockfifo-uart", &no_dockchannel_uart, sizeof(no_dockchannel_uart));
++		// Keep the old name for boot-arg
++		if (no_dockchannel_uart == 0) {
++			register_serial_functions(&dockchannel_serial_functions);
++			SecureDTGetProperty(entryP, "max-aop-clk", (void const **)&prop_value, &prop_size);
++			max_dockchannel_drain_period = (uint32_t)((prop_value)?  (*prop_value * 0.03) : DOCKCHANNEL_DRAIN_PERIOD);
++			prop_value = NULL;
++			SecureDTGetProperty(entryP, "enable-sw-drain", (void const **)&prop_value, &prop_size);
++			use_sw_drain = (prop_value)?  *prop_value : 0;
++			prop_value = NULL;
++			SecureDTGetProperty(entryP, "dock-wstat-mask", (void const **)&prop_value, &prop_size);
++			dock_wstat_mask = (prop_value)?  *prop_value : 0x1ff;
++			prop_value = NULL;
++			SecureDTGetProperty(entryP, "interrupts", (void const **)&prop_value, &prop_size);
++			if (prop_value) {
++				dockchannel_serial_functions.has_irq = true;
++			}
++
++			/* Set sane defaults for dockchannel globals. */
++			prev_dockchannel_spaces = rDOCKCHANNELS_DEV_WSTAT(DOCKCHANNEL_UART_CHANNEL) & dock_wstat_mask;
++			dockchannel_drain_deadline = mach_absolute_time() + dockchannel_stall_grace;
++		} else {
++			dockchannel_clear_intr();
++		}
++		// If no dockchannel-uart is found in the device tree, fall back
++		// to looking for the traditional UART serial console.
++	}
++
++#endif /* DOCKCHANNEL_UART */
++
++#ifdef APPLE_UART
++	char const *serial_compat = 0;
++	uint32_t use_legacy_uart = 0;
++
++	/* Check if we should enable this deprecated serial device. */
++	PE_parse_boot_argn("use-legacy-uart", &use_legacy_uart, sizeof(use_legacy_uart));
++
++	/*
++	 * The boot serial port should have a property named "boot-console".
++	 * If we don't find it there, look for "uart0" and "uart1".
++	 */
++	if (SecureDTFindEntry("boot-console", NULL, &entryP) == kSuccess) {
++		SecureDTGetProperty(entryP, "reg", (void const **)&reg_prop, &prop_size);
++		apple_uart_registers = (apple_uart_registers_t *)ml_io_map(soc_base + *reg_prop, *(reg_prop + 1));
++		SecureDTGetProperty(entryP, "compatible", (void const **)&serial_compat, &prop_size);
++	} else if (SecureDTFindEntry("name", "uart0", &entryP) == kSuccess) {
++		SecureDTGetProperty(entryP, "reg", (void const **)&reg_prop, &prop_size);
++		apple_uart_registers = (apple_uart_registers_t *)ml_io_map(soc_base + *reg_prop, *(reg_prop + 1));
++		SecureDTGetProperty(entryP, "compatible", (void const **)&serial_compat, &prop_size);
++	} else if (SecureDTFindEntry("name", "uart1", &entryP) == kSuccess) {
++		SecureDTGetProperty(entryP, "reg", (void const **)&reg_prop, &prop_size);
++		apple_uart_registers = (apple_uart_registers_t *)ml_io_map(soc_base + *reg_prop, *(reg_prop + 1));
++		SecureDTGetProperty(entryP, "compatible", (void const **)&serial_compat, &prop_size);
++	}
++
++	if (NULL != entryP) {
++		prop_value = NULL;
++		SecureDTGetProperty(entryP, "sampling", (void const **)&prop_value, &prop_size);
++		if (prop_value) {
++			dt_sampling = *prop_value;
++		}
++
++		prop_value = NULL;
++		SecureDTGetProperty(entryP, "ubrdiv", (void const **)&prop_value, &prop_size);
++		if (prop_value) {
++			dt_ubrdiv = *prop_value;
++		}
++
++		SecureDTGetProperty(entryP, "interrupts", (void const **)&prop_value, &prop_size);
++		if (prop_value) {
++			apple_serial_functions.has_irq = true;
++		}
++
++		/* Workaround to enable legacy serial for fastsim targets until clients migrate to dockchannels. */
++		SecureDTGetProperty(entryP, "enable-legacy-serial", (void const **)&prop_value, &prop_size);
++		if (prop_value) {
++			use_legacy_uart = 1;
++		}
++	}
++
++	if (use_legacy_uart && serial_compat && !strcmp(serial_compat, "uart-1,samsung")) {
++		register_serial_functions(&apple_serial_functions);
++	}
++#endif /* APPLE_UART */
++
++	if (gPESF == NULL) {
++		return 0;
++	}
++
++	fns = gPESF;
++	while (fns != NULL) {
++		serial_do_transmit = 1;
++		fns->init();
++		if (fns->has_irq) {
++			serial_irq_status |= fns->device; // serial_device_t is one-hot
++		}
++		fns = fns->next;
++	}
++
++#if HIBERNATION
++	/* hibernation needs to know the UART register addresses since it can't directly use this serial driver */
++	if (dockchannel_uart_base) {
++		gHibernateGlobals.dockChannelRegPhysBase = ml_vtophys(dockchannel_uart_base);
++		gHibernateGlobals.dockChannelRegVirtBase = dockchannel_uart_base;
++		gHibernateGlobals.dockChannelWstatMask = dock_wstat_mask;
++	}
++	if (apple_uart_registers) {
++		gHibernateGlobals.hibUartRegPhysBase = ml_vtophys((vm_offset_t)apple_uart_registers);
++		gHibernateGlobals.hibUartRegVirtBase = (vm_offset_t)apple_uart_registers;
++	}
++#endif /* HIBERNATION */
++
++	/* Complete. */
++	uart_initted = true;
++	return 1;
++}
++
++/**
++ * Forbid or allow transmission over each serial until they receive data.
++ */
++void
++serial_set_on_demand(bool on_demand)
++{
++	/* Enable or disable transmission. */
++	serial_do_transmit = !on_demand;
++
++	/* If on-demand is enabled, report it. */
++	if (on_demand) {
++		uart_sends_force_poll(
++			"On-demand serial mode selected.\n"
++			"Waiting for user input to send logs.\n"
++			);
++	}
++}
++
++/**
++ * Returns a deadline for the longest time the serial driver should wait for an
++ * interrupt for. This serves as a timeout for the IRQ to allow for the software
++ * drain timer that dockchannels supports.
++ *
++ * @param fns serial functions representing the device to find the deadline for
++ *
++ * @returns absolutetime deadline for this device's IRQ.
++ */
++static uint64_t
++serial_interrupt_deadline(__unused struct pe_serial_functions *fns)
++{
++#if defined(DOCKCHANNEL_UART)
++	if (fns->device == SERIAL_DOCKCHANNEL && use_sw_drain) {
++		return dockchannel_drain_deadline;
++	}
++#endif
++
++	/**
++	 *  Default to 1.5ms for all other devices. 1.5ms was chosen as the baudrate
++	 * of the AppleSerialDevice is 115200, meaning that it should only take
++	 * ~1.5ms to drain the 16 character buffer completely.
++	 */
++	uint64_t timeout_interval;
++	nanoseconds_to_absolutetime(1500 * NSEC_PER_USEC, &timeout_interval);
++	return mach_absolute_time() + timeout_interval;
++}
++
++/**
++ * Goes to sleep waiting for an interrupt from a specificed serial device.
++ *
++ * @param fns serial functions representing the device to wait for
++ */
++static void
++serial_wait_for_interrupt(struct pe_serial_functions *fns)
++{
++	assert_wait_deadline(fns, THREAD_UNINT, serial_interrupt_deadline(fns));
++	if (!fns->transmit_ready()) {
++		fns->enable_irq();
++		thread_block(THREAD_CONTINUE_NULL);
++	} else {
++		clear_wait(current_thread(), THREAD_AWAKENED);
++	}
++}
++
++/**
++ * Output a character onto every registered serial interface.
++ *
++ * @param c The character to output.
++ * @param poll Whether the driver should poll to send the character or if it can
++ *             wait for an interrupt.
++ * @param force : send even if transmission is disabled on the serial.
++ */
++MARK_AS_HIBERNATE_TEXT void
++static
++uart_putc_options_(char c, bool poll, bool force)
++{
++	struct pe_serial_functions *fns = gPESF;
++
++	while (fns != NULL) {
++		if (force || serial_do_transmit) {
++			while (!fns->transmit_ready()) {
++				if (!uart_hibernation) {
++					if (!poll && irq_available_and_ready(fns)) {
++						serial_wait_for_interrupt(fns);
++					} else {
++						serial_poll();
++					}
++				}
++			}
++			fns->transmit_data((uint8_t)c);
++		}
++		fns = fns->next;
++	}
++}
++
++/**
++ * Output a character onto every registered serial interface whose
++ * transmission is enabled..
++ *
++ * @param c The character to output.
++ * @param poll Whether the driver should poll to send the character or if it can
++ *             wait for an interrupt
++ */
++MARK_AS_HIBERNATE_TEXT void
++uart_putc_options(char c, bool poll)
++{
++	uart_putc_options_(c, poll, 0);
++}
++
++/**
++ * Output a character onto every registered serial interface whose
++ * transmission is enabled by polling.
++ *
++ * @param c The character to output.
++ */
++void
++uart_putc(char c)
++{
++	uart_putc_options(c, true);
++}
++
++/**
++ * Output @str onto every registered serial interface by polling.
++ *
++ * @param str The stringto output.
++ */
++static void
++uart_sends_force_poll(
++	const char *str)
++{
++	char c;
++	while ((c = *(str++))) {
++		uart_putc_options_(c, true, true);
++	}
++}
++
++/**
++ * Read a character from the first registered serial interface that has data
++ * available.
++ *
++ * @return The character if any interfaces have data available, otherwise -1.
++ */
++int
++uart_getc(void)
++{
++	struct pe_serial_functions *fns = gPESF;
++	while (fns != NULL) {
++		if (fns->receive_ready()) {
++			serial_do_transmit = 1;
++			return (int)fns->receive_data();
++		}
++		fns = fns->next;
++	}
++	return -1;
++}
++
++/**
++ * Enables IRQs for a specific serial device and returns whether or not IRQs for
++ * that device where enabled successfully. For a serial driver to have irqs
++ * enabled, it must have the enable_irq, disable_irq, and acknowledge_irq
++ * functions defined and the has_irq flag set.
++ *
++ * @param device Serial device to enable irqs on
++ * @note This function should only be called from the AppleSerialShim kext
++ */
++kern_return_t
++serial_irq_enable(serial_device_t device)
++{
++	struct pe_serial_functions *fns = get_serial_functions(device);
++
++	if (!fns || !fns->has_irq || disable_uart_irq) {
++		return KERN_FAILURE;
++	}
++
++	serial_irq_status &= ~device;
++
++	return KERN_SUCCESS;
++}
++
++/**
++ * Performs any actions needed to handle this IRQ. Wakes up the thread waiting
++ * on the interrupt if one exists.
++ *
++ * @param device Serial device that generated the IRQ.
++ * @note Interrupts will have already been cleared and disabled by serial_irq_filter.
++ * @note This function should only be called from the AppleSerialShim kext.
++ */
++kern_return_t
++serial_irq_action(serial_device_t device)
++{
++	struct pe_serial_functions *fns = get_serial_functions(device);
++
++	if (!fns || !fns->has_irq) {
++		return KERN_FAILURE;
++	}
++
++	/**
++	 * Because IRQs are enabled only when we know a thread is about to sleep, we
++	 * can call wake up and reasonably expect there to be a thread waiting.
++	 */
++	thread_wakeup(fns);
++
++	return KERN_SUCCESS;
++}
++
++/**
++ * Returns true if the pending IRQ for device is one that can be handled by the
++ * platform serial driver.
++ *
++ * @param device Serial device that generated the IRQ.
++ * @note This function is called from a primary interrupt context and should be
++ *       kept lightweight.
++ * @note This function should only be called from the AppleSerialShim kext
++ */
++bool
++serial_irq_filter(serial_device_t device)
++{
++	struct pe_serial_functions *fns = get_serial_functions(device);
++
++	if (!fns || !fns->has_irq) {
++		return false;
++	}
++
++	/**
++	 * Disable IRQs until next time a thread waits for an interrupt to prevent an interrupt storm.
++	 */
++	const bool had_irqs_enabled = fns->disable_irq();
++	const bool was_our_interrupt = fns->acknowledge_irq();
++
++	/* Re-enable IRQs if the interrupt wasn't for us. */
++	if (had_irqs_enabled && !was_our_interrupt) {
++		fns->enable_irq();
++	}
++
++	return was_our_interrupt;
++}
++
++/**
++ * Prepares all serial devices to go to sleep by draining the hardware FIFOs
++ * and disabling interrupts.
++ */
++void
++serial_go_to_sleep(void)
++{
++	struct pe_serial_functions *fns = gPESF;
++	while (fns != NULL) {
++		if (irq_available_and_ready(fns)) {
++			fns->disable_irq();
++		}
++		fns = fns->next;
++	}
++
++#ifdef APPLE_UART
++	/* APPLE_UART needs to drain FIFO before sleeping */
++	if (get_serial_functions(SERIAL_APPLE_UART)) {
++		apple_uart_drain_fifo();
++	}
++#endif /* APPLE_UART */
++}
+--- a/xnu/hakios.patch
++++ b/xnu/hakios.patch
+@@ -2061,7 +2061,7 @@
+  MACHINE_FLAGS_ARM64_T6000 = -DARM64_BOARD_CONFIG_T6000 		-mcpu=apple-a14
+  MACHINE_FLAGS_ARM64_VMAPPLE = -DARM64_BOARD_CONFIG_VMAPPLE              -march=armv8.5a
+ -MACHINE_FLAGS_ARM64_BCM2837 = -DARM64_BOARD_CONFIG_BCM2837
+-+MACHINE_FLAGS_ARM64_BCM2837 = -DARM64_BOARD_CONFIG_BCM2837 -Xclang -target-feature -Xclang +pan
+++MACHINE_FLAGS_ARM64_BCM2837 = -DARM64_BOARD_CONFIG_BCM2837 $(if $(filter msm8996,$(HAKIOS_SOC)),-DLITHIUM_ARMV8_0=1 -march=armv8-a,-Xclang -target-feature -Xclang +pan)
+  
+  
+  #
+@@ -3381,7 +3381,7 @@
+ index d9f0723244e5..53fe4f371d7f 100644
+ --- a/pexpert/pexpert/arm64/BCM2837.h
+ +++ b/pexpert/pexpert/arm64/BCM2837.h
+-@@ -11,6 +11,15 @@
++@@ -11,6 +11,17 @@
+  #define BCM2837
+  #define BCM2837_BRINGUP
+  #define ARM_ARCH_TIMER
+@@ -3393,7 +3393,9 @@
+ + * ARMv8.2: they set PSTATE.PAN on every exception entry, so the kernel must
+ + * know to lift it around user memory accesses.
+ + */
+++#if !defined(LITHIUM_ARMV8_0)
+ +#define __ARM_PAN_AVAILABLE__     1
+++#endif
+  
+  #define __ARM_ARCH__              8
+  #define __ARM_VMSA__              8
+@@ -3502,3 +3504,186 @@
+  def find_non_ascii(s):
+      for c in s:
+          if ord(c) >= 0x80: return True
++diff --git a/pexpert/arm/pe_serial.c b/pexpert/arm/pe_serial.c
++--- a/pexpert/arm/pe_serial.c
+++++ b/pexpert/arm/pe_serial.c
++@@ -697,6 +697,156 @@
++ 	gPESF = fns;
++ }
++ 
+++#if defined(LITHIUM_ARMV8_0)
+++/*****************************************************************************/
+++
+++/*
+++ * lithium: framebuffer "serial" for boards with no usable UART (the Redmi Note
+++ * 10 Pro's debug UART engine runs in SPI mode). kprintf output is drawn onto
+++ * the boot framebuffer described by the ADT node "lithium-fbcon":
+++ *   reg    = <phys size>       absolute physical address, not arm-io relative
+++ *   width, height              pixels
+++ *   stride                     bytes per line, 24bpp
+++ * Lines wrap back to the top instead of scrolling; the line after the cursor
+++ * is kept blank so the newest output is easy to find.
+++ */
+++
+++extern unsigned char iso_font[256 * 16];
+++
+++#define FBCON_SCALE     2
+++#define FBCON_FG        0xffffffffu
+++#define FBCON_BG        0xff000000u
+++
+++static volatile uint8_t *fbcon_base;
+++static uint32_t fbcon_width, fbcon_height, fbcon_stride;
+++static uint32_t fbcon_cols, fbcon_rows, fbcon_col, fbcon_row;
+++
+++static void
+++fbcon_clear_row(uint32_t row)
+++{
+++	for (uint32_t y = row * 16 * FBCON_SCALE; y < (row + 1) * 16 * FBCON_SCALE; y++) {
+++		volatile uint8_t *line = fbcon_base + y * fbcon_stride;
+++		for (uint32_t x = 0; x < fbcon_width; x++) {
+++			line[x * 3] = 0; line[x * 3 + 1] = 0; line[x * 3 + 2] = 0;
+++		}
+++	}
+++}
+++
+++static void
+++fbcon_newline(void)
+++{
+++	fbcon_col = 0;
+++	fbcon_row = (fbcon_row + 1) % fbcon_rows;
+++	fbcon_clear_row(fbcon_row);
+++	fbcon_clear_row((fbcon_row + 1) % fbcon_rows);
+++}
+++
+++static void
+++fbcon_init(void)
+++{
+++	fbcon_cols = fbcon_width / (8 * FBCON_SCALE);
+++	fbcon_rows = fbcon_height / (16 * FBCON_SCALE);
+++	fbcon_col = fbcon_row = 0;
+++	for (uint32_t r = 0; r < fbcon_rows; r++) {
+++		fbcon_clear_row(r);
+++	}
+++}
+++
+++static unsigned int
+++fbcon_transmit_ready(void)
+++{
+++	return 1;
+++}
+++
+++static void
+++fbcon_transmit_data(uint8_t c)
+++{
+++    extern uint32_t lithium_display_owns_console;
+++    if (lithium_display_owns_console) return;
+++	if (c == '\r') {
+++		fbcon_col = 0;
+++		return;
+++	}
+++	if (c == '\n') {
+++		fbcon_newline();
+++		return;
+++	}
+++	if (fbcon_col >= fbcon_cols) {
+++		fbcon_newline();
+++	}
+++	const unsigned char *glyph = iso_font + c * 16;
+++	uint32_t x0 = fbcon_col * 8 * FBCON_SCALE, y0 = fbcon_row * 16 * FBCON_SCALE;
+++	for (uint32_t gy = 0; gy < 16; gy++) {
+++		for (uint32_t sy = 0; sy < FBCON_SCALE; sy++) {
+++			volatile uint8_t *line = fbcon_base + (y0 + gy * FBCON_SCALE + sy) * fbcon_stride + x0 * 3;
+++			for (uint32_t gx = 0; gx < 8; gx++) {
+++				uint32_t px = (glyph[gy] & (1u << gx)) ? FBCON_FG : FBCON_BG;
+++				for (uint32_t sx = 0; sx < FBCON_SCALE; sx++) {
+++					uint32_t off = (gx * FBCON_SCALE + sx) * 3;
+++					line[off] = (uint8_t)px; line[off + 1] = (uint8_t)(px >> 8); line[off + 2] = (uint8_t)(px >> 16);
+++				}
+++			}
+++		}
+++	}
+++	fbcon_col++;
+++}
+++
+++static unsigned int
+++fbcon_receive_ready(void)
+++{
+++	return 0;
+++}
+++
+++static uint8_t
+++fbcon_receive_data(void)
+++{
+++	return 0;
+++}
+++
+++SECURITY_READ_ONLY_LATE(static struct pe_serial_functions) lithium_fbcon_serial_functions =
+++{
+++	.init = fbcon_init,
+++	.transmit_ready = fbcon_transmit_ready,
+++	.transmit_data = fbcon_transmit_data,
+++	.receive_ready = fbcon_receive_ready,
+++	.receive_data = fbcon_receive_data,
+++	.device = SERIAL_LITHIUM_FBCON
+++};
+++
+++static void
+++fbcon_probe(void)
+++{
+++	DTEntry entry;
+++	uint64_t const *reg;
+++	uint32_t const *val;
+++	unsigned int size;
+++
+++	if (SecureDTFindEntry("name", "lithium-fbcon", &entry) != kSuccess ||
+++	    SecureDTGetProperty(entry, "reg", (void const **)&reg, &size) != kSuccess || size < 16) {
+++		return;
+++	}
+++	if (SecureDTGetProperty(entry, "width", (void const **)&val, &size) == kSuccess) {
+++		fbcon_width = *val;
+++	}
+++	if (SecureDTGetProperty(entry, "height", (void const **)&val, &size) == kSuccess) {
+++		fbcon_height = *val;
+++	}
+++	if (SecureDTGetProperty(entry, "stride", (void const **)&val, &size) == kSuccess) {
+++		fbcon_stride = *val;
+++	}
+++	if (fbcon_width < 16 || fbcon_width > 1080 || fbcon_height < 32 || fbcon_height > 2040 ||
+++	    fbcon_stride < fbcon_width * 3 || fbcon_stride > 3240 ||
+++	    reg[0] != 0x83401000ULL || reg[1] < (uint64_t)fbcon_stride * fbcon_height) {
+++		return;
+++	}
+++	fbcon_base = (volatile uint8_t *)ml_io_map_wcomb(reg[0], reg[1]);
+++	if (fbcon_base != NULL) {
+++		register_serial_functions(&lithium_fbcon_serial_functions);
+++	}
+++}
+++
+++#endif
+++
++ #if HIBERNATION
++ /**
++  * Transitions the serial driver into a mode that can be run in the hibernation
++@@ -776,6 +924,9 @@
++ 	}
++ 
++ 	PE_parse_boot_argn("disable-uart-irq", &disable_uart_irq, sizeof(disable_uart_irq));
+++#if defined(LITHIUM_ARMV8_0)
+++	fbcon_probe();
+++#endif
++ 
++ #ifdef PI3_UART
++ 	if (SecureDTFindEntry("name", "gpio", &entryP) == kSuccess) {
++diff --git a/pexpert/pexpert/arm/protos.h b/pexpert/pexpert/arm/protos.h
++--- a/pexpert/pexpert/arm/protos.h
+++++ b/pexpert/pexpert/arm/protos.h
++@@ -47,7 +47,8 @@
++ 	SERIAL_DOCKCHANNEL=0x2,
++ 	SERIAL_PI3_UART=0x4,
++ 	SERIAL_VMAPPLE_UART=0x8,
++-	SERIAL_DCC_UART=0x10
+++	SERIAL_DCC_UART=0x10,
+++	SERIAL_LITHIUM_FBCON=0x20
++ } serial_device_t;
++ 
++ kern_return_t serial_irq_enable(serial_device_t device);
+--- a/xnuloader/build.sh
++++ b/xnuloader/build.sh
+@@ -6,8 +6,8 @@
+ [ -f identity.h ] || ./mkidentity.sh
+ 
+ clang --target=aarch64-unknown-windows -ffreestanding -fno-builtin -fno-stack-protector -fshort-wchar \
+-  -mgeneral-regs-only -O1 -Wall -Wextra -Wno-unused-parameter -c loader.c -o loader.obj
++  ${LOADER_CFLAGS:-} -mgeneral-regs-only -O1 -Wall -Wextra -Wno-unused-parameter -c loader.c -o loader.obj
+ # /base: UEFI loads an image at its preferred address when that is free. The PE default (0x140000000)
+ # is in the middle of the phone's largest block of RAM, which XNU needs in one piece.
+-lld-link /subsystem:efi_application /entry:efi_main /nodefaultlib /base:0xA1000000 /out:loader.efi loader.obj
++lld-link /subsystem:efi_application /entry:efi_main /nodefaultlib /base:${LOADER_IMAGE_BASE:-0xA1000000} /out:loader.efi loader.obj
+ ls -la loader.efi
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -15,7 +15,13 @@
+ /* ------------------------------------------------------------------------ */
+ /* Fixed conventions shared with the boot shim, the packer and the kernel   */
+ 
++#if defined(HAKIOS_LITHIUM)
++#define PAYLOAD_BASE        0x1b4000000ULL
++#define LITHIUM_UEFI_STACK_BASE 0x41590000ULL
++#define LITHIUM_UEFI_STACK_END  0x415d0000ULL
++#else
+ #define PAYLOAD_BASE        0xF0000000ULL
++#endif
+ #define PAYLOAD_MAGIC       0x50554E58u /* "XNUP" */
+ 
+ struct payload_header { uint32_t magic; uint32_t size; };
+@@ -24,7 +30,11 @@
+ #define KERNEL_VIRT_BASE    0xFFFFFFF004000000ULL /* boot_args.virtBase */
+ #define KERNEL_LINK_OFFSET  0x03000000ULL         /* kernel text sits 48 MB above the base */
+ #define BASE_ALIGN          0x02000000ULL         /* 32 MB: L2 block size with 16K pages */
++#if defined(HAKIOS_LITHIUM)
++#define MAX_MEM_SIZE        0xb4000000ULL
++#else
+ #define MAX_MEM_SIZE        0x180000000ULL        /* 6 GB; the kernel's bootstrap page tables cover 8 */
++#endif
+ /*
+  * A root image too big for the payload area is placed here, at a fixed
+  * offset inside the kernel's memory window, once; it then survives any
+@@ -340,6 +350,35 @@
+ }
+ 
+ static int hc_list_is_uefis(void);
++#if defined(HAKIOS_LITHIUM)
++/* Keep a bounded, printable tail on screen; compose_logs retains the raw log. */
++static void
++lithium_return_screen(const char *log, uint64_t bytes)
++{
++    ((efi_status (EFIAPI *)(efi_text_output *, uint8_t))ST->con_out->reset)(ST->con_out, 0);
++    print("LITHIUM IOS16 RETURN: %d kernel log bytes\n", bytes);
++    if (log == NULL) { print("Kernel did not supply a log\n"); return; }
++    const char *panic_line = NULL;
++    for (uint64_t i = 0; i + 6 <= bytes; i++) {
++        if ((i == 0 || log[i-1] == '\n') && memcmp(log+i,"panic(",6)==0) panic_line=log+i;
++    }
++    if (panic_line) {
++        print("PANIC CAUSE: ");
++        for (unsigned i=0; panic_line<log+bytes && *panic_line!='\n' && i<240; i++,panic_line++) {
++            unsigned char c=*panic_line; put_char(c>=32 && c<127 ? c : '.');
++        }
++        put_char('\n');
++    }
++    uint64_t start=bytes, lines=0;
++    while (start>0 && lines<26) if (log[--start]=='\n') lines++;
++    if (start) start++;
++    for (uint64_t i=start; i<bytes; i++) {
++        unsigned char c=log[i]; put_char(c=='\n'||(c>=32&&c<127) ? c : '.');
++    }
++    print("\nSUMMARY RETAINED UNTIL REBOOT; RAW LOG IN RAM\n");
++}
++#endif
++
+ static int hc_log_skips;                /* logs not written this run (said twice at most) */
+ static void hc_print_state(const char *when);
+ static void hc_take_back(const char *when);
+@@ -352,6 +391,9 @@
+ 	compose_logs(klog, klog_len);
+ 	if (bio == NULL) {
+ 		/* No log partition (QEMU): echo the returned kernel log on the console instead. */
++#if defined(HAKIOS_LITHIUM)
++		lithium_return_screen(klog, klog_len);
++#else
+ 		if (klog != NULL) {
+ 			print("\n== KERNEL LOG ==\n");
+ 			for (uint64_t i = 0; i < klog_len; i++) {
+@@ -359,6 +401,7 @@
+ 			}
+ 			print("\n== END OF LOG ==\n");
+ 		}
++#endif
+ 		return;
+ 	}
+ 	uint64_t bs = bio->media->block_size;
+@@ -574,6 +617,17 @@
+ 	 */
+ 	.timeout_scale = 20,
+ };
++
++#if defined(HAKIOS_LITHIUM)
++static const struct platform platform_lithium = {
++	.name = "lithium", .io_base = 0x00400000, .io_size = 0x3fc00000,
++	.gic_dist = 0x09bc0000, .gic_redist = 0x09c00000, .uart = 0,
++	.cores = 4, .core_shift = 8, .psci_hvc = 0,
++};
++#define XL_CLEAR_PAN_UAO "" /* Kryo has neither PAN nor UAO */
++#else
++#define XL_CLEAR_PAN_UAO "  .inst 0xd500409f\n" "  .inst 0xd500407f\n"
++#endif
+ 
+ static const struct platform platform_redwood = {
+ 	/* io_base must be non-zero: XNU treats a zero SoC base as "no SoC" and skips clock setup. */
+@@ -678,8 +732,7 @@
+         /* PSTATE bits the kernel may have left set. PAN in particular is fatal:
+          * UEFI maps its memory as EL0-accessible, so with PAN every data access
+          * (including the exception handler's own stack push) faults. */
+-        "  .inst 0xd500409f\n"          /* msr PAN, #0 */
+-        "  .inst 0xd500407f\n"          /* msr UAO, #0 */
++        XL_CLEAR_PAN_UAO
+         "  mrs x9, sctlr_el1\n"
+         "  bic x9, x9, #0x1\n"
+         "  bic x9, x9, #0x4\n"
+@@ -745,10 +798,15 @@
+                 "msr daifset, #0xf\n"
+                 /* Last thing before the MMU goes off: write this stack back to RAM
+                  * (dirty cache lines do not survive, and we come back to this frame). */
++#if defined(HAKIOS_LITHIUM)
++                "mov x2, %2\n"
++                "mov x3, %3\n"
++#else
+                 "mov x2, sp\n"
+                 "sub x2, x2, #0x400\n"
+                 "bic x2, x2, #63\n"
+                 "add x3, x2, #0x4000\n"
++#endif
+                 "1: dc cvac, x2\n"
+                 "add x2, x2, #64\n"
+                 "cmp x2, x3\n"
+@@ -765,7 +823,12 @@
+                 "isb\n"
+                 "mov x0, %1\n"
+                 "br %0\n"
++#if defined(HAKIOS_LITHIUM)
++                : : "r" (entry), "r" (boot_args_pa),
++                    "r" (LITHIUM_UEFI_STACK_BASE), "r" (LITHIUM_UEFI_STACK_END) : "x0", "x2", "x3");
++#else
+                 : : "r" (entry), "r" (boot_args_pa) : "x0", "x2", "x3");
++#endif
+ 	__builtin_unreachable();
+ }
+ 
+@@ -850,8 +913,7 @@
+         ".globl other_cpu_return_stub\n"
+         "other_cpu_return_stub:\n"              /* x0..x7 as for loader_return_stub */
+         "  msr daifset, #0xf\n"
+-        "  .inst 0xd500409f\n"                  /* msr PAN, #0 */
+-        "  .inst 0xd500407f\n"                  /* msr UAO, #0 */
++        XL_CLEAR_PAN_UAO
+         "  mrs x9, sctlr_el1\n"
+         "  bic x9, x9, #0x1\n"
+         "  bic x9, x9, #0x4\n"
+@@ -2523,12 +2585,17 @@
+ static void EFIAPI
+ exception_handler(int64_t type, uint64_t *ctx)
+ {
++#if defined(HAKIOS_LITHIUM)
++	screen_quiet = 0;
++#endif
+ 	print("\nUEFI EXCEPTION type=%d elr=%x esr=%x far=%x lr=%x sp=%x spsr=%x\n", (uint64_t)type, ctx[EXC_CTX_ELR],
+ 	    ctx[EXC_CTX_ESR], ctx[EXC_CTX_FAR], ctx[EXC_CTX_LR], ctx[EXC_CTX_SP], ctx[EXC_CTX_SPSR]);
+ 	print("loader image base %x (elr offset %x)\n", (uint64_t)(uintptr_t)&__ImageBase,
+ 	    ctx[EXC_CTX_ELR] - (uint64_t)(uintptr_t)&__ImageBase);
+ 	flush_log();
++#if !defined(HAKIOS_LITHIUM)
+ 	ST->rt->reset_system(0 /* EfiResetCold */, 0, 0, NULL);
++#endif
+ 	for (;;) {
+ 	}
+ }
+@@ -2795,6 +2862,20 @@
+ 			best_size = hi - lo;
+ 		}
+ 	}
++#if defined(HAKIOS_LITHIUM)
++	/* Mu reserves this entire range with an EfiLoaderData allocation HOB.
++	 * It belongs to this loader and cannot be used by resident UEFI. */
++	int owned = 0;
++	for (uint64_t off = 0; off < map_size; off += desc_size) {
++		efi_memory_descriptor *d = (efi_memory_descriptor *)(map_buf + off);
++		if (d->type == EfiLoaderData && d->phys_start == 0x100000000ULL &&
++		    (d->pages << 12) == MAX_MEM_SIZE) owned = 1;
++	}
++	if (!owned || pi->forced_base != 0) { print("lithium kernel allocation contract missing\n"); return 0; }
++	win_base = 0x100000000ULL; win_size = MAX_MEM_SIZE;
++	print("lithium owned window %x size %x\n", win_base, win_size);
++	return 1;
++#endif
+ 	print("largest free block %x size %x\n", best_base, best_size);
+ 	if (pi->forced_base != 0) {
+ 		best_base = pi->forced_base;
+@@ -3044,6 +3125,7 @@
+ 	if (ufs_requested >= 2) {
+ 		block_start();
+ 	}
++
+ 	if (checkpoint == CHECKPOINT_SELFTEST) {
+ 		kernel_mpidr = this_mpidr;
+ 	}
+@@ -3104,6 +3186,9 @@
+ 		ba->video.v_width = SCREEN.width;
+ 		ba->video.v_height = SCREEN.height;
+ 		ba->video.v_depth = 32;
++#if defined(HAKIOS_LITHIUM)
++		ba->video.v_depth = 24;
++#endif
+ 	}
+ 	/*
+ 	 * No "-v" by default: on the phone the verbose console is a text
+@@ -3410,6 +3495,15 @@
+ 	}
+ 	dt_end(&w);
+ 
++#if defined(HAKIOS_LITHIUM)
++	dt_begin(&w, "lithium-fbcon");
++	uint64_t fbcon_reg[2] = { SCREEN.base, (uint64_t)SCREEN.stride * SCREEN.height };
++	dt_prop(&w, "reg", fbcon_reg, sizeof(fbcon_reg));
++	dt_prop_u32(&w, "width", SCREEN.width);
++	dt_prop_u32(&w, "height", SCREEN.height);
++	dt_prop_u32(&w, "stride", SCREEN.stride);
++	dt_end(&w);
++#endif
+ 	dt_begin(&w, "arm-io");
+ 	dt_prop_str(&w, "device_type", plat->name);
+ 	dt_prop(&w, "ranges", ranges, sizeof(ranges));
+@@ -3430,6 +3524,9 @@
+ 	dt_prop_str(&w, "compatible", "arm,gic-v3");
+ 	uint64_t gic_reg[4] = { plat->gic_dist - plat->io_base, 0x10000, plat->gic_redist - plat->io_base, 0x100000 };
+ 	dt_prop(&w, "reg", gic_reg, sizeof(gic_reg));
++#if defined(HAKIOS_LITHIUM)
++	dt_prop_u32(&w, "redistributor-stride", 0x40000);
++#endif
+ 	dt_end(&w);
+ 	if (plat->uart != 0) {
+ 		dt_begin(&w, "uart0");
+@@ -3487,7 +3584,16 @@
+ 			}
+ 		}
+ 		uint64_t sp_now = (uint64_t)(uintptr_t)__builtin_frame_address(0);
++#if defined(HAKIOS_LITHIUM)
++		/* MIX has an unmapped gap immediately above its allocated UEFI stack. */
++		if (sp_now < LITHIUM_UEFI_STACK_BASE || sp_now >= LITHIUM_UEFI_STACK_END) {
++			print("lithium UEFI stack outside loading contract: %x\n", sp_now);
++			return 0;
++		}
++		clean_dcache(LITHIUM_UEFI_STACK_BASE, LITHIUM_UEFI_STACK_END);
++#else
+ 		clean_dcache(sp_now - 0x2000, sp_now + 0x2000);
++#endif
+ 		flush_dcache(phys_base, top);
+ 		if (checkpoint == CHECKPOINT_SELFTEST) {
+ 			/* Do not enter the kernel at all: exercise only the return path. */
+@@ -3506,6 +3612,9 @@
+ 				/* the kernel still has that core; what it logged can be had all the same */
+ 				print("THE KERNEL HUNG on core %x: no sign of life for %d seconds; its log follows\n", kernel_mpidr,
+ 				    (uint64_t)SILENCE_SECONDS);
++#if defined(HAKIOS_LITHIUM)
++				print("LITHIUM BOOT STOP kernel silence timeout\n");
++#endif
+ 				set_result("hung", loader_ctx[CTX_LOG_LEN], 0);
+ 				write_logs((const char *)loader_ctx[CTX_LOG_PA], loader_ctx[CTX_LOG_LEN]);
+ 				return 1;
+@@ -3516,6 +3625,9 @@
+ 				} else {
+ 					print("core %x did not start: PSCI error %d\n", kernel_mpidr, (uint64_t)-status);
+ 				}
++#if defined(HAKIOS_LITHIUM)
++				print("LITHIUM BOOT STOP core=%x PSCI/status=%d\n",kernel_mpidr,(uint64_t)(status < 0 ? -status : status));
++#endif
+ 				set_result("no-such-core", (uint64_t)(status < 0 ? -status : status), 0);
+ 				write_logs(NULL, 0);
+ 				return 1;
+@@ -3589,7 +3701,7 @@
+ 			    loader_ctx[CTX_FAR], loader_ctx[CTX_LR], loader_ctx[CTX_KSP]);
+ 			print("  (pa-va slide %x: subtract it from physical addresses to symbolicate)\n", slide);
+ 			set_result("early-exception", 0, loader_ctx[CTX_ELR]);
+-			klog_len = klog_len > (1u << 20) ? 0 : klog_len;
++			klog_len = klog_len > (1536u << 10) ? 0 : klog_len;
+ 		} else {
+ 			set_result("returned", klog_len, 0);
+ 		}
+@@ -4350,6 +4462,10 @@
+ 		}
+ 		print("display %d x %d at %x\n", (uint64_t)SCREEN.width, (uint64_t)SCREEN.height, SCREEN.base);
+ 	}
++#if defined(HAKIOS_LITHIUM)
++	PLAT = &platform_lithium;
++	SCREEN.base = 0x83401000; SCREEN.width = 1080; SCREEN.height = 2040; SCREEN.stride = 3240;
++#endif
+ 	print("platform %s\n", PLAT->name);
+ 
+ 	install_exception_hook();
+@@ -4365,6 +4481,13 @@
+ 	if (have_payload) {
+ 		run_kernel(0, 0);
+ 	}
++#if defined(HAKIOS_LITHIUM)
++	/* Keep the returned log visible. userdata contains the system: an automatic
++	 * stock Android reset is not part of this platform test. */
++	print("lithium session ended; use power + volume-down for Fastboot\n");
++	for (;;) BS->stall(1000000);
++#else
+ 	reboot();
++#endif
+ 	return 0;
+ }

@@ -1,0 +1,74 @@
+Subject: lithium: stage-safe TTBR1 alias translation and pixel probe
+
+diff --git a/osfmk/arm64/arm_vm_init.c b/osfmk/arm64/arm_vm_init.c
+--- a/osfmk/arm64/arm_vm_init.c
++++ b/osfmk/arm64/arm_vm_init.c
+@@ -2061,6 +2061,31 @@
+ 	lithium_early_mark(8, "VM20 creating physmap");
+ 	arm_vm_physmap_init(args);
+ 	lithium_early_mark(8, "VM21 physmap ready; switching TTBR1");
++#if defined(LITHIUM)
++    lithium_early_hex("VM final TTBR1", cpu_ttep);
++    lithium_early_hex("VM screen VA", LITHIUM_EARLY_FB_VA + 0x1401000);
++    {
++        const vm_map_address_t va = LITHIUM_EARLY_FB_VA;
++        tt_entry_t l1 = cpu_tte[(va & ARM_TT_L1_INDEX_MASK) >> ARM_TT_L1_SHIFT];
++        pmap_paddr_t l2_pa = l1 & ARM_TTE_TABLE_MASK;
++        lithium_early_hex("VM screen L1", l1);
++        assert((l1 & (ARM_TTE_VALID | ARM_TTE_TYPE_MASK)) ==
++            (ARM_TTE_VALID | ARM_TTE_TYPE_TABLE));
++        assert(l2_pa >= gPhysBase && l2_pa - gPhysBase < real_phys_size);
++        /* ptov_table already describes the FINAL physmap, but the old
++         * TTBR1 is still active. Use the bootstrap linear mapping here. */
++        vm_map_address_t l2_va = l2_pa - gPhysBase + gVirtBase;
++        uint64_t par;
++        __asm__ volatile("at s1e1r, %1\n\tisb\n\tmrs %0, par_el1" : "=r"(par) : "r"(l2_va) : "memory");
++        lithium_early_hex("VM table PAR", par);
++        if ((par & 1) || (par & 0x0000fffffffff000ULL) != l2_pa) {
++            lithium_early_mark(8, "VM21 bootstrap table translation failed");
++            for (;;) __asm__ volatile("wfe");
++        }
++        tt_entry_t *l2 = (tt_entry_t *)(uintptr_t)l2_va;
++        lithium_early_hex("VM screen L2", l2[(va & ARM_TT_L2_INDEX_MASK) >> ARM_TT_L2_SHIFT]);
++    }
++#endif
+ 	set_mmu_ttb_alternate(cpu_ttep & TTBR_BADDR_MASK);
+ 	lithium_early_mark(8, "VM22 TTBR1 switched");
+ 
+@@ -2069,6 +2094,36 @@
+ #endif
+ 
+ #if defined(LITHIUM)
++    {
++        uint64_t screen = LITHIUM_EARLY_FB_VA + 0x1401000, par, tcr, ttbr1;
++        __asm__ volatile("mrs %0, tcr_el1" : "=r"(tcr));
++        __asm__ volatile("mrs %0, ttbr1_el1" : "=r"(ttbr1));
++        __asm__ volatile("at s1e1w, %1\n\tisb\n\tmrs %0, par_el1" : "=r"(par) : "r"(screen) : "memory");
++        lithium_early_hex("VM live TCR", tcr);
++        lithium_early_hex("VM live TTBR1", ttbr1);
++        lithium_early_hex("VM PAR before TLBI", par);
++        /* A TTBR write alone does not invalidate cached translations or
++         * intermediate walk entries. The normal XNU flush is later, after
++         * TTBR0 removal; our console needs the new alias before that point. */
++        lithium_early_mark(8, "VM22 flushing old translations");
++        __asm__ volatile("dsb ishst" ::: "memory");
++        flush_mmu_tlb();
++        __asm__ volatile("isb" ::: "memory");
++        __asm__ volatile("at s1e1w, %1\n\tisb\n\tmrs %0, par_el1" : "=r"(par) : "r"(screen) : "memory");
++        lithium_early_hex("VM screen PAR", par);
++        if (par & 1) {
++            lithium_early_mark(8, "VM23 framebuffer alias translation failed");
++            for (;;) __asm__ volatile("wfe");
++        }
++        if ((par & 0x0000fffffffff000ULL) != 0x83401000ULL) {
++            lithium_early_mark(8, "VM23 framebuffer alias physical mismatch");
++            for (;;) __asm__ volatile("wfe");
++        }
++        lithium_early_mark(8, "VM23 alias writable; testing pixel");
++        *(volatile uint8_t *)(uintptr_t)screen = 0xff;
++        __asm__ volatile("dsb sy" ::: "memory");
++        lithium_early_mark(8, "VM24 alias pixel written; relocating");
++    }
+     lithium_early_relocate(LITHIUM_EARLY_FB_VA + 0x1401000);
+ #endif
+ 	set_mmu_ttb(invalid_ttep & TTBR_BADDR_MASK);

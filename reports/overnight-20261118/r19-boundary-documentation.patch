@@ -1,0 +1,54 @@
+diff --git a/AGENTS.md b/AGENTS.md
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -1,3 +1,7 @@
++R19 主机准备完成（2026-11-18）：完整 HakiOS/iOS16.5/Mu/D22AP 与 413 任务构建、46 项指令扫描、完整回归、实际整包读回和离线预检通过。新镜像 SHA256 2f74a8da0fe182d39c66a86db398f9816067cb05cce8a6a774398700ed38f60a；149 项证据同时保留实际文本字节和实时哈希检查。保持 R18 显示实现与 R15 全部参数，bootcpu=1 cpus=1，预期 affinity0x1；R19 真机尺寸、Dock、标签、边界、触摸和 GPU 均未验证。
++
++当前无人值守限制仍生效：禁止查询、启动、重启、刷写手机，禁止 ADB/Fastboot 设备命令、分区操作及 QEMU；仅允许主机源码/构建/测试。下方旧操作授权是历史记录，不能覆盖该限制。须用户后续明确恢复手机测试后才可操作设备；普通 boot 脚本默认会查询手机，目前只能使用 --offline。当前设备状态未查询。详见 reports/overnight-20261118/R19.md。
++
+ R16 显示修订已冻结（2026-11-18）：750×1334 隐式 profile 对齐 scale2/subtype1334，新增 DT/MG/UIScreen/window 有界日志；BGR24 物理面板1080×2040/stride3240保持，810像素是误按4字节计算；全部R15 payload参数逐字节保留，包括bootcpu=1 cpus=1。完整构建/回归/包检查通过，未查询/重启/刷写手机，不重刷userdata，R15运行保留。Dock/标签/边界和新尺寸真机结果未验证。备份archive/ios16-r15-before-r16-20261118及外部dirty-source.zip已校验；见reports/hakios-ios16-r16-prepared.md/json。
+ 
+ R15 系统界面里程碑（2026-11-18）：03:41:09临时启动一次；USB持续采集。实际logical0/MPIDR0x80000001/affinity0x1/max_logical0，bootcpu=1 cpus=1，match=1。20轮HFS全部通过：write平均140us、fsync317us、replace481us、read44us；整数2477us、memcpy9559us。用户明确确认已出现锁屏或桌面，具体类型未区分；日志set-seeding-complete-return value1、阻塞fetch返回、SB main_queue_enter=192190ms及CA回调已捕获。LS等待关口已越过，最终sync/跨重启持久化/触摸/稳定性待核验。同次USB接收与45秒只读观察器后台保存进度和最终审计；10800秒正常timer、12600秒主机接收。保持运行与USB连接，不重启、不重试R15、不重刷userdata，UFS/2880MiB；见reports/hakios-ios16-device-r15.md/json。
+diff --git a/PLAN.md b/PLAN.md
+--- a/PLAN.md
++++ b/PLAN.md
+@@ -1,3 +1,7 @@
++R19 主机准备完成（2026-11-18）：完整 HakiOS/iOS16.5/Mu/D22AP 与 413 任务构建、46 项指令扫描、完整回归、实际整包读回和离线预检通过。新镜像 SHA256 2f74a8da0fe182d39c66a86db398f9816067cb05cce8a6a774398700ed38f60a；149 项证据同时保留实际文本字节和实时哈希检查。保持 R18 显示实现与 R15 全部参数，bootcpu=1 cpus=1，预期 affinity0x1；R19 真机尺寸、Dock、标签、边界、触摸和 GPU 均未验证。
++
++当前无人值守限制仍生效：禁止查询、启动、重启、刷写手机，禁止 ADB/Fastboot 设备命令、分区操作及 QEMU；仅允许主机源码/构建/测试。下方旧操作授权是历史记录，不能覆盖该限制。须用户后续明确恢复手机测试后才可操作设备；普通 boot 脚本默认会查询手机，目前只能使用 --offline。当前设备状态未查询。详见 reports/overnight-20261118/R19.md。
++
+ R16 显示修订已冻结（2026-11-18）：750×1334 隐式 profile 对齐 scale2/subtype1334，新增 DT/MG/UIScreen/window 有界日志；BGR24 物理面板1080×2040/stride3240保持，810像素是误按4字节计算；全部R15 payload参数逐字节保留，包括bootcpu=1 cpus=1。完整构建/回归/包检查通过，未查询/重启/刷写手机，不重刷userdata，R15运行保留。Dock/标签/边界和新尺寸真机结果未验证。备份archive/ios16-r15-before-r16-20261118及外部dirty-source.zip已校验；见reports/hakios-ios16-r16-prepared.md/json。
+ 
+ R15 系统界面里程碑（2026-11-18）：03:41:09临时启动一次；USB持续采集。实际logical0/MPIDR0x80000001/affinity0x1/max_logical0，bootcpu=1 cpus=1，match=1。20轮HFS全部通过：write平均140us、fsync317us、replace481us、read44us；整数2477us、memcpy9559us。用户明确确认已出现锁屏或桌面，具体类型未区分；日志set-seeding-complete-return value1、阻塞fetch返回、SB main_queue_enter=192190ms及CA回调已捕获。LS等待关口已越过，最终sync/跨重启持久化/触摸/稳定性待核验。同次USB接收与45秒只读观察器后台保存进度和最终审计；10800秒正常timer、12600秒主机接收。保持运行与USB连接，不重启、不重试R15、不重刷userdata，UFS/2880MiB；见reports/hakios-ios16-device-r15.md/json。
+diff --git a/OPERATIONS.md b/OPERATIONS.md
+--- a/OPERATIONS.md
++++ b/OPERATIONS.md
+@@ -1,3 +1,7 @@
++R19 主机准备完成（2026-11-18）：完整 HakiOS/iOS16.5/Mu/D22AP 与 413 任务构建、46 项指令扫描、完整回归、实际整包读回和离线预检通过。新镜像 SHA256 2f74a8da0fe182d39c66a86db398f9816067cb05cce8a6a774398700ed38f60a；149 项证据同时保留实际文本字节和实时哈希检查。保持 R18 显示实现与 R15 全部参数，bootcpu=1 cpus=1，预期 affinity0x1；R19 真机尺寸、Dock、标签、边界、触摸和 GPU 均未验证。
++
++当前无人值守限制仍生效：禁止查询、启动、重启、刷写手机，禁止 ADB/Fastboot 设备命令、分区操作及 QEMU；仅允许主机源码/构建/测试。下方旧操作授权是历史记录，不能覆盖该限制。须用户后续明确恢复手机测试后才可操作设备；普通 boot 脚本默认会查询手机，目前只能使用 --offline。当前设备状态未查询。详见 reports/overnight-20261118/R19.md。
++
+ 2026-11-18T04:28:09.880060+08:00，iOS16 R16联合包临时启动一次，发送和Booting均获Fastboot接受。使用完整HakiOS、真实D22AP loader、双4MiB引导卷和已安装UFS系统，Data范围写入已启用；本次电脑未发出flash。USB接收已提前启动，枚举/传输及服务、显示、触摸仍待证据。内存窗口2880MiB，全部6GB未实现。内核观察时限10800秒，随后保留上游返回摘要。结束摘要保留，自动采集USB日志，无需守屏；发生明确故障则直接据此修复。
+ 
+ R16 显示修订已冻结（2026-11-18）：750×1334 隐式 profile 对齐 scale2/subtype1334，新增 DT/MG/UIScreen/window 有界日志；BGR24 物理面板1080×2040/stride3240保持，810像素是误按4字节计算；全部R15 payload参数逐字节保留，包括bootcpu=1 cpus=1。完整构建/回归/包检查通过，未查询/重启/刷写手机，不重刷userdata，R15运行保留。Dock/标签/边界和新尺寸真机结果未验证。备份archive/ios16-r15-before-r16-20261118及外部dirty-source.zip已校验；见reports/hakios-ios16-r16-prepared.md/json。
+diff --git a/project.json b/project.json
+--- a/project.json
++++ b/project.json
+@@ -1,4 +1,17 @@
+ {
++  "unattended_r19_boundary": {
++    "recorded_on": "2026-11-18",
++    "mode": "host_only_unattended",
++    "phone_queries_allowed": false,
++    "phone_boot_or_partition_operations_allowed": false,
++    "qemu_allowed": false,
++    "user_explicit_resumption_required": true,
++    "device_state": "not queried",
++    "revision": 19,
++    "host_package_ready": true,
++    "hardware_verified": false,
++    "report": "reports/overnight-20261118/R19.md"
++  },
+   "name": "hakios-ios16-lithium",
+   "target_os": "iOS 16",
+   "target_arch": "arm64",

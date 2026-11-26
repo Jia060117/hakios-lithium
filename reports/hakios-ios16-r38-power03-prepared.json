@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "revision": "R38-clock-power03",
+  "recorded_at": "2026-11-20T23:39:47.785538+08:00",
+  "package": "artifacts\\hakios\\lithium-ios16\\phase4-r37-ram-frequency-07",
+  "image": {
+    "path": "lithium-hakios-ios16-r37-ram-frequency-07.img",
+    "bytes": 16334848,
+    "sha256": "188029554650ebb903e4be98ad798a2f02c6ab9c8644d3a784de872a6cb745b4"
+  },
+  "kernel_sha256": "1dcfa5d72f478161f3c0e8647e62b269eeaf421701432fca27c9cf95f3b3403a",
+  "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_clock_diag=1 cpu_power_diag=1 cpu_freq_pmu_setup=0 cpu_sanity=1 cpu_freq_diag=1",
+  "host_build_passed": true,
+  "package_layer_readback": {
+    "android_header_and_sha1": true,
+    "xnup_exact_entries": true,
+    "fat_loader": true,
+    "mu_fd": true,
+    "resident_ram_volume_unchanged": true,
+    "smp_pid1_hold": true,
+    "seeded_uefi_owner": true,
+    "shim_copy_length": true,
+    "modeled_relocation_exact": true
+  },
+  "device_booted": false,
+  "clock_voltage_writes": 0,
+  "fixed_frequency_core_connected": false,
+  "new_feature_defaults_off": true,
+  "source_fix": {
+    "header": "ports/hakios-lithium/diagnostics/cpu-mmio-window-r38.h",
+    "module": "ports/hakios-lithium/diagnostics/cpu-power-r38.inc",
+    "api": "ml_io_map_unmappable(page-base,extent,VM_WIMG_IO),ml_io_unmap(allocation,extent)",
+    "pmap_assertion_changed": false,
+    "hardware_verified": false
+  },
+  "focused_tests": {
+    "scope": "actual helper compiled; cleanup is a recording mock; production integration statements checked from source",
+    "asan_ubsan": true,
+    "device_operations": 0,
+    "header_sha256": "b6811bb57dde2a9bfc09032d7df62b3416974a784d4f0472dd9c131cd810e39a",
+    "groups": [
+      {
+        "mode": "boundaries",
+        "returncode": 0,
+        "stdout": "page=0x1000 phys=0x9900000 requested=0x1000 physical_base=0x9900000 extent=0x1000 data_offset=0\npage=0x1000 phys=0x9902000 requested=0x1000 physical_base=0x9902000 extent=0x1000 data_offset=0\npage=0x1000 phys=0x990f000 requested=0x1000 physical_base=0x990f000 extent=0x1000 data_offset=0\npage=0x1000 phys=0x990f000 requested=0x2000 physical_base=0x990f000 extent=0x2000 data_offset=0\npage=0x1000 phys=0x9900fff requested=0x2 physical_base=0x9900000 extent=0x2000 data_offset=0xfff\npage=0x4000 phys=0x9900000 requested=0x1000 physical_base=0x9900000 extent=0x4000 data_offset=0\npage=0x4000 phys=0x9902000 requested=0x1000 physical_base=0x9900000 extent=0x4000 data_offset=0x2000\npage=0x4000 phys=0x990f000 requested=0x1000 physical_base=0x990c000 extent=0x4000 data_offset=0x3000\npage=0x4000 phys=0x990f000 requested=0x2000 physical_base=0x990c000 extent=0x8000 data_offset=0x3000\npage=0x4000 phys=0x9903fff requested=0x2 physical_base=0x9900000 extent=0x8000 data_offset=0x3fff\nPASS boundaries literal_cases=10\n",
+        "stderr": ""
+      },
+      {
+        "mode": "cleanup",
+        "returncode": 0,
+        "stdout": "PASS cleanup exact_extent neighbors_intact zero_mapping_no_unmap cases=10 production_bytes=98304\n",
+        "stderr": ""
+      },
+      {
+        "mode": "invalid",
+        "returncode": 0,
+        "stdout": "PASS invalid zero_size/page non_power_of_two overflow output_zero null cases=8\n",
+        "stderr": ""
+      },
+      {
+        "mode": "negative_controls",
+        "returncode": 0,
+        "stdout": "PASS negative_controls old_offset_pte base_only_short cross_page_tail hardcoded_alignment\n",
+        "stderr": ""
+      },
+      {
+        "mode": "production_integration",
+        "kind": "source_contract_check",
+        "returncode": 0,
+        "source": "/mnt/f/IOS-MIX1/ports/hakios-lithium/diagnostics/cpu-power-r38.inc",
+        "sha256": "e5116e5d2ba331cc6f502ce94663b872ffa2e2ca07fd16e7a17c4dabf6505042",
+        "checks": {
+          "memory_types_header": true,
+          "vm_page_size_header": true,
+          "actual_page_size": true,
+          "unmappable_allocation_and_full_extent": true,
+          "data_pointer_only_after_success": true,
+          "zero_allocation_skips_unmap": true,
+          "no_ordinary_map_call": true,
+          "only_allocation_extent_unmap": true
+        }
+      }
+    ],
+    "passed": true
+  },
+  "reviewer": "Hume; main verified actual source map/unmap allocation contracts, frozen panic callsite and independently reran actual helper ASan/UBSan4groups",
+  "superseded_unbooted": "clock-power02 / phase4-r37-ram-frequency-06; permanent io_submap map/unmap mismatch, preserved never boot",
+  "next": "manualFastboot readiness then singleRAMcapture with180s normal auto-return; no PLL/voltage modification",
+  "main_review_scope": "Main independently reran4actualhelperCgroups; finalsource API pairing checked against actual XNU and actual production source; additional integration predicate reviewed"
+}

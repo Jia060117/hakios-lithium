@@ -1,0 +1,994 @@
+diff --git a/AGENTS.md b/AGENTS.md
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -1,3 +1,5 @@
++2026-11-19 R28真机结案：23:05:36临时boot一次获接受，实际affinity0x1/bootcpu1/cpus1。Stage1为26读3写312us；新QUP快照两轮各17项全部valid且相同，34读37us、适配层48读0写，入口/末尾GIC可见状态通过。CONFIG0/MASTER_CONFIG0未具备原厂I2Cv2配置；IO_MODES0xa5两套算法均得IN/OUT各64字节。OP0xc0共享full位与count0不能直接推断实际占用，I2C/RESET语义仍未验证。无QUP写/复位/I2C/真实ID/IRQ/HID。PID1保持、正常180秒timer及drain1通过；67帧/15845控制台字节独立重解码一致，缺口/重复/残帧/lost/源争用丢均0，Pipe error在排空后。物理结束屏未目视确认；RAM Data sync error2为lookup，非UFS故障。R20显示基线及R15/R20/R25/R26/R27/R28镜像/原索引字节保留。下一步准备来源支持的QUP初始化前后对照及条件式单次ID，不直接放宽掩码；R28已消费，不自动新启动。见reports/hakios-ios16-device-r28-touch-snapshot.md/json。下方主机准备/等待状态为历史。
++
+ 2026-11-19 R28只读快照主机包已冻结：SHA256 9a01c3db68164949a8f093a3625dbea9c852047b35417b1fe3597be6bf4342d1；R20-display仍为显示基线。17寄存器两轮34读、逐项valid/unread、默认关闭touch_snapshot=1，与活动ID互斥；旧ID/Stage1/0022字节不变。完整HakiOS/Mu/D22AP/413job、82来源/46扫描、39套ASan/UBSan（core622+7、adapter4611、init372）、95源闭包/整包APFS读回通过。共享SPI来源命名bit7为IN_FIFO_FULL，但I2C/RESET语义、count读副作用及实际硬件仍未验证，不放宽ID门禁/不做QUP写。初版缺陷及索引stat刷新已核对并修正，原始索引字节恢复。当前无R28手机操作；用户已明确Fastboot可随时测试，操作前说明本包范围，单次临时boot，不访问分区/Android/Recovery/QEMU，不自动重试。见reports/hakios-ios16-touch-r28-prepared.md/json。
+ 
+ 2026-11-19 R27真机结案：22:27:05临时boot一次获接受，实际affinity0x1/bootcpu1/cpus1。Stage1快照成功（26读3写313us）；ID模块板级/GIC入口检查通过，但第4次QUP读得到OPERATIONAL0xc0，被unexpected_operational_bits停止，8us/4读0写，无I2C事务或真实ID。输出raw/state/config/io_modes的0为未读初始值，不能当测量。PID1保持、正常180秒timer及drain1通过；51帧/11755控制台字节独立重解码一致，缺口/重复/残帧/lost/源争用丢均0，Pipe error在排空后。物理结束屏未目视确认。RAM包Data sync error2为lookup，非UFS故障证据。无分区/刷写/ADB/QEMU/重试；R27已消费，固定Linux来源已命名bit6为OUT_FULL，bit7/RESET语义未定；下一步补齐事务前FIFO快照和逐寄存器有效位，不直接放宽掩码或自动新启动。见reports/hakios-ios16-device-r27-touch-id.md/json。下方主机准备/等待状态为历史。
+diff --git a/OPERATIONS.md b/OPERATIONS.md
+--- a/OPERATIONS.md
++++ b/OPERATIONS.md
+@@ -1,3 +1,5 @@
++2026-11-19 R28真机结案：23:05:36临时boot一次获接受，实际affinity0x1/bootcpu1/cpus1。Stage1为26读3写312us；新QUP快照两轮各17项全部valid且相同，34读37us、适配层48读0写，入口/末尾GIC可见状态通过。CONFIG0/MASTER_CONFIG0未具备原厂I2Cv2配置；IO_MODES0xa5两套算法均得IN/OUT各64字节。OP0xc0共享full位与count0不能直接推断实际占用，I2C/RESET语义仍未验证。无QUP写/复位/I2C/真实ID/IRQ/HID。PID1保持、正常180秒timer及drain1通过；67帧/15845控制台字节独立重解码一致，缺口/重复/残帧/lost/源争用丢均0，Pipe error在排空后。物理结束屏未目视确认；RAM Data sync error2为lookup，非UFS故障。R20显示基线及R15/R20/R25/R26/R27/R28镜像/原索引字节保留。下一步准备来源支持的QUP初始化前后对照及条件式单次ID，不直接放宽掩码；R28已消费，不自动新启动。见reports/hakios-ios16-device-r28-touch-snapshot.md/json。下方主机准备/等待状态为历史。
++
+ 2026-11-19 R28只读快照主机包已冻结：SHA256 9a01c3db68164949a8f093a3625dbea9c852047b35417b1fe3597be6bf4342d1；R20-display仍为显示基线。17寄存器两轮34读、逐项valid/unread、默认关闭touch_snapshot=1，与活动ID互斥；旧ID/Stage1/0022字节不变。完整HakiOS/Mu/D22AP/413job、82来源/46扫描、39套ASan/UBSan（core622+7、adapter4611、init372）、95源闭包/整包APFS读回通过。共享SPI来源命名bit7为IN_FIFO_FULL，但I2C/RESET语义、count读副作用及实际硬件仍未验证，不放宽ID门禁/不做QUP写。初版缺陷及索引stat刷新已核对并修正，原始索引字节恢复。当前无R28手机操作；用户已明确Fastboot可随时测试，操作前说明本包范围，单次临时boot，不访问分区/Android/Recovery/QEMU，不自动重试。见reports/hakios-ios16-touch-r28-prepared.md/json。
+ 
+ 2026-11-19 R27真机结案：22:27:05临时boot一次获接受，实际affinity0x1/bootcpu1/cpus1。Stage1快照成功（26读3写313us）；ID模块板级/GIC入口检查通过，但第4次QUP读得到OPERATIONAL0xc0，被unexpected_operational_bits停止，8us/4读0写，无I2C事务或真实ID。输出raw/state/config/io_modes的0为未读初始值，不能当测量。PID1保持、正常180秒timer及drain1通过；51帧/11755控制台字节独立重解码一致，缺口/重复/残帧/lost/源争用丢均0，Pipe error在排空后。物理结束屏未目视确认。RAM包Data sync error2为lookup，非UFS故障证据。无分区/刷写/ADB/QEMU/重试；R27已消费，固定Linux来源已命名bit6为OUT_FULL，bit7/RESET语义未定；下一步补齐事务前FIFO快照和逐寄存器有效位，不直接放宽掩码或自动新启动。见reports/hakios-ios16-device-r27-touch-id.md/json。下方主机准备/等待状态为历史。
+diff --git a/PLAN.md b/PLAN.md
+--- a/PLAN.md
++++ b/PLAN.md
+@@ -1,3 +1,5 @@
++2026-11-19 R28真机结案：23:05:36临时boot一次获接受，实际affinity0x1/bootcpu1/cpus1。Stage1为26读3写312us；新QUP快照两轮各17项全部valid且相同，34读37us、适配层48读0写，入口/末尾GIC可见状态通过。CONFIG0/MASTER_CONFIG0未具备原厂I2Cv2配置；IO_MODES0xa5两套算法均得IN/OUT各64字节。OP0xc0共享full位与count0不能直接推断实际占用，I2C/RESET语义仍未验证。无QUP写/复位/I2C/真实ID/IRQ/HID。PID1保持、正常180秒timer及drain1通过；67帧/15845控制台字节独立重解码一致，缺口/重复/残帧/lost/源争用丢均0，Pipe error在排空后。物理结束屏未目视确认；RAM Data sync error2为lookup，非UFS故障。R20显示基线及R15/R20/R25/R26/R27/R28镜像/原索引字节保留。下一步准备来源支持的QUP初始化前后对照及条件式单次ID，不直接放宽掩码；R28已消费，不自动新启动。见reports/hakios-ios16-device-r28-touch-snapshot.md/json。下方主机准备/等待状态为历史。
++
+ 2026-11-19 R28只读快照主机包已冻结：SHA256 9a01c3db68164949a8f093a3625dbea9c852047b35417b1fe3597be6bf4342d1；R20-display仍为显示基线。17寄存器两轮34读、逐项valid/unread、默认关闭touch_snapshot=1，与活动ID互斥；旧ID/Stage1/0022字节不变。完整HakiOS/Mu/D22AP/413job、82来源/46扫描、39套ASan/UBSan（core622+7、adapter4611、init372）、95源闭包/整包APFS读回通过。共享SPI来源命名bit7为IN_FIFO_FULL，但I2C/RESET语义、count读副作用及实际硬件仍未验证，不放宽ID门禁/不做QUP写。初版缺陷及索引stat刷新已核对并修正，原始索引字节恢复。当前无R28手机操作；用户已明确Fastboot可随时测试，操作前说明本包范围，单次临时boot，不访问分区/Android/Recovery/QEMU，不自动重试。见reports/hakios-ios16-touch-r28-prepared.md/json。
+ 
+ 2026-11-19 R27真机结案：22:27:05临时boot一次获接受，实际affinity0x1/bootcpu1/cpus1。Stage1快照成功（26读3写313us）；ID模块板级/GIC入口检查通过，但第4次QUP读得到OPERATIONAL0xc0，被unexpected_operational_bits停止，8us/4读0写，无I2C事务或真实ID。输出raw/state/config/io_modes的0为未读初始值，不能当测量。PID1保持、正常180秒timer及drain1通过；51帧/11755控制台字节独立重解码一致，缺口/重复/残帧/lost/源争用丢均0，Pipe error在排空后。物理结束屏未目视确认。RAM包Data sync error2为lookup，非UFS故障证据。无分区/刷写/ADB/QEMU/重试；R27已消费，固定Linux来源已命名bit6为OUT_FULL，bit7/RESET语义未定；下一步补齐事务前FIFO快照和逐寄存器有效位，不直接放宽掩码或自动新启动。见reports/hakios-ios16-device-r27-touch-id.md/json。下方主机准备/等待状态为历史。
+diff --git a/project.json b/project.json
+--- a/project.json
++++ b/project.json
+@@ -42,7 +42,7 @@
+     "hardware_started": true,
+     "ios14_compatibility_verified": false,
+     "springboard_verified": true,
+-    "status": "R27 observed Stage1/GIC/QUP reads and normal timer; R20 retains accepted desktop",
++    "status": "R28 complete readonly Stage1/QUP/GIC snapshot and normal timer; R20 remains accepted desktop",
+     "configuration_scaffold_created": true,
+     "upstream_config_checks_passed": true,
+     "platform_uefi_verified": true,
+@@ -50,13 +50,13 @@
+     "hello_started": true,
+     "hardware_evidence_report": "reports\\hakios-ios16-device-r20-display.json",
+     "latest_kernel_binary_hardware_verified": false,
+-    "kernel_sha256": "ea03026bd06e72ee074673ec709bb0f273e2b454287df1acb8e009eb98377df5",
+-    "latest_kernel_binary_verification_scope": "R27 bounded RAM diagnostic only; stopped before I2C, no new desktop/touch validation",
++    "kernel_sha256": "34402977ea364f6823ad992c220d44bddf73406ce1800fef6ac165f710b1c983",
++    "latest_kernel_binary_verification_scope": "R28 bounded RAM diagnostic observed only; no I2C transaction, new desktop or touch validation",
+     "springboard_display_verified": true,
+     "last_hardware_verified_kernel_sha256": "8e9209c1ff077ba6ad16cbd467c6cceb3cb6b16c0357667e513b913190fd9b4b"
+   },
+   "schema": 2,
+-  "stage": "iOS16 phase4: R28 read-only QUP entry snapshot host ready, physical run pending",
++  "stage": "iOS16 phase4: R28 readonly QUP snapshot closed; normal timer and drained USB; I2C initialization next",
+   "project_instructions_path": "AGENTS.md",
+   "plan_path": "PLAN.md",
+   "operations_path": "OPERATIONS.md",
+@@ -66,7 +66,7 @@
+   "active_workspace": "/home/jia/ios-mix1-build/hakios-lithium-ios16",
+   "source_lock_path": "upstreams.lock.json",
+   "source_audit_report": "reports/hakios-p0-audit.md",
+-  "current_device_status": "Latest user reports Fastboot ready; R28 not yet queried/booted",
++  "current_device_status": "R28 kernel normal 180s return and drain captured; physical retained screen not visually confirmed",
+   "device_state": {
+     "last_observation_baseline": "ios16_r20_display_hakios",
+     "live_state_requeried": true,
+@@ -75,19 +75,19 @@
+     "root_install_report": "reports/hakios-ios16-install.json",
+     "root_integrity_report": "reports/hakios-ios16-install.json",
+     "live_usb_requeried": true,
+-    "latest_usb_query_report": "reports/hakios-ios16-device-r27-touch-id.json",
+-    "latest_device_test_report": "reports/hakios-ios16-device-r27-touch-id.json",
++    "latest_usb_query_report": "reports/hakios-ios16-device-r28-touch-snapshot.json",
++    "latest_device_test_report": "reports/hakios-ios16-device-r28-touch-snapshot.json",
+     "last_screen_observation_source": "R26 same-run user photograph, original archived with SHA256",
+     "last_screen_observation": "UEFI TIMER DEADLINE REACHED; NO PANIC TEXT IN RETAINED LOG; drain1",
+-    "current_physical_state_source": "Latest user request on2026-11-19",
+-    "current_physical_state": "Fastboot ready, user reported",
+-    "current_state_host_queried": false,
++    "current_physical_state_source": "Saved same-run emitted kernel timer/drain, not a physical screen observation",
++    "current_physical_state": "R28 kernel normal 180s return and drain captured; physical retained screen not visually confirmed",
++    "current_state_host_queried": true,
+     "userdata_journal_initialized": false,
+     "userdata_journal_repair_report": null,
+     "userdata_hfs_mount_verified": true,
+     "userdata_contains_ios16_ufs_layout": true,
+     "root_integrity_scope": "32KiB component headers and unchanged 24KiB primary GPT sample; not full partition readback",
+-    "latest_device_operation_report": "reports/hakios-ios16-device-r27-touch-id.json",
++    "latest_device_operation_report": "reports/hakios-ios16-device-r28-touch-snapshot.json",
+     "ios16_data_image_fsck_passed": true,
+     "ios16_data_runtime_read_write_verified": true
+   },
+@@ -162,19 +162,19 @@
+     "large_tasks_sequential": true
+   },
+   "work_status": {
+-    "status": "ios16_r28_readonly_snapshot_host_ready",
++    "status": "ios16_r28_complete_readonly_snapshot_normal_timer_no_i2c",
+     "phase2_approved": true,
+     "device_operations_performed": true,
+     "device_boots_performed": true,
+     "partition_writes_performed": true,
+-    "hakios_temporary_boot_count": 51,
++    "hakios_temporary_boot_count": 52,
+     "backup_branch": "archive/ios14-r31-20261116",
+-    "next_step": "One explained R28 RAM-only read-only QUP snapshot temporary boot after exact preflight; no I2C or reset",
++    "next_step": "Prepare one default-off, fixed-source QUP v2 initialization integration with valid pre-reset, post-reset, post-configuration and pre-ID snapshots. Admit at most one 0x38/A3 ID transaction only after source-backed postconditions and strict operational guard pass; otherwise preserve evidence and stop. No blind mask widening or automatic boot.",
+     "phase3_approved": true,
+     "auxiliary_stock_reader_boots_accepted": 4,
+-    "ios16_boots_performed": 20,
++    "ios16_boots_performed": 21,
+     "auxiliary_stock_reader_adb_runtime_observations": 3,
+-    "latest_evidence_recorded_at": "2026-11-19T23:04:38.343341+08:00",
++    "latest_evidence_recorded_at": "2026-11-19T23:14:23.104820+08:00",
+     "latest_host_report": "reports/hakios-ios16-touch-r28-prepared.md",
+     "r5_backup_branch": "archive/ios16-r5-20261117",
+     "r6_backup_branch": "archive/ios16-r6-20261117",
+@@ -185,7 +185,7 @@
+     "r10_backup_branch": "archive/ios16-r10-before-r11-20261117",
+     "current_run_shutdown_authorized": false,
+     "host_shutdown_request_scope": "Historical R8 only; no R15 shutdown requested",
+-    "latest_device_report": "reports/hakios-ios16-device-r27-touch-id.md"
++    "latest_device_report": "reports/hakios-ios16-device-r28-touch-snapshot.md"
+   },
+   "active_workspace_report": "reports/hakios-workspace.json",
+   "config_check_report": "reports/hakios-config-check.json",
+@@ -920,14 +920,14 @@
+   },
+   "touch_test_boundary": {
+     "recorded_on": "2026-11-19",
+-    "mode": "r28_readonly_snapshot_host_ready_awaiting_scoped_preflight",
++    "mode": "r28_readonly_snapshot_device_closed_attempt_consumed",
+     "phone_queries_allowed": false,
+     "phone_boot_allowed": false,
+     "partition_operations_allowed": false,
+     "qemu_allowed": false,
+     "user_explicit_resumption_required": true,
+-    "device_state": "Fastboot ready, latest user report; R28 host has not queried it",
+-    "resumption_scope": "Only this explained R28 read-only RAM snapshot: readonly identity checks and one temporary boot; no automatic retry or partitions",
++    "device_state": "R28 kernel normal 180s return and drain captured; physical retained screen not visually confirmed",
++    "resumption_scope": "R28 one temporary boot consumed; future revision needs its own explained operation scope; no retries or partitions",
+     "revision": "R28-touch-snapshot",
+     "display_baseline_revision": "R20-display",
+     "host_candidate": "artifacts/hakios/lithium-ios16/phase4-r28-touch-snapshot/lithium-hakios-ios16-r28-touch-snapshot.img",
+@@ -963,7 +963,7 @@
+     "latest_kernel_contains_touch_stage_verified": true,
+     "production_kernel_sha256": "34402977ea364f6823ad992c220d44bddf73406ce1800fef6ac165f710b1c983",
+     "host_build_report": "reports/hakios-ios16-touch-r28-prepared.md",
+-    "conditional_device_authorization": "Latest user explicitly requests next step and says Fastboot ready for testing; describe exact R28 scope before any query/boot",
++    "conditional_device_authorization": "Current explained R28 boot consumed; this record grants no further queries or boots",
+     "hardware_verified": false,
+     "report": "reports/hakios-ios16-touch-r28-prepared.md",
+     "package_report": "artifacts/hakios/lithium-ios16/phase4-r28-touch-snapshot/contract.json",
+@@ -978,19 +978,19 @@
+     "runtime_glue_report": "reports/hakios-ios16-touch-runtime-host-20261119.md",
+     "per_device_operation_confirmation_required": true,
+     "host_candidate_image_path": "artifacts/hakios/lithium-ios16/phase4-r28-touch-snapshot/lithium-hakios-ios16-r28-touch-snapshot.img",
+-    "last_device_report": "reports/hakios-ios16-device-r27-touch-id.json",
++    "last_device_report": "reports/hakios-ios16-device-r28-touch-snapshot.json",
+     "stage1_runtime_observed": true,
+     "stage1_snapshot_completed": true,
+     "physical_touch_verified": false,
+     "full_runtime_log_verified": false,
+-    "candidate_runtime_observed": false,
++    "candidate_runtime_observed": true,
+     "branch_clock_snapshot_verified": true,
+     "pinmux_snapshot_verified": true,
+     "qup_register_snapshot_verified": true,
+     "diagnostic_hold_verified": true,
+-    "emitted_kernel_stream_through_timer_verified": false,
++    "emitted_kernel_stream_through_timer_verified": true,
+     "physical_screen_verified": false,
+-    "latest_device_report": "reports/hakios-ios16-device-r27-touch-id.json",
++    "latest_device_report": "reports/hakios-ios16-device-r28-touch-snapshot.json",
+     "runtime_i2c_transaction_verified": false
+   },
+   "touch_r27_host_prepared": {
+@@ -1053,5 +1053,120 @@
+     "total_suites": 39,
+     "hardware_verified": false,
+     "physical_screen_verified": false
++  },
++  "touch_r28_runtime": {
++    "report": "reports/hakios-ios16-device-r28-touch-snapshot.json",
++    "image_sha256": "9a01c3db68164949a8f093a3625dbea9c852047b35417b1fe3597be6bf4342d1",
++    "started_at": "2026-11-19T23:05:35.151267+08:00",
++    "phase": "normal_timer_and_drained_usb_with_complete_readonly_snapshot",
++    "cpu": {
++      "logical": 0,
++      "mpidr": "0x80000001",
++      "affinity": "0x1",
++      "max_logical": 0,
++      "bootcpu": 1,
++      "cpus": 1,
++      "match": true
++    },
++    "snapshot_complete": true,
++    "register_passes": [
++      {
++        "VERSION": 537264128,
++        "STATE": 284,
++        "CONFIG": 0,
++        "IO_MODES": 165,
++        "OPERATIONAL": 192,
++        "ERROR_FLAGS": 0,
++        "ERROR_FLAGS_EN": 60,
++        "OPERATIONAL_MASK": 0,
++        "OUT_FIFO_COUNT": 0,
++        "IN_FIFO_COUNT": 0,
++        "MX_OUTPUT": 0,
++        "MX_INPUT": 0,
++        "MX_READ": 0,
++        "MX_WRITE": 0,
++        "MASTER_CONFIG": 0,
++        "CLK_CTL": 0,
++        "I2C_STATUS": 201326592
++      },
++      {
++        "VERSION": 537264128,
++        "STATE": 284,
++        "CONFIG": 0,
++        "IO_MODES": 165,
++        "OPERATIONAL": 192,
++        "ERROR_FLAGS": 0,
++        "ERROR_FLAGS_EN": 60,
++        "OPERATIONAL_MASK": 0,
++        "OUT_FIFO_COUNT": 0,
++        "IN_FIFO_COUNT": 0,
++        "MX_OUTPUT": 0,
++        "MX_INPUT": 0,
++        "MX_READ": 0,
++        "MX_WRITE": 0,
++        "MASTER_CONFIG": 0,
++        "CLK_CTL": 0,
++        "I2C_STATUS": 201326592
++      }
++    ],
++    "snapshot_elapsed_us": 37,
++    "snapshot_reads": 34,
++    "adapter_reads": 48,
++    "adapter_writes": 0,
++    "normal_timer": true,
++    "drain_success": true,
++    "emitted_kernel_stream_through_timer_verified": true,
++    "physical_screen_verified": false,
++    "i2c_transaction": false,
++    "chip_id_read": false,
++    "physical_touch_verified": false,
++    "runtime_primary_source_review": {
++      "passed": true,
++      "reviewed_at": "2026-11-19T23:14:23.104820+08:00",
++      "agent": "Pauli",
++      "report": "evidence/touch-r28-20261119/runtime/findings.md",
++      "report_sha256": "9f5511340fa51c51fb13a9ba54892463638a13f53b6c8ca407e046802d7a1bf8",
++      "main_verified_actual_console_lines": [
++        119,
++        121,
++        122,
++        123,
++        156,
++        157,
++        158,
++        170,
++        171,
++        201,
++        203,
++        204,
++        205,
++        206
++      ],
++      "main_checked_primary_windows": {
++        "MiCode header": [
++          "73-98",
++          "112-160"
++        ],
++        "MiCode driver": [
++          "117-145",
++          "279-295",
++          "408-420",
++          "455-470",
++          "1877-1902"
++        ],
++        "Linux fixed I2C blob": [
++          "62-75",
++          "1554-1580",
++          "1821-1856"
++        ],
++        "Linux fixed SPI blob": [
++          "79-89"
++        ]
++      },
++      "independent_usb_frame_audit_passed": true,
++      "correction_required": false,
++      "ownership_or_i2c_reset_full_flag_semantics_verified": false,
++      "no_device_operations": true
++    }
+   }
+ }
+diff --git a/reports/hakios-ios16-device-r28-touch-snapshot.json b/reports/hakios-ios16-device-r28-touch-snapshot.json
+new file mode 100644
+--- /dev/null
++++ b/reports/hakios-ios16-device-r28-touch-snapshot.json
+@@ -0,0 +1,594 @@
++{
++  "schema": 1,
++  "revision": "R28-touch-snapshot",
++  "recorded_at": "2026-11-19T23:14:23.104820+08:00",
++  "started_at": "2026-11-19T23:05:35.151267+08:00",
++  "fastboot_accepted_at": "2026-11-19T23:05:36.760820+08:00",
++  "receiver_finished_at": "2026-11-19T23:09:08.592396+08:00",
++  "phase": "normal_timer_and_drained_usb_with_complete_readonly_snapshot",
++  "image_path": "artifacts/hakios/lithium-ios16/phase4-r28-touch-snapshot/lithium-hakios-ios16-r28-touch-snapshot.img",
++  "image_sha256": "9a01c3db68164949a8f093a3625dbea9c852047b35417b1fe3597be6bf4342d1",
++  "kernel_sha256": "34402977ea364f6823ad992c220d44bddf73406ce1800fef6ac165f710b1c983",
++  "payload_boot_args": "bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 touch_stage=1 touch_clock_init=1 touch_diag=1 touch_snapshot=1",
++  "temporary_boots": 1,
++  "fastboot_readonly_queries": 5,
++  "fastboot_commands_total": 6,
++  "command_accepted": true,
++  "partition_commands": 0,
++  "flashes": 0,
++  "adb_commands": 0,
++  "android_recovery_boots": 0,
++  "qemu": false,
++  "auto_retry": false,
++  "device_queries_after_boot": 0,
++  "physical_screen_verified": false,
++  "retained_uefi_screen": "not visually confirmed; normal kernel return/drain captured",
++  "cpu": {
++    "logical": 0,
++    "mpidr": "0x80000001",
++    "affinity": "0x1",
++    "max_logical": 0,
++    "bootcpu": 1,
++    "cpus": 1,
++    "match": true
++  },
++  "stage1": {
++    "passed_observation": true,
++    "reads": 26,
++    "writes": 3,
++    "mappings": 8,
++    "elapsed_us": 312,
++    "clocks_checked": true,
++    "pins_checked": true,
++    "controller_reset": false,
++    "i2c_transfer": false,
++    "write_scope": "Existing apps-clock and GPIO87/88 preparation; not QUP writes"
++  },
++  "snapshot": {
++    "status": "ok",
++    "reason": "entry_snapshot_complete",
++    "complete": true,
++    "attempts": 34,
++    "accepted": 34,
++    "elapsed_us": 37,
++    "valid_mask": [
++      "0x0001ffff",
++      "0x0001ffff"
++    ],
++    "stable_mask": "0x0001ffff",
++    "changed_mask": "0x0",
++    "sequential_not_atomic": true,
++    "physical_reads": 48,
++    "physical_writes": 0,
++    "extra_mappings": 1,
++    "entry_gic_checked": true,
++    "terminal_gic_attempted": true,
++    "terminal_gic_quiet": true,
++    "register_passes": [
++      {
++        "VERSION": 537264128,
++        "STATE": 284,
++        "CONFIG": 0,
++        "IO_MODES": 165,
++        "OPERATIONAL": 192,
++        "ERROR_FLAGS": 0,
++        "ERROR_FLAGS_EN": 60,
++        "OPERATIONAL_MASK": 0,
++        "OUT_FIFO_COUNT": 0,
++        "IN_FIFO_COUNT": 0,
++        "MX_OUTPUT": 0,
++        "MX_INPUT": 0,
++        "MX_READ": 0,
++        "MX_WRITE": 0,
++        "MASTER_CONFIG": 0,
++        "CLK_CTL": 0,
++        "I2C_STATUS": 201326592
++      },
++      {
++        "VERSION": 537264128,
++        "STATE": 284,
++        "CONFIG": 0,
++        "IO_MODES": 165,
++        "OPERATIONAL": 192,
++        "ERROR_FLAGS": 0,
++        "ERROR_FLAGS_EN": 60,
++        "OPERATIONAL_MASK": 0,
++        "OUT_FIFO_COUNT": 0,
++        "IN_FIFO_COUNT": 0,
++        "MX_OUTPUT": 0,
++        "MX_INPUT": 0,
++        "MX_READ": 0,
++        "MX_WRITE": 0,
++        "MASTER_CONFIG": 0,
++        "CLK_CTL": 0,
++        "I2C_STATUS": 201326592
++      }
++    ],
++    "fields": [
++      {
++        "pass_index": 0,
++        "index": 0,
++        "name": "VERSION",
++        "offset": 48,
++        "valid": true,
++        "value": 537264128,
++        "at_us": 1535577368,
++        "read_us": 2
++      },
++      {
++        "pass_index": 0,
++        "index": 1,
++        "name": "STATE",
++        "offset": 4,
++        "valid": true,
++        "value": 284,
++        "at_us": 1535577370,
++        "read_us": 1
++      },
++      {
++        "pass_index": 0,
++        "index": 2,
++        "name": "CONFIG",
++        "offset": 0,
++        "valid": true,
++        "value": 0,
++        "at_us": 1535577371,
++        "read_us": 1
++      },
++      {
++        "pass_index": 0,
++        "index": 3,
++        "name": "IO_MODES",
++        "offset": 8,
++        "valid": true,
++        "value": 165,
++        "at_us": 1535577372,
++        "read_us": 1
++      },
++      {
++        "pass_index": 0,
++        "index": 4,
++        "name": "OPERATIONAL",
++        "offset": 24,
++        "valid": true,
++        "value": 192,
++        "at_us": 1535577373,
++        "read_us": 1
++      },
++      {
++        "pass_index": 0,
++        "index": 5,
++        "name": "ERROR_FLAGS",
++        "offset": 28,
++        "valid": true,
++        "value": 0,
++        "at_us": 1535577374,
++        "read_us": 1
++      },
++      {
++        "pass_index": 0,
++        "index": 6,
++        "name": "ERROR_FLAGS_EN",
++        "offset": 32,
++        "valid": true,
++        "value": 60,
++        "at_us": 1535577375,
++        "read_us": 1
++      },
++      {
++        "pass_index": 0,
++        "index": 7,
++        "name": "OPERATIONAL_MASK",
++        "offset": 40,
++        "valid": true,
++        "value": 0,
++        "at_us": 1535577376,
++        "read_us": 1
++      },
++      {
++        "pass_index": 0,
++        "index": 8,
++        "name": "OUT_FIFO_COUNT",
++        "offset": 268,
++        "valid": true,
++        "value": 0,
++        "at_us": 1535577377,
++        "read_us": 1
++      },
++      {
++        "pass_index": 0,
++        "index": 9,
++        "name": "IN_FIFO_COUNT",
++        "offset": 532,
++        "valid": true,
++        "value": 0,
++        "at_us": 1535577378,
++        "read_us": 1
++      },
++      {
++        "pass_index": 0,
++        "index": 10,
++        "name": "MX_OUTPUT",
++        "offset": 256,
++        "valid": true,
++        "value": 0,
++        "at_us": 1535577379,
++        "read_us": 1
++      },
++      {
++        "pass_index": 0,
++        "index": 11,
++        "name": "MX_INPUT",
++        "offset": 512,
++        "valid": true,
++        "value": 0,
++        "at_us": 1535577380,
++        "read_us": 1
++      },
++      {
++        "pass_index": 0,
++        "index": 12,
++        "name": "MX_READ",
++        "offset": 520,
++        "valid": true,
++        "value": 0,
++        "at_us": 1535577381,
++        "read_us": 1
++      },
++      {
++        "pass_index": 0,
++        "index": 13,
++        "name": "MX_WRITE",
++        "offset": 336,
++        "valid": true,
++        "value": 0,
++        "at_us": 1535577382,
++        "read_us": 1
++      },
++      {
++        "pass_index": 0,
++        "index": 14,
++        "name": "MASTER_CONFIG",
++        "offset": 1032,
++        "valid": true,
++        "value": 0,
++        "at_us": 1535577383,
++        "read_us": 1
++      },
++      {
++        "pass_index": 0,
++        "index": 15,
++        "name": "CLK_CTL",
++        "offset": 1024,
++        "valid": true,
++        "value": 0,
++        "at_us": 1535577384,
++        "read_us": 1
++      },
++      {
++        "pass_index": 0,
++        "index": 16,
++        "name": "I2C_STATUS",
++        "offset": 1028,
++        "valid": true,
++        "value": 201326592,
++        "at_us": 1535577385,
++        "read_us": 1
++      },
++      {
++        "pass_index": 1,
++        "index": 0,
++        "name": "VERSION",
++        "offset": 48,
++        "valid": true,
++        "value": 537264128,
++        "at_us": 1535577386,
++        "read_us": 1
++      },
++      {
++        "pass_index": 1,
++        "index": 1,
++        "name": "STATE",
++        "offset": 4,
++        "valid": true,
++        "value": 284,
++        "at_us": 1535577387,
++        "read_us": 1
++      },
++      {
++        "pass_index": 1,
++        "index": 2,
++        "name": "CONFIG",
++        "offset": 0,
++        "valid": true,
++        "value": 0,
++        "at_us": 1535577388,
++        "read_us": 1
++      },
++      {
++        "pass_index": 1,
++        "index": 3,
++        "name": "IO_MODES",
++        "offset": 8,
++        "valid": true,
++        "value": 165,
++        "at_us": 1535577389,
++        "read_us": 1
++      },
++      {
++        "pass_index": 1,
++        "index": 4,
++        "name": "OPERATIONAL",
++        "offset": 24,
++        "valid": true,
++        "value": 192,
++        "at_us": 1535577390,
++        "read_us": 1
++      },
++      {
++        "pass_index": 1,
++        "index": 5,
++        "name": "ERROR_FLAGS",
++        "offset": 28,
++        "valid": true,
++        "value": 0,
++        "at_us": 1535577391,
++        "read_us": 1
++      },
++      {
++        "pass_index": 1,
++        "index": 6,
++        "name": "ERROR_FLAGS_EN",
++        "offset": 32,
++        "valid": true,
++        "value": 60,
++        "at_us": 1535577392,
++        "read_us": 1
++      },
++      {
++        "pass_index": 1,
++        "index": 7,
++        "name": "OPERATIONAL_MASK",
++        "offset": 40,
++        "valid": true,
++        "value": 0,
++        "at_us": 1535577393,
++        "read_us": 1
++      },
++      {
++        "pass_index": 1,
++        "index": 8,
++        "name": "OUT_FIFO_COUNT",
++        "offset": 268,
++        "valid": true,
++        "value": 0,
++        "at_us": 1535577394,
++        "read_us": 1
++      },
++      {
++        "pass_index": 1,
++        "index": 9,
++        "name": "IN_FIFO_COUNT",
++        "offset": 532,
++        "valid": true,
++        "value": 0,
++        "at_us": 1535577395,
++        "read_us": 1
++      },
++      {
++        "pass_index": 1,
++        "index": 10,
++        "name": "MX_OUTPUT",
++        "offset": 256,
++        "valid": true,
++        "value": 0,
++        "at_us": 1535577396,
++        "read_us": 1
++      },
++      {
++        "pass_index": 1,
++        "index": 11,
++        "name": "MX_INPUT",
++        "offset": 512,
++        "valid": true,
++        "value": 0,
++        "at_us": 1535577397,
++        "read_us": 1
++      },
++      {
++        "pass_index": 1,
++        "index": 12,
++        "name": "MX_READ",
++        "offset": 520,
++        "valid": true,
++        "value": 0,
++        "at_us": 1535577398,
++        "read_us": 1
++      },
++      {
++        "pass_index": 1,
++        "index": 13,
++        "name": "MX_WRITE",
++        "offset": 336,
++        "valid": true,
++        "value": 0,
++        "at_us": 1535577399,
++        "read_us": 1
++      },
++      {
++        "pass_index": 1,
++        "index": 14,
++        "name": "MASTER_CONFIG",
++        "offset": 1032,
++        "valid": true,
++        "value": 0,
++        "at_us": 1535577400,
++        "read_us": 1
++      },
++      {
++        "pass_index": 1,
++        "index": 15,
++        "name": "CLK_CTL",
++        "offset": 1024,
++        "valid": true,
++        "value": 0,
++        "at_us": 1535577402,
++        "read_us": 2
++      },
++      {
++        "pass_index": 1,
++        "index": 16,
++        "name": "I2C_STATUS",
++        "offset": 1028,
++        "valid": true,
++        "value": 201326592,
++        "at_us": 1535577403,
++        "read_us": 1
++      }
++    ],
++    "geometry": {
++      "raw_io_modes": 165,
++      "out_block_code": 1,
++      "in_block_code": 1,
++      "vendor_out_bytes": 64,
++      "vendor_in_bytes": 64,
++      "linux_out_bytes": 64,
++      "linux_in_bytes": 64,
++      "fifo_mode_fields_zero": true,
++      "pack_unpack_fields_zero": true,
++      "count_register_units_verified": false,
++      "geometry_not_physical_occupancy": true
++    },
++    "fifo_data_reads": 0,
++    "qup_writes": 0,
++    "sw_reset": false,
++    "gpio_reset": false,
++    "i2c_transaction_issued": false,
++    "chip_id_read": false,
++    "chip_id": null,
++    "physical_ownership_verified": false,
++    "hardware_read_side_effects_verified": false,
++    "touch_verified": false
++  },
++  "usb_audit": {
++    "raw_bytes": 17989,
++    "console_bytes": 15845,
++    "frames": 67,
++    "raw_sha256": "39d05c5a98233fd448a770392ded5da2081f49ffeb9ab92cb8e89bf50ccedab9",
++    "console_sha256": "fa9cc1f517c930c7ae217c830c10ed041615998383da68c4c849374f9000a2d4",
++    "first_offset": 0,
++    "final_offset": 15845,
++    "missing_bytes": 0,
++    "duplicate_bytes": 0,
++    "incomplete_frame_bytes": 0,
++    "device_lost_max": 0,
++    "frames_reporting_device_loss": 0,
++    "independent_parser_agrees_with_frozen_receiver": true,
++    "frozen_redecode_equals_complete_console": true,
++    "transport_verified": true,
++    "kernel_banner_offset": 0,
++    "timer_offset": 15518,
++    "normal_return_offset": 15729,
++    "drain_success": true,
++    "drain_records": [
++      {
++        "offset": 15796,
++        "drained": 1,
++        "target": 15796
++      }
++    ],
++    "emitted_kernel_stream_through_timer_verified": true,
++    "all_firmware_daemon_and_original_printf_logs_complete": false,
++    "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
++  },
++  "source_writer_contention_dropped_bytes": 0,
++  "normal_timer": true,
++  "timer_seconds": 180,
++  "drain_success": true,
++  "receiver_status_preserved": "capture_failed",
++  "receiver_failure_preserved": "[Errno 32] Pipe error",
++  "pipe_error_after_successful_drain": true,
++  "data_sync_error": {
++    "errno": 2,
++    "phase": "lookup",
++    "expected_in_ram_only_diagnostic": true,
++    "vfs_sync_or_device_flush_reached": false
++  },
++  "physical_touch_verified": false,
++  "r20_only_display_baseline": true,
++  "r15_r20_r25_r26_r27_r28_preserved": true,
++  "runtime_primary_source_review": {
++    "passed": true,
++    "reviewed_at": "2026-11-19T23:14:23.104820+08:00",
++    "agent": "Pauli",
++    "report": "evidence/touch-r28-20261119/runtime/findings.md",
++    "report_sha256": "9f5511340fa51c51fb13a9ba54892463638a13f53b6c8ca407e046802d7a1bf8",
++    "main_verified_actual_console_lines": [
++      119,
++      121,
++      122,
++      123,
++      156,
++      157,
++      158,
++      170,
++      171,
++      201,
++      203,
++      204,
++      205,
++      206
++    ],
++    "main_checked_primary_windows": {
++      "MiCode header": [
++        "73-98",
++        "112-160"
++      ],
++      "MiCode driver": [
++        "117-145",
++        "279-295",
++        "408-420",
++        "455-470",
++        "1877-1902"
++      ],
++      "Linux fixed I2C blob": [
++        "62-75",
++        "1554-1580",
++        "1821-1856"
++      ],
++      "Linux fixed SPI blob": [
++        "79-89"
++      ]
++    },
++    "independent_usb_frame_audit_passed": true,
++    "correction_required": false,
++    "ownership_or_i2c_reset_full_flag_semantics_verified": false,
++    "no_device_operations": true
++  },
++  "findings": [
++    "Both sequential 17-register passes are complete, valid and identical; the sampled zeros are actual reads.",
++    "CONFIG=0 and MASTER_CONFIG=0 lack the stock I2C/N=7 and v2-tag setup; CLK_CTL=0 is inherited state, not a measured clock fault.",
++    "IO_MODES=0xa5 decodes as 64-byte IN and OUT geometry in both source algorithms; count units and occupancy are unverified.",
++    "OP0xc0 names the shared full-flag pair in fixed SPI-QUP definitions; validity and meaning in this I2C/RESET state remain unverified.",
++    "No actual I2C transaction, controller ID/ACK/NACK, IRQ/HID or touch event was tested."
++  ],
++  "next_step": "Prepare one default-off, fixed-source QUP v2 initialization integration with valid pre-reset, post-reset, post-configuration and pre-ID snapshots. Admit at most one 0x38/A3 ID transaction only after source-backed postconditions and strict operational guard pass; otherwise preserve evidence and stop. No blind mask widening or automatic boot.",
++  "unverified": [
++    "Exclusive handoff, secure-world ownership, physical power and electrical state",
++    "Source/SCL frequency, reset effects, FIFO-count units/read side effects, full-flag semantics in inherited configuration",
++    "Runtime touch silicon ID, physical I2C transaction, GPIO105/125 IRQ, HID delivery and touch interaction",
++    "Physical retained screen for this run; no user photograph",
++    "Firmware/daemon/original printf output outside emitted kernel USB stream"
++  ],
++  "evidence_sha256": {
++    "reports/local/20261119-r28-touch-snapshot-approved/console.log": "fa9cc1f517c930c7ae217c830c10ed041615998383da68c4c849374f9000a2d4",
++    "reports/local/20261119-r28-touch-snapshot-approved/console.frames": "39d05c5a98233fd448a770392ded5da2081f49ffeb9ab92cb8e89bf50ccedab9",
++    "reports/local/20261119-r28-touch-snapshot-approved/capture-host.py": "d5a9aecdd3c5ac728b233628d9ae810a598a35ba05d9068d0db3ed70fde3791c",
++    "reports/local/20261119-r28-touch-snapshot-approved/usb-status.json": "a7b3fe873b362a89b88ccfbf106c9e0787e41c8c4473404abe41b07a8c5c5bf2",
++    "reports/local/20261119-r28-touch-snapshot-approved/usb-audit-final.json": "97c9723653ff7eaead77625c15292e18d3d1bd3a8a641221b6cdb545e03576f4",
++    "evidence/touch-r28-20261119/runtime/findings.md": "9f5511340fa51c51fb13a9ba54892463638a13f53b6c8ca407e046802d7a1bf8",
++    "evidence/touch-r28-20261119/main/runtime-main-review.json": "a59e1e6939e6f2634e88d36af2c054fee3e69e1e81ac2bde1694fc5805c6b142",
++    "reports/hakios-ios16-touch-r28-prepared.json": "03b750f90a987230e1c546b8c4add1c01783a077b30d2a25b44d2de38cdf551b",
++    "reports/hakios-ios16-touch-r28-prepared-checkpoint.json": "4662a6dcf5924812f0ae4d2a33b000ec7726eae11f226aeb6ced268249b65554"
++  }
++}
+diff --git a/reports/hakios-ios16-device-r28-touch-snapshot.md b/reports/hakios-ios16-device-r28-touch-snapshot.md
+new file mode 100644
+--- /dev/null
++++ b/reports/hakios-ios16-device-r28-touch-snapshot.md
+@@ -0,0 +1,93 @@
++# R28 触摸 QUP/FIFO 真机快照结案
++
++记录：2026-11-19T23:14:23.104820+08:00。本轮仅一次临时启动，2026-11-19 23:05:36（Asia/Shanghai）获 Fastboot 接受。**17 个寄存器的两轮快照均有效且一致，正常 180 秒 timer 与 USB 排空已核验；尚无 I2C 事务或真实触摸 ID。**
++
++## 范围与保留
++
++- 镜像：`artifacts/hakios/lithium-ios16/phase4-r28-touch-snapshot/lithium-hakios-ios16-r28-touch-snapshot.img`，16,281,600 字节。
++- SHA256：`9a01c3db68164949a8f093a3625dbea9c852047b35417b1fe3597be6bf4342d1`；内核 SHA256：`34402977ea364f6823ad992c220d44bddf73406ce1800fef6ac165f710b1c983`。
++- 仅执行 5 项已说明的只读 Fastboot 身份/状态核验和 1 次 `boot`。无分区查询/读写、flash、erase、ADB、Android/Recovery、QEMU、自动重试或启动后设备查询。
++- 本包为隔离 RAM 诊断：`ufs=0`，固定 Mu 无物理 UFS provider，固定只读 loader，双 4MiB RAM 卷。长期 UFS 系统路线未变。
++- R20-display 仍是唯一显示基线。R15/R20/R25/R26/R27/R28 冻结镜像哈希均独立复核，原索引字节保持。
++- 本轮物理结束屏尚无目视/照片确认；正常返回结论仅来自已捕获内核 timer/drain，不能冒称已目视 UEFI。
++
++## 实际结果
++
++- `logical=0 mpidr=0x80000001 affinity=0x1 max_logical=0 bootcpu=1 cpus=1 match=1`。
++- 原 Stage1：26 读、3 写、8 映射、312us；写入仍是既有时钟/引脚准备，不能说整轮启动零 MMIO 写。
++- 新快照：34/34 次读取，37us；`pass0=pass1=stable=0x1ffff changed=0`。
++- 新适配层含前置/GIC检查共 48 读、0 写、1 个额外映射；入口及末尾 GIC 可见状态检查通过，但不等同独占所有权证明。
++- 无 FIFO 数据端口读取、QUP 写、SW_RESET、触摸复位、供电切换、IRQ 接入、HID 或 I2C 事务。
++- PID1 进入 `ram_only=1 timer_seconds=180` 保持，未进入系统桌面流程。
++
++两轮均逐项 `valid=1`；下面的零是有效读取，不是 R27 未读初始值。两轮为先后读取，不是原子锁存，也不证明整轮稳定。
++
++| 寄存器 | 两轮相同的实测值 |
++| --- | --- |
++| VERSION | `0x20060000` |
++| STATE | `0x0000011c` |
++| CONFIG | `0x00000000` |
++| IO_MODES | `0x000000a5` |
++| OPERATIONAL | `0x000000c0` |
++| ERROR_FLAGS | `0x00000000` |
++| ERROR_FLAGS_EN | `0x0000003c` |
++| OPERATIONAL_MASK | `0x00000000` |
++| OUT_FIFO_COUNT | `0x00000000` |
++| IN_FIFO_COUNT | `0x00000000` |
++| MX_OUTPUT | `0x00000000` |
++| MX_INPUT | `0x00000000` |
++| MX_READ | `0x00000000` |
++| MX_WRITE | `0x00000000` |
++| MASTER_CONFIG | `0x00000000` |
++| CLK_CTL | `0x00000000` |
++| I2C_STATUS | `0x0c000000` |
++
++## 原因判断与证据边界
++
++1. **当前采样未具备原厂 I2C v2 事务配置。** `CONFIG=0` 没有 I2C mini-core `0x200` 和 `N=7`；`MASTER_CONFIG=0` 未开 v2 tags。不能据 CONFIG=0 断言已选 SPI。
++2. `CLK_CTL=0` 尚非原厂 100kHz 策略值 `0x003e007c`，但原厂在 RESET→RUN 的相应阶段设置该寄存器，因此不能单凭继承 RESET 下的零认定时钟故障；实际输入/SCL 频率未测。
++3. `IO_MODES=0xa5` 按原厂和固定 Linux v2 算法均得 IN/OUT 各 64 字节的硬件容量。它不是已占用字节数；FIFO count 的单位、锁存/读副作用未验证，不能把 count=0 等同严格空 FIFO 证明。
++4. 固定 Linux SPI-QUP 将 bits6/7 命名为 OUT/IN_FIFO_FULL；本轮 `OP=0xc0`，但在继承 I2C/RESET 配置中的适用语义尚未验证。不能据此认定积压、NACK、控制器损坏或可忽略，更不能直接放宽原 ID 门禁。
++5. STATUS 的 SDA/SCL 指示高，BUS_ACTIVE/BUS_MASTER 和已知错误位清，只是 idle-looking 采样；真实供电、电气、所有权、ACK/NACK 仍未验证。
++
++主代理独立核对固定 MiCode 头第73–98/112–160行、驱动第117–145/279–295/408–420/455–470/1877–1902行；固定 Linux I2C blob 第62–75/1554–1580/1821–1856行及 SPI blob 第79–89行，并复算来源哈希。完整来源身份见 `evidence/touch-r28-20261119/protocol/findings.md`；同轮解释见 `evidence/touch-r28-20261119/runtime/findings.md`。
++
++## 日志终态及完整性
++
++独立帧解码与冻结接收器重放逐字节相同：67 帧、原始 17,989 字节、控制台 15,845 字节，offset 0→15845。缺口、重复、残帧、设备 lost 均 0，源端 `writer_contention_dropped_bytes=0`。
++
++```text
++--- loader_return_after expired ---
++LITHIUM DATA SYNC end error=2 phase=lookup
++LITHIUM LOG writer_contention_dropped_bytes=0
++LITHIUM USB: normal timer return boundary; draining before quiesce
++LITHIUM USB: timer boundary drain=1 target=15796
++```
++
++接收器原状态保留为 `capture_failed / [Errno 32] Pipe error`，结束于 2026-11-19T23:09:08.592396+08:00；该错误在捕获成功排空之后，未否定 timer/drain 证据。target15796 是排空记录之前的偏移，不与最终主机总数直接相减认定丢失。
++
++Data sync errno2 为 RAM 无 `/private/var` 的 lookup，未到 VFS_SYNC 或设备 flush，不是 UFS 故障证据。此次通过的是**已输出内核 USB 流至 timer/drain**，不声称所有固件、daemon 或原始 printf 全量完整，也不以未见 panic 字样证明绝无异常。
++
++控制台 SHA256：`fa9cc1f517c930c7ae217c830c10ed041615998383da68c4c849374f9000a2d4`；原始帧 SHA256：`39d05c5a98233fd448a770392ded5da2081f49ffeb9ab92cb8e89bf50ccedab9`。本地原始证据及审计在 `reports/local/20261119-r28-touch-snapshot-approved/`，共享补丁不包含固件/二进制和私有身份。
++
++## 并行执行与主代理复核
++
++Herschel（core）、Harvey（固定来源）、Tesla（打包器）、Hume（实际适配层测试）完成主机模块；明确的修正、独立测试和证据时间窗口见 prepared 报告。最终完整 HakiOS/Mu/D22AP/413job、82 来源边界、46 指令扫描、39 套 ASan/UBSan、95 合并源哈希及整包/APFS 读回通过；历史 R9 几何 hash 总门禁未解决，不冒称所有历史回归通过。
++
++Pauli 在同次 USB 采集期间独立完成 runtime/findings.md；主代理复核全部 34 条有效读取、引用的原厂/Linux 源码窗口及哈希，另行完成最终帧审计，无需退回修正。该代理仅写调查报告，不操作设备/生产源码/索引，现已关闭。
++
++## 下一修订与风险
++
++下一步准备一个默认关闭的原厂 QUP v2 初始化集成：在同一个包保留 **初始化前→SW_RESET 后→配置后→ID 前→终态** 的逐寄存器有效值与读写记录；每一步有界并检查结果。不是为了每个阶段再单独安排一次纯快照测试。
++
++只有来源支持的 reset/config/tag/mode/count/clock/error/idle 和原有严格 OP 条件均满足，才允许一次 `0x38` 地址、`0xa3` 寄存器的最小 ID 事务。若 `0xc0` 仍在且含义未补齐，保留新证据并停止，不能通过扩大掩码强行前进。
++
++最高风险仍是 QUP 所有权/复位效应、未知 full/count 语义以及不能被软件超时约束的永久 MMIO/总线异常；随后才是控制器 ID、实际报告、IRQ 与 HID。R28 一次启动已消费，不重试、不自动开始 R29；后续上机须先说明对应集成范围。
++
++## 本轮精确启动参数
++
++```text
++bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 touch_stage=1 touch_clock_init=1 touch_diag=1 touch_snapshot=1
++```
++
++本阶段以报告及可逆补丁结案；保留手机现状，不要求用户守屏。

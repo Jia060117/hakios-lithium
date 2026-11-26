@@ -1,0 +1,526 @@
+{
+  "source_commit": "776661b72c2db9861865df68d309f6f35faccff4",
+  "workspace": "/home/jia/ios-mix1-build/xnu7195-lithium",
+  "stage": "kernel",
+  "dependency_lock": {
+    "manifest": {
+      "repository": "apple-oss-distributions/distribution-macOS",
+      "commit": "cb82d4060393c4a14a838bf5179bcd786c7f666b",
+      "path": "release.json",
+      "release": "macOS 11.5",
+      "note": "Same published XNU tag; dependency versions are a build baseline, not an exact iOS14.8 SDK."
+    },
+    "projects": [
+      {
+        "name": "hfs",
+        "tag": "hfs-556.100.11",
+        "tag_object": "f89853dc2d6f739a8012d486640c706ed7b1d87d",
+        "commit": "ba1a9cdc6e83ae9dfb61e4b5a822fbf185ae5866"
+      },
+      {
+        "name": "AvailabilityVersions",
+        "tag": "AvailabilityVersions-80.3",
+        "tag_object": "a3c833b64250e25f242c1ce3152105e281b24258",
+        "commit": "c5d16a4820c345bf7d6abfa88899a41d04fa7999"
+      },
+      {
+        "name": "libplatform",
+        "tag": "libplatform-254.80.2",
+        "tag_object": "3ddbd6edb4d63df541b79648807fce4e3e868513",
+        "commit": "c8b140a4b2cf36665497f4f9df3797d2ed10e857"
+      },
+      {
+        "name": "libdispatch",
+        "tag": "libdispatch-1271.120.2",
+        "tag_object": "f7d580cac8896ca07bb8e0911530fe4d7a62e9d1",
+        "commit": "6d29adec75a4cf1d03d826fffa57e2364504d35c"
+      },
+      {
+        "name": "libpthread",
+        "tag": "libpthread-454.120.2",
+        "tag_object": "6a20fcb3fbdbcbfbaae5f3438a085961c575296f",
+        "commit": "1cc19984213f4e21d435daa3679722aa1854f71b"
+      }
+    ]
+  },
+  "crypto_dependency": {
+    "repository": "https://www.bearssl.org/git/BearSSL",
+    "commit": "7bea48e5e850ab4cafbe68d3765cdaba13a86d6f",
+    "source_sha256": {
+      "inc/bearssl.h": "8543ceb43850a5121782ebb0cff767a610ea7d215b1ad57ff9866deca214e92f",
+      "inc/bearssl_aead.h": "9d90afbc65535335517c028817ac0704af6b58971f2c262a65eb26e0b4099201",
+      "inc/bearssl_block.h": "a00b4a48c42c824f2ec4ee775672df9cec86ad455b08cb8ae7eb8c89e63d082a",
+      "inc/bearssl_ec.h": "6e9eb7490b5b256f9a98bea86906e008bd0d5f2bf1423c9c2eeb7af29ad1e9df",
+      "inc/bearssl_hash.h": "d31186fcdfe224965d1028592d1df78e1a10cb61fb8830fdafac847921e26572",
+      "inc/bearssl_hmac.h": "a40c14a7a71d5b4fa21f8485d7ad3975d3a37b9cd8b9f72cd0fa032af8105614",
+      "inc/bearssl_kdf.h": "e4cf36cab1c4692e4bba034c9e257c630e8e370c8e40d38b8fa106c7b4dbf8d5",
+      "inc/bearssl_pem.h": "ef36260e8568e5927178e92c2aab849be71bc07414c01baeb1d12a3a51a82c3e",
+      "inc/bearssl_prf.h": "0162e674d6c49425bfa0e8e9c79b3d850530e7928288930284fb7ac940a12b17",
+      "inc/bearssl_rand.h": "968335e8a2957e5bf64cb0b6b1f916e53bc330e8c66d5f2d2f658f415a56dd44",
+      "inc/bearssl_rsa.h": "2d4ee476ce67c6361c0e3792e192a12297dd29c039272c03dd0ab4225ed534c1",
+      "inc/bearssl_ssl.h": "1d11c6ca7563f974d6f6d847ed435900c66e4e9d7b8b88ce88be402db5727414",
+      "inc/bearssl_x509.h": "a0680ddf9d1ba6d3bbf3e9436ed295c208d022a1a2d73cd51c520a4f93c11699",
+      "src/inner.h": "b63fec8b61524fb595675d31f1cd2657eb7ef37c13aad5e89670f4feb7bca697",
+      "src/config.h": "7fcf78414405f4f747758dd9c4aaa2c4993dfd123bb2e5240e943b3b9e1eae56",
+      "src/hash/sha1.c": "42393b67d65319ba384120b49e1ad102aa5cc59cd9fdbaf2ed69b33d6f96826a",
+      "src/codec/dec32be.c": "ebd7bf469655a9e4de4b3d1d01d4c54f19117def3e3b918242629c150979bd9c",
+      "src/codec/enc32be.c": "8090b5bd6959586e769814e9d3698ac1c454e31ee4dfd5a2b2eb95a805063ae4",
+      "LICENSE.txt": "771bf18c8633ea69ec9b07d2e604c4b99b7bef41b0f5ce6385d24df4448f61ca",
+      "src/hash/md5.c": "f5000426ffef7d696027f7ddc558822fef2d280bedf8bce73b8295a1d0fdd39e",
+      "src/codec/dec32le.c": "fb45ce9e370d72c495dfbb08267e2fd32dcf5215c28df5d2db24f842b2d2d43a",
+      "src/codec/enc32le.c": "7faa71643fc74570fd4c550974a075ec05485a0b3805cbdc826d662cb347e79b",
+      "src/symcipher/aes_ct.c": "673c1c82e9a62ba349b806674249b62ed3116482f06f433f6ce71decd9413f0c",
+      "src/symcipher/aes_ct_enc.c": "71c32d29383af46ef103359210773f4f76c3529f8abc38c0d35b074dc10130bd",
+      "src/symcipher/aes_ct_dec.c": "1b1f6c3aa363f119d88c7d5c2dab583a01d55dc3ee2226f08af9a0451cb7291b",
+      "src/symcipher/aes_ct_cbcenc.c": "04dbba4141bbc380ff183e5d80192ef9a30987968434b620c1c7c5176581dcef",
+      "src/symcipher/aes_ct_cbcdec.c": "dd0d74cfc3db5adce1fec4e089816f0fdea7692ee87e07cb4c984614ea7d17cc"
+    },
+    "staged_directory": "/home/jia/ios-mix1-build/xnu7195-lithium/src/libkern/crypto/lithium_bearssl",
+    "adaptation": "kernel limits.h uses machine/limits.h"
+  },
+  "pthread_dependency": {
+    "commit": "1cc19984213f4e21d435daa3679722aa1854f71b",
+    "version": "libpthread-454.120.2",
+    "source_sha256": {
+      "kern/kern_init.c": "9d789729129734e26d7d68f331e3760dc3bf38ebdad8eace2193745af9544c5d",
+      "kern/kern_internal.h": "3e8bc25bc69c3983b3a650fcdfbf316bd9617f3c605cd3e3ea0dd4edb5b1c55f",
+      "kern/kern_support.c": "ab2684aaf1e894edda148b68b1295f113e01e685a8c1841a50cf639672496cbf",
+      "kern/kern_synch.c": "05bcab093e8e5edae8e5551ec993c79c3e8db322c94af894fd46a28d0d0273cd",
+      "kern/kern_trace.h": "3fca52f179ffb66a11cae7216d2fbe170732fc0c5093d8046c79ef895fa99de1",
+      "kern/pthread-Info.plist": "f3c60af51c7252c8a6a021aac5d39c27afac2696f5b2efa6d93e85ff89b4d1c5",
+      "kern/synch_internal.h": "0ef6d51c695deb9adccc65c6b13277d722a3739124caae32354d262b73b23564",
+      "private/pthread/dependency_private.h": "0a5c126a1c4f81a679a2db55d0b672a49e4f59bf34ffd2b6c3bd7f9e0472cb3c",
+      "private/pthread/introspection_private.h": "9d1d49b14e5aa0cdae98bf8f56b778ff2c3986134f7cfc8040c1c7d8a5d2a4ea",
+      "private/pthread/jit_private.h": "583d9726fd9a4baa9110adcfa24dc8b412e65f1377b501c810397a418443602d",
+      "private/pthread/posix_sched.h": "928475787b8f1e3fb689cd7f3af55026c9eaa038c2b1889b45771401666f955f",
+      "private/pthread/private.h": "a0a088d79d0887f490f4dc78b95625fa2806e42226b02588f49ef9af00fec679",
+      "private/pthread/qos.h": "aa2e44fe4dbe1c5b46cb8e2471ab2e2b155ec68f84af96d0f3534ad2d65faa08",
+      "private/pthread/qos_private.h": "731cc98246927772db437574d38832da5549dfd95fdd612d71826679529151de",
+      "private/pthread/spinlock_private.h": "4ec8c23c50366798c6b65cd149eaa502fd04ca6312c399b9320edded3da29544",
+      "private/pthread/tsd_private.h": "911b30dabcfa4b7d9f022f021f0f47a1ec33905563522ede0677357404a9364e",
+      "private/pthread/workqueue_private.h": "f1720589442d1c4a21af6d61813e195b6f9e147195fd9d71803bef433c9d11c3",
+      "private/sys/qos_private.h": "7901abe0601b12570c510cbb0c36a41f74e44bef960f1bb0233310584a9829ab",
+      "include/pthread/introspection.h": "20c4bc646045d17c06c20abce76c731714870ebffed87b1702614a01be9aa338",
+      "include/pthread/pthread.h": "e7b93de15e9a0942c780d1cb8195f80e7471010640e6774c1e742fae1d23c185",
+      "include/pthread/pthread_impl.h": "42896cbc575d9099c53f8c0afbaa04f40b2d11d24f92af5ccd7dacdaf8690231",
+      "include/pthread/pthread_spis.h": "ffaeb19bee2fcebe460a6a201b1aa5354a01cb664c70d1564a9102f2f56efa10",
+      "include/pthread/qos.h": "bfcfcf23501c328f5aa7f3bb39c0c8167730ab111393063c5b5fb4bd72d074f2",
+      "include/pthread/sched.h": "07d65b8d135be978a33579b5a333bd4576a8c6b36351ef510e0cca2aa0987020",
+      "include/pthread/spawn.h": "0eddd1d85276ea57f9985e2eb3b3ef0b76d30c6d05de4ad3c6f5c972d99458e4",
+      "include/pthread/stack_np.h": "94c7c6824cb241256ae5496443e8a4dd89b0de11922df0ecf965e5a751fc5824",
+      "include/sys/_pthread/_pthread_attr_t.h": "987973d4e4f0c84a929fb1288755637453d88bf1410b778f81b2550ea4ad211c",
+      "include/sys/_pthread/_pthread_cond_t.h": "1f44e579de86408da3f83e47918e11d62d41fdce1c0230a7e30f5c56414ef914",
+      "include/sys/_pthread/_pthread_condattr_t.h": "167ad51c9e184c2f22e67dd7100e321305b11b3fe2cbeffd074015f20ce4e315",
+      "include/sys/_pthread/_pthread_key_t.h": "aa386e8d73d64c95432c42133e1ce1a0f4e6b5769a4720ad38c81c71355e12b9",
+      "include/sys/_pthread/_pthread_mutex_t.h": "9af87ec733f482f5bb59ff9c49b7884c6fd58444669fac8e64525da82f03cc91",
+      "include/sys/_pthread/_pthread_mutexattr_t.h": "93686494113a5167f198d6a586c1ac1c5f87eb0ef5751b9c441db52df0e9edd9",
+      "include/sys/_pthread/_pthread_once_t.h": "5ea5cc064b4770a6c776a0c84f9458f8089540a62244417de37309aa72c89fc9",
+      "include/sys/_pthread/_pthread_rwlock_t.h": "1e20731f227b6c0c83d149c9564bceaa62220128d81c04833abd835d469115c7",
+      "include/sys/_pthread/_pthread_rwlockattr_t.h": "f60fae1acfd6742846ffdd7a07a47996caab73ac12bb421b49a4aae3edb80d66",
+      "include/sys/_pthread/_pthread_t.h": "7bcef3e2436e7a96bf0201e99bad5a11e6d495dbac85b10207441c05d7fb461e",
+      "include/sys/_pthread/_pthread_types.h": "741433612525badf767d48b1924d4c7ba564ccc5c1bab5cb7045c238850fa86b",
+      "include/sys/qos.h": "3f1e1e9a2b707f22407df44ee8a8b270348d3b4b53313ec52d06a6198716e273",
+      "include/sys_pthread_types.modulemap": "e38dfc98bcfb106cae1ccec1c909f87c3d00034085330cbfeaaa48b5ada489bd"
+    },
+    "adaptation": "typed addresses and standard C panic string; full provider, not stubs",
+    "staged_directory": "/home/jia/ios-mix1-build/xnu7195-lithium/src/bsd/pthread/lithium_libpthread"
+  },
+  "hfs_dependency": {
+    "commit": "ba1a9cdc6e83ae9dfb61e4b5a822fbf185ae5866",
+    "version": "hfs-556.100.11",
+    "source_sha256": {
+      "core/.open_source_exclude": "c5d813340b782e72762bb4221857b74282f5c77ed2a037398d1b8113ef8f6ffd",
+      "core/BTree.c": "8b5b68e5cd9084713de12d1be0db2a2ebc76965ded4776b02f6a91e533d21738",
+      "core/BTreeAllocate.c": "d3b93c18ab2b4288ce7db1bfe06b19062d0a5534c28ea68727f24187b7b5d46f",
+      "core/BTreeMiscOps.c": "b1c05e1fd329ec78d2a969272894808ebf4524690728aaa74a516007078f1114",
+      "core/BTreeNodeOps.c": "e6d6fb45246196a812578d04a120d66b514f382417c397aee3ed4de7006b7c76",
+      "core/BTreeNodeReserve.c": "a661629c2f3b880a1b11df76b2be5f2a3bc89a771051a1d4a64868f8ffaa7449",
+      "core/BTreeScanner.c": "53830b590cdee4d5b2573673ceb34dbd9047ffe9a7a888f89438b7fff4dd624d",
+      "core/BTreeScanner.h": "d699b9d97fb8e34ea21877c4c5b211fa3d299113b5e850068dca865b3d9d92f1",
+      "core/BTreeTreeOps.c": "0f2e99ba6787de63a10c1bd3f77114b6620524b6988d70f453a61854cc4f6581",
+      "core/BTreeWrapper.c": "22abe03853f27618ddeb7b7fd0f5c434ceb97842abc4362072fde0ec07d49df5",
+      "core/BTreesInternal.h": "5570f580314567526391af167015177dd6b49fc06506993fdbb9c1e3d0cc3d95",
+      "core/BTreesPrivate.h": "7dd82baf612edde7f0ffc61f705eb80e5d837e0e3457f5d6174261753234b2b8",
+      "core/CatalogPrivate.h": "27a50b7eb29d0b5ff82e148f6bf7aeaacdb05c3fbe31bf56eab26ba8c567f156",
+      "core/CatalogUtilities.c": "c9453ae859e771a9b901d8d2697160b933750a23d8e211d2025124e16a891c4d",
+      "core/FileExtentMapping.c": "675f161996684df514823dc94e1affcf4cd6d85a3ba8aa580cc8640814325c3c",
+      "core/FileIDsServices.c": "956af8fc8c571db0f926c24908926c5c9731e7b49c500034d4aacbc414eba523",
+      "core/FileMgrInternal.h": "3c1c57a9a4c96d70dcaa6c18b234b4b4f713ef94e45684c9dfaa1e272c952f69",
+      "core/HFSUnicodeWrappers.h": "d5ef6fe1d30a4737a80f39e99cc52b193105fd1f7bb56e5166a434cc65b037f1",
+      "core/MacOSStubs.c": "102530be503838883e6845851dbcdcb803fa688f094abbcbd95ddcd860780b06",
+      "core/UCStringCompareData.h": "88773669ce79ebe2d6bcc84d3341c3c2586e649984ac97453adb1b8706440464",
+      "core/UnicodeWrappers.c": "7300de813b94d41d14faf9aa2a0ddf436010bb43d258f81fc92ab841bc7157f2",
+      "core/VolumeAllocation.c": "c1498eec797005daf0b9d2dc89ae83aef88aca09ea64b451ce3d926d03582e80",
+      "core/hfs.h": "00998da8a564adb86fd77e4bf9fb83ae4018419d42614806801a16214b3e6937",
+      "core/hfs_alloc_trace.h": "75cf3c92ba0669326db3564604829f6c7172643f3ebef7a3cb816010b579407e",
+      "core/hfs_attrlist.c": "d5cf6f994ec05689fed7c1fdd812f607a3714d13b63f8487b0ed98370ddc3965",
+      "core/hfs_attrlist.h": "0a0077a26583fc92d3a11d2889d17d79e08b4897c73bdc3cb27dfb6771a03708",
+      "core/hfs_btreeio.c": "6d28a2468d1e983e3bb305637834f4eccc8d9e3ffbbea5b22a7b47be2600a823",
+      "core/hfs_btreeio.h": "41a1a2cb48727b5491c87e2aa1dc9fa36906c8b551c4ff61fe5ac8e4b3cb6998",
+      "core/hfs_catalog.c": "9c99818f7c5bf11e0a83dd22caf5b6c2d45d7605b7298c7c1751461f1b66d8d8",
+      "core/hfs_catalog.h": "d22cfa23097707f1757fc7e260cbab0cb267b9f987918c286354235131f3bc75",
+      "core/hfs_chash.c": "af61b16302a1f6898c7452a89378b6ae82aea8bbcfb413ba908edf806e9e3dc0",
+      "core/hfs_cnode.c": "ad6c9e640b44e0c271a8a55126638ae53da9c62eb5f3bf51e6c4875d186ecd01",
+      "core/hfs_cnode.h": "89515533a26764ec588c8f58d3a7208b99977f7b4e45e6bf3d7768d0392f4a60",
+      "core/hfs_cprotect.c": "8849f8a77fa900c0d43567049cffc90b288b29b63cad291f0bd88cffea3f4883",
+      "core/hfs_cprotect.h": "0fe78c4f9e61cf1db17e22ab06a7fca37d6dff70dbc28b48589bc8bdf7e70d3c",
+      "core/hfs_dbg.h": "f3e4c64d62058b4df85357894a13e8782befb63e87a2f7ed6ce5d38cbf07c723",
+      "core/hfs_endian.c": "ec46cd5d799fc27015681f608de049e38dbeea0ce6f52c664ccb9631103861dd",
+      "core/hfs_endian.h": "dcdada4fd78a1b4e48856ecb2361a6caf953f6f69e800ef9e20862c15e1a6899",
+      "core/hfs_extents.c": "dc78d6fca1f576c76e9541fb9e51988f04914ff15b01a06812a04c3d44c3d419",
+      "core/hfs_extents.h": "434a0089a7517e926398708fcbff3269283260653452fe61be53614c97a76dc8",
+      "core/hfs_format.h": "8ac2afc412220f401f7c966a08f1d0ea7199345eb4d8cefa7dc28281fb0e8cb6",
+      "core/hfs_fsctl.h": "fde0e2c93f4d17475116fa0f3259e00cb4ffc7918b93a16fc4a9e21b596e36af",
+      "core/hfs_fsinfo.c": "89e15b08ab5ec182a2d3f96dd0cd972468799b76db0dde6d296f0c2e57813543",
+      "core/hfs_hotfiles.c": "2a0ddfd05e19b1bdd46a33ddb41bafb62c3bad76be7cf9a19f79ee08b7a3c7d3",
+      "core/hfs_hotfiles.h": "6e23cb4821193d2056c070f4022087484a8843d767ec29d94420bf518248dfd1",
+      "core/hfs_iokit.cpp": "fb0de30daba83f77bebd5dfc63657ca9754092762777e70fa5399d33664cc6e7",
+      "core/hfs_iokit.h": "77791c554eea4d6763062524195ec4845c6e2bf6a7a4ac589f49f891ababcd85",
+      "core/hfs_journal.c": "386785839906439ce8f9ca6653b47ff72744fa245076642c4946dc9a214b89ca",
+      "core/hfs_journal.h": "6ba02edf7f7cbfccabf28319b7ab6cacf1e53dc082a113c7cb2f95cca7e4c800",
+      "core/hfs_kdebug.h": "2af9d6c3c9e7e0d7edd0994317ebb23a0b1429e9dcd870c9ad050a9bc6c2bdc7",
+      "core/hfs_link.c": "fdca7d8ea9e20daa032698f6c2b6bb9c5fff3d189658bf6d051a79d7cee37ce7",
+      "core/hfs_lookup.c": "81b6b3c72d452c6363630af2af40b9f3d602eca906ff6fbd8c022c1b8119265c",
+      "core/hfs_macos_defs.h": "2a0091093935d41f154ea4ce0cecbbd321175329e06e801591337de38c8b663b",
+      "core/hfs_mount.h": "665c064e92254bb2537c9a42c644cf937f9b4e28eeff03324394d484a3d4f40d",
+      "core/hfs_notification.c": "8a11e181d759080627a3b8520b1cf6fe2b007a5cb2310d0afb588af8fb599135",
+      "core/hfs_quota.c": "cd4fb914264324da7cede2b3d47b5f5875e112ee5769fd805c4a174e0a7119ed",
+      "core/hfs_quota.h": "88b8708d537e9cd61cf00cfac51f5185a5323022112edc8f90018897aa6b546a",
+      "core/hfs_readwrite.c": "515843873d8edb9ecffa61d4afdeca06166a031504e3a12a5340b21265f2df25",
+      "core/hfs_resize.c": "573de552da0c2a0e63bf61df2f50f8fbe34c66a0a1855b84144c80c2381d24c2",
+      "core/hfs_search.c": "6349c6c1aa89143a401d0601b046316d12c2d066da5790827d38e145156a3e1f",
+      "core/hfs_unistr.h": "fe22ca3ff255369fe5d45e4b749bfb4e1e7cac320e2269ced432890953752d81",
+      "core/hfs_vfsops.c": "0d725621d39b09a7f2c63d310c95344214c88e18c10bf57cf28e4fab78f83845",
+      "core/hfs_vfsutils.c": "e8e7a6957db9284f0cfeea32999b2b749e999cd7a0a4066cd05d6024ae071243",
+      "core/hfs_vnops.c": "66dead49f6f8f85b622f9ef5eeef897d8af421cb025a8752833ffe4b7679942b",
+      "core/hfs_xattr.c": "ebb585ca0a1c94628e386e68e830d9cd234e0cfd5762c5a716cfeb658b2307dd",
+      "core/install": "9882e2857a4ccb552d8410a07bee5fe857bfaadd98d74bc8ac45ad0c891fbe10",
+      "core/iphoneos-Info.plist": "38764baff46d25fce47366978ba9aa5c10d3cb40bf40e411dbff5d7b6ad2899f",
+      "core/kext-config.h": "8d53fb742858371b32145d64eccd8874580a6d341e3a5a34a87b60449bf033df",
+      "core/kext.xcconfig": "12a970668fc61cfafb075bc7fdce3440cc9307ad15e5959bb972a2d2e6d3127f",
+      "core/macosx-Info.plist": "4a4406827295ed01cafa5ef94de8dbebe09905c7c517c98b7422f950f34b1cf6",
+      "core/mk-root.sh": "05d404eb58219cd15d5494452fcd26629acc1a084e7b711979b0d62cfd3b1902",
+      "core/rangelist.c": "fa86c4c730da1e6f93922cf71dc05971f2e52acc5ba29e5332930ad8223b6dd6",
+      "core/rangelist.h": "fe6db3c57b781b570bb892d45da09c339ee3f2f904b9fc8501111081921baf31",
+      "hfs_encodings/HFSEncodings-Info.plist": "7da50afc778d025ee443c65be01d1ebf0df6c5d83e2c6fae75836a4bae5c6557",
+      "hfs_encodings/hfs_encodinghint.c": "92118b366b3e6147251101cbd852580068895cd6ac40ffa1b0dfe4a1441b4a48",
+      "hfs_encodings/hfs_encodings.c": "1f5b728ca619b7a90e4f153857813bab43d69b2b0f05cbdc10e08cd54442ab91",
+      "hfs_encodings/hfs_encodings.h": "8045a6f3d2bea7ee5a6646308fc6196df280d8fc418b3a1d5dbe05961fdb88e6",
+      "hfs_encodings/hfs_encodings_internal.h": "17e47e26f21875cb48c1fa02a1c0f45788e8ebfa3a50f31304c0e297895ed873",
+      "hfs_encodings/hfs_encodings_kext.cpp": "9592fb555d573580aac9f01acd5b9b81d819537cd6f1189423c16e8b6857ef56"
+    },
+    "staged_directory": "/home/jia/ios-mix1-build/xnu7195-lithium/src/bsd/lithium_hfs",
+    "staged_sha256": {
+      "core/.open_source_exclude": "c5d813340b782e72762bb4221857b74282f5c77ed2a037398d1b8113ef8f6ffd",
+      "core/BTree.c": "8b5b68e5cd9084713de12d1be0db2a2ebc76965ded4776b02f6a91e533d21738",
+      "core/BTreeAllocate.c": "d3b93c18ab2b4288ce7db1bfe06b19062d0a5534c28ea68727f24187b7b5d46f",
+      "core/BTreeMiscOps.c": "b1c05e1fd329ec78d2a969272894808ebf4524690728aaa74a516007078f1114",
+      "core/BTreeNodeOps.c": "e6d6fb45246196a812578d04a120d66b514f382417c397aee3ed4de7006b7c76",
+      "core/BTreeNodeReserve.c": "a661629c2f3b880a1b11df76b2be5f2a3bc89a771051a1d4a64868f8ffaa7449",
+      "core/BTreeScanner.c": "53830b590cdee4d5b2573673ceb34dbd9047ffe9a7a888f89438b7fff4dd624d",
+      "core/BTreeScanner.h": "d699b9d97fb8e34ea21877c4c5b211fa3d299113b5e850068dca865b3d9d92f1",
+      "core/BTreeTreeOps.c": "0f2e99ba6787de63a10c1bd3f77114b6620524b6988d70f453a61854cc4f6581",
+      "core/BTreeWrapper.c": "22abe03853f27618ddeb7b7fd0f5c434ceb97842abc4362072fde0ec07d49df5",
+      "core/BTreesInternal.h": "5570f580314567526391af167015177dd6b49fc06506993fdbb9c1e3d0cc3d95",
+      "core/BTreesPrivate.h": "7dd82baf612edde7f0ffc61f705eb80e5d837e0e3457f5d6174261753234b2b8",
+      "core/CatalogPrivate.h": "27a50b7eb29d0b5ff82e148f6bf7aeaacdb05c3fbe31bf56eab26ba8c567f156",
+      "core/CatalogUtilities.c": "c9453ae859e771a9b901d8d2697160b933750a23d8e211d2025124e16a891c4d",
+      "core/FileExtentMapping.c": "675f161996684df514823dc94e1affcf4cd6d85a3ba8aa580cc8640814325c3c",
+      "core/FileIDsServices.c": "956af8fc8c571db0f926c24908926c5c9731e7b49c500034d4aacbc414eba523",
+      "core/FileMgrInternal.h": "3c1c57a9a4c96d70dcaa6c18b234b4b4f713ef94e45684c9dfaa1e272c952f69",
+      "core/HFSUnicodeWrappers.h": "d5ef6fe1d30a4737a80f39e99cc52b193105fd1f7bb56e5166a434cc65b037f1",
+      "core/MacOSStubs.c": "102530be503838883e6845851dbcdcb803fa688f094abbcbd95ddcd860780b06",
+      "core/UCStringCompareData.h": "88773669ce79ebe2d6bcc84d3341c3c2586e649984ac97453adb1b8706440464",
+      "core/UnicodeWrappers.c": "7300de813b94d41d14faf9aa2a0ddf436010bb43d258f81fc92ab841bc7157f2",
+      "core/VolumeAllocation.c": "c1498eec797005daf0b9d2dc89ae83aef88aca09ea64b451ce3d926d03582e80",
+      "core/hfs.h": "00998da8a564adb86fd77e4bf9fb83ae4018419d42614806801a16214b3e6937",
+      "core/hfs_alloc_trace.h": "75cf3c92ba0669326db3564604829f6c7172643f3ebef7a3cb816010b579407e",
+      "core/hfs_attrlist.c": "d5cf6f994ec05689fed7c1fdd812f607a3714d13b63f8487b0ed98370ddc3965",
+      "core/hfs_attrlist.h": "0a0077a26583fc92d3a11d2889d17d79e08b4897c73bdc3cb27dfb6771a03708",
+      "core/hfs_btreeio.c": "6d28a2468d1e983e3bb305637834f4eccc8d9e3ffbbea5b22a7b47be2600a823",
+      "core/hfs_btreeio.h": "41a1a2cb48727b5491c87e2aa1dc9fa36906c8b551c4ff61fe5ac8e4b3cb6998",
+      "core/hfs_catalog.c": "9c99818f7c5bf11e0a83dd22caf5b6c2d45d7605b7298c7c1751461f1b66d8d8",
+      "core/hfs_catalog.h": "d22cfa23097707f1757fc7e260cbab0cb267b9f987918c286354235131f3bc75",
+      "core/hfs_chash.c": "af61b16302a1f6898c7452a89378b6ae82aea8bbcfb413ba908edf806e9e3dc0",
+      "core/hfs_cnode.c": "ad6c9e640b44e0c271a8a55126638ae53da9c62eb5f3bf51e6c4875d186ecd01",
+      "core/hfs_cnode.h": "89515533a26764ec588c8f58d3a7208b99977f7b4e45e6bf3d7768d0392f4a60",
+      "core/hfs_cprotect.c": "8849f8a77fa900c0d43567049cffc90b288b29b63cad291f0bd88cffea3f4883",
+      "core/hfs_cprotect.h": "0fe78c4f9e61cf1db17e22ab06a7fca37d6dff70dbc28b48589bc8bdf7e70d3c",
+      "core/hfs_dbg.h": "f3e4c64d62058b4df85357894a13e8782befb63e87a2f7ed6ce5d38cbf07c723",
+      "core/hfs_endian.c": "ec46cd5d799fc27015681f608de049e38dbeea0ce6f52c664ccb9631103861dd",
+      "core/hfs_endian.h": "dcdada4fd78a1b4e48856ecb2361a6caf953f6f69e800ef9e20862c15e1a6899",
+      "core/hfs_extents.c": "dc78d6fca1f576c76e9541fb9e51988f04914ff15b01a06812a04c3d44c3d419",
+      "core/hfs_extents.h": "434a0089a7517e926398708fcbff3269283260653452fe61be53614c97a76dc8",
+      "core/hfs_format.h": "8ac2afc412220f401f7c966a08f1d0ea7199345eb4d8cefa7dc28281fb0e8cb6",
+      "core/hfs_fsctl.h": "fde0e2c93f4d17475116fa0f3259e00cb4ffc7918b93a16fc4a9e21b596e36af",
+      "core/hfs_fsinfo.c": "89e15b08ab5ec182a2d3f96dd0cd972468799b76db0dde6d296f0c2e57813543",
+      "core/hfs_hotfiles.c": "2a0ddfd05e19b1bdd46a33ddb41bafb62c3bad76be7cf9a19f79ee08b7a3c7d3",
+      "core/hfs_hotfiles.h": "6e23cb4821193d2056c070f4022087484a8843d767ec29d94420bf518248dfd1",
+      "core/hfs_iokit.cpp": "fb0de30daba83f77bebd5dfc63657ca9754092762777e70fa5399d33664cc6e7",
+      "core/hfs_iokit.h": "9821d0b61ab8a83f1f7e7c77803bda696156bdc542d4990bc85f534a4c648d02",
+      "core/hfs_journal.c": "386785839906439ce8f9ca6653b47ff72744fa245076642c4946dc9a214b89ca",
+      "core/hfs_journal.h": "6ba02edf7f7cbfccabf28319b7ab6cacf1e53dc082a113c7cb2f95cca7e4c800",
+      "core/hfs_kdebug.h": "2af9d6c3c9e7e0d7edd0994317ebb23a0b1429e9dcd870c9ad050a9bc6c2bdc7",
+      "core/hfs_link.c": "fdca7d8ea9e20daa032698f6c2b6bb9c5fff3d189658bf6d051a79d7cee37ce7",
+      "core/hfs_lookup.c": "81b6b3c72d452c6363630af2af40b9f3d602eca906ff6fbd8c022c1b8119265c",
+      "core/hfs_macos_defs.h": "2a0091093935d41f154ea4ce0cecbbd321175329e06e801591337de38c8b663b",
+      "core/hfs_mount.h": "665c064e92254bb2537c9a42c644cf937f9b4e28eeff03324394d484a3d4f40d",
+      "core/hfs_notification.c": "8a11e181d759080627a3b8520b1cf6fe2b007a5cb2310d0afb588af8fb599135",
+      "core/hfs_quota.c": "cd4fb914264324da7cede2b3d47b5f5875e112ee5769fd805c4a174e0a7119ed",
+      "core/hfs_quota.h": "88b8708d537e9cd61cf00cfac51f5185a5323022112edc8f90018897aa6b546a",
+      "core/hfs_readwrite.c": "515843873d8edb9ecffa61d4afdeca06166a031504e3a12a5340b21265f2df25",
+      "core/hfs_resize.c": "573de552da0c2a0e63bf61df2f50f8fbe34c66a0a1855b84144c80c2381d24c2",
+      "core/hfs_search.c": "6349c6c1aa89143a401d0601b046316d12c2d066da5790827d38e145156a3e1f",
+      "core/hfs_unistr.h": "fe22ca3ff255369fe5d45e4b749bfb4e1e7cac320e2269ced432890953752d81",
+      "core/hfs_vfsops.c": "51bf95ebc07b91bd4c422499ac08d86f6129bcb05f5d34d8ea6124389dae7139",
+      "core/hfs_vfsutils.c": "2526d6e6ad6e7ac6ee501c5edd7b9b51fa8c0a0734b39c536d2ba5922d9fbf66",
+      "core/hfs_vnops.c": "66dead49f6f8f85b622f9ef5eeef897d8af421cb025a8752833ffe4b7679942b",
+      "core/hfs_xattr.c": "ebb585ca0a1c94628e386e68e830d9cd234e0cfd5762c5a716cfeb658b2307dd",
+      "core/install": "9882e2857a4ccb552d8410a07bee5fe857bfaadd98d74bc8ac45ad0c891fbe10",
+      "core/iphoneos-Info.plist": "38764baff46d25fce47366978ba9aa5c10d3cb40bf40e411dbff5d7b6ad2899f",
+      "core/kext-config.h": "8d53fb742858371b32145d64eccd8874580a6d341e3a5a34a87b60449bf033df",
+      "core/kext.xcconfig": "12a970668fc61cfafb075bc7fdce3440cc9307ad15e5959bb972a2d2e6d3127f",
+      "core/macosx-Info.plist": "4a4406827295ed01cafa5ef94de8dbebe09905c7c517c98b7422f950f34b1cf6",
+      "core/mk-root.sh": "05d404eb58219cd15d5494452fcd26629acc1a084e7b711979b0d62cfd3b1902",
+      "core/rangelist.c": "fa86c4c730da1e6f93922cf71dc05971f2e52acc5ba29e5332930ad8223b6dd6",
+      "core/rangelist.h": "fe6db3c57b781b570bb892d45da09c339ee3f2f904b9fc8501111081921baf31",
+      "hfs_encodings/HFSEncodings-Info.plist": "7da50afc778d025ee443c65be01d1ebf0df6c5d83e2c6fae75836a4bae5c6557",
+      "hfs_encodings/hfs_encodinghint.c": "92118b366b3e6147251101cbd852580068895cd6ac40ffa1b0dfe4a1441b4a48",
+      "hfs_encodings/hfs_encodings.c": "1f5b728ca619b7a90e4f153857813bab43d69b2b0f05cbdc10e08cd54442ab91",
+      "hfs_encodings/hfs_encodings.h": "8045a6f3d2bea7ee5a6646308fc6196df280d8fc418b3a1d5dbe05961fdb88e6",
+      "hfs_encodings/hfs_encodings_internal.h": "17e47e26f21875cb48c1fa02a1c0f45788e8ebfa3a50f31304c0e297895ed873",
+      "hfs_encodings/hfs_encodings_kext.cpp": "9592fb555d573580aac9f01acd5b9b81d819537cd6f1189423c16e8b6857ef56"
+    },
+    "patches": [
+      {
+        "path": "ports/lithium/patches/hfs-556/0001-lithium-readonly-root-journal.patch",
+        "sha256": "0852f87accdcf33d887fd2d5fdc65a74d57c4dd83440b2f3cd9044dc76bdec4e"
+      }
+    ],
+    "adaptation": "built-in KPI registration; plain unencrypted HFS volume, no AppleKeyStore"
+  },
+  "patches": [
+    {
+      "path": "ports/lithium/patches/xnu-7195-build/0001-linux-posix-header-generator.patch",
+      "sha256": "8d7846f61a73cef4a36cfeab22bac0ad37673ffbcc9014bf445a290d89b39493"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195-build/0002-persona-commpage-include.patch",
+      "sha256": "876cf78fe58c5dea95448ded6aa9b05e00052618d421c4560420cee4eec66dca"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195-build/0003-generic-arm-without-apple-amcc.patch",
+      "sha256": "3557a43e281e6396da22e0e2f018d23ec5ad5257e42e52f5583e21e396341060"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195-build/0005-kernelrpc-constant-array-bound.patch",
+      "sha256": "ae1836dcb38b7085cc2fd4822812ccd32e7b5fec5fa8472ef1fe4b4d17bb60fe"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195-build/0006-iig-generator-dependency.patch",
+      "sha256": "f02ad5bf6cc768ae14b7738b815232b1ed5bd6533034e70418babb6e5b6edb5a"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195-build/0007-apple-only-cpu-tunables.patch",
+      "sha256": "61d238b16e9514d55a54723438e7c695d18e7219cef6fc8bfdbe193c4e51fdac"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195-build/0008-pmap-compilation-service-state.patch",
+      "sha256": "c1a977e00602cb93514771fd9b260df4b0c42efee9b6d01e678f8fbd7c453c57"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195-build/0009-upstream-clang-crypto-assembler-syntax.patch",
+      "sha256": "c84731c36540a70a01d3c6859cfd51f572ab4b5894e62bffbefec4c5d2596edd"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195-build/0010-monitor-call-only-with-monitor.patch",
+      "sha256": "48a2ab06bae9682c5b587637f71254a481c00a71e267e45aed533ffba76a7991"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195-build/0011-unsupported-pmap-signing-exception.patch",
+      "sha256": "318c42f97c00f1f4aa74a9089d78a09dd3432e51c3c0b2b6af95ddb884595612"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195-build/0012-explicit-optional-kext-pgo-provider.patch",
+      "sha256": "7012c4ea2218d6d8ec871d321150150c44b59c29cf29a2e70f9fd77c052ca4aa"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0001-gicv3-redistributor-stride.patch",
+      "sha256": "231190258909fe02be9aa5eb0be10b1bd5a7fda4330c826890423e032e4fa8ed"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0002-lithium-armv8-gic-timer.patch",
+      "sha256": "036d9318d21248a1a1d244dc70281b0ecc31c59f4dcf08b8dc02616236ff897a"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0003-lithium-generic-arm-definitions.patch",
+      "sha256": "ab31283fc000c2787b1012bb34b06146e5b71d602a72459ddc1c048c4ecd9e0b"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0004-lithium-irq-cpu-interface.patch",
+      "sha256": "8a555d40a85f009b1edcd2b2d4799c8a5f480245ba6c42259be8242a774994c8"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0005-lithium-device-tree-platform-expert.patch",
+      "sha256": "ab2dcdc7c6860575b8f5cc56b9deb1460bcf8aed1640290fa079aae1ca6d3a2a"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0006-lithium-public-arm-master.patch",
+      "sha256": "d17856768267dfd111ed401fd2be24252580627e1f70ed538df4e676790ae268"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0007-lithium-bootstrap-address-space.patch",
+      "sha256": "0ee7c457f9db958e817f4f43b2ad251362a78e53db605b98fa1a44684175171c"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0008-sha256-constant-data-region.patch",
+      "sha256": "a6a20c4e0a20876cefa6a884b608030d3ac4effa70b77b2a98b2cc8bb368c251"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0009-lithium-bearssl-sha1.patch",
+      "sha256": "7532a40506bfd5c99cf8b2f245d995f9f6ffbcfe79339b3453ceb01a245f178e"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0010-lithium-kernel-hmac-prng.patch",
+      "sha256": "a96b271552d8b41c38976680be473178c8ffaae89948b7053830892f0ff6fcc6"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0011-lithium-boot-cpu-driver.patch",
+      "sha256": "7038fe0c257a7f8e4dcaeb142222673014dc320324e1f6719d94ce90809df4c3"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0012-lithium-builtin-pthread.patch",
+      "sha256": "830af1db5a054584a3637e5e96db5faf9a059577a121a34693533b97dc470df6"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0013-lithium-native-screen-checkpoints.patch",
+      "sha256": "59d65e211ffdeaa52dd80e5c6aa666ebc03d5d9076da85fae0f9338d20716d8d"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0014-lithium-native-vm-trace.patch",
+      "sha256": "8adf97ed861d0b0521c8e13618c81f31cdb5277c7f2ef27cb85bec047f680019"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0015-lithium-native-alias-probe.patch",
+      "sha256": "b06d599d6b05f9be0dc90e9363b017ae99d53e83e143ec61234abd3bfe9d58bc"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0016-lithium-native-framebuffer-reservation.patch",
+      "sha256": "8bdc0b0f4c8efa92101c8c4c8ad0787e93fc5fcee564790a25c4efe9f49de4cf"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0017-lithium-native-aes-cbc.patch",
+      "sha256": "1334ba7ab0924265be088ba28190ffa2c4a74b622fb6704ac091988d117ea74b"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0018-lithium-native-ufs-read.patch",
+      "sha256": "f3a0fa2315c2ab7a61b34cabdd5e36fd193c273672c597c1e53922b97234cea1"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0019-lithium-native-ufs-dma-flags.patch",
+      "sha256": "b0f8e6cf94bc193c38fdf603b6965c30bdd08a3c65c8751dfd7fda12b52a1618"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0020-lithium-native-hfs.patch",
+      "sha256": "b0e77a964cc2c034adf10b56a0aa742f5e64306b7091eafb5b134ee63a07b1b2"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0021-lithium-native-ufs-root.patch",
+      "sha256": "00203595f592b9eeba300ed59f8f40892f85bad9ebd24e3456fa5a0c0ac1261b"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0022-lithium-native-md5.patch",
+      "sha256": "4c73ccce8adfccd416ca391baaee961965342bb97145c39cddcbece7779bf359"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0023-lithium-native-sha256.patch",
+      "sha256": "10a1e71cae14b6db44ed8b3dc5331127eee265c3fb7a97ba2f5740695aa58327"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0024-lithium-dyld-policy.patch",
+      "sha256": "03d2f9a4383d49deb33065f0e6c8225172d273bcb43d4ac702061dd703370a85"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0025-lithium-firmware-trust.patch",
+      "sha256": "0260a72b8ddc8dde6c6a450f58d60bc94608ceab61873896df719e5fcd1f5956"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195/0026-lithium-volatile-root.patch",
+      "sha256": "7ad3cc1442e82dd343939d7eb7a94cf92907dcf765798f26fe4f1df855eda4f1"
+    },
+    {
+      "path": "ports/lithium/patches/hfs-556/0001-lithium-readonly-root-journal.patch",
+      "sha256": "0852f87accdcf33d887fd2d5fdc65a74d57c4dd83440b2f3cd9044dc76bdec4e"
+    }
+  ],
+  "target": "iOS14 arm64 DEVELOPMENT LITHIUM; source build, hardware boot unverified",
+  "machine": "LITHIUM",
+  "sdk_kind": "source-exported kernel headers, not an Apple iPhoneOS SDK",
+  "unsupported_features": [
+    "kext PGO export (ENOTSUP)",
+    "per-pmap W+X signing exception without PMAP_CS (KERN_NOT_SUPPORTED)"
+  ],
+  "command": [
+    "make",
+    "--output-sync=target",
+    "-C",
+    "/home/jia/ios-mix1-build/xnu7195-lithium/src",
+    "build",
+    "SHELL=/bin/bash",
+    "SDKROOT=iphoneos",
+    "ARCH_CONFIGS=ARM64",
+    "MACHINE_CONFIGS=LITHIUM",
+    "KERNEL_CONFIGS=DEVELOPMENT",
+    "ARCH_STRING_FOR_CURRENT_MACHINE_CONFIG=arm64",
+    "PLATFORM=iPhoneOS",
+    "HOST_OS_VERSION=11.0",
+    "HOST_SDKROOT_RESOLVED=/",
+    "HOST_CC=/opt/unixnu-linux/CommandLineTools/usr/bin/xnu-host-cc",
+    "MIGCOM=/opt/unixnu-linux/CommandLineTools/usr/libexec/migcom",
+    "IIG=/mnt/f/IOS-MIX1/scripts/iig-ios14.py",
+    "SYSCTL_HW_PHYSICALCPU=4",
+    "SYSCTL_HW_LOGICALCPU=4",
+    "MEMORY_SIZE=8331214848",
+    "MAKEJOBS=-j2",
+    "BUILD_DSYM=0",
+    "DO_CTFMERGE=0",
+    "BUILD_LTO=0",
+    "BUILD_WERROR=0",
+    "WARNFLAGS_STD=-Wall -Wextra -Wno-unused-parameter -Wno-unknown-warning-option",
+    "RC_NONARCH_CFLAGS=-DXNU_KEXT_PGO=0",
+    "RC_DARWIN_KERNEL_VERSION=20.6.0",
+    "RC_ProjectSourceVersion=7195.141.2",
+    "OBJROOT=/home/jia/ios-mix1-build/xnu7195-lithium/obj",
+    "SYMROOT=/home/jia/ios-mix1-build/xnu7195-lithium/sym",
+    "DSTROOT=/home/jia/ios-mix1-build/xnu7195-lithium/dst"
+  ],
+  "environment": {
+    "PATH": "/opt/unixnu-linux/CommandLineTools/usr/bin:/opt/unixnu-linux/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/snap/bin",
+    "LC_ALL": "C",
+    "ZERO_AR_DATE": "1",
+    "CROSS_CLANG": "/opt/unixnu-linux/llvm/bin/clang",
+    "DARWIN_TRIPLE": "arm64-apple-ios14.0",
+    "CROSS_EXTRA_FLAGS": "-mllvm -disable-atexit-based-global-dtor-lowering",
+    "XNU_CLANG_DROP_FLAGS": "-enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang",
+    "XNU_TOOLCHAIN_BIN": "/opt/unixnu-linux/CommandLineTools/usr/bin /opt/unixnu-linux/XcodeDefault.xctoolchain/usr/bin",
+    "UNIXNU_SDKROOT": "/home/jia/ios-mix1-build/xnu7195-lithium/sdk",
+    "IOS14_IIG_REAL": "/opt/unixnu-linux/XcodeDefault.xctoolchain/usr/bin/iig",
+    "IOS14_IIG_ROOT": "/home/jia/ios-mix1-build/xnu7195-lithium",
+    "UNIXNU_SDK_VERSION": "14.0",
+    "UNIXNU_SDK_BUILD": "source-headers-7195.141.2",
+    "UNIXNU_PLATFORM_PATH": "/home/jia/ios-mix1-build/xnu7195-lithium/sdk/Platforms/iPhoneOS.platform"
+  },
+  "exit_code": 0,
+  "log": "/home/jia/ios-mix1-build/xnu7195-lithium/logs/kernel-20261114T094205Z.log",
+  "log_sha256": "69f8590551a13cb684a0e833819cb3ebce822c9e6a7c319a5fda0113ada311a6",
+  "kernel_binaries": [
+    {
+      "path": "/home/jia/ios-mix1-build/xnu7195-lithium/obj/DEVELOPMENT_ARM64_LITHIUM/mach.development.lithium.unstripped",
+      "bytes": 14209368,
+      "sha256": "f2ea131e460ce9a98351cd1f48396ca0e448f208058d7818f0f8f5647bee38e5"
+    }
+  ],
+  "device_operations": false,
+  "kernel_boot_verified": false,
+  "ios_userspace_started": false
+}

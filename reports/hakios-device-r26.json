@@ -1,0 +1,170 @@
+{
+  "schema": 1,
+  "attempt": "HakiOS lithium R26",
+  "started_at": "2026-11-16T01:08:17.614995+08:00",
+  "recorded_at": "2026-11-16T01:08:19.009890+08:00",
+  "baseline": {
+    "project": "HakiOS",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2"
+  },
+  "package": {
+    "image_sha256": "c652c9fd059d6808e23b03283ce02ebef80531367de9cb158637f3e17d36b543",
+    "image_bytes": 15773696,
+    "kernel_sha256": "648320e505088c834eff8c8c0cb17b4ee29ba6d96a4c7da8aba1554fbe063748",
+    "loader_sha256": "c6fbfa7d1d7840223c2d0b4639bc97ccf0c3df48829d966eb68d4ec33ad90a1d",
+    "fd_sha256": "51b33785f77d75bb1e52e7e6895556b091b0172e17640f1aa3d4185c1e436e2b",
+    "payload_sha256": "c979eece93d3ff75e4ff1fa467f9aab0768cd500066e2546986fc90b1e903998",
+    "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=2 lithium_storage_test=1 systrace=2 systrace_name=launchd loader_return_after=120 lithium_ios14_test=1 lithium_launchd_test=1 applog=1 applog_name=launchd",
+    "stock_dtb_table_sha256": "ab929abf55ad4822ae83489a58d6b550b7b24ea8398ce8ead1de7b1d2caed6aa",
+    "test_profile": "p2-ios14-launchd",
+    "ramdisk_sha256": "31c1e0e703c9895abfce23e56d1d5cf5ed621863a6f1ca170b5bcd25b89cd4db",
+    "dynamic_init_sha256": "2a8ae1b48b9d1252c4845ad3b98f9a66c7ced62ce37ca47ff9c29f289cbeda28",
+    "loader_identity": {
+      "target": "iPhone10,1 / D20AP",
+      "source_sha256": "1827dfc68e87b822c43e86781872caa6a5d490efc5145a2a60feba0e2bd54b93",
+      "generator_sha256": "ae6cebdcfa22994661211e0bc35fd14770484173f951ceef6a65e9b84ad3ff99",
+      "header_sha256": "71874512c290ec24d799173f2aa10131c6f61573d598c0e281252e373c5b6630",
+      "placeholder": false
+    }
+  },
+  "frozen_artifacts_path": "artifacts/hakios/p2-ios14-launchd-stdio-ready",
+  "frozen_boot_image": "reports/local/20261116-010817-593006-hakios-preflight/lithium-hakios-test.img",
+  "local_log_path": "reports/local/20261116-010817-593006-hakios-preflight",
+  "test_contract_path": "reports/local/20261116-010817-593006-hakios-preflight/test-contract.json",
+  "filesystem_input": {
+    "report": "reports/hakios-hfs-journal-repair.json",
+    "frozen_contract_path": "reports/local/20261116-010817-593006-hakios-preflight/filesystem-input.json",
+    "original_volume_plus_verified_journal_delta": true,
+    "prior_maintenance_written_bytes": 8192,
+    "first8192_unchanged": true,
+    "full_volume_after_hash_measured": false
+  },
+  "identity_verified": true,
+  "bootloader_unlocked": true,
+  "userdata_bytes": 250710192128,
+  "temporary_boot_issued": true,
+  "fastboot_returncode": 0,
+  "command_accepted": true,
+  "fastboot_boot_output": "Sending 'boot.img' (15404 KB)                      OKAY [  0.378s]\nBooting                                            OKAY [  0.787s]\nFinished. Total time: 1.170s\n",
+  "latest_usb": {
+    "checked_at": "2026-11-16T01:08:19.009890+08:00",
+    "authorized_device_in_fastboot": false,
+    "adb_present": false,
+    "local_log_path": "reports/local/20261116-010817-593006-hakios-preflight/post-boot-usb.json"
+  },
+  "battery_preflight": {
+    "battery_soc_ok": "yes",
+    "local_log_path": "reports/local/20261116-010817-593006-hakios-preflight/battery-query.json"
+  },
+  "user_screen_observation": {
+    "source": "user_photo",
+    "observation_pending": false,
+    "current_screen": "R26 retained summary: stage6 errno19; orderly timed return",
+    "automatic_reboot_observed": false
+  },
+  "verified_stages": {
+    "fastboot_command": true,
+    "uefi": true,
+    "loader": true,
+    "kernel": true,
+    "hello": false,
+    "full_init": true,
+    "hfs_root_switch": true,
+    "original_launchd_pid1": false,
+    "original_selected_jobs": false,
+    "original_launchd_file_identity": true,
+    "upstream_ramfs_data_initialization": true,
+    "rd_md0_contract": true,
+    "stdout_nonterminal_contract": false,
+    "original_launchd_exec_path_entered": false,
+    "original_dyld_shared_region_call": false
+  },
+  "outcome": "pre_exec_stdio_contract_rejected_errno19_orderly_timed_return",
+  "exact_failure_stage": "stage6_before_launchstdio_success_or_original_exec",
+  "runtime_acceptance": {
+    "launchd_test_passed": false,
+    "final_summary_pending": false,
+    "orderly_return_observed": true,
+    "panic_return_observed": false,
+    "final_summary_retained": true,
+    "root_readonly_verified": true,
+    "data_ramfs_initialization_verified": true,
+    "original_launchd_pid1_stable": false,
+    "selected_jobs_verified": false,
+    "P2_overall_passed": false
+  },
+  "hardware_verified": true,
+  "ios14_compatibility_verified": false,
+  "partition_writes_performed": false,
+  "qemu_used": false,
+  "observation_recorded_at": "2026-11-16T01:33:10.960370+08:00",
+  "kernel_execution_verified": true,
+  "screen_evidence": {
+    "photos": [
+      {
+        "path": "reports/local/20261116-010817-593006-hakios-preflight/r26-pre-exec-stdio-rejection.jpg",
+        "sha256": "4b62615d16dbbddd373221d48cd60b651c722afdcd8ca29a296e6408bbdfc67f"
+      }
+    ],
+    "transcription_path": "reports/local/20261116-010817-593006-hakios-preflight/r26-screen-transcription.txt",
+    "transcription_sha256": "28122a03c4e6511cbdb9067992c84304e9b8d38ef0449972bc49e4a3952c8bd9",
+    "raw_kernel_log_captured": false,
+    "launchstdio_marker_visible": false,
+    "launchd_job_marker_visible": false,
+    "original_service_snapshots_visible": false,
+    "transcription_scope": "Visible text normalized for screen wrapping/punctuation; absent raw logs not inferred"
+  },
+  "measurements": {
+    "loader_return_log_bytes": 77103,
+    "root_switch_rc": 0,
+    "root_readonly": true,
+    "selected_jobs": 3,
+    "launchd_bytes": 403488,
+    "launchd_match": true,
+    "ramfs_var": true,
+    "upstream_mount_checks": 2,
+    "upstream_mount_failures": 0,
+    "handoff_pid": 1,
+    "handoff_before_exec_observed": true,
+    "rd": "md0",
+    "result": "FAIL",
+    "result_stage": 6,
+    "result_errno": 19,
+    "clock_ticks_start": 1886254250,
+    "clock_ticks_end": 4204972144,
+    "frequency_hz": 19200000,
+    "hardware_elapsed_ms": 120766,
+    "clock_valid": true,
+    "ppi27_start": 0,
+    "ppi27_end": 9551,
+    "irq_delta": 9551,
+    "samples": 2,
+    "stalled": 0,
+    "min_step": 3488,
+    "last_timer_ppi27": 8887,
+    "last_timer_heartbeat": 12,
+    "last_timer_elapsed_ms": 110178
+  },
+  "failure": {
+    "stage": 6,
+    "errno": 19,
+    "errno_name": "ENODEV",
+    "added_stdio_predicate_incompatible_with_actual_kernel": true,
+    "expected_ioctl_errno": 25,
+    "actual_kernel_mmioctl_errno": 19,
+    "most_likely_substep": "TIOCGETA on /dev/null rejected by ENOTTY-only predicate",
+    "exact_stdio_substep_logged_on_device": false,
+    "open_or_dup_failure_not_individually_excluded_by_photo": true,
+    "original_R25_launchd_abort_cause_resolved": false,
+    "filesystem_or_UFS_failure_not_established": true,
+    "source_audit_report": "reports/hakios-system-image-route-audit.json"
+  },
+  "observation_archival": {
+    "frozen_evidence_hashes_checked": 172,
+    "device_queries_performed": false,
+    "temporary_boot_issued": false,
+    "partition_writes_performed": false,
+    "new_kernel_compiled": false
+  }
+}

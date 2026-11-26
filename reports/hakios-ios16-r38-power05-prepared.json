@@ -1,0 +1,67 @@
+{
+  "revision": "R38-clock-power05",
+  "prepared_at": "2026-11-21T00:02:16.918778+08:00",
+  "image": {
+    "path": "lithium-hakios-ios16-r37-ram-frequency-09.img",
+    "bytes": 16334848,
+    "sha256": "ec7f2b5dd80b7d0c468fcb6005b35c48a63b087fa8ffa77a311b07d6d7c01deb"
+  },
+  "kernel_sha256": "eb5b407451e41be6b2b14ff4c6b7d24d034b1ba30470e396de0d989c35a83a4a",
+  "package": "artifacts/hakios/lithium-ios16/phase4-r37-ram-frequency-09",
+  "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_clock_diag=1 cpu_power_diag=1 cpu_freq_pmu_setup=0 cpu_sanity=1 cpu_spmi_diag=1 cpu_freq_diag=1",
+  "same_arguments_as_power04": true,
+  "single_change": "process observed DONE/errors before expiry; only pending transaction expires",
+  "host_tests": [
+    {
+      "name": "asan-ubsan",
+      "command": [
+        "/usr/bin/clang",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-I",
+        "/mnt/f/IOS-MIX1/ports/hakios-lithium/diagnostics",
+        "/mnt/f/IOS-MIX1/evidence/cpu-r38-20261120/spmi-read-host/mock.c",
+        "-o",
+        "/mnt/f/IOS-MIX1/evidence/cpu-r38-20261120/spmi-read-host/mock-asan-ubsan"
+      ],
+      "returncode": 0,
+      "cases": 495,
+      "checks": 83563,
+      "output": "asan-ubsan-output.txt"
+    },
+    {
+      "name": "optimized",
+      "command": [
+        "/usr/bin/clang",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-O2",
+        "-I",
+        "/mnt/f/IOS-MIX1/ports/hakios-lithium/diagnostics",
+        "/mnt/f/IOS-MIX1/evidence/cpu-r38-20261120/spmi-read-host/mock.c",
+        "-o",
+        "/mnt/f/IOS-MIX1/evidence/cpu-r38-20261120/spmi-read-host/mock-optimized"
+      ],
+      "returncode": 0,
+      "cases": 495,
+      "checks": 83563,
+      "output": "optimized-output.txt"
+    }
+  ],
+  "header_sha256": "862be6f321467719e7c21acf9eb1345330d0f1cfb84a6caa22048e1072422e46",
+  "layers_readback": true,
+  "device_booted": false,
+  "physical_ufs_provider_absent": true,
+  "regulator_writes": 0,
+  "clock_writes": 0
+}

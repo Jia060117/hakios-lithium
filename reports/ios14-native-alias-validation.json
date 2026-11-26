@@ -1,0 +1,29 @@
+{
+  "kernel_sha256": "f2ea131e460ce9a98351cd1f48396ca0e448f208058d7818f0f8f5647bee38e5",
+  "instruction_sequences_passed": true,
+  "missing_par_read_rejected": true,
+  "addresses": {
+    "table_probe": "0xfffffff00731ecf0",
+    "before_tlbi_probe": "0xfffffff00731ed60",
+    "after_tlbi_probe": "0xfffffff00731edb8",
+    "pixel_store": "0xfffffff00731ee04",
+    "relocate_call": "0xfffffff00731ee18"
+  },
+  "disassembly": [
+    {
+      "path": "/home/jia/ios-mix1-build/xnu7195-lithium/obj/DEVELOPMENT_ARM64_LITHIUM/instruction-check/00.txt",
+      "sha256": "00b36c7818b1befba78d30ea5461ab2843979702686f32db06e9f63ab1caafe0"
+    },
+    {
+      "path": "/home/jia/ios-mix1-build/xnu7195-lithium/obj/DEVELOPMENT_ARM64_LITHIUM/instruction-check/01.txt",
+      "sha256": "c993aa31fd4892d6c8c69974939280e9c7619abe81696a738e9b3868b6293c24"
+    },
+    {
+      "path": "/home/jia/ios-mix1-build/xnu7195-lithium/obj/DEVELOPMENT_ARM64_LITHIUM/instruction-check/02.txt",
+      "sha256": "e2aeea591a10f004b21c8c50529b00a157c054da98fb9dcc97bc7f1249c81bea"
+    }
+  ],
+  "qemu_used": false,
+  "hardware_verified": false,
+  "scope": "Emitted AT/ISB/MRS, ordered TLBI and pixel-store sequence only; no execution proof"
+}

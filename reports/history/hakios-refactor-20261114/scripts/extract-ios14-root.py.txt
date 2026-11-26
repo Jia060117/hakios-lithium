@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+"""Extract and identify the selected iOS14 filesystem inputs without a device.
+
+ZIP CRCs and the saved BuildManifest bind the files to the selected D20AP
+identity. Output lives on the larger E: drive by default; no mounting/flashing.
+"""
+import argparse
+from datetime import datetime
+import hashlib
+import json
+from pathlib import Path
+import plistlib
+import struct
+import zipfile
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--out', type=Path, default=Path('E:/IOS-MIX1-artifacts/ios14-d20ap'))
+    args = parser.parse_args()
+    out = args.out.resolve()
+    out.mkdir(parents=True, exist_ok=True)
+    inputs = json.loads((ROOT / 'reports/ios14-local-inputs.json').read_text(encoding='utf-8'))
+    ipsw = Path(inputs['ipsw_path'])
+    assert ipsw.stat().st_size == inputs['ipsw_bytes']
+    results = []
+    with zipfile.ZipFile(ipsw) as archive:
+        manifest_raw = archive.read('BuildManifest.plist')
+        assert hashlib.sha256(manifest_raw).hexdigest() == inputs['manifest_sha256']
+        manifest = plistlib.loads(manifest_raw)
+        assert manifest['ProductVersion'] == '14.8' and manifest['ProductBuildVersion'] == '18H17'
+        identity = next(i for i in manifest['BuildIdentities'] if i['Info']['DeviceClass'].lower() == 'd20ap')
+        for component in ('OS', 'RestoreRamDisk'):
+            member = inputs['components'][component]
+            assert identity['Manifest'][component]['Info']['Path'] == member
+            info = archive.getinfo(member)
+            target = out / Path(member).name
+            partial = target.with_suffix(target.suffix + '.partial')
+            print(f'{component}: extracting {info.file_size} bytes to {target}', flush=True)
+            digest = hashlib.sha256()
+            with archive.open(member) as src, partial.open('wb') as dst:
+                count = 0
+                while chunk := src.read(8 * 1024**2):
+                    dst.write(chunk)
+                    digest.update(chunk)
+                    count += len(chunk)
+                assert count == info.file_size  # read-to-EOF also checks ZIP CRC
+            partial.replace(target)
+            with target.open('rb') as stream:
+                prefix = stream.read(512)
+                stream.seek(-512, 2)
+                trailer = stream.read(512)
+            record = dict(component=component, member=member, path=str(target), bytes=count,
+                          sha256=digest.hexdigest(), zip_crc_verified=True, zip_crc32=f'{info.CRC:08x}',
+                          prefix_hex=prefix[:32].hex(), udif=trailer[:4] == b'koly')
+            if record['udif']:
+                xml_offset, xml_length = struct.unpack_from('>QQ', trailer, 216)
+                sector_count = struct.unpack_from('>Q', trailer, 492)[0]
+                assert xml_offset + xml_length <= count - 512
+                with target.open('rb') as stream:
+                    stream.seek(xml_offset)
+                    xml = stream.read(xml_length)
+                plist = plistlib.loads(xml)
+                metadata = out / (target.stem + '.udif.plist')
+                metadata.write_bytes(xml)
+                record.update(logical_bytes=sector_count * 512, udif_metadata_path=str(metadata),
+                              partitions=[dict(name=x.get('Name'), id=x.get('ID'))
+                                          for x in plist.get('resource-fork', {}).get('blkx', [])])
+            results.append(record)
+            print(json.dumps(record, ensure_ascii=False), flush=True)
+    record = dict(extracted_at=datetime.now().astimezone().isoformat(),
+                  selected_identity=inputs['selected_identity'], version='14.8', build='18H17',
+                  ipsw_path=str(ipsw), manifest_sha256=inputs['manifest_sha256'], images=results,
+                  device_operations=False, qemu_used=False, root_filesystem_mounted=False)
+    (ROOT / 'reports/ios14-root-inputs.json').write_text(json.dumps(record, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+
+if __name__ == '__main__':
+    main()

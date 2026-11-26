@@ -1,0 +1,56 @@
+--- a/xnu/apply.sh
++++ b/xnu/apply.sh
+@@ -27,6 +27,7 @@
+ [ "$(git rev-parse HEAD)" = "$BASE" ] || { echo "apply.sh: $TAG is $(git rev-parse HEAD), expected $BASE" >&2; false; }
+ echo 'BUILD/' >> .git/info/exclude
+ git apply --whitespace=nowarn "$HERE/hakios.patch"
++git apply --whitespace=nowarn "$HERE/lithium-cpu-r37.patch"
+ cp -a "$HERE/files/." .
+ # HFS Plus (the data volume): Apple's release, fetched like XNU, and this port's changes over it
+ "$HERE/hfs/hfs.sh" put "$DIR"
+--- /dev/null
++++ b/xnu/lithium-cpu-r37.patch
+@@ -0,0 +1,43 @@
++--- a/osfmk/kern/sched_prim.c
+++++ b/osfmk/kern/sched_prim.c
++@@ -805,10 +805,18 @@
++  *	Thread wait timer expiration.
++  *	Runs in timer interrupt context with interrupts disabled.
++  */
+++#if defined(LITHIUM_ARMV8_0)
+++#include "../../../../devices/lithium/diagnostics/cpu-sched-r37.inc"
+++#include "../../../../devices/lithium/diagnostics/cpu-slowcores-r37.inc"
+++#endif
+++
++ void
++ thread_timer_expire(void *p0, __unused void *p1)
++ {
++ 	thread_t thread = (thread_t)p0;
+++#if defined(LITHIUM_ARMV8_0)
+++	lithium_sched_r37_expiry(thread, (unsigned)cpu_number());
+++#endif
++ 
++ 	assert_thread_magic(thread);
++ 
++@@ -3105,6 +3113,10 @@
++ 
++ 			self->reason = reason;
++ 
+++#if defined(LITHIUM_ARMV8_0)
+++			lithium_sched_r37_switch(self, (unsigned)processor->cpu_id,
+++			    processor->last_dispatch, ctime);
+++#endif
++ 			processor->last_dispatch = ctime;
++ 			self->last_run_time = ctime;
++ 			timer_update(&thread->runnable_timer, ctime);
++@@ -3247,6 +3259,10 @@
++ 
++ 	self->reason = reason;
++ 
+++#if defined(LITHIUM_ARMV8_0)
+++	lithium_sched_r37_switch(self, (unsigned)processor->cpu_id,
+++	    processor->last_dispatch, ctime);
+++#endif
++ 	processor->last_dispatch = ctime;
++ 	self->last_run_time = ctime;
++ 	timer_update(&thread->runnable_timer, ctime);

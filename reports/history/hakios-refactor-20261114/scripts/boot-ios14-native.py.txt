@@ -1,0 +1,205 @@
+#!/usr/bin/env python3
+"""Temporarily boot the recorded native XNU image on the authorized MIX.
+
+Requires --boot. Captures commands locally and leaves screen evidence pending
+until observed. Fastboot success alone is never classified as XNU entry.
+"""
+import argparse
+from datetime import datetime
+import hashlib
+import json
+from pathlib import Path
+import re
+import shutil
+import struct
+import subprocess
+import time
+import zlib
+
+ROOT=Path(__file__).resolve().parents[1]
+ADB=Path('C:/platform-tools/adb.exe')
+FASTBOOT=Path('C:/platform-tools/fastboot.exe')
+REPORT=ROOT/'reports/ios14-native-device.json'
+HISTORY=ROOT/'reports/ios14-native-history.json'
+def write(path,value): path.write_text(json.dumps(value,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+def digest(data): return hashlib.sha256(data).hexdigest()
+def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--boot',action='store_true')
+    parser.add_argument('--serial',help='Select MIX explicitly when other Android devices are connected')
+    parser.add_argument('--from-fastboot',action='store_true',help='Use an already identified MIX bootloader; do not boot Android after root installation')
+    args=parser.parse_args()
+    package=json.loads((ROOT/'out/native-xnu/package.json').read_text())
+    image=ROOT/package['image_path']; data=image.read_bytes()
+    assert digest(data)==package['image_sha256'] and package['static_checks_passed'] and not package['qemu_used']
+    for name, expected in package['source_hashes'].items(): assert digest((ROOT/name).read_bytes())==expected,name
+    assert data[:8]==b'ANDROID!'
+    ks,ka,rs,ra,ss,sa,tags,page,ver,osfield=struct.unpack_from('<10I',data,8)
+    align=lambda n:(n+page-1)//page*page
+    parts=(data[page:page+ks],data[page+align(ks):page+align(ks)+rs],b'')
+    sha=hashlib.sha1()
+    for part in parts: sha.update(part); sha.update(struct.pack('<I',len(part)))
+    assert data[576:596]==sha.digest() and ss==0
+    dec=zlib.decompressobj(31); raw=dec.decompress(parts[0])+dec.flush()
+    assert dec.eof and raw==(ROOT/'out/native-xnu/Image').read_bytes()
+    assert raw[56:60]==b'ARMd' and struct.unpack_from('<Q',raw,16)[0]==len(raw)
+    assert 0x40080000+len(raw)<0x42800000
+    kernel=ROOT/'out/native-xnu/mach.development.lithium.unstripped'
+    assert digest(kernel.read_bytes())==package['kernel_sha256']
+    assert digest((ROOT/'reports/ios14-native-aes-validation.json').read_bytes())==package['aes_validation_sha256']
+    if package.get('md5_validation_sha256'):
+        assert digest((ROOT/'reports/ios14-native-md5-validation.json').read_bytes())==package['md5_validation_sha256']
+    assert digest((ROOT/'reports/ios14-native-sha256-validation.json').read_bytes())==package['sha256_validation_sha256']
+    assert digest((ROOT/'reports/ios14-native-amfi-validation.json').read_bytes())==package['amfi_validation_sha256']
+    assert digest((ROOT/'reports/ios14-firmware-trust-validation.json').read_bytes())==package['firmware_trust_validation_sha256']
+    if package.get('volatile_root_requested'):
+        assert digest((ROOT/'reports/ios14-native-cow-validation.json').read_bytes())==package['cow_validation_sha256']
+        assert digest((ROOT/'reports/ios14-preboot-seed.json').read_bytes())==package['preboot_seed_report_sha256']
+        seed=json.loads((ROOT/'reports/ios14-preboot-seed.json').read_text())
+        assert digest((ROOT/seed['seed_path']).read_bytes())==package['preboot_seed_sha256']
+        assert package['physical_ufs_read_only'] and package['volatile_write_limit_bytes']==64<<20
+    if package.get('ufs_read_only_probe') or package.get('ufs_root_requested'):
+        assert digest((ROOT/'reports/ios14-native-ufs-validation.json').read_bytes())==package['ufs_validation_sha256']
+        assert digest((ROOT/'reports/ios14-native-ufs-dma-validation.json').read_bytes())==package['ufs_dma_validation_sha256']
+    build=json.loads((ROOT/'reports/ios14-xnu-lithium-kernel.json').read_text())
+    assert build['exit_code']==0 and any(k['sha256']==package['kernel_sha256'] for k in build['kernel_binaries'])
+    for patch in build['patches']:
+        assert digest((ROOT/patch['path']).read_bytes())==patch['sha256'],patch['path']
+    if package.get('ufs_root_requested'):
+        assert digest((ROOT/'reports/ios14-native-hfs-readonly-validation.json').read_bytes())==package['hfs_readonly_validation_sha256']
+        assert digest((ROOT/'reports/ios14-hfs-root.json').read_bytes())==package['external_root']['report_sha256']
+        assert digest((ROOT/'reports/ios14-root-files.json').read_bytes())==package['external_root']['input_report_sha256']
+    print('Native boot image hash, header ID, decompressed payload, source and kernel checks passed.',flush=True)
+    if not args.boot: return
+    local=ROOT/'reports/local'/(datetime.now().strftime('%Y%m%d-%H%M%S-%f')+'-native-xnu')
+    local.mkdir(parents=True); frozen=local/'inputs'; frozen.mkdir()
+    for source in (image,ROOT/'out/native-xnu/package.json',ROOT/'out/native-xnu/lithium.adt',kernel):
+        shutil.copyfile(source,frozen/source.name)
+    for name in ('ios14-xnu-lithium-kernel.json','ios14-xnu-lithium-instructions.json',
+                 'ios14-native-alias-validation.json','ios14-native-aes-validation.json'):
+        shutil.copyfile(ROOT/'reports'/name,frozen/name)
+    if package.get('md5_validation_sha256'):
+        shutil.copyfile(ROOT/'reports/ios14-native-md5-validation.json',frozen/'ios14-native-md5-validation.json')
+    shutil.copyfile(ROOT/'reports/ios14-native-sha256-validation.json',frozen/'ios14-native-sha256-validation.json')
+    shutil.copyfile(ROOT/'reports/ios14-native-amfi-validation.json',frozen/'ios14-native-amfi-validation.json')
+    shutil.copyfile(ROOT/'reports/ios14-firmware-trust-validation.json',frozen/'ios14-firmware-trust-validation.json')
+    shutil.copyfile(ROOT/'reports/ios14-firmware-trust-inputs.json',frozen/'ios14-firmware-trust-inputs.json')
+    if package.get('volatile_root_requested'):
+        for name in ('ios14-native-cow-validation.json','ios14-preboot-seed.json'):
+            shutil.copyfile(ROOT/'reports'/name,frozen/name)
+        shutil.copyfile(ROOT/seed['seed_path'],frozen/'preboot-seed.bin')
+        cow=json.loads((ROOT/'reports/ios14-native-cow-validation.json').read_text())
+        evidence=local/'evidence'
+        paths=set(cow['evidence_sha256'])
+        paths.update(log['path'] for log in seed['logs'].values())
+        paths.update(('ports/lithium/native/ufs_cow.h','ports/lithium/native/ufs_cow_adapter.inc',
+            'ports/lithium/host/ufs-cow-test.c','ports/lithium/host/ufs-cow-adapter-test.c',
+            'ports/lithium/host/hfs-image-compare.inc','ports/lithium/host/hfs-root-copy.c',
+            'scripts/prepare-ios14-native-cow.py','scripts/prepare-ios14-preboot-seed.py',
+            'scripts/validate-ios14-native-cow.py','scripts/build-ios14-native-boot.py',
+            'scripts/prepare-ios14-native-package.py','scripts/boot-ios14-native.py',
+            'reports/ios14-mount-phase1.md'))
+        evidence_hashes={}
+        for name in sorted(paths):
+            source=ROOT/name; target=evidence/name
+            if name in cow['evidence_sha256']:
+                assert digest(source.read_bytes())==cow['evidence_sha256'][name]
+            target.parent.mkdir(parents=True,exist_ok=True)
+            shutil.copyfile(source,target)
+            evidence_hashes[name]=digest(target.read_bytes())
+        write(evidence/'manifest.json',evidence_hashes)
+    if package.get('ufs_read_only_probe') or package.get('ufs_root_requested'):
+        shutil.copyfile(ROOT/'reports/ios14-native-ufs-validation.json',frozen/'ios14-native-ufs-validation.json')
+        shutil.copyfile(ROOT/'reports/ios14-native-ufs-dma-validation.json',frozen/'ios14-native-ufs-dma-validation.json')
+    if package.get('ufs_root_requested'):
+        assert digest((ROOT/'reports/ios14-hfs-root.json').read_bytes())==package['external_root']['report_sha256']
+        installed=json.loads((ROOT/'reports/ios14-root-install.json').read_text())
+        assert installed['flash_completed'] and installed['root_image_sha256']==package['external_root']['image_sha256']
+        assert installed['serial']==args.serial and installed['product']=='MSM8996_A8'
+        for name in ('ios14-hfs-root.json','ios14-root-files.json','ios14-root-install.json',
+                     'ios14-native-hfs-readonly-validation.json'):
+            shutil.copyfile(ROOT/'reports'/name,frozen/name)
+    for patch in build['patches']:
+        source=ROOT/patch['path']
+        assert digest(source.read_bytes())==patch['sha256'],source
+        target=frozen/patch['path']; target.parent.mkdir(parents=True,exist_ok=True)
+        shutil.copyfile(source,target)
+    commands=[]
+    def cmd(argv,timeout=20):
+        p=subprocess.run(list(map(str,argv)),capture_output=True,timeout=timeout)
+        commands.append(dict(command=list(map(str,argv)),returncode=p.returncode,
+            stdout=p.stdout.decode(errors='replace'),stderr=p.stderr.decode(errors='replace')))
+        write(local/'commands.json',commands); return p
+    lines=cmd([ADB,'devices']).stdout.decode().splitlines()
+    devices=[line.split()[0] for line in lines if line.endswith('\tdevice')]
+    if args.from_fastboot:
+        assert args.serial=='54223ce9', 'Explicit authorized MIX serial required'
+        serial=args.serial
+        assert any(line.split()==[serial,'fastboot'] for line in cmd([FASTBOOT,'devices']).stdout.decode().splitlines())
+    elif args.serial:
+        assert args.serial in devices, 'Selected phone must be connected and authorized in ADB'
+        serial=args.serial
+    else:
+        assert len(devices)==1, 'One authorized Android phone required, or select MIX with --serial'
+        serial=devices[0]
+    def prop(name):
+        p=cmd([ADB,'-s',serial,'shell','getprop',name]); assert p.returncode==0
+        return p.stdout.decode().strip()
+    if not args.from_fastboot:
+        assert prop('ro.product.device')=='lithium' and prop('sys.boot_completed')=='1'
+    report=dict(attempted_at=datetime.now().astimezone().isoformat(),
+        image_sha256=package['image_sha256'],kernel_sha256=package['kernel_sha256'],
+        local_log_path=local.relative_to(ROOT).as_posix(),status='entering fastboot',
+        temporary_boot=True,partition_writes_performed=False,root_operations_performed=False,
+        data_wipe_operations_performed=False,qemu_used=False,native_xnu_entry_verified=False,
+        kernel_early_logs_observed=False,ios_userspace_started=False,
+        expected_screen='MIX1 NATIVE XNU header; XNU LITHIUM numbered kernel logs or panic',
+        screen_observation_status='pending')
+    report['ufs_read_only_probe_requested']=package.get('ufs_read_only_probe',False)
+    report['volatile_root_requested']=package.get('volatile_root_requested',False)
+    if report['volatile_root_requested']:
+        report['physical_ufs_read_only']=True
+        report['volatile_write_limit_bytes']=package['volatile_write_limit_bytes']
+        report['preboot_seed_sha256']=package['preboot_seed_sha256']
+        report['root_changes_survive_reboot']=False
+    report['ufs_root_requested']=package.get('ufs_root_requested',False)
+    report['started_from_fastboot']=args.from_fastboot
+    if package.get('ufs_root_requested'):
+        report['external_root_sha256']=package['external_root']['image_sha256']
+        report['root_install_report']='reports/ios14-root-install.json'
+    def persist():
+        write(REPORT,report)
+        write(local/'result.json',report)
+        history=json.loads(HISTORY.read_text(encoding='utf-8')) if HISTORY.exists() else {'attempts':[]}
+        for index,attempt in enumerate(history['attempts']):
+            if attempt['local_log_path']==report['local_log_path']:
+                history['attempts'][index]=dict(report); break
+        else: history['attempts'].append(dict(report))
+        write(HISTORY,history)
+    persist()
+    if not args.from_fastboot:
+        assert cmd([ADB,'-s',serial,'reboot','bootloader']).returncode==0
+    end=time.monotonic()+40
+    while time.monotonic()<end:
+        if serial.encode() in cmd([FASTBOOT,'devices']).stdout: break
+        time.sleep(1)
+    else: raise RuntimeError('Fastboot not detected')
+    p=cmd([FASTBOOT,'-s',serial,'getvar','product'])
+    assert b'MSM8996_A8' in p.stdout+p.stderr
+    p=cmd([FASTBOOT,'-s',serial,'oem','device-info'])
+    assert re.search(rb'Device unlocked:\s*true',p.stdout+p.stderr,re.I)
+    p=cmd([FASTBOOT,'-s',serial,'boot',image],timeout=60)
+    report.update(fastboot_boot_returncode=p.returncode,
+        fastboot_boot_message=(p.stdout+p.stderr).decode(errors='replace').strip(),
+        temporary_boot_command_accepted=p.returncode==0,
+        status='boot sent; awaiting physical kernel screen evidence' if p.returncode==0 else 'fastboot boot failed')
+    persist()
+    print(report['fastboot_boot_message'],flush=True)
+    if p.returncode: raise RuntimeError('Fastboot boot failed')
+    time.sleep(3)
+    report['post_boot_adb_present']=serial.encode() in cmd([ADB,'devices']).stdout
+    report['post_boot_fastboot_detected']=serial.encode() in cmd([FASTBOOT,'devices']).stdout
+    persist()
+    print('Boot command accepted. Physical XNU entry is pending screen observation; device remains in experiment.',flush=True)
+
+if __name__=='__main__': main()

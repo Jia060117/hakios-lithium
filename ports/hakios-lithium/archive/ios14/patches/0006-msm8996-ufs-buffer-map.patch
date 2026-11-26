@@ -1,0 +1,28 @@
+--- a/drivers/storage/hakios.ufs.c
++++ b/drivers/storage/hakios.ufs.c
+@@ -893,6 +893,9 @@
+ {
+ 	uint32_t part = (uint32_t)minor(buf_device(bp));
+ 	uint64_t offset, len, size;
++#if defined(LITHIUM_ARMV8_0)
++	caddr_t mapped;
++#endif
+ 	int error;
+ 
+ 	if (ufs_is_data(buf_device(bp))) {
+@@ -921,7 +924,15 @@
+ 	if (offset + len > size) {
+ 		len = size - offset;
+ 	}
++#if defined(LITHIUM_ARMV8_0)
++	/* Reuse ufs_data_strategy's mapping for cluster pages without a kernel address. */
++	if ((error = buf_map(bp, &mapped)) == 0) {
++		error = ufs_read(part, offset, (uint8_t *)mapped, len);
++		buf_unmap(bp);
++	}
++#else
+ 	error = ufs_read(part, offset, (uint8_t *)buf_dataptr(bp), len);
++#endif
+ 	buf_setresid(bp, (uint32_t)(buf_count(bp) - (error ? 0 : len)));
+ 	if (error) {
+ 		buf_seterror(bp, error);

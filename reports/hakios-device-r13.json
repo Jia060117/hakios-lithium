@@ -1,0 +1,97 @@
+{
+  "schema": 1,
+  "attempt": "HakiOS lithium R13",
+  "started_at": "2026-11-15T17:26:47.463867+08:00",
+  "recorded_at": "2026-11-15T17:30:03.507168+08:00",
+  "baseline": {
+    "project": "HakiOS",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2"
+  },
+  "package": {
+    "image_sha256": "28fdb35a51f2f9a512e50d109156cafb7b842e9e237d978b00e29402d3b8b78c",
+    "image_bytes": 15724544,
+    "kernel_sha256": "3c55962843b7bbc072981c647297ad0631f9e405ef250ff62e94c61a5433098a",
+    "loader_sha256": "9c8d682150e29cc59f9889286a330ccb84e6b10c629370a18423a0a16bc21355",
+    "fd_sha256": "0d2b0d406046298783e62adf86ef054be6794a12ffe3227cd2253053680a2035",
+    "payload_sha256": "3775c3e3ca99cf8a5352859bb0e31149f8d3387c407cff4d91e5fc3327a4876b",
+    "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=2 lithium_storage_test=1 loader_return_after=120",
+    "stock_dtb_table_sha256": "ab929abf55ad4822ae83489a58d6b550b7b24ea8398ce8ead1de7b1d2caed6aa",
+    "test_profile": "p2-storage-readonly",
+    "ramdisk_sha256": "e4c662b50594b0bbe58166fc1bbafc5637907f1dfba2d797aa62e44c6aeeef44",
+    "storage_probe_sha256": "77000ea899388da732a183b514704b58fb41bc959bee747b65225c0557b6e1b0"
+  },
+  "frozen_artifacts_path": "artifacts/hakios/p2-storage-ready",
+  "frozen_evidence_manifest": "artifacts/hakios/p2-storage-ready/ready.json",
+  "frozen_boot_image": "reports/local/20261115-172647-444298-hakios-preflight/lithium-hakios-test.img",
+  "local_log_path": "reports/local/20261115-172647-444298-hakios-preflight",
+  "identity_verified": true,
+  "bootloader_unlocked": true,
+  "userdata_bytes": 250710192128,
+  "temporary_boot_issued": true,
+  "fastboot_returncode": 0,
+  "command_accepted": true,
+  "fastboot_boot_output": "Sending 'boot.img' (15356 KB)                      OKAY [  0.392s]\nBooting                                            OKAY [  0.786s]\nFinished. Total time: 1.184s\n",
+  "latest_usb": {
+    "checked_at": "2026-11-15T17:30:03.507168+08:00",
+    "authorized_device_in_fastboot": false,
+    "adb_present": false,
+    "local_log_path": "reports/local/20261115-172647-444298-hakios-preflight/post-boot-usb.json"
+  },
+  "battery_preflight": {
+    "battery_soc_ok": "yes",
+    "local_log_path": "reports/local/20261115-172647-444298-hakios-preflight/battery-query.json"
+  },
+  "user_screen_observation": {
+    "source": "user_photo",
+    "observation_pending": false,
+    "current_screen": "UEFI BDS FIND VOLUME failed; EFI_UNSUPPORTED",
+    "automatic_reboot_observed": null
+  },
+  "screen_evidence": {
+    "photos": [
+      {
+        "path": "reports/local/20261115-172647-444298-hakios-preflight/r13-find-volume-failed.jpg",
+        "sha256": "827d556c81dabbcd19c52756d5eb41426c7fcad5b1f4970e3391aa57b594e24a"
+      }
+    ],
+    "transcription_path": "reports/local/20261115-172647-444298-hakios-preflight/r13-screen-transcription.txt"
+  },
+  "verified_stages": {
+    "fastboot_command": true,
+    "uefi": true,
+    "mmu_hobs": true,
+    "bds": true,
+    "gop": true,
+    "fat_install_log": true,
+    "efi_file_hash": false,
+    "loader": false,
+    "kernel": false,
+    "hello": false,
+    "storage_probe": false,
+    "hfs_mount": false
+  },
+  "outcome": "BDS_find_volume_EFI_UNSUPPORTED_before_loader",
+  "exact_failure_stage": "FIND VOLUME",
+  "efi_status": "0x8000000000000003",
+  "analysis": {
+    "fat_mbr_partition": {
+      "type": "0x01",
+      "start_lba": 0,
+      "blocks": 2048
+    },
+    "source_defect": "BDS snapshots BlockIO before recursive connection; new FAT child handle is absent from the search",
+    "planned_fix": "Connect original devices, then enumerate current SimpleFileSystem handles and select only RAM-volume media"
+  },
+  "runtime_acceptance": {
+    "storage_test_passed": false,
+    "kernel_started": false,
+    "hfs_mount_verified": false,
+    "ios14_file_reads_verified": false,
+    "orderly_return_observed": false
+  },
+  "hardware_verified": false,
+  "ios14_compatibility_verified": false,
+  "partition_writes_performed": false,
+  "qemu_used": false
+}

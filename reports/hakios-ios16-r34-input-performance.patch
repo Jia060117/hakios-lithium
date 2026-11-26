@@ -1,0 +1,1490 @@
+diff --git a/AGENTS.md b/AGENTS.md
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -1,146 +1,148 @@
+-2026-11-20 R34 UFS桌面触摸运行中：用户在获知正常Data写入范围后要求“测试呀，手机已经连接了”；17:17:31.703118+08:00单次临时boot冻结UFS最终包47740664f56fcf021096493444cc96934223f49ce0dfc099920bfb73cfc426ed，五项只读预检通过。actual affinity1/bootcpu1/cpus1、APFS根/HFS Data及journal replay完成；ID0xe7/error0及63字节轮询正常，SB main_queue_enter相对constructor75370ms，backboardd触摸服务已建立。17:21:04快照至少7800报告/54事件成功入队、type1/2/3，未见触摸read/report错误；5176帧/1177842字节运行前缀独立重放一致、gap/dup/残帧/lost0，USB仍采集。随后4条hakios input sample已证明backboardd完整read到type1/2/3；Einstein定位且主代理实际源码复核959/963及985/856通过，dispatch返回未检查，不扩大为界面验收。界面实际点击响应/坐标/多指待用户本次观察，不移用RAM验收；本次正常UFS文件系统写入已授权，无刷分区/ADB/Android/Recovery/QEMU/启动后查询或重试。计数60/29；保持同次运行及USB，UFS自动返回未启用、原10800秒timer保持。R20/R32/R33/R34冻结及原索引保持。见reports/hakios-ios16-device-r34-touch-live-ufs.md/json。
+-
+-2026-11-20 R34真实触摸RAM短测结案：17:05:15.400713+08:00单次临时boot获接受，actual affinity1/bootcpu1/cpus1；GPIO89低10ms/高300ms后，0x38/A3实读ID0xe7、error0，63字节报告至少7200份，真实点击/滑动/松手产生DOWN/MOVE/UP且197条成功进入hakios_touch_post_batch实际队列。未见read_error/report_error；PID1为隔离RAM hold，SpringBoard/HID消费及界面响应、多指、坐标边界、IRQ及长稳未验证。正常180秒timer/drain1，105帧/15484console字节独立重放一致，gap/dup/残帧/lost/源争用丢0；随后Pipeerror原样保留。17:10:56唯一一次只读devices/product核验同序列号54223ce9、MSM8996_A8回到Fastboot；未捕获UEFI内部prepare/commit，本轮未另获硬件键事后确认，不借用R33确认。本次无分区/刷写/ADB/Android/Recovery/QEMU/重试，计数59/28；R20/R32/R33/R34冻结及原索引保持。下一步直接验收已备R34 UFS桌面候选，正常Data写入需对应范围确认，UFS自动返回仍不支持；不自动新启动。见reports/hakios-ios16-device-r34-touch-live.md/json。
+-
+-2026-11-20 R34触摸完整路径主机候选已完成：按用户“减少审查、门禁、测试，今天做出成果”改为直接实现与针对性验证，不重复历史总回归。touch=1默认关闭；新增GPIO89低10ms/高300ms复位、QUP6/0x38组合读取、63字节报告轮询、多点到真实hakios_touch_post_batch及结束停止。内核799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c实际链接；实际init/APFS486项读回clean；91个QUP与4组事件专项通过。RAM最终包d1bbc6bf94defeacacf3ffbbae32bd3e227b70ef74bb1ceda2fb5539f8ad0d3b（phase4-r34-touch-live-ram-final，180秒+自动Fastboot）；UFS最终包47740664f56fcf021096493444cc96934223f49ce0dfc099920bfb73cfc426ed（phase4-r34-touch-live-ufs-final，R20原参数+touch）。同名无-final目录为停止等待修正前候选，不启动。R34未操作手机，真实ID/触点/HID响应未验证，供电继承、无固件写入；R20/R32/R33冻结和原索引不变。下一步说明GPIO89复位+QUP持续读取范围并获对应确认后，仅一次RAM短测；若成功，可直接用已备UFS候选验收界面，不再拆成多个仅初始化轮次。无分区刷写，不自动启动。见reports/hakios-ios16-touch-r34-prepared.md/json。
+-
+-2026-11-20 R33自动返回复核更新：用户确认“没有”按电源/音量键；结合同序列号54223ce9及产品MSM8996_A8在单次测试后被Fastboot枚举，R33独立RAM诊断配置自动返回Fastboot记为真机验证通过。UEFI prepare/commit内部串流字段仍未捕获；该缺口不改变物理终点证据。仅RAM profile通过，不代表UFS配置支持。随后只推进R32触摸错误的主机侧来源/板级审计，不自动启动手机。见reports/hakios-ios16-device-r33-return-fastboot-attempt2.md及对应local目录。
+-
+-2026-11-20 R33第二次真机尝试：用户报告手机有电并要求测试。04:59:57.288+08:00 Fastboot 单次接受冻结 RAM 镜像7a4010a051e16c9f339d1ed5b04ea64abc7ac69e952de3072d78dab94a5a956e；启动前只读身份/解锁/电量/download-size通过。USB保存41帧/9226字节，独立重放一致、缺口/重复/残帧/device-loss为0，正常180秒timer及首次drain=1可见；05:03:29接收器Pipe error。启动后约245秒，一次只读fastboot devices发现同序列号54223ce9，product MSM8996_A8。故已核实同一设备在本次临时启动后回到Fastboot；是否全由自动复位造成尚待用户确认期间未按硬件键，UEFI prepare/commit全链条未由USB证明。不重试，无分区/刷写/ADB/Android/Recovery/QEMU/触摸I2C。计数58/27。见reports/hakios-ios16-device-r33-return-fastboot-attempt2.md及reports/local/20261120-r33-return-fastboot-attempt2/。R33首次耗尽电量无效尝试独立保留；R20/R32冻结不变。
+-
+-2026-11-20 R33自动Fastboot真机尝试已按用户要求判为无效并暂停：04:49:10.782+08:00唯一一次临时启动被Fastboot接受，镜像7a4010a051e16c9f339d1ed5b04ea64abc7ac69e952de3072d78dab94a5a956e；启动前只读身份/解锁/电量/下载窗口通过。USB保存41帧/9228控制台字节，独立重放无缺口/重复/残帧/device-loss，正常180秒timer和首次drain=1可见；接收器04:52:42 Pipe error，不能据此证明固件准备/提交或Fastboot返回。04:53:17唯一一次只读Fastboot枚举为空。用户随后报告重启后发现手机没电，并明确本次测试无效、等下次；电量耗尽原因及自动复位终态未独立验证。无分区/刷写/ADB/Android/Recovery/QEMU/重试。R33单次尝试已消费，不自动再试；待用户下次准备设备后另行确认测试。原始证据见reports/local/20261120-r33-return-fastboot-approved/及reports/hakios-ios16-device-r33-return-fastboot-invalid.md；R20/R32冻结保持。
+-
+-2026-11-20 R33自动Fastboot主机包已冻结：SHA256 7a4010a051e16c9f339d1ed5b04ea64abc7ac69e952de3072d78dab94a5a956e；默认关闭return_fastboot=1，独立RAM软件验收/ufs0/affinity1/180秒+摘要10秒。正常timer+两次USB排空+同次cookie/独立reason后，经新UEFI prepare/commit核对owner、PMIC/IMEM并单次PS_HOLD；panic/失配/失败保留，不普通重启回退或自动重试。完整HakiOS/Mu/D22AP/413job、82源码/47正常+7RAM扫描、6专项/52既有回归/49打包及466证据独立读回通过。真实自动复位/Fastboot及触摸未验证，UFS自动返回尚不支持。本阶段无任何设备查询/boot/复位/分区/ADB/QEMU，计数56/25不变，R20/R32冻结保持。等待说明新复位范围后的单次上机确认，不自动查询。见reports/hakios-ios16-return-fastboot-r33-prepared.md/json。
+-
+-2026-11-20 R32真机结案：2026-11-20T02:44:12.258921+08:00单次临时boot，actualaffinity1/bootcpu1/cpus1。Stage1为26读3写316us；未改R31初始化411读18写4poll通过。新核心484读22写4poll/1106us（事务198us），适配层562读22写；三FIFO字/第二RUN均返回，completion保留STATUS0d1300c8/ERROR0/OP10/STATE11d。NACK优先分支，同时FAIL字段3及INVALID_READ_ADDR，根因未定；0RX/无ID/无INPUT_DONE/STOP未执行，无ACK/清错/结束RESET/恢复/重试/GIC写/IRQ/HID。正常180秒timer/drain1，210帧/52537console字节独立重放一致、gap/dup/残帧/lost/源争用丢均0；排空后Pipeerror原样保留。物理结束屏未目视确认，RAMlookup error2非UFS故障。无启动后Fastboot/ADB查询、分区/刷写/Android/Recovery/QEMU/重试；计数56/25，R32已消费。下一主机修订核对NACK+INVALID_READ_ADDR及命令/板级前提，不猜地址/电源或自动新启动。R20基线/冻结/原索引保留。见reports/hakios-ios16-device-r32-touch-qup-transfer.md/json。
+-
+-2026-11-20 R32已临时启动一次：2026-11-20T02:44:12.258921+08:00 Fastboot接受冻结镜像b260776a3fff5513134b2c594e364eb58fb95a495c9a7625e6866354345fe767；5项只读预检通过、USB接收已启动，ID/内核/CPU/timer/drain及物理屏幕待核验。隔离RAM/ufs0/180秒，一次0x38/A3事务/第二RUN，无ACK/结束RESET/恢复/重试。计数56/iOS16为25；R32已消费，无启动后查询/分区/ADB/QEMU或自动重试，保持同次运行与USB。见reports/hakios-ios16-device-r32-touch-qup-transfer.md/json。
+-
+-2026-11-20 R32主机包已冻结：SHA256 b260776a3fff5513134b2c594e364eb58fb95a495c9a7625e6866354345fe767；默认关闭touch_qup_transfer=1，隔离RAM/ufs0/affinity1/180秒。复用未改R31初始化后，单次0x38/A3读取，三FIFO字/第二RUN，最多22QUP写及一次RX；逐写PAUSE检查，完成与STOP分开，原始RX与终态提交分开；无ACK/清错/结束RESET/重试/GIC写/GPIOrails/IRQ/HID。完整HakiOS/Mu/D22AP/413job、46扫描/52套ASan/UBSan、115打包测试/116源闭包及实际APFS/整包读回通过。R20唯一显示基线、旧冻结和原索引保持。物理I2C/ID/完成可见性/所有权及触摸未验证，历史R9总门禁未解决。本阶段无手机查询/启动/分区/ADB/QEMU，计数55/24不变；说明新FIFO事务范围并获对应确认后才单次预检/临时boot。见reports/hakios-ios16-touch-r32-prepared.md/json。
+-
+-2026-11-20 R31真机结案：2026-11-20T01:34:55.437934+08:00单次临时boot，实际affinity1/bootcpu1/cpus1。原Stage1为26读3写311us；新核心411读18写774us/poll4、适配层477读18写。checked RESET/base/setup/RUN/CLK/PAUSE均完成；RUNpoll与run/clock/pause/terminal STATUS0c110000、OP0，STATE11d→11f，CLK003e007c读回。八组272项valid/stable及四poll20字段全有效，无failedpoll。精确实验A/B策略范围内流程观察通过，非芯片ID/物理总线静默/所有权/通用FSM合法性证明；无新FIFO/tag/ID/IRQ/HID，terminalGIC仍unread。正常180秒timer/drain1，209帧/52227console字节独立重解码一致，gap/duplicate/incomplete/lost/争用丢均0；Pipe error若有在排空后。物理结束屏未目视确认，RAMlookup error2非UFS故障。无启动后查询/分区/ADB/QEMU/重试，计数55/iOS16为24；R31已消费。R20基线/旧冻结字节/原索引保持。下一主机修订设计源支持的单次最小ID事务及完成/STOP取证，不自动上机。见reports/hakios-ios16-device-r31-touch-qup-phase.md/json。
+-
+-2026-11-20 R31已临时启动一次：2026-11-20T01:34:55.437934+08:00 Fastboot接受冻结镜像a6bd21ef428e620f4cf9fe9f5d954c23c00c12d3d19efe523a70b67b2e2d0f53；5项只读预检通过、USB接收器已启动，内核/状态机/CPU/timer/drain及物理屏幕尚待核验。隔离RAM/ufs0/180秒，不发新FIFO标签或ID，首次RUN可能恢复继承活动，未验证物理总线静默。计数55/iOS16为24；R31已消费，无启动后设备查询/分区/ADB/QEMU或自动重试，保持同次运行并读取保存日志。R20显示基线/旧冻结字节/原索引保留。见reports/hakios-ios16-device-r31-touch-qup-phase.md/json。
+-
+-2026-11-20 R31主机包已冻结：SHA256 a6bd21ef428e620f4cf9fe9f5d954c23c00c12d3d19efe523a70b67b2e2d0f53；touch_qup_phase=1默认关闭，隔离RAM/ufs0/affinity1/180秒。保留R30/旧10module字节，新增四slot五字段原poll/valid时间/失败slot保持且无额外MMIO/time调用；RESET仅A0c000000，RUN/CLOCK/PAUSE仅完整A或实验观测B0c110000，非掩码放宽；源码明确O/I字段但数值语义/PAUSE合法性/物理总线未验证。完整HakiOS/Mu/D22AP/413job、82来源/46扫描、49套回归（core50762/adapter35040/PID1 378）、130打包/111源闭包和实际APFS/整包读回通过。旧冻结/R20显示基线/索引保持。本阶段无设备查询/boot/分区/ADB/QEMU，计数54/23不变；用户已确认Fastboot可测试，说明实际一次softreset/RUN/CLK/PAUSE实验范围后单次预检/临时boot，不自动重试。见reports/hakios-ios16-touch-r31-prepared.md/json。
+-
+-2026-11-20 R30真机结案：2026-11-20T00:40:16.391122+08:00单次临时boot接受，实际affinity1/bootcpu1/cpus1。Stage1为26读3写314us；新核心270读16写398us/poll3、适配层330读16写。base/setup完成，首次STATE RUN写返回，terminal STATE11d/OP0/ERROR0/STATUS0c110000；与setup仅STATE/OP/STATUS变化。现有整值STATUS==0c000000策略以i2c_status_not_exact_idle停止，checked RUN/CLK/PAUSE未执行，非MMIO或超时失败，无新FIFO端口/tag/ID。bit16/20语义/物理总线/所有权未验证。五组170项valid/stable、三组102项unread；terminal GIC明确unread。正常180秒timer/drain1、187帧/46498控制台字节独立重解码一致，缺口/重复/残帧/lost/源争用丢均0；Pipe error在排空后。物理结束屏未目视确认；RAM error2为lookup非UFS故障。无启动后查询/分区/刷写/ADB/QEMU/重试，计数54/iOS16为23；R30已消费。R20基线/旧冻结字节/原索引保持。下一主机修订核对按阶段STATUS检查及真实RUN差异，不直接放宽未知位或自动新启动。见reports/hakios-ios16-device-r30-touch-qup-state.md/json。下方启动待观察记录为历史。
+-
+-2026-11-20 R30已临时启动一次：2026-11-20T00:40:16.391122+08:00 Fastboot接受冻结镜像fb7c575ec377dd8854786479cb1448f35974071c2ef19010b186eda1df1f92ae；5项只读预检通过、USB接收器已启动，内核/状态机/CPU/timer/drain及物理屏幕尚待核验。隔离RAM/ufs0/180秒，不发新FIFO标签或ID，首次RUN可能恢复继承活动，未验证物理总线静默。计数54/iOS16为23；R30已消费，无启动后设备查询/分区/ADB/QEMU或自动重试，保持同次运行并读取保存日志。R20显示基线/旧冻结字节/原索引保留。见reports/hakios-ios16-device-r30-touch-qup-state.md/json。
+-
+-2026-11-20 R30状态机主机包已冻结：SHA256 fb7c575ec377dd8854786479cb1448f35974071c2ef19010b186eda1df1f92ae；默认关闭touch_qup_state=1，隔离RAM/ufs0/affinity1单核/180秒。独立RESET/base/setup/首次RUN/CLK/PAUSE前置观察，最多八组272字段；无新FIFO端口/tag/ID，首次RUN可能恢复继承活动，物理I2C静默/所有权未验证。旧Stage1/ID/snapshot/init/0022字节不变。完整HakiOS/Mu/D22AP/413job、82来源/46扫描、46套回归（core9766、adapter34104、独立boundary、PID1 376）、108打包测试/106源闭包及实际APFS/整包读回通过；独立审查两处边界已修正并全量重构建/复测，旧候选保留。terminal_gic明确unread；历史R9总门禁未解决。R20显示基线/旧冻结字节/原索引保持。本轮无手机查询/启动/分区/ADB/QEMU，计数53/iOS16为22不变；等待用户恢复并确认Fastboot及对应实验范围，不自动上机/重试。见reports/hakios-ios16-touch-r30-prepared.md/json。
+-
+-2026-11-19 R29真机结案：用户重新连接后新会话预检通过，23:50:42临时boot同冻结镜像一次获接受；实际affinity0x1/bootcpu1/cpus1。Stage1为26读3写326us；新模块145读6写226us/poll2，适配层175读6写；一次SW_RESET请求/VALID_RESET和CONFIG207/ERREN3c/OPMASK300/MASTER1读回通过。四组双轮17项共136读全部valid/stable，但OP始终0xc0，以operational_nonzero_before_id逻辑停止，未发I2C/未读ID，不能认定芯片无应答。正常180秒timer/drain1，125帧/30602控制台字节独立重解码一致，缺口/重复/残帧/lost/争用丢均0；Pipe error在排空后，2条描述符API异常保留且最终身份验证通过。物理结束屏未目视确认，内部reset效应/所有权/full语义仍未验证；RAM error2为lookup非UFS故障。先前空枚举记录、R20基线/全部冻结字节/原索引保留；计数53/iOS16为22，R29已消费不重试。下一步核对RESET阶段自定义OP0准入与上游RUN/PAUSE/FIFO状态机，不直接掩码放宽、不自动新启动。见reports/hakios-ios16-device-r29-touch-qup-init-runtime.md/json。下方预检等待状态为历史。
+-
+-2026-11-19 R29真机预检停止：已说明一次QUP软复位/条件式ID范围后，仅执行一次只读fastboot devices，返回码0但列表为空；未到身份/电量核验，无boot/接收器/复位/I2C/分区/刷写/ADB/QEMU或重试。原因未验证，不猜线材/电量/模式。R29镜像2dec085c75a29ea770a56231ff359ae76da0d13aa36e11836d657ea1a03b9d65已完成42套测试/82打包/100源闭包及完整构建读回，仍可复用；临时启动次数未消费，总计52/iOS16为21不变。等待用户恢复并确认Fastboot USB连接后，以同镜像建立新独立预检记录，保留本次证据，不自动重试。R20基线/旧冻结字节/原索引保持。见reports/hakios-ios16-device-r29-touch-qup-init.md/json。下方主机准备状态为历史。
+-
+-2026-11-19 R29初始化主机包已冻结：SHA256 2dec085c75a29ea770a56231ff359ae76da0d13aa36e11836d657ea1a03b9d65；默认关闭touch_qup_init=1，隔离RAM/ufs0/单核affinity1/180秒。原Stage1/ID/snapshot/0022不变；来源支持的一次SW_RESET/普通STATE RESET/基础I2Cv2配置，严格OP0后才条件式单次原ID；无GIC/外部GPIO复位/供电/IRQ/HID写入扩展。ERREN3c启用错误源，GIC只读view不是全局排除证明。完整HakiOS/Mu/D22AP/413job、82来源/46扫描、42套ASan/UBSan（新core6095、adapter24632、init374）、82打包测试/100源闭包及实际APFS/整包读回通过。物理复位/所有权/电气/I2C/ID/触摸未验证，历史R9总门禁未解决。R20唯一显示基线及旧冻结字节/原索引保留。当前无R29设备操作；用户已表示Fastboot可测试，主代理说明对应新包范围后可单次临时boot，不分区/刷写/ADB/QEMU或自动重试。见reports/hakios-ios16-touch-r29-prepared.md/json。
+-
+-2026-11-19 R28真机结案：23:05:36临时boot一次获接受，实际affinity0x1/bootcpu1/cpus1。Stage1为26读3写312us；新QUP快照两轮各17项全部valid且相同，34读37us、适配层48读0写，入口/末尾GIC可见状态通过。CONFIG0/MASTER_CONFIG0未具备原厂I2Cv2配置；IO_MODES0xa5两套算法均得IN/OUT各64字节。OP0xc0共享full位与count0不能直接推断实际占用，I2C/RESET语义仍未验证。无QUP写/复位/I2C/真实ID/IRQ/HID。PID1保持、正常180秒timer及drain1通过；67帧/15845控制台字节独立重解码一致，缺口/重复/残帧/lost/源争用丢均0，Pipe error在排空后。物理结束屏未目视确认；RAM Data sync error2为lookup，非UFS故障。R20显示基线及R15/R20/R25/R26/R27/R28镜像/原索引字节保留。下一步准备来源支持的QUP初始化前后对照及条件式单次ID，不直接放宽掩码；R28已消费，不自动新启动。见reports/hakios-ios16-device-r28-touch-snapshot.md/json。下方主机准备/等待状态为历史。
+-
+-2026-11-19 R28只读快照主机包已冻结：SHA256 9a01c3db68164949a8f093a3625dbea9c852047b35417b1fe3597be6bf4342d1；R20-display仍为显示基线。17寄存器两轮34读、逐项valid/unread、默认关闭touch_snapshot=1，与活动ID互斥；旧ID/Stage1/0022字节不变。完整HakiOS/Mu/D22AP/413job、82来源/46扫描、39套ASan/UBSan（core622+7、adapter4611、init372）、95源闭包/整包APFS读回通过。共享SPI来源命名bit7为IN_FIFO_FULL，但I2C/RESET语义、count读副作用及实际硬件仍未验证，不放宽ID门禁/不做QUP写。初版缺陷及索引stat刷新已核对并修正，原始索引字节恢复。当前无R28手机操作；用户已明确Fastboot可随时测试，操作前说明本包范围，单次临时boot，不访问分区/Android/Recovery/QEMU，不自动重试。见reports/hakios-ios16-touch-r28-prepared.md/json。
+-
+-2026-11-19 R27真机结案：22:27:05临时boot一次获接受，实际affinity0x1/bootcpu1/cpus1。Stage1快照成功（26读3写313us）；ID模块板级/GIC入口检查通过，但第4次QUP读得到OPERATIONAL0xc0，被unexpected_operational_bits停止，8us/4读0写，无I2C事务或真实ID。输出raw/state/config/io_modes的0为未读初始值，不能当测量。PID1保持、正常180秒timer及drain1通过；51帧/11755控制台字节独立重解码一致，缺口/重复/残帧/lost/源争用丢均0，Pipe error在排空后。物理结束屏未目视确认。RAM包Data sync error2为lookup，非UFS故障证据。无分区/刷写/ADB/QEMU/重试；R27已消费，固定Linux来源已命名bit6为OUT_FULL，bit7/RESET语义未定；下一步补齐事务前FIFO快照和逐寄存器有效位，不直接放宽掩码或自动新启动。见reports/hakios-ios16-device-r27-touch-id.md/json。下方主机准备/等待状态为历史。
+-
+-2026-11-19 R27最小ID主机包已冻结：镜像SHA256 a029ad76623e957661988893ca84b885a1162f771cf21ae90dad1d110d6ff7f3，R20-display仍为唯一显示基线。完整HakiOS/Mu/D22AP/413job、82来源/46指令扫描、36套ASan/UBSan（核心1838、适配层21884、init370）、90源哈希及整包/APFS读回通过。R26 Stage1/0022不变，新增touch_id_probe=1仅隔离RAM、0x38/A3单次事务，ufs=0、180秒；无SW_RESET、GPIO复位/供电/GIC写/IRQ/HID。物理I2C、所有权、电气、GIC可见性及硬件超时均未验证，历史R9总门禁未解决。初版审查缺陷已修正并重构建；当前尚无R27设备操作。用户本轮已表示Fastboot可随时测试，任何操作前仍须说明其对应范围，不扩大为分区/Android/Recovery/QEMU授权。见reports/hakios-ios16-touch-r27-prepared.md/json。
+-
+-2026-11-19 R26同次照片终态已核验：用户原图显示UEFI RETURN TIMER DEADLINE REACHED、NO PANIC TEXT IN RETAINED LOG及USB drain1，与已捕获正常timer/drain一致；UEFI RAW BYTES31142为独立保留日志计数，不与USB11050字节直接相减认定丢失。R26时钟/引脚/QUP快照、PID1保持及结束屏核验完成，真实I2C/IRQ/HID/触摸仍未测试。原图已本地归档并校验SHA256；本次仅主机归档，无新设备查询/启动/分区操作，R26不重试。见reports/hakios-ios16-device-r26-touch-clock.md/json；下方屏幕待确认记录为历史。
+-
+-2026-11-19 R26真机结案：用户明确授权本轮测试，20:37:45临时启动冻结镜像一次获接受。实际logical0/MPIDR0x80000001/affinity0x1/max0、bootcpu=1 cpus=1、match=1。Stage1越过R25的CFG0停点，AHB/apps/root-on及GPIO87/88配置通过，QUP快照返回STATE0x11c/VERSION0x20060000/STATUS0x0c000000；26读/3写/8映射/314us、clocks_checked=1 pins_checked=1。3写为apps和两pin，AHB vote已满足；无CMD/CFG、复位、I2C、IRQ/HID操作。PID1进入RAM诊断hold；正常180秒timer及drain=1正文已捕获，48帧/11050字节独立重解码一致，缺口/重复/残帧/device-lost和源端争用丢弃均0，随后Pipe error不等于排空失败。只验证已输出内核流至timer/drain，不扩称所有固件/daemon原始日志；R26物理屏幕终态待用户确认。Data sync error2是RAM隔离路径无/private/var的lookup返回，未到VFS_SYNC/设备flush。本轮无分区查询/操作、ADB、Android/Recovery、QEMU或重试；R15/R20/R25/R26冻结字节不变。下一主机修订可调查最小I2C芯片ID事务；R26启动已消费，后续查询/启动仍须说明并获对应确认。详见 reports/hakios-ios16-device-r26-touch-clock.md/json；下方主机等待批准状态为历史。
+-
+-2026-11-19 R26主机修订已冻结：用户授权“进入下一修订”，本轮无手机查询/启动/重启/刷写/分区操作或QEMU。R20-display仍为唯一显示基线，R19归档，R25已消费不重试。R26镜像SHA256 ff79c3ea55fb3022d997d119859b4b772fcbe233fc4364a8dc58a20c89612351，内嵌touch_stage=1 touch_clock_init=1 touch_diag=1、ufs=0、bootcpu=1 cpus=1、180秒。显式新路径按原厂依据识别HID0/1，CMD/CFG仍只读，仅原四个GCC/TLMM字段；原严格路径和默认关闭保持。新增RAM PID1 hold绕过通用自检/halt，初次boot_arg失败仍可能回原流程，不能宣称任意异常均hold。82来源审查、完整HakiOS/Mu/D22AP/413job、46项指令扫描、33套ASan/UBSan（clock5241含原351、init368）、实际APFS/整包读回及85来源闭包通过；历史R9几何hash总门禁未解决，不冒称通过。复用R25无物理UFS的Mu及固定只读loader，保持md0 Boot/stage0→md1 redwood/init；R15/R20/R25原字节保留。动态所有权/电气、clock/pin/QUP访问、新timer/USB终态及真实触摸未验证。下一步等待对应上机确认；任何查询/临时启动先说明并获确认，禁止Android/Recovery、分区操作及自动重试。详见 reports/hakios-ios16-touch-r26-prepared.md/json。下方R25及主机准备为历史记录。
+-
+-2026-11-19 R25真机结案：用户明确“可以上机”后，19:30:36临时启动冻结R25一次，镜像f0fd106f2146bc176f448c9a694bf4e7ca0247656c323bb68ffe128f123a336d获接受。实测logical0/MPIDR0x80000001/affinity0x1、bootcpu=1 cpus=1、match=1。Stage1四次GCC读取72us、零写入；CFG=0不满足(cfg&0x371f)==1，主动以inherited_root_or_reset_unverified停止，未到clock-enable/pinmux/QUP/I2C/IRQ/HID。USB58帧/14848字节独立重解码一致，缺口/重复/残帧/device-lost均0；Pipe error后无timer/drain尾部，非完整运行日志。用户原图确认UEFI RAW BYTES68684、RETURN REASON UNCONFIRMED、PANIC CAUSE NOT RECOVERED及PMRD关机尾部，不能判定panic或正常180秒timer。没有分区查询/操作、ADB、Android/Recovery、QEMU或重试，R15/R20哈希不变。R25已消费；下一步仅在主机核对显式时钟初始化及诊断终态/USB保留，任何后续查询/启动仍须说明并获对应确认。详见 reports/hakios-ios16-device-r25-touch-stage1.md/json。下方“没有手机操作/等待批准”段落为本次上机之前的主机准备历史。
+-
+-2026-11-19 最新单轮触摸取证/Stage1收口：R20-display 为唯一显示基线，R19 分辨率错误已归档、不再复测。R25 实验性时钟/引脚/QUP/GPIO快照镜像已完整构建、读回并冻结，SHA256 f0fd106f2146bc176f448c9a694bf4e7ca0247656c323bb68ffe128f123a336d；31套外围ASan/UBSan（含实际Stage1的351场景）、83来源检查、46项正常构建指令扫描与5项隔离Mu扫描通过；旧历史总回归仍在R9不识别既有0021几何补丁的哈希处失败，不冒称全部通过。R15/R20哈希不变。默认无touch_stage时无MMIO；本包显式touch_stage=1，仅4个GCC/TLMM字段，不做I2C/复位/供电/IRQ/HID。隔离Mu移除物理UFS provider，ufs=0、无flash root/Data参数，复用R20两份4MiB RAM卷和固定只读loader；此隔离探测不改变长期UFS路线。动态所有权、上电/NoC、电气/总线异常及实际触摸未验证；300ms软件预算不能约束永久MMIO挂死，未安装通用异常hook。本轮没有任何手机操作。最新用户要求覆盖旧自动授权：每次查询/启动前先说明并获确认；现在停下等“可以上机”，禁止Android/Recovery、分区操作和QEMU。详见 reports/hakios-ios16-touch-stage1-r25.md/json。
+-
+-2026-11-19 latest touch runtime phase: R20-display remains the sole accepted display baseline; R19 was tested with incorrect resolution and stays archived, without retries. Runtime composition and the actual HakiOS queue binding passed 14 existing + 12 follow-up host suites (26 total) with ASan/UBSan and 61 source hashes. Included Mu/loader software has no QUP6/I2C provider; this does not verify secure-world ownership or physical access. There is still no platform MMIO provider, production integration or new touch package; the existing Stage 0 production kernel is unchanged. No device operations occurred. See reports/hakios-ios16-touch-runtime-host-20261119.md/json and reports/touch-runtime-host-20261119-r1/passed.json.
+-2026-11-19 R20-display touch Stage 0 host build: R20-display is the sole accepted display baseline; R19 is archived and will not be retested. The exact ordered patch check, 21 Clang ASan/UBSan suites, HakiOS prepare/config/dependency checks, full kernel + D22AP loader + Mu + 413-job userland build, 83 source-review checks, and 46 ARM instruction scans passed. The built kernel contains the static Stage 0 resource log and QUP6 fail-closed diagnostic. R15/R20 image hashes are unchanged. No physical touch producer or touch package exists; Stage 1–3 remain blocked before MMIO/IRQ/HID. QUP6 handoff/ownership, clock/pinmux/rails, GPIO105/125 IRQ, runtime controller ID/reports, and HID delivery remain unverified. No phone query or operation occurred. Report: reports/hakios-ios16-touch-stage0-build-20261119.md/json.
+-R24 触摸主机门禁（历史）：R20-display 为唯一显示基线；用户确认 R19 已测试但分辨率错误，归档且不复测。touch_stage=0..3 严格解析和空事件投递边界经 14 项既有 + 5 项候选 Clang ASan/UBSan 回归通过。本轮未同步活动内核、构建生产触摸包或操作手机。详见 reports/hakios-ios16-touch-r24-host-gate.md。
+-
+-2026-11-19 当前活动基线已切换为 **R20-display**：用户确认 R20 的显示比例、分辨率、状态栏、图标标签、完整 Dock 和屏幕边界正常。R19 仅保留为历史归档，不再启动、重试、修复或用于显示验收。后续触摸适配以 R20-display 的 1080×2040 BGR24、360×680 points、scale 3 配置为显示参照；R20-display 尚不包含真实 FT5x46/QUP6 触摸后端，触摸包完成主机测试、构建和冻结后再进行真机测试。R20-display 镜像：artifacts/hakios/lithium-ios16/phase4-r20-display/lithium-hakios-ios16-r20-display.img；SHA256 3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82。详见 reports/hakios-ios16-device-r20-display.md/json。
+-
+-R19 主机包准备记录（历史，2026-11-18）：完整 HakiOS/iOS16.5/Mu/D22AP 与 413 任务构建、46 项指令扫描、完整回归、实际整包读回和离线预检曾通过。其镜像 SHA256 2f74a8da0fe182d39c66a86db398f9816067cb05cce8a6a774398700ed38f60a。用户随后确认 R19 曾上机、显示分辨率不正确；此包仅归档，后续显示以 R20-display 为准，不再补做 R19 验收。
+-
+-2026-11-19 触摸工作状态：R20-display 已完成显示验收；R21 只读 Stage 0 主机包已组装并独立读回通过（镜像 SHA256 07d9e4cd10ee37854d6fd65df5f8fe36d8d836d1212c77aeca6491a51d82c6f8），但没有实体触摸后端，touch_package_ready=false，不得作为触摸测试包。只有新的真实触摸包完成主机测试、完整构建、包检查和冻结后，才按用户授权查询设备并从 Fastboot 临时启动；不刷写分区、不写 userdata。当前手机状态未由主机查询。详见 reports/hakios-ios16-touch-r21-host-final.md/json。
+-
+-R16 显示修订已冻结（2026-11-18）：750×1334 隐式 profile 对齐 scale2/subtype1334，新增 DT/MG/UIScreen/window 有界日志；BGR24 物理面板1080×2040/stride3240保持，810像素是误按4字节计算；全部R15 payload参数逐字节保留，包括bootcpu=1 cpus=1。完整构建/回归/包检查通过，未查询/重启/刷写手机，不重刷userdata，R15运行保留。Dock/标签/边界和新尺寸真机结果未验证。备份archive/ios16-r15-before-r16-20261118及外部dirty-source.zip已校验；见reports/hakios-ios16-r16-prepared.md/json。
+-
+-R15 系统界面里程碑（2026-11-18）：03:41:09临时启动一次；USB持续采集。实际logical0/MPIDR0x80000001/affinity0x1/max_logical0，bootcpu=1 cpus=1，match=1。20轮HFS全部通过：write平均140us、fsync317us、replace481us、read44us；整数2477us、memcpy9559us。用户明确确认已出现锁屏或桌面，具体类型未区分；日志set-seeding-complete-return value1、阻塞fetch返回、SB main_queue_enter=192190ms及CA回调已捕获。LS等待关口已越过，最终sync/跨重启持久化/触摸/稳定性待核验。同次USB接收与45秒只读观察器后台保存进度和最终审计；10800秒正常timer、12600秒主机接收。保持运行与USB连接，不重启、不重试R15、不重刷userdata，UFS/2880MiB；见reports/hakios-ios16-device-r15.md/json。
+-
+-R15 Run A 实时记录（2026-11-18）：03:41:09临时启动一次，用户确认启动文字；USB持续采集。实际logical0/MPIDR0x80000001/affinity0x1/max_logical0，bootcpu=1 cpus=1，match=1。20轮HFS全部通过：write平均140us、fsync317us、replace481us、read44us；整数2477us、memcpy9559us。原始launchd已启动；LS数据库/桌面/最终sync及持久化待核验，不能仅据提速归因根因已解决。同次USB接收与45秒只读观察器后台保存进度和最终审计；10800秒正常timer、12600秒主机接收。保持运行与USB连接，不重启、不重试R15、不重刷userdata，UFS/2880MiB；见reports/hakios-ios16-device-r15.md/json。
+-
+-R15 Run A 主机准备完成（2026-11-18）：用户已批准 bootcpu=1 cpus=1，保持编号含义，目标为R14实测较快的affinity0x1；该明确授权覆盖旧记录的保持三核要求。完整HakiOS/iOS16.5/Mu/D22AP/413任务、回归/ASan/UBSan、46项指令/16项包及R15实际payload检查通过。冻结镜像SHA256 ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55；10800秒内核观察、12600秒USB接收。返回前有界列出LS数据库路径/大小/mtime并执行Data VFS_SYNC和设备flush，结果均待真机核验。UFS/2880MiB不变，不重刷userdata，不改journal/flush策略；未查询/启动手机，桌面和跨重启持久化未验证。用户已确认Fastboot连接，可按受保护入口临时启动一次。见reports/hakios-ios16-r15-prepared.md/json。
+-
+-R14 最终诊断（2026-11-18）：用户原图确认正常timer返回UEFI、未见panic，drain=1；R13诊断CPU越界未复现。三核实测CPU0/1(MPIDR0x100/0x101)整数循环平均162097/162071us，CPU2(0x1)2451us，约66倍差异；准确MHz/逐核缓存开关未测。20轮HFS全部读写校验通过；首个fsync4.05秒中线程CPU约4.05秒、UFS桥933us，buf_biowait31845次；其余两次慢fsync同样主要在桥外。23次采样均TH_RUN且跳过，无停驻内核栈，最终根因未定。systemfile_lock返回锁掩码，errors=2不代表errno。USB652793字节/3415帧独立重解码一致、传输缺口0且timer/drain完整；源丢1697字节、FS80/7、HFS槽满481，非全量日志。SB无提交、lsd不同bundle完成111，桌面未通过。保持UFS/2880MiB/三核，不重试R14、不重刷userdata；下一修订先核实本机时钟/缓存及buf调用者/执行核，不能直接启用上游redwood EPSS地址。见reports/hakios-ios16-r14-final-diagnosis.md/json。
+-
+-R13 真机故障（2026-11-18）：用户原图确认panic返回UEFI，cpu_common.c:82断言cpu <= ml_get_max_cpu_number()，CPU2/PID1 init。新增CPU诊断固定查询0..3，但三核XNU仅0..2；源码及冻结反汇编确认越界契约缺陷，单核R13同样不可运行。USB9952字节/44帧独立重解码一致，缺口/重复/残帧/device lost均0，仅前缀完整，未捕获panic全文/timer/drain；尚未进入launchd/HFS测试。保持UFS/2880MiB/三核，不重试R13、不重刷userdata。下一修订仅修正诊断CPU遍历边界；HFS瓶颈根因未定。见reports/hakios-ios16-r13-final-diagnosis.md/json。
+-
+-R13 主机准备完成（2026-11-18）：完整 HakiOS/iOS16.5、UFS/2880MiB；冻结同内核 cpus=3/cpus=1 两包，只有CPU参数不同。500ms慢HFS操作有界取停驻线程栈、真实wait/timer、锁/事务/flush分段、同线程及非独占全窗口UFS计数；逐在线核CPU/cache/timebase诊断，launchd前20轮固定文件测试。完整内核/Mu/D22AP/413任务、ASan/UBSan及既有回归、46项指令/16项包检查/双包比较通过。本轮未查询、启动或刷写手机，根因/桌面未验证。busy线程跳过取栈、未知owner不推断、inclusive时间不可相加；cpus A/B需分两次启动且Data持久进度影响LS对比。未重刷userdata或改journal/flush策略。见reports/hakios-ios16-r13-prepared.md/json。
+-
+-R12裸存储结果（2026-11-17）：R12 Fastboot临时启动一次，完整HakiOS/iOS16.5/D22AP，2880MiB/三核，100×4KiB读、WRITE_FAST、FLUSH及write+flush在launchd/HFS前完成。各项100/100成功；读均值207us、写146us、flush312us、write+flush465us，最大样本784us；镜像外400KiB scratch恢复100/100、逐块一致。USB 12054字节/54帧独立重解码一致，缺口/重复/残帧/device lost均0，timer正常返回且drain=1；Pipe error发生于成功drain之后。结果选择HFS日志/元数据/序列化调查分支，但不能据此认定R11 20.549s rename根因。本轮未改文件系统策略、不重刷userdata，未验证launchd/桌面/返回屏。见reports/hakios-ios16-r12-final-diagnosis.md/json。
+-
+-R11 最终诊断（2026-11-17）：用户原图及USB确认正常timer返回UEFI，未见panic，桌面未通过。最后lsd完成382个不同bundle对象、953次容器调用；4次目录扫描成功返回，但整体gather/enumerate未返回，ready未出现。SB查询com.apple.mobilenotes持续1784.634秒；对象进度仍增加，不能认定同项循环或死锁。同线程容器替换22.924秒中rename占20.549秒并成功返回，须追查HFS/日志/flush/UFS桥接耗时，不能直接定性UFS驱动故障。USB1136171字节/6157帧重解码一致、缺口0、timer排空成功；源端仍丢1766字节，FS丢弃47/结束丢失8，首轮取栈缺1进程，非全量日志。本次仅只读分析与归档，不重试R11/R10、不重刷userdata，保持UFS/2880MiB/三核。见reports/hakios-ios16-r11-final-diagnosis.md/json。
+-
+-R11 已临时启动一次（2026-11-17）：三核online、原始launchd及60808ms基础图层已记录，当前未目视桌面。新增方法采集为SB1/1、container4/4、lsd5/5，LS11/11；SB查询com.apple.mobilenotes，lsd不同应用完成数持续增加，尚不能认定同项循环或最终根因。USB与45秒只读观察器仍在后台保存同次日志/终态；FS记录有争用丢弃，非全量无损。保持当前运行，不重试R11/R10、不重刷userdata。UFS/2880MiB/三核。见reports/hakios-ios16-device-r11.md/json，准备提交44ec363。
+-
+-R11 准备完成（2026-11-17）：已先列明R10六项证据缺口，新增逐对象/完成/错误/耗时与真实文件调用关联、独立数据库阶段累计记录，缩短日志读锁；完整HakiOS/D22AP/Mu/413任务、阶段四回归、46项指令与16项实际包检查通过。手机预检通过，运行记录另见device-r11；诊断修订不等于根因修复或桌面通过。UFS/2880MiB/三核，不重刷userdata、不重试R10。见reports/hakios-ios16-r11-prepared.md/json。
+-
+-R10 最终诊断（2026-11-17）：用户原图确认正常timer返回UEFI，无panic文本，桌面未通过；实际三核启动/首图66.602秒。SpringBoard60个初始化后样本跨度1770.193秒，栈和CPU累计不变；五轮同锁/采样owner跨1440.016秒，owner等待LS Blocking数据库请求。lsd数据库ready group仍在等待，生产者从应用扫描转入容器查询/替换/数据保护元数据写入，具体对象/路径/errno和循环根因未定。LS256事件预算耗尽，不能据缺失ready判未完成。USB664633字节/2753帧到timer/drain重解码一致、传输缺口0；但源端争用丢10343字节，第3轮部分栈缺失，全量日志未通过。保持UFS/2880MiB/三核，不重试R10、不重刷userdata；下一修订追逐对象进度/容器写入返回并修复关键日志保留。本次只读分析及记录，无设备命令。备份archive/ios16-r10-20261117。见reports/hakios-ios16-r10-final-diagnosis.md/json。
+-
+-R10 实时证据（2026-11-17）：18:20:55临时启动一次，USB已枚举并持续传输，原始launchd已启动，实际显示3 processors running及0x100/0x101/0x1三核初始化记录，首个基础图层内核计时66602ms、用户确认苹果标志；已越过R9控制台panic，长期SMP稳定性仍未通过。LS观察器11/11已记录播种、恢复和同group等待，最终ready/根因/桌面未解决。接收器及每45秒只读观察器后台保留同次快照与终态。UFS/2880MiB不变、不重刷userdata，不重试已消费R10。见reports/hakios-ios16-device-r10.md/json。
+-
+-R10 准备完成（2026-11-17）：修复R9 initCPU关中断IOLog，改为固定不可变每核记录、普通thread_call延迟输出；保留控制台保护和三核请求。完整HakiOS/D22AP/Mu/413任务构建、阶段四回归（包含原R9拒绝对照）、46项指令与16项实际包检查通过。UFS/2880MiB不变、不重刷userdata；SMP和桌面仍未验证。R9备份archive/ios16-r9-20261117，见reports/hakios-ios16-r10-prepared.md/json。
+-
+-R9 最终故障（2026-11-17）：用户原图确认已 panic 返回 UEFI，RAW BYTES34293；Console I/O from interrupt-disabled context @serial_console.c:168，cpu1/kernel_task。冻结符号只恢复到控制台及 debugger/exception 帧，完整违规调用链未恢复；R9 新增 initCPU 关中断 IOLog 为已确认契约缺陷，与保护条件吻合。USB未枚举、0帧，延长接收器已按确切命令定向停止并保留原状态。R10先修复日志上下文，保留三核目标（另1核驻留UEFI服务UFS）、UFS和2880MiB；SMP/服务/桌面未通过。不重试R9，不重刷userdata。见reports/hakios-ios16-device-r9.md/json。
+-
+-R8 最终诊断（2026-11-17）：已分析全部8轮。SpringBoard同锁/采样owner关联跨度1441.096秒，但第4–6轮为NonBlocking数据库请求、第7–8轮转入Blocking，不能认定同一RPC持续挂起。最后两轮lsd的数据库请求与安装恢复等待同一dispatch group（非unfair-lock），跨度360.293秒；容器/偏好设置依赖栈仍变化，循环死锁和最终根因未证实。发现一次HFS内部搬移ERANGE34，实际UFS Data缺DKIOCISSOLIDSTATE属性，属具体修正候选，尚未关联到出错文件/数据库。单核区间top 98–99%，末尾free1745MB；画行0.733–0.740秒。下一修订追数据库ready完成条件、补齐固态属性并降低同步日志开销，保留UFS/2880MiB/单核；不重试旧轮、不重刷userdata。本次仅分析与记录。见reports/hakios-ios16-r8-final-diagnosis.md/json。
+-
+-R8 最终采集（2026-11-17）：正常内核 timer 与成功 USB 排空正文已捕获。最终 366347 字节/6849 帧重解码一致，缺口/重复/残帧/设备 lost 均0；有界取栈 8 轮。用户确认运行中苹果标志，物理终态未目视核验，桌面未通过。保持 UFS、2880MiB/单核；不重试R8/R7/R6/R5，不重刷userdata。用户已明确授权日志收集核验保存后直接关闭电脑，无需再询问。见 reports/hakios-ios16-device-r8.md/json。
+-
+-R8于2026-11-17T04:32:13+08:00临时启动一次，用户确认启动文字；USB已枚举/持续传输，完整payload参数读回一致，有限采样配置和top已实际输出，原始launchd已启动。首轮目标尚未启动，尚无服务线程/IPC接收PID样本；根因和桌面未解决。接收器与只读观察器在后台按同次运行保存快照和终态，不重启、不重试、不重刷userdata。保持UFS、2880MiB/单核；BGR24批量写入的硬件时序待后续计时，日志同步输出会影响性能。首次top统计含绝对计数器原点偏移，不能当作本次CPU利用率。报告reports/hakios-ios16-device-r8.md/json；准备提交5c6b7ab，备份archive/ios16-r7-20261117。
+-
+-R8已完成完整构建、检查、冻结和实时Fastboot身份核验，等待同次临时启动。修正R7参数/printf/短名漏采；增加当前IPC接收PID和服务日志，BGR24批量写入经1650项旧新像素比较。诊断不等于根因或桌面已解决。保持UFS、2880MiB/单核，不重刷userdata。见reports/hakios-ios16-r8-prepared.md/json。
+-
+-R7 最终观测（2026-11-17）：内核正常定时结束与成功USB排空正文已捕获；用户确认UEFI结束摘要，桌面未通过。最终252881字节/6699帧，原始帧重解码逐字节一致，缺口/重复/残帧/设备lost均0。多线程8轮；SpringBoard同锁/同owner关联5次，跨度1440.424秒，owner等待_LSDReadService数据库同步回复。第七轮lsd曾等待容器代码签名缓存失效同步回复；实际IPC对端与循环依赖根因未定。画行3次，墙钟[3497790, 5438626]微秒、线程CPU[2713141, 3469201]微秒。top参数截断、长printf尾部在USB前丢失、容器管理器名称漏采已确认，因此未宣称所有日志完整。保持UFS、2880MiB/单核；不重试R7/R6/R5，不重刷userdata。全6GB、SMP、A530、物理触摸及桌面未验证。见reports/hakios-ios16-device-r7.md/json。
+-
+-R7 启动前准备（历史）：已完成完整 HakiOS 内核、413项用户空间任务、真实 D22AP loader/Mu 构建、检查、冻结及实时 Fastboot 身份核验，等待同次临时启动。复用固定上游 ustacks/top 同轮采样 SpringBoard、backboardd、lsd、containermanagerd、runningboardd；首次内核180秒，此后每6分钟，最多8轮、每进程96线程/14帧、每轮8进程。等待 syscall 原始寄存器和只读 unfair-lock owner_tid 用于关联持锁者，明确 sampled word 可能变化；显示前8次提交分段记录 CPU/墙钟/非CPU耗时，算法与像素保持不变。实际函数 ASan/UBSan、50项画行比较、依赖回归和实际包检查通过；诊断能力不等于锁根因或桌面已解决。保持UFS、2880MiB/单核；全6GB、SMP、A530和物理触摸未验证；不重刷userdata、不重试R6/R5。备份archive/ios16-r6-20261117和对应历史报告已核验。见reports/hakios-ios16-r7-prepared.md/json。
+-
+-R6 最终观测（2026-11-17）：已正常定时返回 UEFI，用户确认结束摘要，桌面未通过。最终325433字节/7373帧重解码一致，缺口/重复/不完整均0；从内核横幅到正常timer返回与成功排空结果的已输出控制台流通过核验。USB随后Pipe error，UEFI摘要属于独立控制台未被USB捕获，不能宣称所有固件/daemon日志完整。SpringBoard主线程21次相同栈跨越26分36.816秒，状态WAITING、CPU累计不增，尚未进入主队列/运行循环；原20F66缓存映射为ControlCenterServices → BaseBoard BSCollectionFilter → CoreServices → __ulock_wait，具体锁持有者/根因未定。首次基础图层在内核计时1143907ms，之后完整观察30分钟；三次画行约3.29～4.79秒（含调度），末尾1754MB free。下一修订复用上游有界多线程取栈关联依赖，并同步查软件显示耗时，不再单纯加时。保持UFS系统、2880MiB/单核；全6GB、SMP、物理触摸、A530和桌面仍未验证。本次仅分析归档，未改运行代码、构建、查询或操作手机；不重试已消费R6/R5，不重刷userdata。备份archive/ios16-r5-20261117和R5历史报告保留。见reports/hakios-ios16-device-r6.md/json。
+-
+-# IOS-MIX1 项目指令
+-
+-## 并行执行规则（用户于 2026-11-19 更新）
+-
+-- 对可独立推进的工作优先使用子代理并行处理；用户授权最多同时运行 9 个子代理。实际并发仍受当前工具额度和会话状态限制，达到限制时先关闭已完成代理，不能因此拖住主线。
+-- 每次任务先由主代理划分关键路径与可并行工作。子代理必须有明确交付物和互不重叠的写入范围；共享接口、构建配置、设备树、日志和集成文件由主代理统一协调。
+-- 代理应只接收完成分工所需的上下文；硬件、设备和构建约束对代理同样生效。需要设备才能确认的结论标为“未验证”，不得猜测。
+-- 主代理独立复核代理的文件、行号、差异和测试证据，再逐项合并；每个合并单元通过相应构建/回归后再继续。冲突或失败时隔离并回退该单元，不损坏其他工作。
+-- 子任务卡住时应及时中止或重新分配，记录原因并继续不依赖它的工作；不等待单个代理阻塞整个任务。
+-- 仅在能带来实际并行收益时增加代理，不为凑数拆分；除用户另有指示，最多同时运行 9 个。
+-
+-更新：2026-11-16。以下路线由用户明确确认，是本仓库最高优先级的项目级路线约束，适用于当前及后续会话。
+-
+-**最高约束：基于完整 HakiOS 移植增加 MIX 一代设备支持，以 HakiOS 为唯一活动内核基线。原先的 7195 内核仅用于只读对照，不再使用。**
+-
+-用户原话：
+-
+-> 就按照这个方案“基于完整 HakiOS 移植增加 MIX 一代设备支持”，以Hakios为基准进行内核适配，原先的内核仅用于对照不要再使用了，一点点造轮子毫无意义，写入项目提示词内，作为最高约束。
+-
+-1. 活动内核必须来自 HakiOS 的完整移植、正常依赖和构建流程；在其上增加 MSM8996/8996pro 与 lithium 的设备支持。不能只引用 HakiOS 的名称、工具或零散驱动，实际仍自行补齐一套 Apple 裸 XNU 移植。
+-2. 原 Apple XNU 7195.141.2 / ports/lithium 路线及其内核、补丁、镜像和构建树均冻结为历史对照。允许只读查阅、反汇编、比较和核对既有证据；禁止继续修改、构建、打包、启动或以其作为测试、演示、过渡、兜底内核。不得继续沿第十六轮 FactoryData/panic 停点推进旧路线。
+-3. 不运行旧 7195 活动入口来推进项目，包括 scripts/build-ios14-xnu.py、scripts/prepare-ios14-lithium.py、scripts/build-ios14-native-boot.py、scripts/boot-ios14-native.py，以及 run-wsl-limited.ps1 的旧 kernel/native-package 任务。旧命令在历史文档中出现不构成执行授权。
+-4. 本项目新增工作集中于 HakiOS 下的 SoC/板级适配、加载契约、外设接入和有边界的系统版本兼容。允许按上游流程重新编译完整 HakiOS。通用内核与运行服务优先使用上游完整实现；遇到缺口先核对依赖和集成，不逐项自造替代服务。
+-5. 已验证的 MIX 硬件参数、原厂固件、DTB、内存/分区资料及观测结论可继续使用；适配代码按 HakiOS 接口和原始上游来源整理。不得将旧 7195 运行时实现整套搬回新活动内核。
+-6. 用户2026-11-16明确批准改用iOS16.5 / 20F66 / iPhone10,3 / D22AP / arm64（不是arm64e），仅使用用户提供的IPSW。唯一活动基线仍为upstream/hakios-xnu-kernel的63fc2b4633bac3af8e57dadab9f5a8d4cb940438、XNU8796.121.2。先达到真实SpringBoard显示更新；触摸、GPU和稳定性分别验证。iOS14适配归档，不再作为活动集成。
+-7. UniXNU、ios-sailfish和其他项目仅作为组件/资料来源，不得切换活动内核、退回7195或另造通用服务。按审计、内核、用户空间、真机调试四阶段推进，每阶段报告后停止，等待用户确认下一阶段。用户已确认阶段二成果并授权阶段三用户空间、UFS/Data集成及核验后的userdata写入；阶段三已完成一次userdata写入及采样核验，用户已确认进入阶段四真机启动与联合调试。
+-8. 不执行 QEMU。运行结论以 MIX 真机证据为准；构建和静态检查只证明输入与实现检查结果。2026-11-16用户确认资源调整：WSL 内存16GB、12个逻辑处理器、swap2GB，任务上限14GB、CPU配额1200%、构建并发12，大任务顺序执行；统一配置见config/hakios-resources.json。系统优先存放UFS并按需读取，精简压缩不作为launchd修复前提。
+-9. 每次工作先读本文件、PLAN.md、OPERATIONS.md 和 project.json。README、旧计划、历史报告、子目录说明、脚本默认值或既有自动推进记录与本约束冲突时，服从本约束。只有用户后续明确修改路线才可改变它。
+-10. 2026-11-16用户要求加快集成：服务请求、显示、物理触摸和SpringBoard联合推进，尽量同一集成包上机观察，不再为每个小项单独安排真机轮次。P2/P3/P4仍分别记录真实证据，但不把逐项独立复测作为下一项开发前提。服务诊断在后台运行，不阻挡桌面启动；通过的P1、存储、动态工具和R28进程存在性不再重复验收。首次UI尝试可复用上游软件绘制候选并同步推进A530加速，不能把候选路径、进程存在或合成输入记成可操作桌面、GPU加速或物理触摸通过。上机前仍需完整HakiOS构建、检查并冻结实际集成包。
+-
+-现行执行计划：PLAN.md。设备状态和已有操作授权：OPERATIONS.md。旧内核的成功记录属于历史路线，不能计作 HakiOS 新基线的已验证能力。
+-
+-11. 用户2026-11-16要求以充分使用6GB机型全部可用RAM为目标，同时推进USB日志。不得把512MiB或首个扩大窗口当作长期上限；固件、外设和未知动态保留区不得冒充空闲RAM。USB先复用现有来源，区分源码集成、编译成功、枚举、传输和完整日志捕获的证据。
+-12. 迁移前备份已完成：archive/ios14-r31-20261116分支、仓库外E盘校验备份；不得把Apple二进制/固件加入Git或共享包。
+-
+-R5 最终观测（2026-11-17）：已定时返回 UEFI 保留摘要，桌面未通过。首次基础图层在内核计时1095537ms，随后保留完整30分钟；主机启动至USB终止约48分54秒。最终309344字节/6890帧重解码一致，缺口/重复/不完整均0，USB Pipe error仍缺返回尾部，完整采集未通过。SpringBoard已连接backboardd，activity assertion后来返回，虚拟HID后来有非空对象；最后仍无明确屏幕所有者、BootUI为白苹果。六次图层提交各约3.29–3.82秒（含调度），末尾约1750MB free，不能继续只归因于等待或RAM不足。下一修订先复用上游诊断获取SpringBoard初始化/主线程停点与主队列里程碑，核对启动依赖、时钟和显示耗时；CPU拓扑与UFS驻留核须对齐后再开SMP。此次只归档和只读排查，未构建、改运行代码或操作手机；不重试R5、不重刷userdata。见reports/hakios-ios16-device-r5.md/json。
++2026-11-20 R34性能排查：用户报告几十秒响应且短按成长按，记为部分可见响应但性能不可用，不宣称触摸完整验收。当前仍affinity1单核；本次启动前整数2473us/memcpy3499MBps接近R15，不是运行中MHz测量。360秒有效窗口99%忙、backboardd48.9/kernel31.2%；同触点原始DOWN/UP90.658ms而EventFilter处理相隔99.698秒，17:29:13已存43陈旧事件最大539.914秒。两轮redwood input栈均落IOHIDVirtualServiceClientDispatchEvent内，时间戳保留，精确内部分段未测。实际loader保留phys0作UEFI/UFSworker，当前最多3XNU核；四核需存储/交接重构，既有redwood EPSS不适用8996。下一修订优先有界派发时序和单变量减少强制os_log回显，CPU线并行核对慢核cache/clock，恢复后再验三核。Mencius/Bohr/Ohm各自证据完成，主代理读回关键源码和栈；无新生产改动/build/设备查询/boot/频率/分区操作，60/29不变，原同次UFS/USB保留。见reports/hakios-ios16-r34-input-performance.md。
++
++2026-11-20 R34 UFS桌面触摸运行中：用户在获知正常Data写入范围后要求“测试呀，手机已经连接了”；17:17:31.703118+08:00单次临时boot冻结UFS最终包47740664f56fcf021096493444cc96934223f49ce0dfc099920bfb73cfc426ed，五项只读预检通过。actual affinity1/bootcpu1/cpus1、APFS根/HFS Data及journal replay完成；ID0xe7/error0及63字节轮询正常，SB main_queue_enter相对constructor75370ms，backboardd触摸服务已建立。17:21:04快照至少7800报告/54事件成功入队、type1/2/3，未见触摸read/report错误；5176帧/1177842字节运行前缀独立重放一致、gap/dup/残帧/lost0，USB仍采集。随后4条hakios input sample已证明backboardd完整read到type1/2/3；Einstein定位且主代理实际源码复核959/963及985/856通过，dispatch返回未检查，不扩大为界面验收。界面实际点击响应/坐标/多指待用户本次观察，不移用RAM验收；本次正常UFS文件系统写入已授权，无刷分区/ADB/Android/Recovery/QEMU/启动后查询或重试。计数60/29；保持同次运行及USB，UFS自动返回未启用、原10800秒timer保持。R20/R32/R33/R34冻结及原索引保持。见reports/hakios-ios16-device-r34-touch-live-ufs.md/json。
++
++2026-11-20 R34真实触摸RAM短测结案：17:05:15.400713+08:00单次临时boot获接受，actual affinity1/bootcpu1/cpus1；GPIO89低10ms/高300ms后，0x38/A3实读ID0xe7、error0，63字节报告至少7200份，真实点击/滑动/松手产生DOWN/MOVE/UP且197条成功进入hakios_touch_post_batch实际队列。未见read_error/report_error；PID1为隔离RAM hold，SpringBoard/HID消费及界面响应、多指、坐标边界、IRQ及长稳未验证。正常180秒timer/drain1，105帧/15484console字节独立重放一致，gap/dup/残帧/lost/源争用丢0；随后Pipeerror原样保留。17:10:56唯一一次只读devices/product核验同序列号54223ce9、MSM8996_A8回到Fastboot；未捕获UEFI内部prepare/commit，本轮未另获硬件键事后确认，不借用R33确认。本次无分区/刷写/ADB/Android/Recovery/QEMU/重试，计数59/28；R20/R32/R33/R34冻结及原索引保持。下一步直接验收已备R34 UFS桌面候选，正常Data写入需对应范围确认，UFS自动返回仍不支持；不自动新启动。见reports/hakios-ios16-device-r34-touch-live.md/json。
++
++2026-11-20 R34触摸完整路径主机候选已完成：按用户“减少审查、门禁、测试，今天做出成果”改为直接实现与针对性验证，不重复历史总回归。touch=1默认关闭；新增GPIO89低10ms/高300ms复位、QUP6/0x38组合读取、63字节报告轮询、多点到真实hakios_touch_post_batch及结束停止。内核799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c实际链接；实际init/APFS486项读回clean；91个QUP与4组事件专项通过。RAM最终包d1bbc6bf94defeacacf3ffbbae32bd3e227b70ef74bb1ceda2fb5539f8ad0d3b（phase4-r34-touch-live-ram-final，180秒+自动Fastboot）；UFS最终包47740664f56fcf021096493444cc96934223f49ce0dfc099920bfb73cfc426ed（phase4-r34-touch-live-ufs-final，R20原参数+touch）。同名无-final目录为停止等待修正前候选，不启动。R34未操作手机，真实ID/触点/HID响应未验证，供电继承、无固件写入；R20/R32/R33冻结和原索引不变。下一步说明GPIO89复位+QUP持续读取范围并获对应确认后，仅一次RAM短测；若成功，可直接用已备UFS候选验收界面，不再拆成多个仅初始化轮次。无分区刷写，不自动启动。见reports/hakios-ios16-touch-r34-prepared.md/json。
++
++2026-11-20 R33自动返回复核更新：用户确认“没有”按电源/音量键；结合同序列号54223ce9及产品MSM8996_A8在单次测试后被Fastboot枚举，R33独立RAM诊断配置自动返回Fastboot记为真机验证通过。UEFI prepare/commit内部串流字段仍未捕获；该缺口不改变物理终点证据。仅RAM profile通过，不代表UFS配置支持。随后只推进R32触摸错误的主机侧来源/板级审计，不自动启动手机。见reports/hakios-ios16-device-r33-return-fastboot-attempt2.md及对应local目录。
++
++2026-11-20 R33第二次真机尝试：用户报告手机有电并要求测试。04:59:57.288+08:00 Fastboot 单次接受冻结 RAM 镜像7a4010a051e16c9f339d1ed5b04ea64abc7ac69e952de3072d78dab94a5a956e；启动前只读身份/解锁/电量/download-size通过。USB保存41帧/9226字节，独立重放一致、缺口/重复/残帧/device-loss为0，正常180秒timer及首次drain=1可见；05:03:29接收器Pipe error。启动后约245秒，一次只读fastboot devices发现同序列号54223ce9，product MSM8996_A8。故已核实同一设备在本次临时启动后回到Fastboot；是否全由自动复位造成尚待用户确认期间未按硬件键，UEFI prepare/commit全链条未由USB证明。不重试，无分区/刷写/ADB/Android/Recovery/QEMU/触摸I2C。计数58/27。见reports/hakios-ios16-device-r33-return-fastboot-attempt2.md及reports/local/20261120-r33-return-fastboot-attempt2/。R33首次耗尽电量无效尝试独立保留；R20/R32冻结不变。
++
++2026-11-20 R33自动Fastboot真机尝试已按用户要求判为无效并暂停：04:49:10.782+08:00唯一一次临时启动被Fastboot接受，镜像7a4010a051e16c9f339d1ed5b04ea64abc7ac69e952de3072d78dab94a5a956e；启动前只读身份/解锁/电量/下载窗口通过。USB保存41帧/9228控制台字节，独立重放无缺口/重复/残帧/device-loss，正常180秒timer和首次drain=1可见；接收器04:52:42 Pipe error，不能据此证明固件准备/提交或Fastboot返回。04:53:17唯一一次只读Fastboot枚举为空。用户随后报告重启后发现手机没电，并明确本次测试无效、等下次；电量耗尽原因及自动复位终态未独立验证。无分区/刷写/ADB/Android/Recovery/QEMU/重试。R33单次尝试已消费，不自动再试；待用户下次准备设备后另行确认测试。原始证据见reports/local/20261120-r33-return-fastboot-approved/及reports/hakios-ios16-device-r33-return-fastboot-invalid.md；R20/R32冻结保持。
++
++2026-11-20 R33自动Fastboot主机包已冻结：SHA256 7a4010a051e16c9f339d1ed5b04ea64abc7ac69e952de3072d78dab94a5a956e；默认关闭return_fastboot=1，独立RAM软件验收/ufs0/affinity1/180秒+摘要10秒。正常timer+两次USB排空+同次cookie/独立reason后，经新UEFI prepare/commit核对owner、PMIC/IMEM并单次PS_HOLD；panic/失配/失败保留，不普通重启回退或自动重试。完整HakiOS/Mu/D22AP/413job、82源码/47正常+7RAM扫描、6专项/52既有回归/49打包及466证据独立读回通过。真实自动复位/Fastboot及触摸未验证，UFS自动返回尚不支持。本阶段无任何设备查询/boot/复位/分区/ADB/QEMU，计数56/25不变，R20/R32冻结保持。等待说明新复位范围后的单次上机确认，不自动查询。见reports/hakios-ios16-return-fastboot-r33-prepared.md/json。
++
++2026-11-20 R32真机结案：2026-11-20T02:44:12.258921+08:00单次临时boot，actualaffinity1/bootcpu1/cpus1。Stage1为26读3写316us；未改R31初始化411读18写4poll通过。新核心484读22写4poll/1106us（事务198us），适配层562读22写；三FIFO字/第二RUN均返回，completion保留STATUS0d1300c8/ERROR0/OP10/STATE11d。NACK优先分支，同时FAIL字段3及INVALID_READ_ADDR，根因未定；0RX/无ID/无INPUT_DONE/STOP未执行，无ACK/清错/结束RESET/恢复/重试/GIC写/IRQ/HID。正常180秒timer/drain1，210帧/52537console字节独立重放一致、gap/dup/残帧/lost/源争用丢均0；排空后Pipeerror原样保留。物理结束屏未目视确认，RAMlookup error2非UFS故障。无启动后Fastboot/ADB查询、分区/刷写/Android/Recovery/QEMU/重试；计数56/25，R32已消费。下一主机修订核对NACK+INVALID_READ_ADDR及命令/板级前提，不猜地址/电源或自动新启动。R20基线/冻结/原索引保留。见reports/hakios-ios16-device-r32-touch-qup-transfer.md/json。
++
++2026-11-20 R32已临时启动一次：2026-11-20T02:44:12.258921+08:00 Fastboot接受冻结镜像b260776a3fff5513134b2c594e364eb58fb95a495c9a7625e6866354345fe767；5项只读预检通过、USB接收已启动，ID/内核/CPU/timer/drain及物理屏幕待核验。隔离RAM/ufs0/180秒，一次0x38/A3事务/第二RUN，无ACK/结束RESET/恢复/重试。计数56/iOS16为25；R32已消费，无启动后查询/分区/ADB/QEMU或自动重试，保持同次运行与USB。见reports/hakios-ios16-device-r32-touch-qup-transfer.md/json。
++
++2026-11-20 R32主机包已冻结：SHA256 b260776a3fff5513134b2c594e364eb58fb95a495c9a7625e6866354345fe767；默认关闭touch_qup_transfer=1，隔离RAM/ufs0/affinity1/180秒。复用未改R31初始化后，单次0x38/A3读取，三FIFO字/第二RUN，最多22QUP写及一次RX；逐写PAUSE检查，完成与STOP分开，原始RX与终态提交分开；无ACK/清错/结束RESET/重试/GIC写/GPIOrails/IRQ/HID。完整HakiOS/Mu/D22AP/413job、46扫描/52套ASan/UBSan、115打包测试/116源闭包及实际APFS/整包读回通过。R20唯一显示基线、旧冻结和原索引保持。物理I2C/ID/完成可见性/所有权及触摸未验证，历史R9总门禁未解决。本阶段无手机查询/启动/分区/ADB/QEMU，计数55/24不变；说明新FIFO事务范围并获对应确认后才单次预检/临时boot。见reports/hakios-ios16-touch-r32-prepared.md/json。
++
++2026-11-20 R31真机结案：2026-11-20T01:34:55.437934+08:00单次临时boot，实际affinity1/bootcpu1/cpus1。原Stage1为26读3写311us；新核心411读18写774us/poll4、适配层477读18写。checked RESET/base/setup/RUN/CLK/PAUSE均完成；RUNpoll与run/clock/pause/terminal STATUS0c110000、OP0，STATE11d→11f，CLK003e007c读回。八组272项valid/stable及四poll20字段全有效，无failedpoll。精确实验A/B策略范围内流程观察通过，非芯片ID/物理总线静默/所有权/通用FSM合法性证明；无新FIFO/tag/ID/IRQ/HID，terminalGIC仍unread。正常180秒timer/drain1，209帧/52227console字节独立重解码一致，gap/duplicate/incomplete/lost/争用丢均0；Pipe error若有在排空后。物理结束屏未目视确认，RAMlookup error2非UFS故障。无启动后查询/分区/ADB/QEMU/重试，计数55/iOS16为24；R31已消费。R20基线/旧冻结字节/原索引保持。下一主机修订设计源支持的单次最小ID事务及完成/STOP取证，不自动上机。见reports/hakios-ios16-device-r31-touch-qup-phase.md/json。
++
++2026-11-20 R31已临时启动一次：2026-11-20T01:34:55.437934+08:00 Fastboot接受冻结镜像a6bd21ef428e620f4cf9fe9f5d954c23c00c12d3d19efe523a70b67b2e2d0f53；5项只读预检通过、USB接收器已启动，内核/状态机/CPU/timer/drain及物理屏幕尚待核验。隔离RAM/ufs0/180秒，不发新FIFO标签或ID，首次RUN可能恢复继承活动，未验证物理总线静默。计数55/iOS16为24；R31已消费，无启动后设备查询/分区/ADB/QEMU或自动重试，保持同次运行并读取保存日志。R20显示基线/旧冻结字节/原索引保留。见reports/hakios-ios16-device-r31-touch-qup-phase.md/json。
++
++2026-11-20 R31主机包已冻结：SHA256 a6bd21ef428e620f4cf9fe9f5d954c23c00c12d3d19efe523a70b67b2e2d0f53；touch_qup_phase=1默认关闭，隔离RAM/ufs0/affinity1/180秒。保留R30/旧10module字节，新增四slot五字段原poll/valid时间/失败slot保持且无额外MMIO/time调用；RESET仅A0c000000，RUN/CLOCK/PAUSE仅完整A或实验观测B0c110000，非掩码放宽；源码明确O/I字段但数值语义/PAUSE合法性/物理总线未验证。完整HakiOS/Mu/D22AP/413job、82来源/46扫描、49套回归（core50762/adapter35040/PID1 378）、130打包/111源闭包和实际APFS/整包读回通过。旧冻结/R20显示基线/索引保持。本阶段无设备查询/boot/分区/ADB/QEMU，计数54/23不变；用户已确认Fastboot可测试，说明实际一次softreset/RUN/CLK/PAUSE实验范围后单次预检/临时boot，不自动重试。见reports/hakios-ios16-touch-r31-prepared.md/json。
++
++2026-11-20 R30真机结案：2026-11-20T00:40:16.391122+08:00单次临时boot接受，实际affinity1/bootcpu1/cpus1。Stage1为26读3写314us；新核心270读16写398us/poll3、适配层330读16写。base/setup完成，首次STATE RUN写返回，terminal STATE11d/OP0/ERROR0/STATUS0c110000；与setup仅STATE/OP/STATUS变化。现有整值STATUS==0c000000策略以i2c_status_not_exact_idle停止，checked RUN/CLK/PAUSE未执行，非MMIO或超时失败，无新FIFO端口/tag/ID。bit16/20语义/物理总线/所有权未验证。五组170项valid/stable、三组102项unread；terminal GIC明确unread。正常180秒timer/drain1、187帧/46498控制台字节独立重解码一致，缺口/重复/残帧/lost/源争用丢均0；Pipe error在排空后。物理结束屏未目视确认；RAM error2为lookup非UFS故障。无启动后查询/分区/刷写/ADB/QEMU/重试，计数54/iOS16为23；R30已消费。R20基线/旧冻结字节/原索引保持。下一主机修订核对按阶段STATUS检查及真实RUN差异，不直接放宽未知位或自动新启动。见reports/hakios-ios16-device-r30-touch-qup-state.md/json。下方启动待观察记录为历史。
++
++2026-11-20 R30已临时启动一次：2026-11-20T00:40:16.391122+08:00 Fastboot接受冻结镜像fb7c575ec377dd8854786479cb1448f35974071c2ef19010b186eda1df1f92ae；5项只读预检通过、USB接收器已启动，内核/状态机/CPU/timer/drain及物理屏幕尚待核验。隔离RAM/ufs0/180秒，不发新FIFO标签或ID，首次RUN可能恢复继承活动，未验证物理总线静默。计数54/iOS16为23；R30已消费，无启动后设备查询/分区/ADB/QEMU或自动重试，保持同次运行并读取保存日志。R20显示基线/旧冻结字节/原索引保留。见reports/hakios-ios16-device-r30-touch-qup-state.md/json。
++
++2026-11-20 R30状态机主机包已冻结：SHA256 fb7c575ec377dd8854786479cb1448f35974071c2ef19010b186eda1df1f92ae；默认关闭touch_qup_state=1，隔离RAM/ufs0/affinity1单核/180秒。独立RESET/base/setup/首次RUN/CLK/PAUSE前置观察，最多八组272字段；无新FIFO端口/tag/ID，首次RUN可能恢复继承活动，物理I2C静默/所有权未验证。旧Stage1/ID/snapshot/init/0022字节不变。完整HakiOS/Mu/D22AP/413job、82来源/46扫描、46套回归（core9766、adapter34104、独立boundary、PID1 376）、108打包测试/106源闭包及实际APFS/整包读回通过；独立审查两处边界已修正并全量重构建/复测，旧候选保留。terminal_gic明确unread；历史R9总门禁未解决。R20显示基线/旧冻结字节/原索引保持。本轮无手机查询/启动/分区/ADB/QEMU，计数53/iOS16为22不变；等待用户恢复并确认Fastboot及对应实验范围，不自动上机/重试。见reports/hakios-ios16-touch-r30-prepared.md/json。
++
++2026-11-19 R29真机结案：用户重新连接后新会话预检通过，23:50:42临时boot同冻结镜像一次获接受；实际affinity0x1/bootcpu1/cpus1。Stage1为26读3写326us；新模块145读6写226us/poll2，适配层175读6写；一次SW_RESET请求/VALID_RESET和CONFIG207/ERREN3c/OPMASK300/MASTER1读回通过。四组双轮17项共136读全部valid/stable，但OP始终0xc0，以operational_nonzero_before_id逻辑停止，未发I2C/未读ID，不能认定芯片无应答。正常180秒timer/drain1，125帧/30602控制台字节独立重解码一致，缺口/重复/残帧/lost/争用丢均0；Pipe error在排空后，2条描述符API异常保留且最终身份验证通过。物理结束屏未目视确认，内部reset效应/所有权/full语义仍未验证；RAM error2为lookup非UFS故障。先前空枚举记录、R20基线/全部冻结字节/原索引保留；计数53/iOS16为22，R29已消费不重试。下一步核对RESET阶段自定义OP0准入与上游RUN/PAUSE/FIFO状态机，不直接掩码放宽、不自动新启动。见reports/hakios-ios16-device-r29-touch-qup-init-runtime.md/json。下方预检等待状态为历史。
++
++2026-11-19 R29真机预检停止：已说明一次QUP软复位/条件式ID范围后，仅执行一次只读fastboot devices，返回码0但列表为空；未到身份/电量核验，无boot/接收器/复位/I2C/分区/刷写/ADB/QEMU或重试。原因未验证，不猜线材/电量/模式。R29镜像2dec085c75a29ea770a56231ff359ae76da0d13aa36e11836d657ea1a03b9d65已完成42套测试/82打包/100源闭包及完整构建读回，仍可复用；临时启动次数未消费，总计52/iOS16为21不变。等待用户恢复并确认Fastboot USB连接后，以同镜像建立新独立预检记录，保留本次证据，不自动重试。R20基线/旧冻结字节/原索引保持。见reports/hakios-ios16-device-r29-touch-qup-init.md/json。下方主机准备状态为历史。
++
++2026-11-19 R29初始化主机包已冻结：SHA256 2dec085c75a29ea770a56231ff359ae76da0d13aa36e11836d657ea1a03b9d65；默认关闭touch_qup_init=1，隔离RAM/ufs0/单核affinity1/180秒。原Stage1/ID/snapshot/0022不变；来源支持的一次SW_RESET/普通STATE RESET/基础I2Cv2配置，严格OP0后才条件式单次原ID；无GIC/外部GPIO复位/供电/IRQ/HID写入扩展。ERREN3c启用错误源，GIC只读view不是全局排除证明。完整HakiOS/Mu/D22AP/413job、82来源/46扫描、42套ASan/UBSan（新core6095、adapter24632、init374）、82打包测试/100源闭包及实际APFS/整包读回通过。物理复位/所有权/电气/I2C/ID/触摸未验证，历史R9总门禁未解决。R20唯一显示基线及旧冻结字节/原索引保留。当前无R29设备操作；用户已表示Fastboot可测试，主代理说明对应新包范围后可单次临时boot，不分区/刷写/ADB/QEMU或自动重试。见reports/hakios-ios16-touch-r29-prepared.md/json。
++
++2026-11-19 R28真机结案：23:05:36临时boot一次获接受，实际affinity0x1/bootcpu1/cpus1。Stage1为26读3写312us；新QUP快照两轮各17项全部valid且相同，34读37us、适配层48读0写，入口/末尾GIC可见状态通过。CONFIG0/MASTER_CONFIG0未具备原厂I2Cv2配置；IO_MODES0xa5两套算法均得IN/OUT各64字节。OP0xc0共享full位与count0不能直接推断实际占用，I2C/RESET语义仍未验证。无QUP写/复位/I2C/真实ID/IRQ/HID。PID1保持、正常180秒timer及drain1通过；67帧/15845控制台字节独立重解码一致，缺口/重复/残帧/lost/源争用丢均0，Pipe error在排空后。物理结束屏未目视确认；RAM Data sync error2为lookup，非UFS故障。R20显示基线及R15/R20/R25/R26/R27/R28镜像/原索引字节保留。下一步准备来源支持的QUP初始化前后对照及条件式单次ID，不直接放宽掩码；R28已消费，不自动新启动。见reports/hakios-ios16-device-r28-touch-snapshot.md/json。下方主机准备/等待状态为历史。
++
++2026-11-19 R28只读快照主机包已冻结：SHA256 9a01c3db68164949a8f093a3625dbea9c852047b35417b1fe3597be6bf4342d1；R20-display仍为显示基线。17寄存器两轮34读、逐项valid/unread、默认关闭touch_snapshot=1，与活动ID互斥；旧ID/Stage1/0022字节不变。完整HakiOS/Mu/D22AP/413job、82来源/46扫描、39套ASan/UBSan（core622+7、adapter4611、init372）、95源闭包/整包APFS读回通过。共享SPI来源命名bit7为IN_FIFO_FULL，但I2C/RESET语义、count读副作用及实际硬件仍未验证，不放宽ID门禁/不做QUP写。初版缺陷及索引stat刷新已核对并修正，原始索引字节恢复。当前无R28手机操作；用户已明确Fastboot可随时测试，操作前说明本包范围，单次临时boot，不访问分区/Android/Recovery/QEMU，不自动重试。见reports/hakios-ios16-touch-r28-prepared.md/json。
++
++2026-11-19 R27真机结案：22:27:05临时boot一次获接受，实际affinity0x1/bootcpu1/cpus1。Stage1快照成功（26读3写313us）；ID模块板级/GIC入口检查通过，但第4次QUP读得到OPERATIONAL0xc0，被unexpected_operational_bits停止，8us/4读0写，无I2C事务或真实ID。输出raw/state/config/io_modes的0为未读初始值，不能当测量。PID1保持、正常180秒timer及drain1通过；51帧/11755控制台字节独立重解码一致，缺口/重复/残帧/lost/源争用丢均0，Pipe error在排空后。物理结束屏未目视确认。RAM包Data sync error2为lookup，非UFS故障证据。无分区/刷写/ADB/QEMU/重试；R27已消费，固定Linux来源已命名bit6为OUT_FULL，bit7/RESET语义未定；下一步补齐事务前FIFO快照和逐寄存器有效位，不直接放宽掩码或自动新启动。见reports/hakios-ios16-device-r27-touch-id.md/json。下方主机准备/等待状态为历史。
++
++2026-11-19 R27最小ID主机包已冻结：镜像SHA256 a029ad76623e957661988893ca84b885a1162f771cf21ae90dad1d110d6ff7f3，R20-display仍为唯一显示基线。完整HakiOS/Mu/D22AP/413job、82来源/46指令扫描、36套ASan/UBSan（核心1838、适配层21884、init370）、90源哈希及整包/APFS读回通过。R26 Stage1/0022不变，新增touch_id_probe=1仅隔离RAM、0x38/A3单次事务，ufs=0、180秒；无SW_RESET、GPIO复位/供电/GIC写/IRQ/HID。物理I2C、所有权、电气、GIC可见性及硬件超时均未验证，历史R9总门禁未解决。初版审查缺陷已修正并重构建；当前尚无R27设备操作。用户本轮已表示Fastboot可随时测试，任何操作前仍须说明其对应范围，不扩大为分区/Android/Recovery/QEMU授权。见reports/hakios-ios16-touch-r27-prepared.md/json。
++
++2026-11-19 R26同次照片终态已核验：用户原图显示UEFI RETURN TIMER DEADLINE REACHED、NO PANIC TEXT IN RETAINED LOG及USB drain1，与已捕获正常timer/drain一致；UEFI RAW BYTES31142为独立保留日志计数，不与USB11050字节直接相减认定丢失。R26时钟/引脚/QUP快照、PID1保持及结束屏核验完成，真实I2C/IRQ/HID/触摸仍未测试。原图已本地归档并校验SHA256；本次仅主机归档，无新设备查询/启动/分区操作，R26不重试。见reports/hakios-ios16-device-r26-touch-clock.md/json；下方屏幕待确认记录为历史。
++
++2026-11-19 R26真机结案：用户明确授权本轮测试，20:37:45临时启动冻结镜像一次获接受。实际logical0/MPIDR0x80000001/affinity0x1/max0、bootcpu=1 cpus=1、match=1。Stage1越过R25的CFG0停点，AHB/apps/root-on及GPIO87/88配置通过，QUP快照返回STATE0x11c/VERSION0x20060000/STATUS0x0c000000；26读/3写/8映射/314us、clocks_checked=1 pins_checked=1。3写为apps和两pin，AHB vote已满足；无CMD/CFG、复位、I2C、IRQ/HID操作。PID1进入RAM诊断hold；正常180秒timer及drain=1正文已捕获，48帧/11050字节独立重解码一致，缺口/重复/残帧/device-lost和源端争用丢弃均0，随后Pipe error不等于排空失败。只验证已输出内核流至timer/drain，不扩称所有固件/daemon原始日志；R26物理屏幕终态待用户确认。Data sync error2是RAM隔离路径无/private/var的lookup返回，未到VFS_SYNC/设备flush。本轮无分区查询/操作、ADB、Android/Recovery、QEMU或重试；R15/R20/R25/R26冻结字节不变。下一主机修订可调查最小I2C芯片ID事务；R26启动已消费，后续查询/启动仍须说明并获对应确认。详见 reports/hakios-ios16-device-r26-touch-clock.md/json；下方主机等待批准状态为历史。
++
++2026-11-19 R26主机修订已冻结：用户授权“进入下一修订”，本轮无手机查询/启动/重启/刷写/分区操作或QEMU。R20-display仍为唯一显示基线，R19归档，R25已消费不重试。R26镜像SHA256 ff79c3ea55fb3022d997d119859b4b772fcbe233fc4364a8dc58a20c89612351，内嵌touch_stage=1 touch_clock_init=1 touch_diag=1、ufs=0、bootcpu=1 cpus=1、180秒。显式新路径按原厂依据识别HID0/1，CMD/CFG仍只读，仅原四个GCC/TLMM字段；原严格路径和默认关闭保持。新增RAM PID1 hold绕过通用自检/halt，初次boot_arg失败仍可能回原流程，不能宣称任意异常均hold。82来源审查、完整HakiOS/Mu/D22AP/413job、46项指令扫描、33套ASan/UBSan（clock5241含原351、init368）、实际APFS/整包读回及85来源闭包通过；历史R9几何hash总门禁未解决，不冒称通过。复用R25无物理UFS的Mu及固定只读loader，保持md0 Boot/stage0→md1 redwood/init；R15/R20/R25原字节保留。动态所有权/电气、clock/pin/QUP访问、新timer/USB终态及真实触摸未验证。下一步等待对应上机确认；任何查询/临时启动先说明并获确认，禁止Android/Recovery、分区操作及自动重试。详见 reports/hakios-ios16-touch-r26-prepared.md/json。下方R25及主机准备为历史记录。
++
++2026-11-19 R25真机结案：用户明确“可以上机”后，19:30:36临时启动冻结R25一次，镜像f0fd106f2146bc176f448c9a694bf4e7ca0247656c323bb68ffe128f123a336d获接受。实测logical0/MPIDR0x80000001/affinity0x1、bootcpu=1 cpus=1、match=1。Stage1四次GCC读取72us、零写入；CFG=0不满足(cfg&0x371f)==1，主动以inherited_root_or_reset_unverified停止，未到clock-enable/pinmux/QUP/I2C/IRQ/HID。USB58帧/14848字节独立重解码一致，缺口/重复/残帧/device-lost均0；Pipe error后无timer/drain尾部，非完整运行日志。用户原图确认UEFI RAW BYTES68684、RETURN REASON UNCONFIRMED、PANIC CAUSE NOT RECOVERED及PMRD关机尾部，不能判定panic或正常180秒timer。没有分区查询/操作、ADB、Android/Recovery、QEMU或重试，R15/R20哈希不变。R25已消费；下一步仅在主机核对显式时钟初始化及诊断终态/USB保留，任何后续查询/启动仍须说明并获对应确认。详见 reports/hakios-ios16-device-r25-touch-stage1.md/json。下方“没有手机操作/等待批准”段落为本次上机之前的主机准备历史。
++
++2026-11-19 最新单轮触摸取证/Stage1收口：R20-display 为唯一显示基线，R19 分辨率错误已归档、不再复测。R25 实验性时钟/引脚/QUP/GPIO快照镜像已完整构建、读回并冻结，SHA256 f0fd106f2146bc176f448c9a694bf4e7ca0247656c323bb68ffe128f123a336d；31套外围ASan/UBSan（含实际Stage1的351场景）、83来源检查、46项正常构建指令扫描与5项隔离Mu扫描通过；旧历史总回归仍在R9不识别既有0021几何补丁的哈希处失败，不冒称全部通过。R15/R20哈希不变。默认无touch_stage时无MMIO；本包显式touch_stage=1，仅4个GCC/TLMM字段，不做I2C/复位/供电/IRQ/HID。隔离Mu移除物理UFS provider，ufs=0、无flash root/Data参数，复用R20两份4MiB RAM卷和固定只读loader；此隔离探测不改变长期UFS路线。动态所有权、上电/NoC、电气/总线异常及实际触摸未验证；300ms软件预算不能约束永久MMIO挂死，未安装通用异常hook。本轮没有任何手机操作。最新用户要求覆盖旧自动授权：每次查询/启动前先说明并获确认；现在停下等“可以上机”，禁止Android/Recovery、分区操作和QEMU。详见 reports/hakios-ios16-touch-stage1-r25.md/json。
++
++2026-11-19 latest touch runtime phase: R20-display remains the sole accepted display baseline; R19 was tested with incorrect resolution and stays archived, without retries. Runtime composition and the actual HakiOS queue binding passed 14 existing + 12 follow-up host suites (26 total) with ASan/UBSan and 61 source hashes. Included Mu/loader software has no QUP6/I2C provider; this does not verify secure-world ownership or physical access. There is still no platform MMIO provider, production integration or new touch package; the existing Stage 0 production kernel is unchanged. No device operations occurred. See reports/hakios-ios16-touch-runtime-host-20261119.md/json and reports/touch-runtime-host-20261119-r1/passed.json.
++2026-11-19 R20-display touch Stage 0 host build: R20-display is the sole accepted display baseline; R19 is archived and will not be retested. The exact ordered patch check, 21 Clang ASan/UBSan suites, HakiOS prepare/config/dependency checks, full kernel + D22AP loader + Mu + 413-job userland build, 83 source-review checks, and 46 ARM instruction scans passed. The built kernel contains the static Stage 0 resource log and QUP6 fail-closed diagnostic. R15/R20 image hashes are unchanged. No physical touch producer or touch package exists; Stage 1–3 remain blocked before MMIO/IRQ/HID. QUP6 handoff/ownership, clock/pinmux/rails, GPIO105/125 IRQ, runtime controller ID/reports, and HID delivery remain unverified. No phone query or operation occurred. Report: reports/hakios-ios16-touch-stage0-build-20261119.md/json.
++R24 触摸主机门禁（历史）：R20-display 为唯一显示基线；用户确认 R19 已测试但分辨率错误，归档且不复测。touch_stage=0..3 严格解析和空事件投递边界经 14 项既有 + 5 项候选 Clang ASan/UBSan 回归通过。本轮未同步活动内核、构建生产触摸包或操作手机。详见 reports/hakios-ios16-touch-r24-host-gate.md。
++
++2026-11-19 当前活动基线已切换为 **R20-display**：用户确认 R20 的显示比例、分辨率、状态栏、图标标签、完整 Dock 和屏幕边界正常。R19 仅保留为历史归档，不再启动、重试、修复或用于显示验收。后续触摸适配以 R20-display 的 1080×2040 BGR24、360×680 points、scale 3 配置为显示参照；R20-display 尚不包含真实 FT5x46/QUP6 触摸后端，触摸包完成主机测试、构建和冻结后再进行真机测试。R20-display 镜像：artifacts/hakios/lithium-ios16/phase4-r20-display/lithium-hakios-ios16-r20-display.img；SHA256 3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82。详见 reports/hakios-ios16-device-r20-display.md/json。
++
++R19 主机包准备记录（历史，2026-11-18）：完整 HakiOS/iOS16.5/Mu/D22AP 与 413 任务构建、46 项指令扫描、完整回归、实际整包读回和离线预检曾通过。其镜像 SHA256 2f74a8da0fe182d39c66a86db398f9816067cb05cce8a6a774398700ed38f60a。用户随后确认 R19 曾上机、显示分辨率不正确；此包仅归档，后续显示以 R20-display 为准，不再补做 R19 验收。
++
++2026-11-19 触摸工作状态：R20-display 已完成显示验收；R21 只读 Stage 0 主机包已组装并独立读回通过（镜像 SHA256 07d9e4cd10ee37854d6fd65df5f8fe36d8d836d1212c77aeca6491a51d82c6f8），但没有实体触摸后端，touch_package_ready=false，不得作为触摸测试包。只有新的真实触摸包完成主机测试、完整构建、包检查和冻结后，才按用户授权查询设备并从 Fastboot 临时启动；不刷写分区、不写 userdata。当前手机状态未由主机查询。详见 reports/hakios-ios16-touch-r21-host-final.md/json。
++
++R16 显示修订已冻结（2026-11-18）：750×1334 隐式 profile 对齐 scale2/subtype1334，新增 DT/MG/UIScreen/window 有界日志；BGR24 物理面板1080×2040/stride3240保持，810像素是误按4字节计算；全部R15 payload参数逐字节保留，包括bootcpu=1 cpus=1。完整构建/回归/包检查通过，未查询/重启/刷写手机，不重刷userdata，R15运行保留。Dock/标签/边界和新尺寸真机结果未验证。备份archive/ios16-r15-before-r16-20261118及外部dirty-source.zip已校验；见reports/hakios-ios16-r16-prepared.md/json。
++
++R15 系统界面里程碑（2026-11-18）：03:41:09临时启动一次；USB持续采集。实际logical0/MPIDR0x80000001/affinity0x1/max_logical0，bootcpu=1 cpus=1，match=1。20轮HFS全部通过：write平均140us、fsync317us、replace481us、read44us；整数2477us、memcpy9559us。用户明确确认已出现锁屏或桌面，具体类型未区分；日志set-seeding-complete-return value1、阻塞fetch返回、SB main_queue_enter=192190ms及CA回调已捕获。LS等待关口已越过，最终sync/跨重启持久化/触摸/稳定性待核验。同次USB接收与45秒只读观察器后台保存进度和最终审计；10800秒正常timer、12600秒主机接收。保持运行与USB连接，不重启、不重试R15、不重刷userdata，UFS/2880MiB；见reports/hakios-ios16-device-r15.md/json。
++
++R15 Run A 实时记录（2026-11-18）：03:41:09临时启动一次，用户确认启动文字；USB持续采集。实际logical0/MPIDR0x80000001/affinity0x1/max_logical0，bootcpu=1 cpus=1，match=1。20轮HFS全部通过：write平均140us、fsync317us、replace481us、read44us；整数2477us、memcpy9559us。原始launchd已启动；LS数据库/桌面/最终sync及持久化待核验，不能仅据提速归因根因已解决。同次USB接收与45秒只读观察器后台保存进度和最终审计；10800秒正常timer、12600秒主机接收。保持运行与USB连接，不重启、不重试R15、不重刷userdata，UFS/2880MiB；见reports/hakios-ios16-device-r15.md/json。
++
++R15 Run A 主机准备完成（2026-11-18）：用户已批准 bootcpu=1 cpus=1，保持编号含义，目标为R14实测较快的affinity0x1；该明确授权覆盖旧记录的保持三核要求。完整HakiOS/iOS16.5/Mu/D22AP/413任务、回归/ASan/UBSan、46项指令/16项包及R15实际payload检查通过。冻结镜像SHA256 ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55；10800秒内核观察、12600秒USB接收。返回前有界列出LS数据库路径/大小/mtime并执行Data VFS_SYNC和设备flush，结果均待真机核验。UFS/2880MiB不变，不重刷userdata，不改journal/flush策略；未查询/启动手机，桌面和跨重启持久化未验证。用户已确认Fastboot连接，可按受保护入口临时启动一次。见reports/hakios-ios16-r15-prepared.md/json。
++
++R14 最终诊断（2026-11-18）：用户原图确认正常timer返回UEFI、未见panic，drain=1；R13诊断CPU越界未复现。三核实测CPU0/1(MPIDR0x100/0x101)整数循环平均162097/162071us，CPU2(0x1)2451us，约66倍差异；准确MHz/逐核缓存开关未测。20轮HFS全部读写校验通过；首个fsync4.05秒中线程CPU约4.05秒、UFS桥933us，buf_biowait31845次；其余两次慢fsync同样主要在桥外。23次采样均TH_RUN且跳过，无停驻内核栈，最终根因未定。systemfile_lock返回锁掩码，errors=2不代表errno。USB652793字节/3415帧独立重解码一致、传输缺口0且timer/drain完整；源丢1697字节、FS80/7、HFS槽满481，非全量日志。SB无提交、lsd不同bundle完成111，桌面未通过。保持UFS/2880MiB/三核，不重试R14、不重刷userdata；下一修订先核实本机时钟/缓存及buf调用者/执行核，不能直接启用上游redwood EPSS地址。见reports/hakios-ios16-r14-final-diagnosis.md/json。
++
++R13 真机故障（2026-11-18）：用户原图确认panic返回UEFI，cpu_common.c:82断言cpu <= ml_get_max_cpu_number()，CPU2/PID1 init。新增CPU诊断固定查询0..3，但三核XNU仅0..2；源码及冻结反汇编确认越界契约缺陷，单核R13同样不可运行。USB9952字节/44帧独立重解码一致，缺口/重复/残帧/device lost均0，仅前缀完整，未捕获panic全文/timer/drain；尚未进入launchd/HFS测试。保持UFS/2880MiB/三核，不重试R13、不重刷userdata。下一修订仅修正诊断CPU遍历边界；HFS瓶颈根因未定。见reports/hakios-ios16-r13-final-diagnosis.md/json。
++
++R13 主机准备完成（2026-11-18）：完整 HakiOS/iOS16.5、UFS/2880MiB；冻结同内核 cpus=3/cpus=1 两包，只有CPU参数不同。500ms慢HFS操作有界取停驻线程栈、真实wait/timer、锁/事务/flush分段、同线程及非独占全窗口UFS计数；逐在线核CPU/cache/timebase诊断，launchd前20轮固定文件测试。完整内核/Mu/D22AP/413任务、ASan/UBSan及既有回归、46项指令/16项包检查/双包比较通过。本轮未查询、启动或刷写手机，根因/桌面未验证。busy线程跳过取栈、未知owner不推断、inclusive时间不可相加；cpus A/B需分两次启动且Data持久进度影响LS对比。未重刷userdata或改journal/flush策略。见reports/hakios-ios16-r13-prepared.md/json。
++
++R12裸存储结果（2026-11-17）：R12 Fastboot临时启动一次，完整HakiOS/iOS16.5/D22AP，2880MiB/三核，100×4KiB读、WRITE_FAST、FLUSH及write+flush在launchd/HFS前完成。各项100/100成功；读均值207us、写146us、flush312us、write+flush465us，最大样本784us；镜像外400KiB scratch恢复100/100、逐块一致。USB 12054字节/54帧独立重解码一致，缺口/重复/残帧/device lost均0，timer正常返回且drain=1；Pipe error发生于成功drain之后。结果选择HFS日志/元数据/序列化调查分支，但不能据此认定R11 20.549s rename根因。本轮未改文件系统策略、不重刷userdata，未验证launchd/桌面/返回屏。见reports/hakios-ios16-r12-final-diagnosis.md/json。
++
++R11 最终诊断（2026-11-17）：用户原图及USB确认正常timer返回UEFI，未见panic，桌面未通过。最后lsd完成382个不同bundle对象、953次容器调用；4次目录扫描成功返回，但整体gather/enumerate未返回，ready未出现。SB查询com.apple.mobilenotes持续1784.634秒；对象进度仍增加，不能认定同项循环或死锁。同线程容器替换22.924秒中rename占20.549秒并成功返回，须追查HFS/日志/flush/UFS桥接耗时，不能直接定性UFS驱动故障。USB1136171字节/6157帧重解码一致、缺口0、timer排空成功；源端仍丢1766字节，FS丢弃47/结束丢失8，首轮取栈缺1进程，非全量日志。本次仅只读分析与归档，不重试R11/R10、不重刷userdata，保持UFS/2880MiB/三核。见reports/hakios-ios16-r11-final-diagnosis.md/json。
++
++R11 已临时启动一次（2026-11-17）：三核online、原始launchd及60808ms基础图层已记录，当前未目视桌面。新增方法采集为SB1/1、container4/4、lsd5/5，LS11/11；SB查询com.apple.mobilenotes，lsd不同应用完成数持续增加，尚不能认定同项循环或最终根因。USB与45秒只读观察器仍在后台保存同次日志/终态；FS记录有争用丢弃，非全量无损。保持当前运行，不重试R11/R10、不重刷userdata。UFS/2880MiB/三核。见reports/hakios-ios16-device-r11.md/json，准备提交44ec363。
++
++R11 准备完成（2026-11-17）：已先列明R10六项证据缺口，新增逐对象/完成/错误/耗时与真实文件调用关联、独立数据库阶段累计记录，缩短日志读锁；完整HakiOS/D22AP/Mu/413任务、阶段四回归、46项指令与16项实际包检查通过。手机预检通过，运行记录另见device-r11；诊断修订不等于根因修复或桌面通过。UFS/2880MiB/三核，不重刷userdata、不重试R10。见reports/hakios-ios16-r11-prepared.md/json。
++
++R10 最终诊断（2026-11-17）：用户原图确认正常timer返回UEFI，无panic文本，桌面未通过；实际三核启动/首图66.602秒。SpringBoard60个初始化后样本跨度1770.193秒，栈和CPU累计不变；五轮同锁/采样owner跨1440.016秒，owner等待LS Blocking数据库请求。lsd数据库ready group仍在等待，生产者从应用扫描转入容器查询/替换/数据保护元数据写入，具体对象/路径/errno和循环根因未定。LS256事件预算耗尽，不能据缺失ready判未完成。USB664633字节/2753帧到timer/drain重解码一致、传输缺口0；但源端争用丢10343字节，第3轮部分栈缺失，全量日志未通过。保持UFS/2880MiB/三核，不重试R10、不重刷userdata；下一修订追逐对象进度/容器写入返回并修复关键日志保留。本次只读分析及记录，无设备命令。备份archive/ios16-r10-20261117。见reports/hakios-ios16-r10-final-diagnosis.md/json。
++
++R10 实时证据（2026-11-17）：18:20:55临时启动一次，USB已枚举并持续传输，原始launchd已启动，实际显示3 processors running及0x100/0x101/0x1三核初始化记录，首个基础图层内核计时66602ms、用户确认苹果标志；已越过R9控制台panic，长期SMP稳定性仍未通过。LS观察器11/11已记录播种、恢复和同group等待，最终ready/根因/桌面未解决。接收器及每45秒只读观察器后台保留同次快照与终态。UFS/2880MiB不变、不重刷userdata，不重试已消费R10。见reports/hakios-ios16-device-r10.md/json。
++
++R10 准备完成（2026-11-17）：修复R9 initCPU关中断IOLog，改为固定不可变每核记录、普通thread_call延迟输出；保留控制台保护和三核请求。完整HakiOS/D22AP/Mu/413任务构建、阶段四回归（包含原R9拒绝对照）、46项指令与16项实际包检查通过。UFS/2880MiB不变、不重刷userdata；SMP和桌面仍未验证。R9备份archive/ios16-r9-20261117，见reports/hakios-ios16-r10-prepared.md/json。
++
++R9 最终故障（2026-11-17）：用户原图确认已 panic 返回 UEFI，RAW BYTES34293；Console I/O from interrupt-disabled context @serial_console.c:168，cpu1/kernel_task。冻结符号只恢复到控制台及 debugger/exception 帧，完整违规调用链未恢复；R9 新增 initCPU 关中断 IOLog 为已确认契约缺陷，与保护条件吻合。USB未枚举、0帧，延长接收器已按确切命令定向停止并保留原状态。R10先修复日志上下文，保留三核目标（另1核驻留UEFI服务UFS）、UFS和2880MiB；SMP/服务/桌面未通过。不重试R9，不重刷userdata。见reports/hakios-ios16-device-r9.md/json。
++
++R8 最终诊断（2026-11-17）：已分析全部8轮。SpringBoard同锁/采样owner关联跨度1441.096秒，但第4–6轮为NonBlocking数据库请求、第7–8轮转入Blocking，不能认定同一RPC持续挂起。最后两轮lsd的数据库请求与安装恢复等待同一dispatch group（非unfair-lock），跨度360.293秒；容器/偏好设置依赖栈仍变化，循环死锁和最终根因未证实。发现一次HFS内部搬移ERANGE34，实际UFS Data缺DKIOCISSOLIDSTATE属性，属具体修正候选，尚未关联到出错文件/数据库。单核区间top 98–99%，末尾free1745MB；画行0.733–0.740秒。下一修订追数据库ready完成条件、补齐固态属性并降低同步日志开销，保留UFS/2880MiB/单核；不重试旧轮、不重刷userdata。本次仅分析与记录。见reports/hakios-ios16-r8-final-diagnosis.md/json。
++
++R8 最终采集（2026-11-17）：正常内核 timer 与成功 USB 排空正文已捕获。最终 366347 字节/6849 帧重解码一致，缺口/重复/残帧/设备 lost 均0；有界取栈 8 轮。用户确认运行中苹果标志，物理终态未目视核验，桌面未通过。保持 UFS、2880MiB/单核；不重试R8/R7/R6/R5，不重刷userdata。用户已明确授权日志收集核验保存后直接关闭电脑，无需再询问。见 reports/hakios-ios16-device-r8.md/json。
++
++R8于2026-11-17T04:32:13+08:00临时启动一次，用户确认启动文字；USB已枚举/持续传输，完整payload参数读回一致，有限采样配置和top已实际输出，原始launchd已启动。首轮目标尚未启动，尚无服务线程/IPC接收PID样本；根因和桌面未解决。接收器与只读观察器在后台按同次运行保存快照和终态，不重启、不重试、不重刷userdata。保持UFS、2880MiB/单核；BGR24批量写入的硬件时序待后续计时，日志同步输出会影响性能。首次top统计含绝对计数器原点偏移，不能当作本次CPU利用率。报告reports/hakios-ios16-device-r8.md/json；准备提交5c6b7ab，备份archive/ios16-r7-20261117。
++
++R8已完成完整构建、检查、冻结和实时Fastboot身份核验，等待同次临时启动。修正R7参数/printf/短名漏采；增加当前IPC接收PID和服务日志，BGR24批量写入经1650项旧新像素比较。诊断不等于根因或桌面已解决。保持UFS、2880MiB/单核，不重刷userdata。见reports/hakios-ios16-r8-prepared.md/json。
++
++R7 最终观测（2026-11-17）：内核正常定时结束与成功USB排空正文已捕获；用户确认UEFI结束摘要，桌面未通过。最终252881字节/6699帧，原始帧重解码逐字节一致，缺口/重复/残帧/设备lost均0。多线程8轮；SpringBoard同锁/同owner关联5次，跨度1440.424秒，owner等待_LSDReadService数据库同步回复。第七轮lsd曾等待容器代码签名缓存失效同步回复；实际IPC对端与循环依赖根因未定。画行3次，墙钟[3497790, 5438626]微秒、线程CPU[2713141, 3469201]微秒。top参数截断、长printf尾部在USB前丢失、容器管理器名称漏采已确认，因此未宣称所有日志完整。保持UFS、2880MiB/单核；不重试R7/R6/R5，不重刷userdata。全6GB、SMP、A530、物理触摸及桌面未验证。见reports/hakios-ios16-device-r7.md/json。
++
++R7 启动前准备（历史）：已完成完整 HakiOS 内核、413项用户空间任务、真实 D22AP loader/Mu 构建、检查、冻结及实时 Fastboot 身份核验，等待同次临时启动。复用固定上游 ustacks/top 同轮采样 SpringBoard、backboardd、lsd、containermanagerd、runningboardd；首次内核180秒，此后每6分钟，最多8轮、每进程96线程/14帧、每轮8进程。等待 syscall 原始寄存器和只读 unfair-lock owner_tid 用于关联持锁者，明确 sampled word 可能变化；显示前8次提交分段记录 CPU/墙钟/非CPU耗时，算法与像素保持不变。实际函数 ASan/UBSan、50项画行比较、依赖回归和实际包检查通过；诊断能力不等于锁根因或桌面已解决。保持UFS、2880MiB/单核；全6GB、SMP、A530和物理触摸未验证；不重刷userdata、不重试R6/R5。备份archive/ios16-r6-20261117和对应历史报告已核验。见reports/hakios-ios16-r7-prepared.md/json。
++
++R6 最终观测（2026-11-17）：已正常定时返回 UEFI，用户确认结束摘要，桌面未通过。最终325433字节/7373帧重解码一致，缺口/重复/不完整均0；从内核横幅到正常timer返回与成功排空结果的已输出控制台流通过核验。USB随后Pipe error，UEFI摘要属于独立控制台未被USB捕获，不能宣称所有固件/daemon日志完整。SpringBoard主线程21次相同栈跨越26分36.816秒，状态WAITING、CPU累计不增，尚未进入主队列/运行循环；原20F66缓存映射为ControlCenterServices → BaseBoard BSCollectionFilter → CoreServices → __ulock_wait，具体锁持有者/根因未定。首次基础图层在内核计时1143907ms，之后完整观察30分钟；三次画行约3.29～4.79秒（含调度），末尾1754MB free。下一修订复用上游有界多线程取栈关联依赖，并同步查软件显示耗时，不再单纯加时。保持UFS系统、2880MiB/单核；全6GB、SMP、物理触摸、A530和桌面仍未验证。本次仅分析归档，未改运行代码、构建、查询或操作手机；不重试已消费R6/R5，不重刷userdata。备份archive/ios16-r5-20261117和R5历史报告保留。见reports/hakios-ios16-device-r6.md/json。
++
++# IOS-MIX1 项目指令
++
++## 并行执行规则（用户于 2026-11-19 更新）
++
++- 对可独立推进的工作优先使用子代理并行处理；用户授权最多同时运行 9 个子代理。实际并发仍受当前工具额度和会话状态限制，达到限制时先关闭已完成代理，不能因此拖住主线。
++- 每次任务先由主代理划分关键路径与可并行工作。子代理必须有明确交付物和互不重叠的写入范围；共享接口、构建配置、设备树、日志和集成文件由主代理统一协调。
++- 代理应只接收完成分工所需的上下文；硬件、设备和构建约束对代理同样生效。需要设备才能确认的结论标为“未验证”，不得猜测。
++- 主代理独立复核代理的文件、行号、差异和测试证据，再逐项合并；每个合并单元通过相应构建/回归后再继续。冲突或失败时隔离并回退该单元，不损坏其他工作。
++- 子任务卡住时应及时中止或重新分配，记录原因并继续不依赖它的工作；不等待单个代理阻塞整个任务。
++- 仅在能带来实际并行收益时增加代理，不为凑数拆分；除用户另有指示，最多同时运行 9 个。
++
++更新：2026-11-16。以下路线由用户明确确认，是本仓库最高优先级的项目级路线约束，适用于当前及后续会话。
++
++**最高约束：基于完整 HakiOS 移植增加 MIX 一代设备支持，以 HakiOS 为唯一活动内核基线。原先的 7195 内核仅用于只读对照，不再使用。**
++
++用户原话：
++
++> 就按照这个方案“基于完整 HakiOS 移植增加 MIX 一代设备支持”，以Hakios为基准进行内核适配，原先的内核仅用于对照不要再使用了，一点点造轮子毫无意义，写入项目提示词内，作为最高约束。
++
++1. 活动内核必须来自 HakiOS 的完整移植、正常依赖和构建流程；在其上增加 MSM8996/8996pro 与 lithium 的设备支持。不能只引用 HakiOS 的名称、工具或零散驱动，实际仍自行补齐一套 Apple 裸 XNU 移植。
++2. 原 Apple XNU 7195.141.2 / ports/lithium 路线及其内核、补丁、镜像和构建树均冻结为历史对照。允许只读查阅、反汇编、比较和核对既有证据；禁止继续修改、构建、打包、启动或以其作为测试、演示、过渡、兜底内核。不得继续沿第十六轮 FactoryData/panic 停点推进旧路线。
++3. 不运行旧 7195 活动入口来推进项目，包括 scripts/build-ios14-xnu.py、scripts/prepare-ios14-lithium.py、scripts/build-ios14-native-boot.py、scripts/boot-ios14-native.py，以及 run-wsl-limited.ps1 的旧 kernel/native-package 任务。旧命令在历史文档中出现不构成执行授权。
++4. 本项目新增工作集中于 HakiOS 下的 SoC/板级适配、加载契约、外设接入和有边界的系统版本兼容。允许按上游流程重新编译完整 HakiOS。通用内核与运行服务优先使用上游完整实现；遇到缺口先核对依赖和集成，不逐项自造替代服务。
++5. 已验证的 MIX 硬件参数、原厂固件、DTB、内存/分区资料及观测结论可继续使用；适配代码按 HakiOS 接口和原始上游来源整理。不得将旧 7195 运行时实现整套搬回新活动内核。
++6. 用户2026-11-16明确批准改用iOS16.5 / 20F66 / iPhone10,3 / D22AP / arm64（不是arm64e），仅使用用户提供的IPSW。唯一活动基线仍为upstream/hakios-xnu-kernel的63fc2b4633bac3af8e57dadab9f5a8d4cb940438、XNU8796.121.2。先达到真实SpringBoard显示更新；触摸、GPU和稳定性分别验证。iOS14适配归档，不再作为活动集成。
++7. UniXNU、ios-sailfish和其他项目仅作为组件/资料来源，不得切换活动内核、退回7195或另造通用服务。按审计、内核、用户空间、真机调试四阶段推进，每阶段报告后停止，等待用户确认下一阶段。用户已确认阶段二成果并授权阶段三用户空间、UFS/Data集成及核验后的userdata写入；阶段三已完成一次userdata写入及采样核验，用户已确认进入阶段四真机启动与联合调试。
++8. 不执行 QEMU。运行结论以 MIX 真机证据为准；构建和静态检查只证明输入与实现检查结果。2026-11-16用户确认资源调整：WSL 内存16GB、12个逻辑处理器、swap2GB，任务上限14GB、CPU配额1200%、构建并发12，大任务顺序执行；统一配置见config/hakios-resources.json。系统优先存放UFS并按需读取，精简压缩不作为launchd修复前提。
++9. 每次工作先读本文件、PLAN.md、OPERATIONS.md 和 project.json。README、旧计划、历史报告、子目录说明、脚本默认值或既有自动推进记录与本约束冲突时，服从本约束。只有用户后续明确修改路线才可改变它。
++10. 2026-11-16用户要求加快集成：服务请求、显示、物理触摸和SpringBoard联合推进，尽量同一集成包上机观察，不再为每个小项单独安排真机轮次。P2/P3/P4仍分别记录真实证据，但不把逐项独立复测作为下一项开发前提。服务诊断在后台运行，不阻挡桌面启动；通过的P1、存储、动态工具和R28进程存在性不再重复验收。首次UI尝试可复用上游软件绘制候选并同步推进A530加速，不能把候选路径、进程存在或合成输入记成可操作桌面、GPU加速或物理触摸通过。上机前仍需完整HakiOS构建、检查并冻结实际集成包。
++
++现行执行计划：PLAN.md。设备状态和已有操作授权：OPERATIONS.md。旧内核的成功记录属于历史路线，不能计作 HakiOS 新基线的已验证能力。
++
++11. 用户2026-11-16要求以充分使用6GB机型全部可用RAM为目标，同时推进USB日志。不得把512MiB或首个扩大窗口当作长期上限；固件、外设和未知动态保留区不得冒充空闲RAM。USB先复用现有来源，区分源码集成、编译成功、枚举、传输和完整日志捕获的证据。
++12. 迁移前备份已完成：archive/ios14-r31-20261116分支、仓库外E盘校验备份；不得把Apple二进制/固件加入Git或共享包。
++
++R5 最终观测（2026-11-17）：已定时返回 UEFI 保留摘要，桌面未通过。首次基础图层在内核计时1095537ms，随后保留完整30分钟；主机启动至USB终止约48分54秒。最终309344字节/6890帧重解码一致，缺口/重复/不完整均0，USB Pipe error仍缺返回尾部，完整采集未通过。SpringBoard已连接backboardd，activity assertion后来返回，虚拟HID后来有非空对象；最后仍无明确屏幕所有者、BootUI为白苹果。六次图层提交各约3.29–3.82秒（含调度），末尾约1750MB free，不能继续只归因于等待或RAM不足。下一修订先复用上游诊断获取SpringBoard初始化/主线程停点与主队列里程碑，核对启动依赖、时钟和显示耗时；CPU拓扑与UFS驻留核须对齐后再开SMP。此次只归档和只读排查，未构建、改运行代码或操作手机；不重试R5、不重刷userdata。见reports/hakios-ios16-device-r5.md/json。
+diff --git a/project.json b/project.json
+--- a/project.json
++++ b/project.json
+@@ -57,7 +57,7 @@
+     "latest_kernel_binary_hardware_report": "reports/hakios-ios16-device-r34-touch-live.json"
+   },
+   "schema": 2,
+-  "stage": "iOS16 phase4: R34 UFS touch read through backboardd verified; visual UI response pending",
++  "stage": "iOS16 phase4: R34 touch reaches backboardd; user reports unusable delay; performance investigation",
+   "project_instructions_path": "AGENTS.md",
+   "plan_path": "PLAN.md",
+   "operations_path": "OPERATIONS.md",
+@@ -67,7 +67,7 @@
+   "active_workspace": "/home/jia/ios-mix1-build/hakios-lithium-ios16",
+   "source_lock_path": "upstreams.lock.json",
+   "source_audit_report": "reports/hakios-p0-audit.md",
+-  "current_device_status": "R34 UFS same run active, SB main loop and backboardd DOWN/MOVE/UP reads observed; visual response pending",
++  "current_device_status": "R34 UFS same run active; partial UI response reported, severe input backlog and lag",
+   "device_state": {
+     "last_observation_baseline": "ios16_r20_display_hakios",
+     "live_state_requeried": true,
+@@ -81,7 +81,7 @@
+     "last_screen_observation_source": "R26 same-run user photograph, original archived with SHA256",
+     "last_screen_observation": "UEFI TIMER DEADLINE REACHED; NO PANIC TEXT IN RETAINED LOG; drain1",
+     "current_physical_state_source": "Same-run saved USB: SpringBoard main_queue_enter, touch reports/events, backboardd sample reads; screen not yet user-confirmed",
+-    "current_physical_state": "R34 UFS same run active, SB main loop and backboardd DOWN/MOVE/UP reads observed; visual response pending",
++    "current_physical_state": "R34 UFS same run active; partial UI response reported, severe input backlog and lag",
+     "current_state_host_queried": true,
+     "userdata_journal_initialized": false,
+     "userdata_journal_repair_report": null,
+@@ -152,7 +152,8 @@
+     "touch_input_queue_verified": true,
+     "physical_touch_ui_response_verified": false,
+     "physical_touch_multitouch_verified": false,
+-    "touch_backboardd_record_read_verified": true
++    "touch_backboardd_record_read_verified": true,
++    "touch_usable_ui_performance_verified": false
+   },
+   "execution_limits": {
+     "qemu_allowed": false,
+@@ -168,19 +169,19 @@
+     "large_tasks_sequential": true
+   },
+   "work_status": {
+-    "status": "ios16_r34_ufs_backboardd_read_verified_visual_pending",
++    "status": "ios16_r34_ufs_touch_reaches_ui_latency_unacceptable",
+     "phase2_approved": true,
+     "device_operations_performed": true,
+     "device_boots_performed": true,
+     "partition_writes_performed": true,
+     "hakios_temporary_boot_count": 60,
+     "backup_branch": "archive/ios14-r31-20261116",
+-    "next_step": "Keep same boot and USB; user reports icon opening, page swipe, touch/display position agreement. No reboot or additional device command.",
++    "next_step": "Input timing/backpressure and quiet-oslog comparison first; in parallel inspect slow-core cache/clock; restore useful three-core performance before four-core UFS handoff redesign",
+     "phase3_approved": true,
+     "auxiliary_stock_reader_boots_accepted": 4,
+     "ios16_boots_performed": 29,
+     "auxiliary_stock_reader_adb_runtime_observations": 3,
+-    "latest_evidence_recorded_at": "2026-11-20T17:23:53.559161+08:00",
++    "latest_evidence_recorded_at": "2026-11-20T17:30:42.667287+08:00",
+     "latest_host_report": "reports/hakios-ios16-touch-r34-prepared.md",
+     "r5_backup_branch": "archive/ios16-r5-20261117",
+     "r6_backup_branch": "archive/ios16-r6-20261117",
+@@ -203,7 +204,7 @@
+   "test_package_report": "reports/hakios-test-package.json",
+   "p0_closure_report": "reports/hakios-p0-closure.json",
+   "current_report": "reports/hakios-ios16-device-r34-touch-live-ufs.json",
+-  "latest_diagnosis_report": "reports/hakios-ios16-r11-final-diagnosis.json",
++  "latest_diagnosis_report": "reports/hakios-ios16-r34-input-performance.md",
+   "repeat_ready_report": null,
+   "platform_observation_workflow": {
+     "manual_stopwatch_required": false,
+@@ -1293,7 +1294,7 @@
+     }
+   },
+   "live_touch": {
+-    "status": "R34_ufs_backboardd_touch_read_verified_visual_pending",
++    "status": "R34_ufs_touch_response_severely_delayed",
+     "report": "reports/hakios-ios16-device-r34-touch-live.json",
+     "default_off": true,
+     "enable": "touch=1",
+@@ -1618,6 +1619,36 @@
+       "next": "Keep same boot and USB; user reports icon opening, page swipe, touch/display position agreement. No reboot or additional device command."
+     },
+     "backboardd_queue_read_verified": true,
+-    "visible_ui_response_verified": false
++    "visible_ui_response_verified": false,
++    "user_feedback": {
++      "recorded_at": "2026-11-20T17:30:42.667287+08:00",
++      "user_report": "Tens-of-seconds response; short press appears as long press; performance currently prevents further UI testing",
++      "some_visible_response_reported": true,
++      "usable_touch_performance_accepted": false,
++      "icons_and_page_swipe_correctness_not_separately_confirmed": true
++    },
++    "usable_ui_performance_verified": false,
++    "latency_evidence": "evidence/touch-live-20261120/latency-main/runtime-facts.json",
++    "latency_diagnosis_report": "reports/hakios-ios16-r34-input-performance.md",
++    "latency_stage": "serial_HID_dispatch_backlog_under_single_core_saturation",
++    "latency_root_cause_fully_established": false,
++    "clock_and_cache_runtime_measurement_pending": true,
++    "performance_followup_priority": [
++      "bounded_input_read_dispatch_stage_measurements",
++      "one_variable_disable_forced_UI_oslog_echo",
++      "characterize_slow_core_cache_and_clock",
++      "three_core_response_test_after_performance_restored",
++      "four_core_requires_UFS_handoff_redesign"
++    ]
++  },
++  "cpu_performance_followup": {
++    "report": "evidence/touch-live-20261120/latency-cpu/findings.md",
++    "current_xnu_cores": 1,
++    "current_physical_affinity": "0x1",
++    "resident_ufs_affinity": "0x0",
++    "maximum_xnu_cores_current_ufs_design": 3,
++    "all_four_requires_storage_handoff_redesign": true,
++    "redwood_epss_compatible": false,
++    "actual_cpu_mhz_measured": false
+   }
+ }
+diff --git a/reports/hakios-ios16-device-r34-touch-live-ufs.md b/reports/hakios-ios16-device-r34-touch-live-ufs.md
+--- a/reports/hakios-ios16-device-r34-touch-live-ufs.md
++++ b/reports/hakios-ios16-device-r34-touch-live-ufs.md
+@@ -13,6 +13,8 @@
+ 17:21:04+08:00的同次运行快照：已成功读取至少7800份报告，实际点击/滑动/松手产生至少54条成功入队事件，见type1/2/3，未见触摸read_error或report_error。独立重放该时点已保存的5176帧、1177842控制台字节一致，传输缺口/重复/残帧/device-loss为0。只是运行中连续前缀，不声称已采到结束timer/drain。接收器保持运行。
+ 
+ 用户已被告知主屏出现后先点一个图标，再左右滑动；当前保持同次运行与USB连接。界面响应、触点坐标及多指结果等待本次实际操作和观察。
++
++用户随后报告界面响应约需几十秒，短按可能表现成长按，认为已无法继续正常交互测试。本轮因此记为“输入已到backboardd、部分可见响应但性能不可用”，不能记为完整触摸功能通过。日志实证90.658ms原始DOWN/UP在EventFilter中相隔99.698秒处理；性能证据与下一步见 `reports/hakios-ios16-r34-input-performance.md`。同次运行与USB接收保留，没有为此自动重启。
+ 
+ 随后在同次保存日志中确认backboardd完整读取了队列记录：
+ 
+diff --git a/reports/hakios-ios16-device-r34-touch-live-ufs.json b/reports/hakios-ios16-device-r34-touch-live-ufs.json
+--- a/reports/hakios-ios16-device-r34-touch-live-ufs.json
++++ b/reports/hakios-ios16-device-r34-touch-live-ufs.json
+@@ -19,7 +19,7 @@
+   "started_at": "2026-11-20T17:17:30.023726+08:00",
+   "preflight_passed": true,
+   "preflight_finished_at": "2026-11-20T17:17:30.208888+08:00",
+-  "outcome": "ufs_running_backboardd_read_verified_waiting_visual_response",
++  "outcome": "ufs_visible_input_reported_but_performance_unusable",
+   "command_accepted": true,
+   "accepted_at": "2026-11-20T17:17:31.703118+08:00",
+   "boot_totals": {
+@@ -45,7 +45,7 @@
+     "console_bytes": 1918510
+   },
+   "desktop_hardware_verified": false,
+-  "visible_touch_response_verified": false,
++  "visible_touch_response_verified": "limited_user_report_severe_delay_not_functional_acceptance",
+   "hardware_id_in_this_boot_verified": true,
+   "previous_ram_report": "reports/hakios-ios16-device-r34-touch-live.json",
+   "observation_scope": "Same UFS boot running; no post-boot device query, reboot, flash or retry.",
+@@ -105,5 +105,14 @@
+     "note": "evidence/touch-live-20261120/events/r34-ufs-consumer-note.txt",
+     "main_review": "Actual patched inject.c lines959-963,985,827-832,856 independently read; full-record read logging verified, dispatch return unchecked"
+   },
+-  "next": "Keep same boot and USB; user reports icon opening, page swipe, touch/display position agreement. No reboot or additional device command."
++  "next": "Keep same boot and USB; user reports icon opening, page swipe, touch/display position agreement. No reboot or additional device command.",
++  "user_feedback": {
++    "recorded_at": "2026-11-20T17:30:42.667287+08:00",
++    "user_report": "Tens-of-seconds response; short press appears as long press; performance currently prevents further UI testing",
++    "some_visible_response_reported": true,
++    "usable_touch_performance_accepted": false,
++    "icons_and_page_swipe_correctness_not_separately_confirmed": true
++  },
++  "latency_evidence": "evidence/touch-live-20261120/latency-main/runtime-facts.json",
++  "usable_ui_performance_verified": false
+ }
+diff --git a/reports/hakios-ios16-r34-input-performance.md b/reports/hakios-ios16-r34-input-performance.md
+--- /dev/null
++++ b/reports/hakios-ios16-r34-input-performance.md
+@@ -0,0 +1,75 @@
++# R34：触摸严重延迟与CPU性能排查
++
++2026-11-20，Asia/Shanghai。本报告分析仍在运行的R34 UFS同次日志；不启动新镜像，不查询设备，不改变现有频率/CPU拓扑或磁盘配置。
++
++用户观察到几十秒才有一次界面反馈，短按表现为长按，已影响后续交互测试。记录为“触摸到达backboardd且用户报告部分界面响应，性能不可用”，不记为触摸完整验收通过。
++
++## 本次运行的直接证据
++
++1. 当前仅一个XNU核心在线，`bootcpu=1 cpus=1`，MPIDR `0x80000001`、affinity1、MIDR `0x512f2011`。不是尚未启动CPU调度；现有调度器已运行，容量限制为一个核心。
++2. 本次启动前整数循环5次平均2473us，memcpy平均3499MB/s，RAM属性记录0xff、无translation fault，CNTFRQ为19.2MHz。与R15同快核的2477us/3510MB/s基本一致，没有重现R14慢核约162ms的整数测试。启动前基准不是当前MHz测量，也不能排除进入桌面后的降频或过热。
++3. 后续非初始统计窗口360008ms内，CPU忙碌99%，backboardd48.9%、kernel_task31.2%、SpringBoard6.2%。这是运行中单核容量压力的实际证据；首个top窗口包含绝对计时原点，不采用其24%作为可比负载。
++4. `MiniIOMobileFramebuffer` 典型14帧/约5.1秒，日志整数显示2帧/秒；driver内约12–14ms/帧。该driver计时不包含所有用户态合成、队列或调度成本，不能把2fps全部归因于最后的framebuffer拷贝。
++5. 本次触摸生产者汇总可见：首次移动平均73ms、最多112ms；最后移动至抬起平均122ms、最多230ms。这是采样报告链上观察值，不是手指动作到屏幕的延迟；但它与后面的几十至几百秒陈旧事件明显不同。
++
++## 短按为什么能表现成长按
++
++同一坐标41930/47898、finger0的首个consumer DOWN和UP：
++
++| 项目 | DOWN | UP |
++| --- | --- | --- |
++| 事件原始时间戳ticks | 12220639987 | 12222380614 |
++| EventFilter处理观察ticks | 12879205812 | 14793411699 |
++| 当时日志报告的陈旧程度 | 34.30030秒 | 133.90787秒 |
++
++以日志中的19.2MHz counter换算，原始DOWN至UP相隔 **90.658ms**，EventFilter两次处理观察则相隔 **99.698秒**。这证实输入事件链存在严重积压或处理停顿；不能把本次短按误判仅归为手指按得久。
++
++17:29:13已保存快照共有43条该类陈旧digitizer记录，陈旧程度34.30030至539.91437秒。它们使用实际事件时间戳；不得用改写为“当前时间”来掩盖排队，或随意丢掉UP导致触点挂住。
++
++现有配置没有 `touch_lat=1`。仅凭当前记录，尚不能把时间严格拆为内核队列等待、输入线程未调度、同步HID dispatch阻塞和后续事件系统处理各占多少；这也是下一修订要补的最小测量。
++
++## 下一步的范围
++
++性能应作为当前主线推进。触摸报告已可读取，无需继续重复芯片ID/初始化测试。输入延迟与CPU/软件绘制分别排查，保留R20显示基线及R34冻结包。
++
++R14已有三核运行证据，但phys0x100/0x101实测约比0x1慢66倍，不能直接把三个在线核当成三个正常性能核心；准确MHz及慢核原因未确定。现有上游cpufreq针对redwood EPSS，不能直接用于MSM8996。UFS固件worker占核与四核可用性由本次CPU来源调查单独核对，未完成硬件验证。
++
++本次主代理保存的逐行数字和时间计算：`evidence/touch-live-20261120/latency-main/runtime-facts.json`。输入、CPU、绘制三路来源调查独立进行；本报告会区分来源确认与硬件未验证事项。
++
++## 已有栈进一步缩小了输入停点
++
++输入子代理Mencius只符号化本次两轮backboardd的 `"redwood input"` 线程：序列1在 `__ulock_wake → IOHIDVirtualServiceClientDispatchEvent+0xc8`，序列2在 `mach_msg2 → io_hideventsystem_dispatch_event_for_virtual_service → IOHIDVirtualServiceClientDispatchEvent+0xbc`。主代理读回保存流8418/15562，核对命名线程和原始地址与所交付符号记录相符；两次都落在同步派发路径。
++
++注意第一轮是ulock **wake**，不是wait。两次取样不证明同一次调用连续阻塞数分钟，也不确定哪一个接收端/锁造成等待。实际输入循环一次read一个record，同步send返回后才读下一条，因此派发停顿会阻止随后UP进入系统；时间戳在入队时生成且一直保留，不是被消费时覆盖。
++
++下一修订沿现有默认关闭的 `touch_lat` 增加有界记录：原时间戳、消费序号、read进入/返回、dispatch进入/返回及Boolean结果；调用前保留in-flight阶段，避免调用不返回时只留下空白。记录在定长内存中，低频限量输出，wake/button路径也覆盖。再依据结果修派发或线程/队列，不改长按阈值，不把历史时间戳改成now，不直接扩大FIFO或并发重入全局触点状态。
++
++来源：`evidence/touch-live-20261120/latency-input/findings.md`、`input-stack-symbols.json`、`input-callsite.txt`。本阶段未改生产源码或构建新包。
++
++## 四核与调频的实际边界
++
++CPU子代理Bohr定位实际补丁loader：`xnuloader/loader.c:3623-3653` 排除resident core，并在UFS请求时拒绝与其冲突的kernel core；`2328-2424` 的resident worker轮询mailbox并调用UEFI ReadBlocks/WriteBlocks/FlushBlocks。主代理实际读回核心枚举分支。因此，**当前UFS实现最多三个XNU核**；四核是后续存储/固件交接架构任务，不能用 `cpus=4` 直接实现。这不是芯片本身只有三个核。
++
++现有 `drivers/power/hakios.cpufreq.c` 开头明确限定POCO X5 Pro/redwood及其EPSS地址，主代理已读回。固定写最高频率表行也不等于已实现MSM8996自适应调速。原厂pin `1492c8e4373b7428bb0accc4f4881e97b36508b9` 的路径是 `qcom-cpufreq → clock-cpu-8996 → cluster mux/APCC PLL`，并有OPP/efuse分档、电压corner、CPR/调压依赖及按配置选择的SCM访问。不能照抄redwood寄存器或直接提高PLL。
++
++CPU线下一步保留快核作对照，补SCTLR_EL1的I/C/M和每核同工作负载；现有MAIR/TCR/RAM属性没有单独证明每核cache enable状态。随后按本机DT/Pro分支读取有限的mux/PLL状态；物理MMIO可访问性及实时频率仍需上机验证。确认慢核恢复正常性能后，再用已实现的三核支持进行调度与响应对照。四核长期目标需先消除resident UFS占核依赖。
++
++来源与逐行依据：`evidence/touch-live-20261120/latency-cpu/findings.md`。该子代理只收集来源、快照和报告，没有调频、regulator/SCM写入、build或手机操作。
++
++## 绘制与日志线：先降低可避免的同步负担
++
++绘制子代理Ohm检查实际完整路径，未找到每事件固定数秒sleep或人为2fps硬限。典型14帧/5.1秒约2.7fps，日志取整为2；同次另有51帧/5秒的窗口。driver计时位于合成之后，约12–14ms不表示整个UI帧只需这些时间。
++
++实际 `kern_exec.c:2663-2699` 的 `applog_name=backboardd,SpringBoard` 会选中两进程强制os_log回显；源码在后续exec环境注入DT_MODE。`inject.c:61-73` 的say同步write到stderr，console TTY/ring格式化、锁和复制仍可能在调用路径中；USB只是下游异步接收，不能因此认为前端日志没有CPU/锁成本。主代理读回applog选择及say写入代码，确认这是一条具体的可优化路径；未实测它占用了多少延迟。
++
++最小性能对照候选可以只取消 `applog_name=backboardd,SpringBoard` 的强制回显，保留applog=1、实际job stderr及有限触摸诊断；先确认job或继承环境没有另外设置DT_MODE。不同时更改CPU数、频率、分辨率、HID API或数据策略，才能判断这一个变量的收益。它是待验证提案，不宣称关闭日志即能解决本次派发停顿。
++
++来源：`evidence/touch-live-20261120/latency-render/findings.md`。
++
++## 本轮交付与后续顺序
++
++并行分工：Mencius负责输入消费/选定栈，Bohr负责CPU/时钟/占核来源，Ohm负责绘制/console路径；主代理负责本次运行数字、同触点时间差、用户性能反馈和各分工关键来源复核。三路只写各自证据目录，无共享生产编辑冲突；最终报告未将提案改写为已经实现。
++
++后续优先级为：**先解除输入派发积压及可避免日志负载，同时查慢核/cache/时钟；再验收三核收益；四核以UFS交接重构为前置**。CPU饱和和输入串行停顿可能共同作用，现有证据尚不能把全部延迟归给某一个时钟、锁或闭源函数。
++
++本次没有再次启动或查询手机、没有更改频率/核心/分区。原同次R34 UFS与USB接收继续保留。性能验收仍未通过。
+diff --git a/evidence/touch-live-20261120/latency-main/runtime-facts.json b/evidence/touch-live-20261120/latency-main/runtime-facts.json
+--- /dev/null
++++ b/evidence/touch-live-20261120/latency-main/runtime-facts.json
+@@ -0,0 +1,609 @@
++{
++  "recorded_at": "2026-11-20T17:29:13.324014+08:00",
++  "source": "reports/local/20261120-r34-touch-live-ufs-approved/console.log",
++  "snapshot_console_bytes": 2357097,
++  "snapshot_console_sha256": "41644d1874113a28fbc23192768d38502e7c25fee26d788131fff435b4ba2483",
++  "phone_operations": 0,
++  "new_builds": 0,
++  "user_feedback": "UI response tens of seconds; short press sometimes treated as long press",
++  "stale_events": [
++    {
++      "line": 6640,
++      "age_s": 34.3003,
++      "now_ticks": 12879205812,
++      "now_s": 670.79197,
++      "event_ticks": 12220639987,
++      "event_s": 636.49167,
++      "text": "2026-11-18 02:41:20.077608+0800 backboardd[13:560] [AttentionAwareness]                 EventFilter.mm:130 :     670.79207: Error: got event of type 11 from      34.30030 seconds in the past (now 12879205812 (    670.79197), event timestamp 12220639987 (    636.49167)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 9817,
++      "age_s": 133.90787,
++      "now_ticks": 14793411699,
++      "now_s": 770.49019,
++      "event_ticks": 12222380614,
++      "event_s": 636.58232,
++      "text": "2026-11-18 02:42:59.775900+0800 backboardd[13:560] [AttentionAwareness]                 EventFilter.mm:130 :     770.49030: Error: got event of type 11 from     133.90787 seconds in the past (now 14793411699 (    770.49019), event timestamp 12222380614 (    636.58232)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 9885,
++      "age_s": 119.68243,
++      "now_ticks": 14802683024,
++      "now_s": 770.97307,
++      "event_ticks": 12504780330,
++      "event_s": 651.29064,
++      "text": "2026-11-18 02:43:00.258556+0800 backboardd[13:267] [AttentionAwareness]                 EventFilter.mm:130 :     770.97318: Error: got event of type 11 from     119.68243 seconds in the past (now 14802683024 (    770.97307), event timestamp 12504780330 (    651.29064)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 11132,
++      "age_s": 172.24056,
++      "now_ticks": 15813102917,
++      "now_s": 823.59911,
++      "event_ticks": 12506084246,
++      "event_s": 651.35855,
++      "text": "2026-11-18 02:43:52.890978+0800 backboardd[13:267] [AttentionAwareness]                 EventFilter.mm:130 :     823.59921: Error: got event of type 11 from     172.24056 seconds in the past (now 15813102917 (    823.59911), event timestamp 12506084246 (    651.35855)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 11199,
++      "age_s": 172.46504,
++      "now_ticks": 15817844786,
++      "now_s": 823.84608,
++      "event_ticks": 12506516077,
++      "event_s": 651.38105,
++      "text": "2026-11-18 02:43:53.131561+0800 backboardd[13:1049] [AttentionAwareness]                 EventFilter.mm:130 :     823.84619: Error: got event of type 11 from     172.46504 seconds in the past (now 15817844786 (    823.84608), event timestamp 12506516077 (    651.38105)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 11288,
++      "age_s": 173.5936,
++      "now_ticks": 15839942889,
++      "now_s": 824.99703,
++      "event_ticks": 12506945723,
++      "event_s": 651.40342,
++      "text": "2026-11-18 02:43:54.282491+0800 backboardd[13:1049] [AttentionAwareness]                 EventFilter.mm:130 :     824.99713: Error: got event of type 11 from     173.59360 seconds in the past (now 15839942889 (    824.99703), event timestamp 12506945723 (    651.40342)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 11354,
++      "age_s": 173.85185,
++      "now_ticks": 15845335295,
++      "now_s": 825.27788,
++      "event_ticks": 12507379819,
++      "event_s": 651.42603,
++      "text": "2026-11-18 02:43:54.563382+0800 backboardd[13:1309] [AttentionAwareness]                 EventFilter.mm:130 :     825.27798: Error: got event of type 11 from     173.85185 seconds in the past (now 15845335295 (    825.27788), event timestamp 12507379819 (    651.42603)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 11415,
++      "age_s": 173.9779,
++      "now_ticks": 15848611172,
++      "now_s": 825.4485,
++      "event_ticks": 12508235547,
++      "event_s": 651.4706,
++      "text": "2026-11-18 02:43:54.734126+0800 backboardd[13:267] [AttentionAwareness]                 EventFilter.mm:130 :     825.44861: Error: got event of type 11 from     173.97790 seconds in the past (now 15848611172 (    825.44850), event timestamp 12508235547 (    651.47060)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 11476,
++      "age_s": 174.01284,
++      "now_ticks": 15849714454,
++      "now_s": 825.50596,
++      "event_ticks": 12508668019,
++      "event_s": 651.49313,
++      "text": "2026-11-18 02:43:54.797681+0800 backboardd[13:267] [AttentionAwareness]                 EventFilter.mm:130 :     825.50607: Error: got event of type 11 from     174.01284 seconds in the past (now 15849714454 (    825.50596), event timestamp 12508668019 (    651.49313)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 11537,
++      "age_s": 174.07363,
++      "now_ticks": 15851317141,
++      "now_s": 825.58943,
++      "event_ticks": 12509103536,
++      "event_s": 651.51581,
++      "text": "2026-11-18 02:43:54.874931+0800 backboardd[13:267] [AttentionAwareness]                 EventFilter.mm:130 :     825.58954: Error: got event of type 11 from     174.07363 seconds in the past (now 15851317141 (    825.58943), event timestamp 12509103536 (    651.51581)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 11598,
++      "age_s": 174.19588,
++      "now_ticks": 15854093438,
++      "now_s": 825.73403,
++      "event_ticks": 12509532494,
++      "event_s": 651.53815,
++      "text": "2026-11-18 02:43:55.026468+0800 backboardd[13:1309] [AttentionAwareness]                 EventFilter.mm:130 :     825.73414: Error: got event of type 11 from     174.19588 seconds in the past (now 15854093438 (    825.73403), event timestamp 12509532494 (    651.53815)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 11708,
++      "age_s": 166.116,
++      "now_ticks": 15872399773,
++      "now_s": 826.68749,
++      "event_ticks": 12682972568,
++      "event_s": 660.57149,
++      "text": "2026-11-18 02:43:55.973180+0800 backboardd[13:1309] [AttentionAwareness]                 EventFilter.mm:130 :     826.68759: Error: got event of type 11 from     166.11600 seconds in the past (now 15872399773 (    826.68749), event timestamp 12682972568 (    660.57149)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 12276,
++      "age_s": 203.32067,
++      "now_ticks": 16588036826,
++      "now_s": 863.96025,
++      "event_ticks": 12684279993,
++      "event_s": 660.63958,
++      "text": "2026-11-18 02:44:33.245878+0800 backboardd[13:1481] [AttentionAwareness]                 EventFilter.mm:130 :     863.96036: Error: got event of type 11 from     203.32067 seconds in the past (now 16588036826 (    863.96025), event timestamp 12684279993 (    660.63958)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 12398,
++      "age_s": 204.42994,
++      "now_ticks": 16609766733,
++      "now_s": 865.09202,
++      "event_ticks": 12684711926,
++      "event_s": 660.66208,
++      "text": "2026-11-18 02:44:34.377670+0800 backboardd[13:568] [AttentionAwareness]                 EventFilter.mm:130 :     865.09213: Error: got event of type 11 from     204.42994 seconds in the past (now 16609766733 (    865.09202), event timestamp 12684711926 (    660.66208)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 12470,
++      "age_s": 204.70436,
++      "now_ticks": 16615460862,
++      "now_s": 865.38859,
++      "event_ticks": 12685137107,
++      "event_s": 660.68422,
++      "text": "2026-11-18 02:44:34.674080+0800 backboardd[13:568] [AttentionAwareness]                 EventFilter.mm:130 :     865.38870: Error: got event of type 11 from     204.70436 seconds in the past (now 16615460862 (    865.38859), event timestamp 12685137107 (    660.68422)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 12566,
++      "age_s": 204.89772,
++      "now_ticks": 16619602804,
++      "now_s": 865.60431,
++      "event_ticks": 12685566556,
++      "event_s": 660.70659,
++      "text": "2026-11-18 02:44:34.889803+0800 backboardd[13:267] [AttentionAwareness]                 EventFilter.mm:130 :     865.60442: Error: got event of type 11 from     204.89772 seconds in the past (now 16619602804 (    865.60431), event timestamp 12685566556 (    660.70659)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 12627,
++      "age_s": 205.18453,
++      "now_ticks": 16625538538,
++      "now_s": 865.91347,
++      "event_ticks": 12685995568,
++      "event_s": 660.72894,
++      "text": "2026-11-18 02:44:35.199019+0800 backboardd[13:1309] [AttentionAwareness]                 EventFilter.mm:130 :     865.91358: Error: got event of type 11 from     205.18453 seconds in the past (now 16625538538 (    865.91347), event timestamp 12685995568 (    660.72894)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 12739,
++      "age_s": 207.68691,
++      "now_ticks": 16674024230,
++      "now_s": 868.43876,
++      "event_ticks": 12686435646,
++      "event_s": 660.75186,
++      "text": "2026-11-18 02:44:37.724362+0800 backboardd[13:1481] [AttentionAwareness]                 EventFilter.mm:130 :     868.43897: Error: got event of type 11 from     207.68691 seconds in the past (now 16674024230 (    868.43876), event timestamp 12686435646 (    660.75186)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 12801,
++      "age_s": 207.76953,
++      "now_ticks": 16676040969,
++      "now_s": 868.5438,
++      "event_ticks": 12686866024,
++      "event_s": 660.77427,
++      "text": "2026-11-18 02:44:37.829377+0800 backboardd[13:1481] [AttentionAwareness]                 EventFilter.mm:130 :     868.54391: Error: got event of type 11 from     207.76953 seconds in the past (now 16676040969 (    868.54380), event timestamp 12686866024 (    660.77427)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 12862,
++      "age_s": 208.27716,
++      "now_ticks": 16686217403,
++      "now_s": 869.07382,
++      "event_ticks": 12687296002,
++      "event_s": 660.79667,
++      "text": "2026-11-18 02:44:38.359309+0800 backboardd[13:1481] [AttentionAwareness]                 EventFilter.mm:130 :     869.07393: Error: got event of type 11 from     208.27716 seconds in the past (now 16686217403 (    869.07382), event timestamp 12687296002 (    660.79667)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 12929,
++      "age_s": 208.47073,
++      "now_ticks": 16690367843,
++      "now_s": 869.28999,
++      "event_ticks": 12687729913,
++      "event_s": 660.81927,
++      "text": "2026-11-18 02:44:38.575462+0800 backboardd[13:1481] [AttentionAwareness]                 EventFilter.mm:130 :     869.29010: Error: got event of type 11 from     208.47073 seconds in the past (now 16690367843 (    869.28999), event timestamp 12687729913 (    660.81927)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 13030,
++      "age_s": 209.90648,
++      "now_ticks": 16718379604,
++      "now_s": 870.74894,
++      "event_ticks": 12688175199,
++      "event_s": 660.84246,
++      "text": "2026-11-18 02:44:40.034612+0800 backboardd[13:263] [AttentionAwareness]                 EventFilter.mm:130 :     870.74905: Error: got event of type 11 from     209.90648 seconds in the past (now 16718379604 (    870.74894), event timestamp 12688175199 (    660.84246)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 13097,
++      "age_s": 210.22109,
++      "now_ticks": 16724849125,
++      "now_s": 871.08589,
++      "event_ticks": 12688604264,
++      "event_s": 660.86481,
++      "text": "2026-11-18 02:44:40.371381+0800 backboardd[13:1481] [AttentionAwareness]                 EventFilter.mm:130 :     871.08601: Error: got event of type 11 from     210.22109 seconds in the past (now 16724849125 (    871.08589), event timestamp 12688604264 (    660.86481)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 13168,
++      "age_s": 210.27826,
++      "now_ticks": 16726377716,
++      "now_s": 871.16551,
++      "event_ticks": 12689035209,
++      "event_s": 660.88725,
++      "text": "2026-11-18 02:44:40.451352+0800 backboardd[13:763] [AttentionAwareness]                 EventFilter.mm:130 :     871.16561: Error: got event of type 11 from     210.27826 seconds in the past (now 16726377716 (    871.16551), event timestamp 12689035209 (    660.88725)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 13231,
++      "age_s": 210.40787,
++      "now_ticks": 16729297295,
++      "now_s": 871.31757,
++      "event_ticks": 12689466260,
++      "event_s": 660.9097,
++      "text": "2026-11-18 02:44:40.603199+0800 backboardd[13:763] [AttentionAwareness]                 EventFilter.mm:130 :     871.31768: Error: got event of type 11 from     210.40787 seconds in the past (now 16729297295 (    871.31757), event timestamp 12689466260 (    660.90970)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 13372,
++      "age_s": 212.23317,
++      "now_ticks": 16764788187,
++      "now_s": 873.16605,
++      "event_ticks": 12689911336,
++      "event_s": 660.93288,
++      "text": "2026-11-18 02:44:42.457861+0800 backboardd[13:1309] [AttentionAwareness]                 EventFilter.mm:130 :     873.16616: Error: got event of type 11 from     212.23317 seconds in the past (now 16764788187 (    873.16605), event timestamp 12689911336 (    660.93288)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 13435,
++      "age_s": 212.33479,
++      "now_ticks": 16767172063,
++      "now_s": 873.29021,
++      "event_ticks": 12690344088,
++      "event_s": 660.95542,
++      "text": "2026-11-18 02:44:42.575806+0800 backboardd[13:267] [AttentionAwareness]                 EventFilter.mm:130 :     873.29032: Error: got event of type 11 from     212.33479 seconds in the past (now 16767172063 (    873.29021), event timestamp 12690344088 (    660.95542)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 13496,
++      "age_s": 212.39196,
++      "now_ticks": 16768701078,
++      "now_s": 873.36985,
++      "event_ticks": 12690775412,
++      "event_s": 660.97789,
++      "text": "2026-11-18 02:44:42.661599+0800 backboardd[13:763] [AttentionAwareness]                 EventFilter.mm:130 :     873.36996: Error: got event of type 11 from     212.39196 seconds in the past (now 16768701078 (    873.36985), event timestamp 12690775412 (    660.97789)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 13557,
++      "age_s": 212.47623,
++      "now_ticks": 16770763826,
++      "now_s": 873.47728,
++      "event_ticks": 12691220257,
++      "event_s": 661.00106,
++      "text": "2026-11-18 02:44:42.762874+0800 backboardd[13:263] [AttentionAwareness]                 EventFilter.mm:130 :     873.47739: Error: got event of type 11 from     212.47623 seconds in the past (now 16770763826 (    873.47728), event timestamp 12691220257 (    661.00106)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 13619,
++      "age_s": 212.54208,
++      "now_ticks": 16772456707,
++      "now_s": 873.56545,
++      "event_ticks": 12691648767,
++      "event_s": 661.02337,
++      "text": "2026-11-18 02:44:42.851022+0800 backboardd[13:263] [AttentionAwareness]                 EventFilter.mm:130 :     873.56556: Error: got event of type 11 from     212.54208 seconds in the past (now 16772456707 (    873.56545), event timestamp 12691648767 (    661.02337)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 13683,
++      "age_s": 212.61931,
++      "now_ticks": 16774383427,
++      "now_s": 873.6658,
++      "event_ticks": 12692092621,
++      "event_s": 661.04649,
++      "text": "2026-11-18 02:44:42.957708+0800 backboardd[13:263] [AttentionAwareness]                 EventFilter.mm:130 :     873.66591: Error: got event of type 11 from     212.61931 seconds in the past (now 16774383427 (    873.66580), event timestamp 12692092621 (    661.04649)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 13744,
++      "age_s": 212.63942,
++      "now_ticks": 16775201746,
++      "now_s": 873.70842,
++      "event_ticks": 12692524828,
++      "event_s": 661.069,
++      "text": "2026-11-18 02:44:42.994008+0800 backboardd[13:263] [AttentionAwareness]                 EventFilter.mm:130 :     873.70853: Error: got event of type 11 from     212.63942 seconds in the past (now 16775201746 (    873.70842), event timestamp 12692524828 (    661.06900)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 13805,
++      "age_s": 212.7482,
++      "now_ticks": 16777720211,
++      "now_s": 873.83959,
++      "event_ticks": 12692954731,
++      "event_s": 661.09139,
++      "text": "2026-11-18 02:44:43.125083+0800 backboardd[13:1309] [AttentionAwareness]                 EventFilter.mm:130 :     873.83971: Error: got event of type 11 from     212.74820 seconds in the past (now 16777720211 (    873.83959), event timestamp 12692954731 (    661.09139)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 13884,
++      "age_s": 213.03161,
++      "now_ticks": 16836475719,
++      "now_s": 876.89978,
++      "event_ticks": 12746268779,
++      "event_s": 663.86817,
++      "text": "2026-11-18 02:44:46.185530+0800 backboardd[13:763] [AttentionAwareness]                 EventFilter.mm:130 :     876.89989: Error: got event of type 11 from     213.03161 seconds in the past (now 16836475719 (    876.89978), event timestamp 12746268779 (    663.86817)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 13946,
++      "age_s": 213.1417,
++      "now_ticks": 16839464189,
++      "now_s": 877.05543,
++      "event_ticks": 12747143626,
++      "event_s": 663.91373,
++      "text": "2026-11-18 02:44:46.341009+0800 backboardd[13:1309] [AttentionAwareness]                 EventFilter.mm:130 :     877.05553: Error: got event of type 11 from     213.14170 seconds in the past (now 16839464189 (    877.05543), event timestamp 12747143626 (    663.91373)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 14007,
++      "age_s": 213.33229,
++      "now_ticks": 16843568251,
++      "now_s": 877.26918,
++      "event_ticks": 12747588368,
++      "event_s": 663.93689,
++      "text": "2026-11-18 02:44:46.554826+0800 backboardd[13:267] [AttentionAwareness]                 EventFilter.mm:130 :     877.26929: Error: got event of type 11 from     213.33229 seconds in the past (now 16843568251 (    877.26918), event timestamp 12747588368 (    663.93689)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 14075,
++      "age_s": 213.85586,
++      "now_ticks": 16854052627,
++      "now_s": 877.81524,
++      "event_ticks": 12748020066,
++      "event_s": 663.95938,
++      "text": "2026-11-18 02:44:47.100871+0800 backboardd[13:263] [AttentionAwareness]                 EventFilter.mm:130 :     877.81535: Error: got event of type 11 from     213.85586 seconds in the past (now 16854052627 (    877.81524), event timestamp 12748020066 (    663.95938)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 14189,
++      "age_s": 215.189,
++      "now_ticks": 16880079775,
++      "now_s": 879.17082,
++      "event_ticks": 12748450939,
++      "event_s": 663.98182,
++      "text": "2026-11-18 02:44:48.456458+0800 backboardd[13:267] [AttentionAwareness]                 EventFilter.mm:130 :     879.17093: Error: got event of type 11 from     215.18900 seconds in the past (now 16880079775 (    879.17082), event timestamp 12748450939 (    663.98182)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 16357,
++      "age_s": 539.91437,
++      "now_ticks": 23115244927,
++      "now_s": 1203.91901,
++      "event_ticks": 12748888984,
++      "event_s": 664.00463,
++      "text": "2026-11-18 02:50:13.204633+0800 backboardd[13:263] [AttentionAwareness]                 EventFilter.mm:130 :    1203.91912: Error: got event of type 11 from     539.91437 seconds in the past (now 23115244927 (   1203.91901), event timestamp 12748888984 (    664.00463)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 16418,
++      "age_s": 539.909,
++      "now_ticks": 23115586537,
++      "now_s": 1203.9368,
++      "event_ticks": 12749333810,
++      "event_s": 664.0278,
++      "text": "2026-11-18 02:50:13.222527+0800 backboardd[13:263] [AttentionAwareness]                 EventFilter.mm:130 :    1203.93689: Error: got event of type 11 from     539.90900 seconds in the past (now 23115586537 (   1203.93680), event timestamp 12749333810 (    664.02780)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 16479,
++      "age_s": 539.89043,
++      "now_ticks": 23115675801,
++      "now_s": 1203.94145,
++      "event_ticks": 12749779494,
++      "event_s": 664.05102,
++      "text": "2026-11-18 02:50:13.227145+0800 backboardd[13:263] [AttentionAwareness]                 EventFilter.mm:130 :    1203.94153: Error: got event of type 11 from     539.89043 seconds in the past (now 23115675801 (   1203.94145), event timestamp 12749779494 (    664.05102)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 16540,
++      "age_s": 539.87841,
++      "now_ticks": 23115879700,
++      "now_s": 1203.95207,
++      "event_ticks": 12750214300,
++      "event_s": 664.07366,
++      "text": "2026-11-18 02:50:13.237742+0800 backboardd[13:263] [AttentionAwareness]                 EventFilter.mm:130 :    1203.95215: Error: got event of type 11 from     539.87841 seconds in the past (now 23115879700 (   1203.95207), event timestamp 12750214300 (    664.07366)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    {
++      "line": 16615,
++      "age_s": 539.87018,
++      "now_ticks": 23116152119,
++      "now_s": 1203.96626,
++      "event_ticks": 12750644650,
++      "event_s": 664.09608,
++      "text": "2026-11-18 02:50:13.251758+0800 backboardd[13:263] [AttentionAwareness]                 EventFilter.mm:130 :    1203.96635: Error: got event of type 11 from     539.87018 seconds in the past (now 23116152119 (   1203.96626), event timestamp 12750644650 (    664.09608)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    }
++  ],
++  "stale_event_count": 43,
++  "min_stale_age_s": 34.3003,
++  "max_stale_age_s": 539.91437,
++  "first_contact_pair": {
++    "down": {
++      "line": 6640,
++      "age_s": 34.3003,
++      "now_ticks": 12879205812,
++      "now_s": 670.79197,
++      "event_ticks": 12220639987,
++      "event_s": 636.49167,
++      "text": "2026-11-18 02:41:20.077608+0800 backboardd[13:560] [AttentionAwareness]                 EventFilter.mm:130 :     670.79207: Error: got event of type 11 from      34.30030 seconds in the past (now 12879205812 (    670.79197), event timestamp 12220639987 (    636.49167)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    "up": {
++      "line": 9817,
++      "age_s": 133.90787,
++      "now_ticks": 14793411699,
++      "now_s": 770.49019,
++      "event_ticks": 12222380614,
++      "event_s": 636.58232,
++      "text": "2026-11-18 02:42:59.775900+0800 backboardd[13:560] [AttentionAwareness]                 EventFilter.mm:130 :     770.49030: Error: got event of type 11 from     133.90787 seconds in the past (now 14793411699 (    770.49019), event timestamp 12222380614 (    636.58232)), event +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
++    },
++    "reported_sample_lines": [
++      {
++        "line": 6639,
++        "text": "hakios: input: sample type 1 finger 0 at 41930 47898"
++      },
++      {
++        "line": 9816,
++        "text": "hakios: input: sample type 3 finger 0 at 41930 47898"
++      }
++    ],
++    "cntfrq": 19200000,
++    "stamped_press_duration_ms": 90.65765625,
++    "event_filter_observation_separation_s": 99.69822328125
++  },
++  "cpu_bench_lines": [
++    {
++      "line": 134,
++      "text": "LITHIUM CPU sanity logical=0 actual_logical=0 mpidr=0x80000001 cntfrq=19200000 mair=0xc08044f00bb44ff tcr=0x22a51a251a ram_va=0xfffffff980688000 ram_par=0xff00000109b68b00 ram_attr=0xff ram_fault=0 stack_par=0xff000001097a7b00"
++    },
++    {
++      "line": 137,
++      "text": "LITHIUM CPU BENCH test=integer logical=0 count=5 errors=0 min_us=2441 avg_us=2473 max_us=2564 ns_per_iteration=2 cntvct_min=46874 cntvct_avg=47486 cntvct_max=49238 checksum=0x1ccc1ea74481e979"
++    },
++    {
++      "line": 138,
++      "text": "LITHIUM CPU BENCH test=memcpy logical=0 count=5 errors=0 min_us=9456 avg_us=9589 max_us=9775 MBps_min=3432 MBps_avg=3499 MBps_max=3548 warm_cache=1"
++    },
++    {
++      "line": 140,
++      "text": "LITHIUM RUN A logical=0 mpidr=0x80000001 affinity=0x1 max_logical=0 bootcpu=1 cpus=1 expected_affinity=0x1 match=1"
++    },
++    {
++      "line": 2257,
++      "text": "LITHIUM CPU online logical=0 phys=0x1 mpidr=0x80000001 midr=0x512f2011 cntfrq=19200000 boot=1; deferred=1 timer Hz, CPU MHz unmeasured"
++    }
++  ],
++  "top_lines": [
++    {
++      "line": 8143,
++      "text": "top: in the last 726686 ms the processor was busy 24% of the time"
++    },
++    {
++      "line": 8144,
++      "text": "top:    7.6%  kernel_task[0]"
++    },
++    {
++      "line": 8145,
++      "text": "top:    4.7%  SpringBoard[8]"
++    },
++    {
++      "line": 8146,
++      "text": "top:    4.4%  backboardd[13]"
++    },
++    {
++      "line": 8147,
++      "text": "top:    0.9%  launchd[1]"
++    },
++    {
++      "line": 8148,
++      "text": "top:    0.7%  mediaserverd[32]"
++    },
++    {
++      "line": 8149,
++      "text": "top:    0.7%  chronod[28]"
++    },
++    {
++      "line": 8150,
++      "text": "top:    0.3%  cfprefsd[22]"
++    },
++    {
++      "line": 8151,
++      "text": "top:    0.2%  runningboardd[7]"
++    },
++    {
++      "line": 8152,
++      "text": "top:    0.2%  assistantd[64]"
++    },
++    {
++      "line": 8153,
++      "text": "top:    0.1%  analyticsd[34]"
++    },
++    {
++      "line": 8154,
++      "text": "top:    0.1%  containermanagerd[14]"
++    },
++    {
++      "line": 8155,
++      "text": "top:    0.1%  UserEventAgent[6]"
++    },
++    {
++      "line": 15303,
++      "text": "top: in the last 360008 ms the processor was busy 99% of the time"
++    },
++    {
++      "line": 15304,
++      "text": "top:   48.9%  backboardd[13]"
++    },
++    {
++      "line": 15305,
++      "text": "top:   31.2%  kernel_task[0]"
++    },
++    {
++      "line": 15306,
++      "text": "top:    6.2%  SpringBoard[8]"
++    },
++    {
++      "line": 15307,
++      "text": "top:    1.3%  mediaserverd[32]"
++    },
++    {
++      "line": 15308,
++      "text": "top:    0.7%  launchd[1]"
++    },
++    {
++      "line": 15309,
++      "text": "top:    0.7%  aggregated[110]"
++    },
++    {
++      "line": 15310,
++      "text": "top:    0.7%  chronod[28]"
++    },
++    {
++      "line": 15311,
++      "text": "top:    0.6%  runningboardd[7]"
++    },
++    {
++      "line": 15312,
++      "text": "top:    0.5%  com.apple.siri.embeddedspeech[93]"
++    },
++    {
++      "line": 15313,
++      "text": "top:    0.3%  identityservicesd[44]"
++    },
++    {
++      "line": 15314,
++      "text": "top:    0.3%  healthd[70]"
++    },
++    {
++      "line": 15315,
++      "text": "top:    0.3%  coreduetd[57]"
++    }
++  ],
++  "producer_timing_lines": [
++    {
++      "line": 7133,
++      "text": "touch: 8 strokes: first move after 60 ms on average, 68 at most; 33 moves, 33 of them over 13 ms apart, 44 at most; the lift 92 ms after the last move on average, 179 at most"
++    },
++    {
++      "line": 12159,
++      "text": "touch: 16 strokes: first move after 73 ms on average, 112 at most; 35 moves, 35 of them over 13 ms apart, 44 at most; the lift 122 ms after the last move on average, 230 at most"
++    }
++  ],
++  "framebuffer_lines": [
++    {
++      "line": 15963,
++      "text": "MiniIOMobileFramebuffer: 14 frames in 5096 ms (2 a second), 13098 us each in the driver, after 0 us waiting for the GPU and, 0 of them, 0 us for the next refresh; 0 swaps waited for the frame before, 0 gave up; 0 swaps came a refresh late themselves; 0 frames drawn again filtered; 0 of 0 too late for the next scan"
++    },
++    {
++      "line": 15980,
++      "text": "MiniIOMobileFramebuffer: 14 frames in 5151 ms (2 a second), 14449 us each in the driver, after 0 us waiting for the GPU and, 0 of them, 0 us for the next refresh; 0 swaps waited for the frame before, 0 gave up; 0 swaps came a refresh late themselves; 0 frames drawn again filtered; 0 of 0 too late for the next scan"
++    },
++    {
++      "line": 15996,
++      "text": "MiniIOMobileFramebuffer: 14 frames in 5142 ms (2 a second), 13550 us each in the driver, after 0 us waiting for the GPU and, 0 of them, 0 us for the next refresh; 0 swaps waited for the frame before, 0 gave up; 0 swaps came a refresh late themselves; 0 frames drawn again filtered; 0 of 0 too late for the next scan"
++    },
++    {
++      "line": 16051,
++      "text": "MiniIOMobileFramebuffer: 14 frames in 5113 ms (2 a second), 13095 us each in the driver, after 0 us waiting for the GPU and, 0 of them, 0 us for the next refresh; 0 swaps waited for the frame before, 0 gave up; 0 swaps came a refresh late themselves; 0 frames drawn again filtered; 0 of 0 too late for the next scan"
++    },
++    {
++      "line": 16089,
++      "text": "MiniIOMobileFramebuffer: 14 frames in 5075 ms (2 a second), 11817 us each in the driver, after 0 us waiting for the GPU and, 0 of them, 0 us for the next refresh; 0 swaps waited for the frame before, 0 gave up; 0 swaps came a refresh late themselves; 0 frames drawn again filtered; 0 of 0 too late for the next scan"
++    },
++    {
++      "line": 16265,
++      "text": "MiniIOMobileFramebuffer: 14 frames in 5196 ms (2 a second), 11827 us each in the driver, after 0 us waiting for the GPU and, 0 of them, 0 us for the next refresh; 0 swaps waited for the frame before, 0 gave up; 0 swaps came a refresh late themselves; 0 frames drawn again filtered; 0 of 0 too late for the next scan"
++    },
++    {
++      "line": 16975,
++      "text": "MiniIOMobileFramebuffer: 13 frames in 5103 ms (2 a second), 12089 us each in the driver, after 0 us waiting for the GPU and, 0 of them, 0 us for the next refresh; 0 swaps waited for the frame before, 0 gave up; 0 swaps came a refresh late themselves; 0 frames drawn again filtered; 0 of 0 too late for the next scan"
++    },
++    {
++      "line": 17141,
++      "text": "MiniIOMobileFramebuffer: 14 frames in 5252 ms (2 a second), 10018 us each in the driver, after 0 us waiting for the GPU and, 0 of them, 0 us for the next refresh; 0 swaps waited for the frame before, 0 gave up; 0 swaps came a refresh late themselves; 0 frames drawn again filtered; 0 of 0 too late for the next scan"
++    }
++  ],
++  "touch_lat_enabled": false,
++  "clock_registers_measured_during_lag": false,
++  "unresolved": "Cannot split queue wait, input-thread scheduling and synchronous HID dispatch using current per-event telemetry; touch_lat was off."
++}
+diff --git a/evidence/touch-live-20261120/latency-input/findings.md b/evidence/touch-live-20261120/latency-input/findings.md
+--- /dev/null
++++ b/evidence/touch-live-20261120/latency-input/findings.md
+@@ -0,0 +1,57 @@
++# R34 UFS 输入延迟：主机侧窄范围结论
++
++2026-11-20。仅检查指定源码、实际 WSL 补丁树和已保存日志；无设备/USB访问、构建、测试或生产编辑。新增文件仅在本目录。未符号化其他进程，也未展开整份日志时间线。
++
++**结论：时间戳保留正确；已定位串行消费线程在 HID dispatch 内。现有源码没有每个事件固定 sleep 或直接等待画面的逻辑。积压/派发反压是直接证据支持的方向，不能把短按变长按归因于消费时覆盖 t.time。**
++
++## 实际源码链与位置
++
++下文 S = `/home/jia/ios-mix1-build/hakios-lithium-ios16`，R = `F:/IOS-MIX1`。实际行号以 S 为准；upstream 原文件不包含全部本地补丁。
++
++| 环节 | 可复核位置 | 行为与含义 |
++|---|---|---|
++| 轮询、发布 | R/ports/hakios-lithium/peripherals/touch-live.inc:78–90、93–129；S/devices/lithium/peripherals/ 同名文件 | 完成63字节读取后解析并同步入队，成功后才增加 posted；末尾安排16ms后再调用。16ms是完成后再延迟，含总线耗时及调度，不是严格62.5Hz。 |
++| 释放与解析状态 | R/ports/hakios-lithium/peripherals/touch-live-events.h:167–198 | UP先于槽位复用；sink拒绝整个batch则不提交新状态。静止触点不生成重复MOVE。 |
++| 时间戳来源 | 同头文件:239–245；S/drivers/input/hakios.input.c:200–245 | adapter的 `.time=0` 在批量入队:226–230被同一帧的 `mach_absolute_time()`替换。这是**入队时间**，不是消费时间，也不是控制器硬件时间；不等于零时间戳遗漏。 |
++| 队列与唤醒 | S/drivers/input/hakios.input.c:17、218–244 | 512记录FIFO；batch空间不足直接ENOBUFS，不按事件等待、不丢最旧记录；锁内提交、解锁后wakeup。旧单事件接口:167–190有丢最旧策略，不能混作R34 batch行为。 |
++| 读取 | S/drivers/input/hakios.input.c:261–296 | 仅空队列在:274–275 msleep；队列非空就按FIFO取出、uiomove。消费代码只给一个record大小，因此每次系统调用只取一条。无按时间戳回放等待。 |
++| 消费循环 | S/userland/src/inject.c:959–990；R/upstream/hakios-xnu-kernel/userland/src/inject.c:951–982 | read完整记录→记read_at→前4条同步say→wake/普通分支→send_touch→下一次read。单线程串行，任何send_touch调用不返回都阻止后续UP读取。 |
++| HID时间与dispatch | S/userland/src/inject.c:827–857；R/upstream/hakios-xnu-kernel/userland/src/inject.c:819–849 | hand/finger都用`t->time`(:841、849)，没有消费时改写。:856调用IOHIDVirtualServiceClientDispatchEvent，Boolean结果未检查；:857 CFRelease后才回到循环。无直接render/framebuffer调用或wait。 |
++| 等待与wake分支 | S/userland/src/inject.c:798–815、936–954、969–983 | sleep(3)和每次最多20×100ms的服务打开等待只在读取前；make_service最多20次尝试。正常读取循环没有sleep。wake DOWN会同步发两个锁屏按钮事件并抑制该触点直到UP；这里没有等待亮屏。普通输入dispatch与按钮dispatch都可能拖住同一读线程。 |
++| 同步日志 | S/userland/src/inject.c:61–73、962–963 | say直接write(2)，前4条sample日志也处在消费关键路径；可能等待控制台。现有两次input栈实际在dispatch，未捕获say阻塞。 |
++
++两次实际S/drivers/input/hakios.input.c与S/xnu-src/xnu-8796.121.2/bsd/dev/hakios.input.c只读cmp一致。S的四个指定源码SHA256及实际dylib调用点分别见本目录脚本输出和input-callsite.txt；本工作未重建它们。
++
++## 现成两次 backboardd 输入栈已定位
++
++日志：R/reports/local/20261120-r34-touch-live-ufs-approved/console.log。
++
++只取序列1的backboardd块:8416–8442，以及序列2的:15560–15588；两者均有线程0x106 `"redwood input"`，所以不存在“只有SpringBoard快照”的缺口。只解析这条线程的地址；共享缓存slide由两个backboardd头独立给出，均为0x1620000，原始20F66缓存UUID为e5420db330d033aa8b7e05b5038bb46d。
++
++- **序列1，:8418，uptime726.699附近：** `__ulock_wake+8 ← libsystem_platform内部helper+0x34 ← IOHIDVirtualServiceClientDispatchEvent+0xc8 ← libhakios input_thread`。这里是**唤醒**syscall，不是ulock_wait。不能据此断言死锁、锁持有者或连续等待时长。
++- **序列2，:15562，uptime1086.707附近：** `mach_msg2_trap+8 ← mach_msg2_internal+0x4c ← mach_msg_overwrite+0x1e4 ← mach_msg+0x14 ← io_hideventsystem_dispatch_event_for_virtual_service+0x84 ← IOHIDVirtualServiceClientDispatchEvent+0xbc ← libhakios input_thread`。证明采样时输入线程还在dispatch的Mach IPC路径，而不是空队列read等待或画面等待。
++- 本地dylib的0x881c调用导入stub0x9314，间接符号为IOHIDVirtualServiceClientDispatchEvent；紧接返回点0x8820与两次栈的runtime0x100f1c820相符。推导加载基址0x100f14000，未另取运行时映射；dispatch本身的识别由共享缓存精确导出独立成立。obj/root/root.touch-live三份dylib哈希相同：d5ec1584024e13f7752f8ca8c09970c9a653649054f5e94cc16d6cfbf0b77114。
++
++完整选定帧及偏移见input-stack-symbols.json，调用点反汇编见input-callsite.txt。`state=0x4/(running)`是采样的runnable标志，不能当成整个区间持续执行或没有等待的证明。两次快照不证明是同一次dispatch，也不证明某一syscall连续耗时99.7秒。
++
++## 已存日志能测什么
++
++- :6640，首DOWN：EventFilter now670.79197、事件636.49167，age34.30030秒。:9817，首UP：now770.49019、事件636.58232，age133.90787秒。两事件原始时间相差**90.65ms**，EventFilter观察相差**99.69822秒**，差分新增滞后**99.60757秒**。这些使用设备单调时间，不使用日志打印的2026-11-18墙钟日期推算2026-11-20主机耗时。
++- producer首DOWN/UP在:5802–5803均已成功发布；第一条read样本在:6639，第一条UP read样本在:9816。:6633累计已发44条，首DOWN作为第一个record才被记录，显示消费者明显落后。序列1恰位于这两条consumer sample之间且在dispatch内，进一步支持单线程派发反压；缺少调用前/后时刻，不能将99.698秒精确全归给某一个函数或syscall。
++- :7133、:12159 stroke统计只测发布侧间隔；后者first-move平均73ms/最大112ms、lift平均122ms/最大230ms，不测用户态消费或UIKit计时。90.65ms原始短按与长时间分开发送足以形成“DOWN已被处理而UP尚未到”的条件；具体识别器如何触发长按仍不能从这些栈证明。
++- 最大age约215秒及360秒CPU样本（99% busy、backboardd48.9%、kernel31.2%、SB6.2%）为主代理提供的同次日志事实；仅作为系统压力背景，本分工未重复全日志分析或解释其他进程栈。CPU占比不能定位dispatch内部接收端、锁拥有者或渲染根因。
++
++## touch_lat已有覆盖、明确缺口、最小下一步
++
++冻结参数没有touch_lat=1。已有`tl: t`是取栈标记，不能当触摸延迟记录。R34保存流不能补算精确的每条read/dispatch进入/返回时刻、dispatch成功率或UI/像素响应延迟。
++
++现有机制已覆盖实际batch路径：S/drivers/input/hakios.input.c:233–237的`tl: p`会保留入队时刻，未被batch绕过；S/userland/src/inject.c:926–929启用并初始化timebase，:986–988的`tl: i`只有send_touch**返回后**才打印，所谓sent不等于成功接受，提前return也可能打印。wake/按钮/抑制分支没有同等`tl: i`记录。生产者没有Goodix式`tl: c`的轮询开始/完成时间。
++
++最小有用改动应沿已有touch_lat机制增加**默认关闭、定长内存记录**，保留t.time，不调整长按阈值，不在生产中先改线程优先级或扩大队列：
++
++1. 每条记录带消费序号、type/finger、原始stamp及touch_mode/wake/drop原因。标记read_enter、read_return；send_touch_enter、dispatch_enter、dispatch_return(Boolean)、send_touch_return；按钮/wake分支也记实际结果，避免只覆盖正常digitizer。
++2. 在dispatch调用前写入原子可见的in-flight阶段/时间/序号，返回后写入结果；使用固定大小ring或状态槽，调用前证据不能依赖调用返回后才输出。低频独立采样/限额排出，避免逐事件同步stderr输出成为新阻塞；超限保留计数，不在触摸锁内打印。标记read_enter时要区分正常空队列等待，不能把空闲误判卡死。
++3. 如需分开内核积压与dispatch耗时，只增加低成本队列depth/high-water/ENOBUFS计数及相关序号，不先改队列语义。现存保存日志没有ENOBUFS证据，不能把512条“已满”当成事实。
++4. 源码与两栈证明串行耦合及未检查dispatch返回值，但尚未证明可安全替代的派发API或具体服务端缺陷。若后续确认dispatch长等待，设计为独立读取排空与**单一有序**HID发送解耦，有限容量，仅合并同手势MOVE、完整保留DOWN/UP及原时间，不并发重入send_touch全局fingers。仅换成另一个串行dispatch_async队列仍会积压，不能视作修复。不要把历史事件stamp重写成now来掩盖滞后。
++
++本轮止于上述证据和设计；未修改代码或新增诊断启动。下一具体动作应是评审这个最小telemetry改动及dispatch返回值处理，再决定实现；已有两次快照已避免“为确定线程是否在dispatch内”另做一次诊断启动的必要。
+diff --git a/evidence/touch-live-20261120/latency-input/input-stack-symbols.json b/evidence/touch-live-20261120/latency-input/input-stack-symbols.json
+--- /dev/null
++++ b/evidence/touch-live-20261120/latency-input/input-stack-symbols.json
+@@ -0,0 +1,187 @@
++{
++  "scope": "Only saved backboardd input thread from sequence 1 and 2",
++  "cache_uuid": "e5420db330d033aa8b7e05b5038bb46d",
++  "cache_slide": "0x1620000",
++  "cache_slide_source": "backboardd header console.log:8416 and :15560",
++  "cache_dispatch_unslid": "0x18e539a00",
++  "library_sha256": "d5ec1584024e13f7752f8ca8c09970c9a653649054f5e94cc16d6cfbf0b77114",
++  "library_return_runtime": "0x100f1c820",
++  "library_return_offset": "0x8820",
++  "library_base_inferred": "0x100f14000; inferred from call continuation; runtime mapping not separately captured here",
++  "dispatch_import": [
++    "0x0000000000009314   180 _IOHIDVirtualServiceClientDispatchEvent",
++    "0x00000000000141c0   180 _IOHIDVirtualServiceClientDispatchEvent"
++  ],
++  "threads": [
++    {
++      "sequence": 1,
++      "log_line": 8418,
++      "tid": "0x106",
++      "name": "redwood input",
++      "state": "0x4; sampled runnable flag, not proof of continuous CPU execution",
++      "stack": [
++        {
++          "runtime": "0x1c2e73b08",
++          "unslid": "0x1c1853b08",
++          "image": "/usr/lib/system/libsystem_kernel.dylib",
++          "function_start": "0x1c1853b00",
++          "function_offset": 8,
++          "exact_function_exports": [
++            "___ulock_wake"
++          ]
++        },
++        {
++          "runtime": "0x1d225c694",
++          "unslid": "0x1d0c3c694",
++          "image": "/usr/lib/system/libsystem_platform.dylib",
++          "function_start": "0x1d0c3c660",
++          "function_offset": 52,
++          "exact_function_exports": []
++        },
++        {
++          "runtime": "0x18fb59ac8",
++          "unslid": "0x18e539ac8",
++          "image": "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
++          "function_start": "0x18e539a00",
++          "function_offset": 200,
++          "exact_function_exports": [
++            "_IOHIDVirtualServiceClientDispatchEvent"
++          ]
++        },
++        {
++          "runtime": "0x100f1c820",
++          "shared_cache_match": false
++        },
++        {
++          "runtime": "0x1d22f50ec",
++          "unslid": "0x1d0cd50ec",
++          "image": "/usr/lib/system/libsystem_pthread.dylib",
++          "function_start": "0x1d0cd5078",
++          "function_offset": 116,
++          "exact_function_exports": [
++            "__pthread_start"
++          ]
++        },
++        {
++          "runtime": "0x1d22f372c",
++          "unslid": "0x1d0cd372c",
++          "image": "/usr/lib/system/libsystem_pthread.dylib",
++          "function_start": "0x1d0cd3724",
++          "function_offset": 8,
++          "exact_function_exports": [
++            "_thread_start"
++          ]
++        }
++      ]
++    },
++    {
++      "sequence": 2,
++      "log_line": 15562,
++      "tid": "0x106",
++      "name": "redwood input",
++      "state": "0x4; sampled runnable flag, not proof of continuous CPU execution",
++      "stack": [
++        {
++          "runtime": "0x1c2e72ff0",
++          "unslid": "0x1c1852ff0",
++          "image": "/usr/lib/system/libsystem_kernel.dylib",
++          "function_start": "0x1c1852fe8",
++          "function_offset": 8,
++          "exact_function_exports": [
++            "_mach_msg2_trap"
++          ]
++        },
++        {
++          "runtime": "0x1c2e84ad8",
++          "unslid": "0x1c1864ad8",
++          "image": "/usr/lib/system/libsystem_kernel.dylib",
++          "function_start": "0x1c1864a8c",
++          "function_offset": 76,
++          "exact_function_exports": [
++            "_mach_msg2_internal"
++          ]
++        },
++        {
++          "runtime": "0x1c2e84d78",
++          "unslid": "0x1c1864d78",
++          "image": "/usr/lib/system/libsystem_kernel.dylib",
++          "function_start": "0x1c1864b94",
++          "function_offset": 484,
++          "exact_function_exports": [
++            "_mach_msg_overwrite"
++          ]
++        },
++        {
++          "runtime": "0x1c2e734e4",
++          "unslid": "0x1c18534e4",
++          "image": "/usr/lib/system/libsystem_kernel.dylib",
++          "function_start": "0x1c18534d0",
++          "function_offset": 20,
++          "exact_function_exports": [
++            "_mach_msg"
++          ]
++        },
++        {
++          "runtime": "0x18fb64554",
++          "unslid": "0x18e544554",
++          "image": "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
++          "function_start": "0x18e5444d0",
++          "function_offset": 132,
++          "exact_function_exports": [
++            "_io_hideventsystem_dispatch_event_for_virtual_service"
++          ]
++        },
++        {
++          "runtime": "0x18fb59abc",
++          "unslid": "0x18e539abc",
++          "image": "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
++          "function_start": "0x18e539a00",
++          "function_offset": 188,
++          "exact_function_exports": [
++            "_IOHIDVirtualServiceClientDispatchEvent"
++          ]
++        },
++        {
++          "runtime": "0x100f1c820",
++          "shared_cache_match": false
++        },
++        {
++          "runtime": "0x1d22f50ec",
++          "unslid": "0x1d0cd50ec",
++          "image": "/usr/lib/system/libsystem_pthread.dylib",
++          "function_start": "0x1d0cd5078",
++          "function_offset": 116,
++          "exact_function_exports": [
++            "__pthread_start"
++          ]
++        },
++        {
++          "runtime": "0x1d22f372c",
++          "unslid": "0x1d0cd372c",
++          "image": "/usr/lib/system/libsystem_pthread.dylib",
++          "function_start": "0x1d0cd3724",
++          "function_offset": 8,
++          "exact_function_exports": [
++            "_thread_start"
++          ]
++        }
++      ]
++    }
++  ],
++  "selected_function_code": [
++    {
++      "address": "0x18e539a00",
++      "bytes": "ff4301d1f85f01a9f65702a9f44f03a9fd7b04a9fd030191f30301aaf40300aaff0700f924330094f50300aae00314aa39240094e2230091810080529d5f8e95e10740f9e00313aae8380094684526f008d143f9160140f9e00316aae10313aa0f270094f40300aae00316aae10314aafc0c0094f30300aa000600b4b6620091e00316aa010080522c638e95b52240b9f70740f9e00313aa0b5f8e95f80300aae00313aa0e5f8e95e30300aae00315aae10317aae20318aa862a0094f50300aa",
++      "exact_exports": [
++        "_IOHIDVirtualServiceClientDispatchEvent"
++      ]
++    },
++    {
++      "address": "0x18e5444d0",
++      "bytes": "ff8301d1f44f04a9fd7b05a9fd430191e2c301f8e8830832e88f0429a844269008ed42f9080140f9e8c302f8e14303f8e33f00b9a80400d0000144fde00300fde00b00b9a80400d0003dc23de0c3803cc84426b008fd41f9680000b4e003009169398e95e0030091210080520208805203008052040080520500805206008052c6378e95f30300aaa8ff9f52e8ffbd720800080b1f050071a8010054e80340b908111812092082521f01096bc1000054a84426f0089d43f9000140b9e10f40b9",
++      "exact_exports": [
++        "_io_hideventsystem_dispatch_event_for_virtual_service"
++      ]
++    }
++  ]
++}
+diff --git a/evidence/touch-live-20261120/latency-cpu/findings.md b/evidence/touch-live-20261120/latency-cpu/findings.md
+--- /dev/null
++++ b/evidence/touch-live-20261120/latency-cpu/findings.md
+@@ -0,0 +1,35 @@
++R34 UFS CPU / governor decision — 2026-11-20
++
++Current decision: keep the working `bootcpu=1 cpus=1` configuration while main identifies the work consuming its CPU. Main reports integer-loop **2473 µs**, memcpy **3499 MB/s**, matching R15, and approximately **99% CPU busy**. These are main's supplied findings; this investigation did not reread or benchmark the current USB stream. They argue against a new fast-core throughput collapse, but do not identify the busy thread, prove a particular MHz, or exclude intermittent throttling.
++
++**The current UFS architecture supports at most three XNU cores.** Four physical cores exist, but the resident loader on affinity `0x0` services the UEFI storage mailbox while XNU runs on another core. `cpus=4` does not remove that service dependency.
++
++| Decision | Exact local source |
++|---|---|
++| Four physical affinities are `0x0, 0x1, 0x100, 0x101`; `bootcpu=1` selects affinity `0x1`, not XNU logical CPU 1. | [cpu-map.inc:2](F:/IOS-MIX1/evidence/touch-live-20261120/latency-cpu/actual/devices/lithium/diagnostics/cpu-map.inc:2), [patched loader.c:3256](F:/IOS-MIX1/evidence/touch-live-20261120/latency-cpu/actual/xnuloader/loader.c:3256) |
++| The patched loader rejects UFS boot on its resident core, skips that core when enumerating secondaries, and accepts only PSCI-reported OFF candidates. | [loader.c:3623](F:/IOS-MIX1/evidence/touch-live-20261120/latency-cpu/actual/xnuloader/loader.c:3623), lines 3626–3653 |
++| The resident core polls the mailbox and invokes UEFI ReadBlocks / WriteBlocks / FlushBlocks. Its watch loop also handles watchdog, optional charging, and USB work. | [loader.c:2328](F:/IOS-MIX1/evidence/touch-live-20261120/latency-cpu/actual/xnuloader/loader.c:2328), lines 2330–2424 and 2597–2639 |
++| XNU's bridge has one shared request at a time; it actively waits up to 2 ms, then sleeps in 1 ms intervals. | [hakios.ufs.c:25](F:/IOS-MIX1/evidence/touch-live-20261120/latency-cpu/actual/drivers/storage/hakios.ufs.c:25), [hakios.ufs.c:395](F:/IOS-MIX1/evidence/touch-live-20261120/latency-cpu/actual/drivers/storage/hakios.ufs.c:395) |
++
++With `bootcpu=1`, the maximum candidate order is `[0x1, 0x100, 0x101]`, conditional on PSCI eligibility and successful XNU startup. R14 already demonstrated three running XNU CPUs, but its two `0x100/0x101` cores took approximately **66.1×** as long for the integer loop, with MIDR `0x512f2051` versus `0x512f2011` on `0x1`. See [R14 diagnosis:31](F:/IOS-MIX1/evidence/touch-live-20261120/latency-cpu/local/reports/hakios-ios16-r14-final-diagnosis.md:31), CPU mapping and benchmark table immediately below. This is historical evidence, not a fresh measurement of those cores. Enabling three cores is a small configuration change with an unresolved performance outcome; it is not a demonstrated latency fix.
++
++Exposing all four to XNU requires replacing the resident UFS service and transferring its other necessary duties, with controller/DMA/cache/interrupt ownership and return handling accounted for. A native XNU UFS path is a possible architecture, but this is substantial storage/handoff work, not a scheduler or governor switch. The reserved core is a property of this implementation, not an intrinsic MSM8996 hardware limit.
++
++**The existing power driver cannot provide the requested MSM8996 governor.** [hakios.cpufreq.c:1](F:/IOS-MIX1/evidence/touch-live-20261120/latency-cpu/actual/drivers/power/hakios.cpufreq.c:1) explicitly targets redwood EPSS; lines 57–63 and 95–107 use its domain registers and write the top frequency-table row. Its domain mapping at lines 80–86 also does not describe lithium's two-cluster affinity layout. This is a fixed boost operation, not an adaptive MSM8996 policy.
++
++The exact vendor pin is MiCode `1492c8e4373b7428bb0accc4f4881e97b36508b9`. The required path is:
++
++| Layer | Source facts and location |
++|---|---|
++| Policy → clock provider | [qcom-cpufreq.c:48](F:/IOS-MIX1/evidence/touch-live-20261120/latency-cpu/vendor/drivers/cpufreq/qcom-cpufreq.c:48): target → round rate → `clk_set_rate`; lines 140–148 group CPUs sharing a clock. |
++| Lithium DT / CPU mux / APCC PLL | [stock DTS:5281](F:/IOS-MIX1/evidence/touch-live-20261120/latency-cpu/local/artifacts/stock/V9.5.2.0.NAHCNFA/lithium-stock.dts:5281): separate CPU tables, `qcom,cpu-clock-8996-pro`, named PLL/mux resources and supplies. [clock-cpu-8996.c:436](F:/IOS-MIX1/evidence/touch-live-20261120/latency-cpu/vendor/drivers/clk/msm/clock-cpu-8996.c:436): LF/HF mux parents; lines 789–820 and 894–921 map `0/1` to pwrcl and `0x100/101` to perfcl. Those names do not measure current speed. |
++| Voltage / OPP / silicon bin | [clock-cpu-8996.c:1142](F:/IOS-MIX1/evidence/touch-live-20261120/latency-cpu/vendor/drivers/clk/msm/clock-cpu-8996.c:1142): regulator dependencies; lines 1198–1227 create OPPs from frequency/corner/voltage; lines 1327–1371 select efuse-dependent plans. [clock.c:681](F:/IOS-MIX1/evidence/touch-live-20261120/latency-cpu/vendor/drivers/clk/msm/clock.c:681) enforces target voltage requirements around rate changes. CPR/Kryo retention and mem-acc dependencies are in [cpr3-hmss-regulator.c:1226](F:/IOS-MIX1/evidence/touch-live-20261120/latency-cpu/vendor/drivers/regulator/cpr3-hmss-regulator.c:1226), lines 1226–1365. |
++| Secure access and transitions | [clock-cpu-8996.c:319](F:/IOS-MIX1/evidence/touch-live-20261120/latency-cpu/vendor/drivers/clk/msm/clock-cpu-8996.c:319): SCM versus direct access depends on the mux configuration; [scm.c:1081](F:/IOS-MIX1/evidence/touch-live-20261120/latency-cpu/vendor/drivers/soc/qcom/scm.c:1081) implements secure I/O. Pro selects the v3/pro branch at lines 1535–1538; do not assume every access uses SCM. Lines 675–743 implement ordered parent/PLL changes; lines 703–711 explicitly explain an undervoltage hazard from incorrect transition order. |
++
++**Minimal next step:** main should use its existing current-run observations to identify the dominant process/thread and separate runnable CPU work from UFS bridge waiting. High CPU utilization can include mailbox spinning; the bridge's active-wait source above is a concrete candidate, not an attribution. Do not duplicate main's measurements.
++
++For the next separately authorized diagnostic revision, add a bounded per-core snapshot of MPIDR/MIDR, **SCTLR_EL1 cache/MMU enables**, MAIR/TCR and the same short workload; retain `0x1` as control and characterize `0x100/101` before using them for UI scheduling. Existing [cpu-sanity.inc:40](F:/IOS-MIX1/evidence/touch-live-20261120/latency-cpu/actual/devices/lithium/diagnostics/cpu-sanity.inc:40) already binds samples and reads MPIDR/CNTFRQ/MAIR/TCR, but does not read SCTLR. This yields useful cache-versus-throughput evidence before a governor port.
++
++If clock state is then needed, first specify a small read-only snapshot of the stock-DT-named mux/PLL mode/lock/L/alpha/divider and efuse fields using the matched pro layout. Treat those as configuration evidence, not independently measured MHz; MMIO access permission remains to be established. Do not call vendor initialization, clock/debug-mux enable, SCM writes, or regulator operations as “measurement”: they change hardware. Debug measurement enable itself writes registers ([clock-cpu-8996.c:389](F:/IOS-MIX1/evidence/touch-live-20261120/latency-cpu/vendor/drivers/clk/msm/clock-cpu-8996.c:389)).
++
++All writes from this investigation are confined to this directory: note, source snapshots, and manifests. Vendor copies were checked against Git blob IDs at the pinned commit. The `actual/` sources are snapshots of the patched WSL workspace, distinct from the unpatched upstream checkout; they are not a new binary-to-source attestation. No production edits, build, device query, USB action, or current-run benchmark was performed.
+diff --git a/evidence/touch-live-20261120/latency-render/findings.md b/evidence/touch-live-20261120/latency-render/findings.md
+--- /dev/null
++++ b/evidence/touch-live-20261120/latency-render/findings.md
+@@ -0,0 +1,36 @@
++# R34 UFS rendering / synchronous applog — 2026-11-20
++
++**Priority: next otherwise-identical candidate should disable forced os_log echo for backboardd and SpringBoard.** Logging is a credible critical-path amplifier, not a proved explanation of 99.7 s. User-visible severe lag remains **failed performance acceptance**; input delivery does not establish touch/UI completion. No production patch was applied.
++
++Read-only host inspection, with independent reads in parallel. Only this directory was written. No device/USB/fastboot/adb operations, builds, tests or broad regression/audit. Console searches matched renderer-specific lines only. Input age 34–215 s, 90.65 ms event timestamps versus 99.7 s consumer separation, and the noninitial 99%-busy CPU profile are supplied by main, not independently reconstructed here.
++
++Source prefixes: P = `/home/jia/ios-mix1-build/hakios-lithium-ios16/`; K = `P/xnu-src/xnu-8796.121.2/`; U = `P/userland/`. Coordinates below refer to this actual patched tree.
++
++1. **12–14 ms is the final driver stage, not total UI frame cost.** `K/iokit/Kernel/MiniIOMobileFramebuffer.cpp:1535–1577,1644–1695` resets the drawing timer after GPU wait and refresh pacing, then measures driver elapsed wall time (including scheduling and in-interval logging). It excludes CA software composition before SwapEnd, queue/idle time, GPU/beat wait, physical scanout, and most of the five-second statistics print. Five seconds is a reporting window, not a sleep.
++
++   Actual renderer line `reports/local/20261120-r34-touch-live-ufs-approved/console.log:6760`: 14 frames / 5168 ms, driver 12273 us, GPU wait 0, beat-wait count 0, held/lost swaps 0/0. That is 2.71 presented frames/s, ~369 ms elapsed per presented frame, but only ~172 ms summed driver intervals (~3.3% of the window). The unassigned remainder is **not measured software-render CPU time**. The supplied 12720-us variant has the same meaning. Line 8917 shows 51/5009 ms (~10/s), so 2–3 FPS is not a demonstrated hard cap. Integer logged FPS truncates. Frame-time histograms classify >=90 ms as pauses (`:89–90,1585–1593`), so their percentiles can hide long gaps.
++
++2. **Software route has no local seconds-long throttle.** `U/src/inject.c:1045–1077` skips EAGL loading at gl=0; `:181–213,513–522` hooks renderer/render_update, caches the first failed acceleration lookup and invokes original render_update directly. Console line 2156 confirms software fallback. The actual software rasterizer and scene scheduler are inside Apple's QuartzCore; these sources do not expose their total cost or prove a low-FPS cap. Historical half-advertised-rate/home-clock-10-Hz comments (`MiniIOMobileFramebuffer.cpp:178–189`) are not measurements of this stall.
++
++   Known driver waits: queue full has a 700-ms deadline and held/lost counters (`:91–92,1371–1385`); GPU readiness has a 500-ms bound per surface (`:1541–1547`; fence-dependent implementation `K/iokit/Kernel/hakios.gpu.cpp:225–235`). Checked renderer windows show no such queue wait and 0-us GPU average. fb_beat defaults on and may wait toward the next ~16.7-ms beat at default 60 Hz (`:1553–1574`). The 40-ms filtered redraw applies only to fb_filter=2, disabled here (`:1420–1428,1486`). An idle presenter sleeps until a swap. SwapWait returns immediately (`:1993–1998`); VSync notifications use a timer and a nonblocking/drop-capable send (`:1870–1876,1903–1909`). No new seconds-long redraw wait was established.
++
++3. **Rendering can progress while input dispatch has not returned.** `U/src/inject.c:1001–1004` creates a detached input pthread. Its serial read loop calls send_touch (`:959–985`), which calls `IOHIDVirtualServiceClientDispatchEvent` inline and ignores its return (`:856`). It does not call the renderer directly. Other backboardd threads and the separate kernel presenter (`MiniIOMobileFramebuffer.cpp:1400–1425`) can progress while that thread is inside dispatch or unscheduled; a busy event/scene loop can delay new input-driven updates while unrelated frames continue. This is structural possibility, not proof of current dispatch duration or private framework lock behavior. Initialization sleeps (`inject.c:798–805,936`) are not per-event throttles. Given 90.65 ms timestamps versus 99.7 s consumption, gesture duration does not explain the separation; attribution between dispatch, scheduling, logging and later scene work remains open.
++
++4. **Logging does synchronous work before the asynchronous USB reader.** Exact path:
++
++   - `K/bsd/kern/kern_exec.c:2663–2699,5940–5950`: applog=1 redirects spawn opens of /dev/null for fd1/2 to /dev/console; applog_name matches executable prefixes and injects `OS_ACTIVITY_DT_MODE=YES`, requesting os_log echo to stderr. Injection's own say formats then calls write(2) (`U/src/inject.c:61–73`, SpringBoard `inject_sb.c:63–75`). Proprietary EventFilter formatting/emission and user-space os_log locks are not available here; per-event logging duration is unmeasured.
++   - `/dev/console` delegates to the device (`K/bsd/dev/arm/cons.c:76–79`); `kmwrite` holds the shared TTY mutex across line-discipline write (`K/bsd/dev/arm/km.c:173–180`). `ttwrite` starts output inline and can sleep at high water (`K/bsd/kern/tty.c:2515,2536–2558`), although this driver's immediate drain does not prove that sleep occurred. `kmstart/kmoutput` immediately drains in <=80-byte chunks (`km.c:291–314,353–380`).
++   - `K/osfmk/console/serial_console.c:315–332,399–467,525–586`: ticket write_lock protects console reservations, temporarily disabling preemption; caller can drain inline under flush_lock, blocking for that mutex when space is exhausted. Drain also waits for outstanding reservations and holds flush_lock across output. Formatting, TTY work, these locks and copies are therefore potentially on the logging caller's critical path.
++   - Current `_cnputs` (`serial_console.c:279–290`) bulk-copies through `lithium_log_bytes`: `K/osfmk/arm64/loader_return.c:115–136,168–185` masks IRQ/FIQ, attempts ring lock at most **64 times per <=256 bytes**, copies or drops on contention, and restores DAIF. No USB-acknowledgement wait. Separate single-character/line helpers still contain up to 10,000,000 attempts (`:91–108,146–164`); do not attribute that loop to ordinary bulk stderr. Screen echo is bounded to 4096 characters (`serial_console.c:245–253`); framebuffer text rendering stops on graphics ownership (`K/pexpert/arm/pe_serial.c:762–765`). Sustained desktop applog is not proved to be pixel scrolling.
++   - USB is a **separate kernel consumer** (`P/devices/lithium/drivers/usb/hakios.lithium_usb.c:367–382,554–574`), reading retained memory, submitting DMA, handling completion, then sleeping 2 ms. Ring reader uses one try-lock and <=256-byte copy (`loader_return.c:190–216`). Slow host delivery overwrites old retained bytes/loss accounting, not producer host-delivery backpressure. USB still costs CPU and briefly shares the ring lock.
++
++   Consequently, synchronous logging can amplify an EventFilter storm through formatting, syscall/TTY work, shared locks and copies. Neither captured ~2 MB / ~8 min nor aggregate CPU percentages proves or rules out seconds of logging cost. There is no source basis to label the 99.7-s delay a USB-send wait.
++
++5. **Focused next options, unchanged defaults; proposals only.**
++
++   - **First, argument-only candidate:** omit `applog_name=backboardd,SpringBoard`, retain applog=1/stderr and bounded diagnostics; keep display/input/CPU settings identical. Actual generated `U/root/LaunchDaemons/{com.apple.backboardd,com.apple.SpringBoard}.plist` were decoded read-only: both stderr=/dev/console; backboardd has no environment dictionary, SpringBoard only CA_ASSERT_MAIN_THREAD_TRANSACTIONS=1. Neither contains DT_MODE, so removing the boot-arg injection has a concrete target. Beware regeneration: `U/mkjobs.py:270–275,300–302` can independently add DT_MODE via OSLOG; local baseline `upstream/hakios-xnu-kernel/userland/build.sh:468` defaults OSLOG to backboardd. Preserve the actual quiet plist environment. Improvement remains unmeasured.
++   - **If a reusable patch is required:** `applog_ui_quiet` tunable default **0** beside `kern_exec.c:2663`; when explicitly 1, exact-match backboardd/SpringBoard and suppress only forced os_log echo injection at `:2667–2691`. Keep fd routing and other processes unchanged; account for any inherited/job-supplied DT_MODE. This is fact-supported and narrowly scoped.
++   - **If attribution is still needed:** `render_cost=1`, default off, instruments entry/exit of existing begin/render_update/finish hooks (`inject.c:159–213`) into a bounded memory ring with sparse worker aggregates. Similarly aggregate elapsed/lock/drain costs at kmwrite/console_write. No per-event printf; no expensive stack sampling. Current post-return-only lines cannot time a stalled call.
++   - fb_threads1/fb_filter0 are already appropriate for one CPU; helper threads add no CPU. Full equal-size BGRA-to-BGR24 layers take unscaled packing (`MiniIOMobileFramebuffer.cpp:862–877,1256`; actual 1080×2040/stride3240 at console line 94). Do not treat driver-thread/filter changes or gl/metal enablement as a fix for unmeasured pre-swap work. Existing ui_lite=1 reduces motion/transparency but synchronizes Data preferences (`U/src/inject_sb.c:819–846`); keep it out of the first logging comparison.
++
++Provenance: patched xnu/files and actual xnu-src copies match SHA256 for framebuffer `d20fcff19ef56dc49b06b5495bc6fd1cee9dc72773e11ab6c798fa7adc29d137` and loader_return `8f1fdcb0dbb7d1a4dd018cae1e3bb6445264a0edd06e89699c1b82c9f3b74a79`. Baseline applog patch is `upstream/hakios-xnu-kernel/xnu/hakios.patch:560–608,809–810`; relevant lithium framebuffer/BGR24/display patches were consulted, with actual patched line coordinates taking precedence. This note does not claim package identity or runtime root-cause proof.
+\ No newline at end of file

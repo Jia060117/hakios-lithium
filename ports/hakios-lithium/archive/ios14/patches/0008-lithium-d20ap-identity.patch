@@ -1,0 +1,14 @@
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -3408,7 +3408,11 @@
+ 	static const uint8_t no_behavior[16];
+ 	dt_prop_u64(&w, "unique-chip-id", 0x000052445730001ULL);
+ 	dt_prop_u32(&w, "chip-id", 0x8015);
++#if defined(HAKIOS_LITHIUM)
++	dt_prop_u32(&w, "board-id", 0x02); /* original D20AP BuildManifest */
++#else
+ 	dt_prop_u32(&w, "board-id", 0x06);
++#endif
+ 	dt_prop(&w, "mac-address-wifi0", wifi_address, sizeof(wifi_address));
+ 	dt_prop(&w, "mac-address-bluetooth0", bluetooth_address, sizeof(bluetooth_address));
+ 	dt_prop(&w, "boot-manifest-hash", manifest_hash, sizeof(manifest_hash));

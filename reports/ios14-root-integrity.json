@@ -1,0 +1,40 @@
+{
+  "started_at": "2026-11-14T16:54:39.168335+08:00",
+  "finished_at": "2026-11-14T17:05:48.277641+08:00",
+  "bytes": 17179869184,
+  "expected_bytes": 17179869184,
+  "sha256": "396e0b17d99eae20abda540f35834f95cd2857c858cc1a959f709cc7194ef6b3",
+  "expected_sha256": "396e0b17d99eae20abda540f35834f95cd2857c858cc1a959f709cc7194ef6b3",
+  "full_volume_identical": true,
+  "readback_path": "E:\\IOS-MIX1-artifacts\\ios14-d20ap\\userdata-readback-20261114-163722.img",
+  "local_log_path": "reports/local/20261114-163633-root-readback",
+  "adb_returncode": 0,
+  "elapsed_seconds": 669.11,
+  "resumed_prefix_bytes": 6702497792,
+  "userdata_mounted": false,
+  "disk_and_userdata_readonly_verified": true,
+  "partition_writes_performed": false,
+  "qemu_used": false,
+  "scope": "All bytes of the installed 16GiB HFSX volume; not remaining userdata or unrelated partitions",
+  "user_report": "Accidentally reached Xiaomi/MIUI logo or boot animation, then returned to Fastboot",
+  "critical_files": [
+    {
+      "path": "/sbin/fsck",
+      "sha256": "bbb2e4d21cd75683699c3ff0b7b72f5b50c546961be51b05b5771405955ec54d",
+      "original_match": true
+    },
+    {
+      "path": "/sbin/launchd",
+      "sha256": "cb34041d66dfbeee006ac0f69e4f217b223ad2a7df6046c9f28f317786cf951d",
+      "original_match": true
+    },
+    {
+      "path": "/usr/lib/dyld",
+      "sha256": "54fd7d7f710554dc976dddcdb0902fe7a779d37634c0ffc343b6febca61e6c2b",
+      "original_match": true
+    }
+  ],
+  "temporary_privileged_init_used": true,
+  "permanent_root_installed": false,
+  "root_restore_required": false
+}

@@ -1,0 +1,549 @@
+{
+  "schema": 1,
+  "mu_commit": "6b3d90b79e191e08171bfedd3980234a7e49d340",
+  "mu_path": "/home/jia/ios-mix1-build/Mu-Silicium",
+  "workspace": "/home/jia/ios-mix1-build/lithium-workspace",
+  "common_dsc_source_sha256": "3c3c32a9c5abc4398663c68d2d294a81e904487b7284d0896c1418afe95edb10",
+  "common_dsc_rule": "prefix before first [Components]; omit unused MsGraphics dynamic UI PCD and RELEASE MDEPKG_NDEBUG define to retain RAM diagnostics; copyright retained",
+  "build_command": [
+    "build",
+    "-p",
+    "lithiumPkg/lithium.dsc",
+    "-a",
+    "AARCH64",
+    "-t",
+    "CLANGPDB",
+    "-b",
+    "RELEASE",
+    "-n",
+    "8",
+    "-y",
+    "/mnt/f/IOS-MIX1/out/uefi/lithium/build-report.txt",
+    "-D",
+    "LITHIUM_BUILD_TAG=0xe830ee0a34515efa"
+  ],
+  "qemu_variant": false,
+  "sources": {
+    "firmware/BootShim.S": "d83b8a8b0f8b6460d4c91d6dfcd8504d410ad529eabf9fc5e8ad4d1ae8733854",
+    "firmware/BootState.h": "8727bd1967518ac09dab1cf93624cf6a703cf6c284464497aaed6e09c4d3690b",
+    "firmware/LinuxEarly.S": "e069e15678125e71e6c2dc43fcbbf26848350564edb027dfdd09b7c2566216b6",
+    "firmware/RestoreStock.S": "e8b9df8f748ef5195c13ac79fbbb410e4ed526d0f977892510be612468446ba9",
+    "firmware/lithiumPkg/lithium.dsc": "ae2798ec5c230d5d679b430ebb40d15a7f9b96b35d950427cb2b8e5b9ff86e0d",
+    "firmware/lithiumPkg/lithium.fdf": "02e447ff0bc1bcb1ed1ec9c5794a179b8cf721d15a03e64cdaf86e1df2e167f1",
+    "firmware/lithiumPkg/lithiumPkg.dec": "bb17cadd803d8e49adfdf7236b872e56a60865df55fb22a50292cd8e22e54c86",
+    "firmware/lithiumPkg/Include/Lithium.h": "eff6970fb7664d0fa292ac4ef860d0310b88ffeeb41cf75deac9b82ae79f12e7",
+    "firmware/lithiumPkg/Include/Payload.h": "6bb24e179163d754a581260a2f249886c583bbef515efed4de746c23c02def29",
+    "firmware/lithiumPkg/Drivers/LithiumBdsDxe/LithiumBdsDxe.c": "2b7e402cd75f12fbb4c9034c55c44728b93a9e38a652d37db480323ca088114c",
+    "firmware/lithiumPkg/Drivers/LithiumBdsDxe/LithiumBdsDxe.inf": "7a0411d5ab44ca49be57634d0b6b0706a5679388df3733e3886ebc84af40e94c",
+    "firmware/lithiumPkg/Drivers/LithiumConsoleDxe/LithiumConsoleDxe.c": "a39bae87cafaa0f7ae70680d2c60e557513b5206c2b760777c4b2998908e8ff3",
+    "firmware/lithiumPkg/Drivers/LithiumConsoleDxe/LithiumConsoleDxe.inf": "2a3c9ecd86a9faa535051763a3df823d2987a56a2cee321d3ee3ff8fe7de32db",
+    "firmware/lithiumPkg/Drivers/LithiumDisplayDxe/LithiumDisplayDxe.c": "a14ccb750dbc3540c8ee6ac6c4ecfa2e6a62a7b47167975137a8eecb898d6b0d",
+    "firmware/lithiumPkg/Drivers/LithiumDisplayDxe/LithiumDisplayDxe.inf": "fcbd74ef65e07eb0959dda2ae8afc6a290d1f10abb5edfc56aedcb5287ff209f",
+    "firmware/lithiumPkg/Drivers/LithiumRamDiskDxe/LithiumRamDiskDxe.c": "e9f44650ebdc5715267207434cfe59da2fbf85d01ddb387bc9712c0714bdd5d1",
+    "firmware/lithiumPkg/Drivers/LithiumRamDiskDxe/LithiumRamDiskDxe.inf": "e29c22e6249107d4ab7f5630a7db95d9f159118bf6be7a55da4d191a7376cf00",
+    "firmware/lithiumPkg/Library/MemoryMapLib/MemoryMap.c": "a4ebfa77a80afc1c1b3a66db0acf98b411f5983fb30299e5e8ce4b3ad377dc8d",
+    "firmware/lithiumPkg/Library/MemoryMapLib/MemoryMapLib.inf": "0f881749820ae85cef060cd6f06d091b25978322f95834adfea26d92bda072b0",
+    "firmware/lithiumPkg/Library/PlatformPeiLib/PlatformPei.c": "55d5f1832b99dead4a15986e4c1ab82a2a96e67878c0e40475d3e8efe519706e",
+    "firmware/lithiumPkg/Library/PlatformPeiLib/PlatformPeiLib.inf": "d2f98dba25535195880ff5168f7ccf3e14cfef0415471f88d2b9e770a66ffe2c",
+    "firmware/lithiumPkg/Library/PlatformSecLib/PlatformAssembly.S": "e2a289ceadffb7cdc2625ecadbc12ff33ce19a31342c227047a7d8047b14eeb8",
+    "firmware/lithiumPkg/Library/PlatformSecLib/PlatformSec.c": "5360172fd5eeecdda43d4cec1b8619aa1e40a9d96dab6df35448dfdc4a474713",
+    "firmware/lithiumPkg/Library/PlatformSecLib/PlatformSecLib.inf": "1cf5138c484bf3a0389d929132a5f0f6cab96979f9c9186accffda7d3a2d1bd6",
+    "firmware/lithiumPkg/Library/ResetSystemLib/ResetSystem.c": "53c6ee09a80e3a1c364cafcac9ab9a8da501aff5efd38ea5975c049403d8a08e",
+    "firmware/lithiumPkg/Library/ResetSystemLib/ResetSystemLib.inf": "2093985b7a97612cc7c8025da54d0fd30a6606fcd5454e99d2ab015edab8ff69",
+    "firmware/lithiumPkg/Library/SerialPortLib/SerialPort.c": "b58824f62431cd68d30ce637993346f899a0fe4258f4175c1b0bc8f985566082",
+    "firmware/lithiumPkg/Library/SerialPortLib/SerialPortLib.inf": "f769922bd94c2c9f9e0dbd67dab9b93ea444acfe548f2094b71af6485acd7429"
+  },
+  "payload": {
+    "sha256": "de86d99a23e702b4ecad3d9f0d8035730218c68f21d867d951c982ff7c7bb46f",
+    "bytes": 1048576,
+    "base": "0x44d00000",
+    "end_exclusive": "0x44e00000",
+    "loader_sha256": "9af607ab2aebeb3bd60f4fbcf87c7ce0b49bdf7eba5c99f19db941647e358386",
+    "loader_bytes": 36352,
+    "loader_fnv64": "0x75f981c4a004af25",
+    "mtools_file_roundtrip_verified": true,
+    "generator_sha256": "c7dae76e97d529feec9a5fa63a81a15d32da28c3a61124a5d097f2847cd86eb3",
+    "generated_header_sha256": "37d9369ddd0693ebf2eafdfadb955e75ac54f2438b93a69c44b9745b5ea1703f"
+  },
+  "journal_build_tag": "0xe830ee0a34515efa",
+  "recursive_submodules": [
+    " 9f4dbfd7d61acdae69fd5bb48720ce7e53711e25 Binaries (9f4dbfd7)",
+    " 566cf5c8c2c8adf8e1a337ced1d147bc6246856f Common/Mu (566cf5c)",
+    " 9292f9254adb94c5e5bb09a370b9662fcd66a953 Common/Mu_OEM_Sample (9292f92)",
+    " 42d6d889f7c1f27e3226b44074b8a0ffe21cd988 Mu_Basecore (42d6d88)",
+    " e230f474b87134e8c6c85b630084c612057f253e Mu_Basecore/BaseTools/Source/C/BrotliCompress/brotli (e230f47)",
+    " e230f474b87134e8c6c85b630084c612057f253e Mu_Basecore/MdeModulePkg/Library/BrotliCustomDecompressLib/brotli (e230f47)",
+    " 4ef89209a239c1aea328cf13c05a2807e5c146d1 Mu_Basecore/MdeModulePkg/Universal/RegularExpressionDxe/oniguruma (4ef8920)",
+    " cfff805481bdea27f900c32698171286542b8d3c Mu_Basecore/MdePkg/Library/BaseFdtLib/libfdt (cfff805)",
+    " 370b5944c046bab043dd8b133727b2135af7747a Mu_Basecore/MdePkg/Library/MipiSysTLib/mipisyst (370b594)",
+    " a6f06bf2fd3b832822cd4e9e554b7d47f32ec084 Mu_Basecore/MdePkg/Library/MipiSysTLib/mipisyst/external/googletest (a6f06bf)",
+    " c53fdab93af76106b963216d85897614b996f8b6 Mu_Basecore/MdePkg/Library/MipiSysTLib/mipisyst/external/pugixml (c53fdab)",
+    " f55cf6d48ec69b4ac60a63903e9c6a2cb0fd155d Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm (f55cf6d)",
+    " 107ea89daaefb9867ea9121002fbbdf926780e98 Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/mbedtlslib/mbedtls (107ea89)",
+    " 94599c0e3b5036e086446a51a3f79640f70f22f6 Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/mbedtlslib/mbedtls/framework (94599c0)",
+    " aea7aaf2abb04789f5868cbabec406ea43aa84bf Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl (aea7aaf)",
+    " 7ab6a55cfe471267d61e4d28ba43d41defcd87e0 Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/cloudflare-quiche (7ab6a55)",
+    " f1c75347daa2ea81a941e953f2263e0a4d970c8d Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/cloudflare-quiche/quiche/deps/boringssl (f1c7534)",
+    " ce771805c094d098c25a218bc8e9f7344eccbc5a Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/fuzz/corpora (ce771805)",
+    " 74b1f4fddbc2d6de969815b1992ddc1ae7c643fe Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/gost-engine (74b1f4f)",
+    " 0b445c73ae1e87577430c6884cdeeca1afa36dbd Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/gost-engine/libprov (0b445c7)",
+    " 784c38f50e70a739400cdd3f2620bac2e2788e6c Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/krb5 (784c38f)",
+    " 7bc597c04b534ddea9b6654481deb31ded8e1bbc Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/oqs-provider (7bc597c)",
+    " 898b1079d95453dc5d0f378dd15a75b99252caf3 Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/pkcs11-provider (898b107)",
+    " ea9666903c109a8e88a37eb1c60d4e98f01f0299 Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/pkcs11-provider/python-ecdsa (ea96669)",
+    " 32fcb0d8e78fd9ffc4568d11ba5916936a46af8c Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/pkcs11-provider/tlsfuzzer (32fcb0d)",
+    " 4e16574d7c52f17c81c3f5e0aa547776a67fdf8e Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/pkcs11-provider/tlslite-ng (4e16574)",
+    " 7e33b0e7739d633c77b8c478620167f693ed13f4 Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/pyca-cryptography (7e33b0e)",
+    " 4096fa01715929e08b97e73f3173aee9d57f2a3f Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/python-ecdsa (4096fa0)",
+    " 61f45d9701294fd87ef92d2a7e3dfb076653a562 Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/tlsfuzzer (61f45d9)",
+    " 77ef321dde1a9e6bcf94d73c80f8789a770d8031 Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/tlslite-ng (77ef321)",
+    " 2196000605e45d91097147c9c71f26b72af58003 Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/wycheproof (2196000)",
+    " a01cc69ee9536f90e57c61a198f2d1944d3d4313 Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/unit_test/cmockalib/cmocka (a01cc69)",
+    " 1cc9cde3448cdd2e000886a26acf1caac2db7cf1 Mu_Basecore/UnitTestFrameworkPkg/Library/CmockaLib/cmocka (1cc9cde)",
+    " 86add13493e5c881d7e4ba77fb91c1f57752b3a4 Mu_Basecore/UnitTestFrameworkPkg/Library/GoogleTestLib/googletest (86add13)",
+    " 83d4e1ebef3588fae48b69a7352cc21801cb70bc Mu_Basecore/UnitTestFrameworkPkg/Library/SubhookLib/subhook (heads/main)",
+    " f50bc115dccdea12e44efb550fd783d1daafc739 Silicium-ACPI (f50bc11)",
+    " 67b5686b4419b4cb8caa502711c41815f5279751 Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl (67b5686)",
+    " 7ab6a55cfe471267d61e4d28ba43d41defcd87e0 Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/cloudflare-quiche (7ab6a55)",
+    " f1c75347daa2ea81a941e953f2263e0a4d970c8d Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/cloudflare-quiche/quiche/deps/boringssl (f1c7534)",
+    " ce771805c094d098c25a218bc8e9f7344eccbc5a Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/fuzz/corpora (ce771805)",
+    " 74b1f4fddbc2d6de969815b1992ddc1ae7c643fe Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/gost-engine (74b1f4f)",
+    " 0b445c73ae1e87577430c6884cdeeca1afa36dbd Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/gost-engine/libprov (0b445c7)",
+    " 784c38f50e70a739400cdd3f2620bac2e2788e6c Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/krb5 (784c38f)",
+    " 7bc597c04b534ddea9b6654481deb31ded8e1bbc Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/oqs-provider (7bc597c)",
+    " 663dea335c80bec7fd96d544ff875af08d6461a9 Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/pkcs11-provider (663dea3)",
+    " ea9666903c109a8e88a37eb1c60d4e98f01f0299 Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/pkcs11-provider/python-ecdsa (ea96669)",
+    " 32fcb0d8e78fd9ffc4568d11ba5916936a46af8c Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/pkcs11-provider/tlsfuzzer (32fcb0d)",
+    " 4e16574d7c52f17c81c3f5e0aa547776a67fdf8e Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/pkcs11-provider/tlslite-ng (4e16574)",
+    " 7e33b0e7739d633c77b8c478620167f693ed13f4 Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/pyca-cryptography (7e33b0e)",
+    " 4096fa01715929e08b97e73f3173aee9d57f2a3f Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/python-ecdsa (4096fa0)",
+    " 61f45d9701294fd87ef92d2a7e3dfb076653a562 Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/tlsfuzzer (61f45d9)",
+    " 77ef321dde1a9e6bcf94d73c80f8789a770d8031 Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/tlslite-ng (77ef321)",
+    " 2196000605e45d91097147c9c71f26b72af58003 Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/wycheproof (2196000)"
+  ],
+  "fd_sha256": "188cf0155818bcf0b1c8205bc767efb2a69a6245a849bedf494cab9c3fc9a292",
+  "fd_bytes": 3145728,
+  "build_seconds": 21.06,
+  "build_success": true,
+  "hardware_package": {
+    "schema": 1,
+    "target_os": "iOS 14.8; preparatory UEFI firmware only",
+    "qemu_variant": false,
+    "phone_boot_allowed": true,
+    "fd_sha256": "188cf0155818bcf0b1c8205bc767efb2a69a6245a849bedf494cab9c3fc9a292",
+    "image_path": "out/uefi/lithium/lithium-uefi.img",
+    "image_sha256": "8cce613a8cfc6657ba5a87aca25395db61d6dd3e2958287225ef0ce8bf7646ea",
+    "image_bytes": 47067136,
+    "kernel_image_sha256": "cd4be714932ddfceb12d7ad981f4bc9b0bc267b396b612a25227c9ea88eb6b20",
+    "kernel_image_bytes": 3153920,
+    "declared_reservation_bytes": 37957632,
+    "fd_copy_source": "0x40081000",
+    "fd_copy_target": "0x41000000",
+    "fd_copy_bytes": 3145728,
+    "stock_ramdisk_bytes_unchanged_at_blob_offset": "0x2000000",
+    "aboot_ramdisk_payload_bytes": 37748736,
+    "stock_initrd_start_after_handoff": "0x44a00000",
+    "ram_payload": {
+      "sha256": "de86d99a23e702b4ecad3d9f0d8035730218c68f21d867d951c982ff7c7bb46f",
+      "bytes": 1048576,
+      "base": "0x44d00000",
+      "end_exclusive": "0x44e00000",
+      "loader_sha256": "9af607ab2aebeb3bd60f4fbcf87c7ce0b49bdf7eba5c99f19db941647e358386",
+      "loader_bytes": 36352,
+      "loader_fnv64": "0x75f981c4a004af25",
+      "mtools_file_roundtrip_verified": true,
+      "generator_sha256": "c7dae76e97d529feec9a5fa63a81a15d32da28c3a61124a5d097f2847cd86eb3",
+      "generated_header_sha256": "37d9369ddd0693ebf2eafdfadb955e75ac54f2438b93a69c44b9745b5ea1703f"
+    },
+    "stock_initrd_end_after_handoff": "0x44c28cf1",
+    "stock_twenty_dtbs_one_added_journal_property_each": true,
+    "boot_signature_removed": true,
+    "return_method": "restore-stock-observer",
+    "restore_stub_address": "0x42400000",
+    "restore_stub_sha256": "075d3c6a323ee86258edf5e132a06e743e4fbb51efc086e62791676afff1661c",
+    "restored_kernel_sha256": "f9165f414d1603a0765da59a460de1beca90a728e019929dd1b66e267396fcc8",
+    "collector_probe_sha256": "50a2a21da7e7558bc709a9ff02f50cb441db1930acce80429d5a3ccb3a23fa23",
+    "collector_original_probe_sha256": "7d851b5bb026127232c194513233a405ea1c91dafe43fd0ef7f3fa252278a6c9",
+    "collector_resume_branch_offset": "0x1ff83fc",
+    "collector_entry_marker_address": "0x42400110",
+    "linux_entry_marker_address": "0x42400120",
+    "diagnostic_branch_hooks_only": true,
+    "original_el1_state_saved_and_restored": true,
+    "linux_early_hooks": [
+      {
+        "offset": "0x1000",
+        "original_instruction": "f50300aa",
+        "stub_symbol": "linux_hook_entry",
+        "checkpoint": 1
+      },
+      {
+        "offset": "0x1008",
+        "original_instruction": "09fe0594",
+        "stub_symbol": "linux_hook_el_setup",
+        "checkpoint": 2
+      },
+      {
+        "offset": "0x100c",
+        "original_instruction": "c5fd0594",
+        "stub_symbol": "linux_hook_phys_offset",
+        "checkpoint": 3
+      },
+      {
+        "offset": "0x1010",
+        "original_instruction": "160038d5",
+        "stub_symbol": "linux_hook_boot_mode",
+        "checkpoint": 4
+      },
+      {
+        "offset": "0x101c",
+        "original_instruction": "f70300aa",
+        "stub_symbol": "linux_hook_cpu_lookup",
+        "checkpoint": 5
+      },
+      {
+        "offset": "0x1030",
+        "original_instruction": "5b0e0058",
+        "stub_symbol": "linux_hook_page_tables",
+        "checkpoint": 6
+      },
+      {
+        "offset": "0x180800",
+        "original_instruction": "c5060058",
+        "stub_symbol": "linux_hook_cpu_setup",
+        "checkpoint": 7
+      },
+      {
+        "offset": "0x180820",
+        "original_instruction": "001018d5",
+        "stub_symbol": "linux_hook_mmu_enable",
+        "checkpoint": 8
+      }
+    ],
+    "linux_early_vectors": "0x42400800",
+    "linux_early_record_offset": 4712,
+    "linux_early_ramdisk_sha256": null,
+    "same_boot_entry_state_record_offset": 4608,
+    "android_sha1_roundtrip_valid": true,
+    "static_occupancy_check_passed": true,
+    "regions": [
+      {
+        "name": "Boot input",
+        "start": "0x40080000",
+        "end": "0x40400000"
+      },
+      {
+        "name": "DXE Extra Heap",
+        "start": "0x40400000",
+        "end": "0x41000000"
+      },
+      {
+        "name": "UEFI FD",
+        "start": "0x41000000",
+        "end": "0x41300000"
+      },
+      {
+        "name": "Advanced Logger",
+        "start": "0x41300000",
+        "end": "0x41400000"
+      },
+      {
+        "name": "SEC Heap",
+        "start": "0x41500000",
+        "end": "0x4158c000"
+      },
+      {
+        "name": "MMU PageTables",
+        "start": "0x4158c000",
+        "end": "0x41590000"
+      },
+      {
+        "name": "UEFI Stack",
+        "start": "0x41590000",
+        "end": "0x415d0000"
+      },
+      {
+        "name": "Info Blk",
+        "start": "0x415ff000",
+        "end": "0x41600000"
+      },
+      {
+        "name": "DXE Heap",
+        "start": "0x41600000",
+        "end": "0x42400000"
+      },
+      {
+        "name": "Stock restore stub",
+        "start": "0x42400000",
+        "end": "0x424b3000"
+      },
+      {
+        "name": "Bootloader FDT",
+        "start": "0x42800000",
+        "end": "0x42a00000"
+      },
+      {
+        "name": "Stock image copy",
+        "start": "0x42a00000",
+        "end": "0x44a00000"
+      },
+      {
+        "name": "Stock initrd",
+        "start": "0x44a00000",
+        "end": "0x44d00000"
+      },
+      {
+        "name": "RAM payload",
+        "start": "0x44d00000",
+        "end": "0x44e00000"
+      },
+      {
+        "name": "Display Reserved",
+        "start": "0x83401000",
+        "end": "0x85800000"
+      },
+      {
+        "name": "Resident aboot",
+        "start": "0x92a00000",
+        "end": "0x92c00000"
+      },
+      {
+        "name": "APSS_GIC500_GICD",
+        "start": "0x9bc0000",
+        "end": "0x9bd0000"
+      },
+      {
+        "name": "APSS_GIC500_GICR",
+        "start": "0x9c00000",
+        "end": "0x9d00000"
+      },
+      {
+        "name": "APSS_WDT_TMR1",
+        "start": "0x9830000",
+        "end": "0x9831000"
+      }
+    ],
+    "limits": [
+      "QEMU GIC addresses differ from phone; each build is hash bound.",
+      "Only explicitly described RAM is allocated. Not a map of all free DDR.",
+      "Unknown aboot download/decompression scratch remains managed by unchanged aboot.",
+      "Eight checked Linux-head branch hooks replay displaced instructions; every other original body byte is retained.",
+      "Normal QEMU stops before Linux head; optional early-head case executes through checkpoint 8, then stops before MMU enable. It does not validate Qualcomm hardware.",
+      "Extra RAM is loaded and reserved as an explicit aboot ramdisk; its placement is validated again at handoff.",
+      "No Android ADB driver in UEFI; original Android returns only after restoring its kernel and initrd.",
+      "No XNU or iOS user space loaded."
+    ]
+  },
+  "qemu_package": {
+    "schema": 1,
+    "target_os": "iOS 14.8; preparatory UEFI firmware only",
+    "qemu_variant": true,
+    "phone_boot_allowed": false,
+    "fd_sha256": "50f1cdb698bded360380e664484c5d39f93332e4d827665ad0efa2e61c09f95e",
+    "image_path": "out/uefi/qemu/lithium-qemu-DO-NOT-BOOT.img",
+    "image_sha256": "bb71d7ccbbd58261d35020e55765ad18fa9857270490c3bf36ce8d68f90f0354",
+    "image_bytes": 47067136,
+    "kernel_image_sha256": "1a80bde1c9aa766008d0e256105e90129ec2cf507f5a25089104f4540f037f08",
+    "kernel_image_bytes": 3153920,
+    "declared_reservation_bytes": 37957632,
+    "fd_copy_source": "0x40081000",
+    "fd_copy_target": "0x41000000",
+    "fd_copy_bytes": 3145728,
+    "stock_ramdisk_bytes_unchanged_at_blob_offset": "0x2000000",
+    "aboot_ramdisk_payload_bytes": 37748736,
+    "stock_initrd_start_after_handoff": "0x44a00000",
+    "ram_payload": {
+      "sha256": "de86d99a23e702b4ecad3d9f0d8035730218c68f21d867d951c982ff7c7bb46f",
+      "bytes": 1048576,
+      "base": "0x44d00000",
+      "end_exclusive": "0x44e00000",
+      "loader_sha256": "9af607ab2aebeb3bd60f4fbcf87c7ce0b49bdf7eba5c99f19db941647e358386",
+      "loader_bytes": 36352,
+      "loader_fnv64": "0x75f981c4a004af25",
+      "mtools_file_roundtrip_verified": true,
+      "generator_sha256": "c7dae76e97d529feec9a5fa63a81a15d32da28c3a61124a5d097f2847cd86eb3",
+      "generated_header_sha256": "37d9369ddd0693ebf2eafdfadb955e75ac54f2438b93a69c44b9745b5ea1703f"
+    },
+    "stock_initrd_end_after_handoff": "0x44c28cf1",
+    "stock_twenty_dtbs_one_added_journal_property_each": true,
+    "boot_signature_removed": true,
+    "return_method": "restore-stock-observer",
+    "restore_stub_address": "0x42400000",
+    "restore_stub_sha256": "35894d0e927b49c7e86ce3b959b6e1aea26954db86c4d34aed31e25bcfee390a",
+    "restored_kernel_sha256": "5ac8a282ccb209134d1f531629dfdd01777f7118ddf60f0e38435785b04d43bb",
+    "collector_probe_sha256": "50a2a21da7e7558bc709a9ff02f50cb441db1930acce80429d5a3ccb3a23fa23",
+    "collector_original_probe_sha256": "7d851b5bb026127232c194513233a405ea1c91dafe43fd0ef7f3fa252278a6c9",
+    "collector_resume_branch_offset": "0x1ff83fc",
+    "collector_entry_marker_address": "0x42400110",
+    "linux_entry_marker_address": "0x42400120",
+    "diagnostic_branch_hooks_only": true,
+    "original_el1_state_saved_and_restored": true,
+    "linux_early_hooks": [
+      {
+        "offset": "0x1000",
+        "original_instruction": "f50300aa",
+        "stub_symbol": "linux_hook_entry",
+        "checkpoint": 1
+      },
+      {
+        "offset": "0x1008",
+        "original_instruction": "09fe0594",
+        "stub_symbol": "linux_hook_el_setup",
+        "checkpoint": 2
+      },
+      {
+        "offset": "0x100c",
+        "original_instruction": "c5fd0594",
+        "stub_symbol": "linux_hook_phys_offset",
+        "checkpoint": 3
+      },
+      {
+        "offset": "0x1010",
+        "original_instruction": "160038d5",
+        "stub_symbol": "linux_hook_boot_mode",
+        "checkpoint": 4
+      },
+      {
+        "offset": "0x101c",
+        "original_instruction": "f70300aa",
+        "stub_symbol": "linux_hook_cpu_lookup",
+        "checkpoint": 5
+      },
+      {
+        "offset": "0x1030",
+        "original_instruction": "5b0e0058",
+        "stub_symbol": "linux_hook_page_tables",
+        "checkpoint": 6
+      },
+      {
+        "offset": "0x180800",
+        "original_instruction": "c5060058",
+        "stub_symbol": "linux_hook_cpu_setup",
+        "checkpoint": 7
+      },
+      {
+        "offset": "0x180820",
+        "original_instruction": "001018d5",
+        "stub_symbol": "linux_hook_mmu_enable",
+        "checkpoint": 8
+      }
+    ],
+    "linux_early_vectors": "0x42400800",
+    "linux_early_record_offset": 4712,
+    "linux_early_ramdisk_sha256": "1c604437f19bda13e38578ebdca23811e3ed06c2863485d01ef4a7f8c5b26fa1",
+    "same_boot_entry_state_record_offset": 4608,
+    "android_sha1_roundtrip_valid": true,
+    "static_occupancy_check_passed": true,
+    "regions": [
+      {
+        "name": "Boot input",
+        "start": "0x40080000",
+        "end": "0x40400000"
+      },
+      {
+        "name": "DXE Extra Heap",
+        "start": "0x40400000",
+        "end": "0x41000000"
+      },
+      {
+        "name": "UEFI FD",
+        "start": "0x41000000",
+        "end": "0x41300000"
+      },
+      {
+        "name": "Advanced Logger",
+        "start": "0x41300000",
+        "end": "0x41400000"
+      },
+      {
+        "name": "SEC Heap",
+        "start": "0x41500000",
+        "end": "0x4158c000"
+      },
+      {
+        "name": "MMU PageTables",
+        "start": "0x4158c000",
+        "end": "0x41590000"
+      },
+      {
+        "name": "UEFI Stack",
+        "start": "0x41590000",
+        "end": "0x415d0000"
+      },
+      {
+        "name": "Info Blk",
+        "start": "0x415ff000",
+        "end": "0x41600000"
+      },
+      {
+        "name": "DXE Heap",
+        "start": "0x41600000",
+        "end": "0x42400000"
+      },
+      {
+        "name": "Stock restore stub",
+        "start": "0x42400000",
+        "end": "0x424b3000"
+      },
+      {
+        "name": "Bootloader FDT",
+        "start": "0x42800000",
+        "end": "0x42a00000"
+      },
+      {
+        "name": "Stock image copy",
+        "start": "0x42a00000",
+        "end": "0x44a00000"
+      },
+      {
+        "name": "Stock initrd",
+        "start": "0x44a00000",
+        "end": "0x44d00000"
+      },
+      {
+        "name": "RAM payload",
+        "start": "0x44d00000",
+        "end": "0x44e00000"
+      },
+      {
+        "name": "Display Reserved",
+        "start": "0x83401000",
+        "end": "0x85800000"
+      },
+      {
+        "name": "Resident aboot",
+        "start": "0x92a00000",
+        "end": "0x92c00000"
+      },
+      {
+        "name": "APSS_GIC500_GICD",
+        "start": "0x9bc0000",
+        "end": "0x9bd0000"
+      },
+      {
+        "name": "APSS_GIC500_GICR",
+        "start": "0x9c00000",
+        "end": "0x9d00000"
+      },
+      {
+        "name": "APSS_WDT_TMR1",
+        "start": "0x9830000",
+        "end": "0x9831000"
+      }
+    ],
+    "limits": [
+      "QEMU GIC addresses differ from phone; each build is hash bound.",
+      "Only explicitly described RAM is allocated. Not a map of all free DDR.",
+      "Unknown aboot download/decompression scratch remains managed by unchanged aboot.",
+      "Eight checked Linux-head branch hooks replay displaced instructions; every other original body byte is retained.",
+      "Normal QEMU stops before Linux head; optional early-head case executes through checkpoint 8, then stops before MMU enable. It does not validate Qualcomm hardware.",
+      "Extra RAM is loaded and reserved as an explicit aboot ramdisk; its placement is validated again at handoff.",
+      "No Android ADB driver in UEFI; original Android returns only after restoring its kernel and initrd.",
+      "No XNU or iOS user space loaded."
+    ]
+  },
+  "qemu_validation_report": "reports/local/20261112-221620-668581-uefi/inputs/reports/uefi-qemu.json",
+  "qemu_strict_alignment_validation_report": "reports/local/20261112-221620-668581-uefi/inputs/reports/uefi-qemu-strict-align.json",
+  "qemu_payload_rejection_report": "reports/local/20261112-221620-668581-uefi/inputs/reports/uefi-qemu-payload-reject.json",
+  "qemu_linux_early_report": "reports/local/20261112-221620-668581-uefi/inputs/reports/uefi-qemu-linux-early.json",
+  "qemu_linux_early_exception_report": "reports/local/20261112-221620-668581-uefi/inputs/reports/uefi-qemu-linux-early-trap.json"
+}

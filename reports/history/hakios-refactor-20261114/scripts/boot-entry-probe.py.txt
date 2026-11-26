@@ -1,0 +1,228 @@
+"""Temporarily boot the validated entry observer on the verified lithium.
+
+Requires --boot. No flash/erase/root commands. Detailed USB identity and raw
+logs stay in reports/local. A rejected boot is followed by a stock reboot.
+"""
+import argparse
+from datetime import datetime
+import hashlib
+import json
+from pathlib import Path
+import re
+import shutil
+import struct
+import subprocess
+import time
+
+ROOT = Path(__file__).resolve().parents[1]
+PROP = "/sys/firmware/devicetree/base/chosen/mix1,entry-probe-v1"
+
+
+def write(path, value):
+    path.write_text(json.dumps(value, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def decode(record, fields, record_bytes=512, marker=b"MIX1ENTRYPROBEv1"):
+    assert len(record) == record_bytes and record[:16] == marker
+    version, length, status, count, last_slot = struct.unpack_from("<5I", record, 16)
+    assert version == 1 and length == record_bytes and status == 1, "Observer did not finish normally"
+    values = struct.unpack_from("<" + "Q" * len(fields), record, 64)
+    regs = dict(zip(fields, values))
+    mmfr = regs["id_aa64mmfr0_el1"]
+    assert mmfr != 0xffffffffffffffff, "MMFR0 unavailable"
+    pa_bits = {0: 32, 1: 36, 2: 40, 3: 42, 4: 44, 5: 48, 6: 52}.get(mmfr & 15)
+    granules = dict(k4=(mmfr >> 28) & 15, k16=(mmfr >> 20) & 15, k64=(mmfr >> 24) & 15)
+    assert granules["k4"] in (0, 1, 15) and granules["k16"] in (0, 1, 2) and granules["k64"] in (0, 15)
+    atomic = (regs["id_aa64isar0_el1"] >> 20) & 15
+    return dict(status="complete", exceptions=count, last_exception_slot=last_slot if count else None,
+                last_esr=hex(struct.unpack_from("<Q", record, 40)[0]) if count else None,
+                registers={key: hex(value) for key, value in regs.items()},
+                capabilities=dict(entry_el=regs["current_el_raw"] >> 2, physical_address_bits=pa_bits,
+                                  granule_4k=granules["k4"] != 15, granule_16k=granules["k16"] in (1, 2),
+                                  granule_64k=granules["k64"] != 15, raw_granule_fields=granules,
+                                  lse_atomic=atomic >= 2, raw_atomic_field=atomic,
+                                  cntfrq_hz=regs["cntfrq_el0"]))
+
+
+def main():
+    global PROP
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--boot", action="store_true")
+    parser.add_argument("--return-to-stock-only", action="store_true", help="Finish a prior run with an ordinary reboot and absence control")
+    parser.add_argument('--from-fastboot',action='store_true',help='Collect immediately after firmware reset, before Android')
+    parser.add_argument("--runs", type=int, default=1, choices=(1, 2, 3))
+    parser.add_argument("--profile", choices=("entry", "display", "journal"), default="entry")
+    args = parser.parse_args()
+    assert not args.from_fastboot or (args.profile=='journal' and args.runs==1 and args.boot)
+    if not args.boot and not args.return_to_stock_only:
+        parser.error("--boot or --return-to-stock-only is required to operate the phone")
+    build_path = ROOT / "reports" / (args.profile + "-probe-build.json")
+    public_path = ROOT / "reports" / (args.profile + "-state.json")
+    build = json.loads(build_path.read_text())
+    qemu = json.loads((ROOT / "reports" / (args.profile + "-probe-qemu.json")).read_text())
+    PROP = "/sys/firmware/devicetree/base/chosen/" + build["property"]
+    image = ROOT / build["image_path"]
+    assert hashlib.sha256(image.read_bytes()).hexdigest() == build["image_sha256"]
+    assert qemu["all_passed"] and qemu["validated_cases"] == 10
+    assert qemu["production_probe_sha256"] == build["probe_sha256"]
+    occupancy = json.loads((ROOT / "reports" / ("boot-occupancy.json" if args.profile == "entry" else args.profile+"-probe-occupancy.json")).read_text())
+    assert occupancy["bounded_stock_chained_probe_check_passed"]
+    assert occupancy["image_sha256"] == build["image_sha256"]
+    adb, fastboot = shutil.which("adb"), shutil.which("fastboot")
+    assert adb and fastboot
+    directory = ROOT / "reports/local" / (datetime.now().strftime("%Y%m%d-%H%M%S-%f") + "-" + args.profile + "-probe")
+    directory.mkdir(parents=True)
+    events = []
+
+    def command(argv, timeout=15):
+        try:
+            p = subprocess.run(argv, capture_output=True, timeout=timeout)
+            result = dict(command=argv, returncode=p.returncode,
+                          stdout=p.stdout.decode(errors="replace").strip(), stderr=p.stderr.decode(errors="replace").strip())
+        except subprocess.TimeoutExpired:
+            result = dict(command=argv, returncode=None, error="timeout", timeout=timeout)
+        events.append(result)
+        write(directory / "commands.json", events)
+        return result
+
+    def devices(executable):
+        result = command([executable, "devices"])
+        return [line.split()[0] for line in result.get("stdout", "").splitlines()
+                if len(line.split()) >= 2 and line.split()[1] in ("device", "fastboot")]
+
+    serials = devices(fastboot if args.from_fastboot else adb)
+    assert len(serials) == 1, "Exactly one authorized ADB device required"
+    serial = serials[0]
+
+    def prop(name):
+        r = command([adb, "-s", serial, "shell", "getprop", name])
+        assert r["returncode"] == 0
+        return r["stdout"]
+
+    def verify_android():
+        assert prop("ro.product.device") == "lithium"
+        assert prop("ro.build.version.incremental") == "V9.5.2.0.NAHCNFA"
+        assert prop("sys.boot_completed") == "1"
+
+    def wait_android(seconds=180):
+        deadline, last_notice = time.monotonic() + seconds, 0
+        while time.monotonic() < deadline:
+            if serial in devices(adb):
+                try:
+                    if prop("sys.boot_completed") == "1":
+                        verify_android()
+                        return True
+                except AssertionError:
+                    pass
+            if time.monotonic() - last_notice > 20:
+                print("Waiting for Android/ADB...", flush=True)
+                last_notice = time.monotonic()
+            time.sleep(2)
+        return False
+
+    if not args.from_fastboot: verify_android()
+    def restore_stock(public):
+        print("Returning to an ordinary stock boot...", flush=True)
+        before = command([adb, "-s", serial, "exec-out", "cat", "/proc/sys/kernel/random/boot_id"])
+        reboot = command([adb, "-s", serial, "reboot"])
+        assert reboot["returncode"] == 0
+        time.sleep(3)
+        assert wait_android(), "Stock Android did not return"
+        after = command([adb, "-s", serial, "exec-out", "cat", "/proc/sys/kernel/random/boot_id"])
+        assert before["returncode"] == after["returncode"] == 0 and before["stdout"] != after["stdout"]
+        absent = subprocess.run([adb, "-s", serial, "exec-out", "cat", PROP], capture_output=True, timeout=15)
+        (directory / "stock-absence-control.bin").write_bytes(absent.stdout + absent.stderr)
+        assert build["marker"].encode() not in absent.stdout and len(absent.stdout) != build["record_bytes"]
+        public["final_stock_boot_verified"] = True
+        public["final_stock_probe_property_absent"] = True
+        public["final_stock_boot_id_changed"] = True
+        public["final_stock_reboot_log_path"] = directory.relative_to(ROOT).as_posix()
+        write(public_path, public)
+        print("Ordinary stock boot verified; diagnostic property absent.", flush=True)
+
+    if args.return_to_stock_only:
+        public = json.loads(public_path.read_text())
+        assert public["all_requested_runs_passed"]
+        restore_stock(public)
+        return
+    public = dict(checked_at=datetime.now().astimezone().isoformat(), device="lithium",
+                  image_sha256=build["image_sha256"], image_bytes=build["image_bytes"],
+                  local_log_path=directory.relative_to(ROOT).as_posix(), runs=[],
+                  partition_writes_performed=False, root_operations_performed=False,
+                  data_wipe_operations_performed=False, all_requested_runs_passed=False)
+    write(public_path, public)
+    for index in range(args.runs):
+        if not args.from_fastboot: verify_android()
+        run = dict(index=index+1, attempted_at=datetime.now().astimezone().isoformat())
+        public["runs"].append(run)
+        write(public_path, public)
+        print(f"Run {index+1}/{args.runs}: verified lithium; entering Fastboot.", flush=True)
+        if not args.from_fastboot:
+            reboot = command([adb, "-s", serial, "reboot", "bootloader"])
+            assert reboot["returncode"] == 0
+        deadline = time.monotonic() + 45
+        while serial not in devices(fastboot):
+            assert time.monotonic() < deadline, "Fastboot did not appear"
+            time.sleep(1)
+        product=command([fastboot,'-s',serial,'getvar','product'])
+        assert 'MSM8996_A8' in product.get('stdout','')+product.get('stderr','')
+        oem = command([fastboot, "-s", serial, "oem", "device-info"])
+        text = oem.get("stdout", "") + "\n" + oem.get("stderr", "")
+        assert oem["returncode"] == 0 and re.search(r"Device unlocked:[ \t]*true", text, re.I)
+        print("Fastboot unlocked verified; booting the SHA-256 pinned diagnostic.", flush=True)
+        boot = command([fastboot, "-s", serial, "boot", str(image)], timeout=50)
+        run["fastboot_boot_returncode"] = boot["returncode"]
+        run["fastboot_boot_message"] = boot.get("stderr", "")
+        run["temporary_boot_command_accepted"] = boot["returncode"] == 0
+        write(public_path, public)
+        if boot["returncode"] != 0:
+            command([fastboot, "-s", serial, "reboot"])
+            run["stock_android_return_verified"] = wait_android()
+            write(public_path, public)
+            raise SystemExit("Temporary boot rejected; stock reboot attempted. See entry-state.json.")
+        assert wait_android(), "Android did not return within 180 seconds"
+        run["stock_android_return_verified"] = True
+        # Binary exec-out avoids MIUI shell's LF->CRLF transformation.
+        p = subprocess.run([adb, "-s", serial, "exec-out", "cat", PROP], capture_output=True, timeout=15)
+        (directory / f"record-{index+1}.bin").write_bytes(p.stdout)
+        (directory / f"record-{index+1}.stderr").write_bytes(p.stderr)
+        assert p.returncode == 0 and len(p.stdout) == build["record_bytes"], "No intact observer record after temporary boot"
+        decoded = decode(p.stdout, build["fields"], build["record_bytes"], build["marker"].encode())
+        if args.profile == "display":
+            import display_probe
+            decoded["display_snapshot"] = display_probe.decode(p.stdout, build["display_registers"])
+        if args.profile == 'journal':
+            journal=p.stdout[512:4608]
+            (directory/f'journal-{index+1}.bin').write_bytes(journal)
+            valid=journal[:16]==b'MIX1UEFIJOURNAL!'
+            decoded['journal_valid_magic']=valid
+            if valid:
+                tag,=struct.unpack_from('<Q',journal,16)
+                stage,=struct.unpack_from('<I',journal,24)
+                ticks,=struct.unpack_from('<Q',journal,32)
+                count,=struct.unpack_from('<I',journal,64)
+                ring=journal[128:]; pos=count%len(ring)
+                log=ring[:count] if count<=len(ring) else ring[pos:]+ring[:pos]
+                (directory/f'journal-{index+1}.txt').write_bytes(log)
+                decoded['uefi_journal']=dict(build_tag=hex(tag),stage=stage,timer_ticks=ticks,
+                    gop_selftest_passed=struct.unpack_from('<Q',journal,72)[0]==1,
+                    total_log_bytes=count,log_tail=log.decode(errors='replace'))
+        assert int(decoded["registers"]["image_base"], 16) + int(build["probe_offset"], 16) == int(decoded["registers"]["entry_pc"], 16)
+        run.update(decoded)
+        run["record_sha256"] = hashlib.sha256(p.stdout).hexdigest()
+        write(public_path, public)
+        print("Entry record acquired: " + json.dumps(decoded["capabilities"]), flush=True)
+    compare = ["entry_pc", "image_base", "fdt_address", "current_el_raw", "midr_el1", "id_aa64mmfr0_el1", "id_aa64isar0_el1", "cntfrq_el0"]
+    assert all(all(run["registers"][key] == public["runs"][0]["registers"][key] for key in compare) for run in public["runs"])
+    public["consistent_fields"] = compare
+    public["all_requested_runs_passed"] = True
+    public["successful_boots"] = len(public["runs"])
+    write(public_path, public)
+    build["device_validation_status"] = f"{len(public['runs'])} temporary boots: entry records acquired; Android returned"
+    write(build_path, build)
+    restore_stock(public)
+    print(f"PASS: {len(public['runs'])} temporary diagnostic boots; no partition writes.", flush=True)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,22 @@
+{
+  "component_path": "upstream/research/ios-sailfish/shim/ufs.c",
+  "component_commit": "6f27e41ff249f2680540ebe8ee5ab982c5e641c9",
+  "component_sha256": "e63da1abed62bd0aab0906b17e5984f5f11cdf108e6c1d3978c7ef77aa561b9f",
+  "generated_transport_sha256": "40cc28fb6eebec3afbbf604a5f5c6060620caeaf4bae682c8ebae1190d56a2f9",
+  "scope": "MSM8996 warm UEFI BlockIO; original read transport plus device-local Data-only WRITE10 and SYNCHRONIZE CACHE10; Mu GPT and complete HakiOS filesystem/bridge retained",
+  "changes": [
+    "MIX register base",
+    "UEFI cached DMA maintenance and page alignment",
+    "command and list ownership checks",
+    "finite timeout without DMA reuse",
+    "64KB bounce reads",
+    "CRC-checked userdata GPT identity and overlap rejection",
+    "WRITE10 limited to the 20GiB layout Data region",
+    "SYNCHRONIZE CACHE10 propagates failures",
+    "SCSI tag, response and residual validation"
+  ],
+  "legacy_7195_runtime_reused": false,
+  "hardware_verified": false,
+  "write_extension_source": "SCSI/UFS command definitions in pinned Mu MdePkg IndustryStandard headers; component transport ancestry unchanged",
+  "host_checks": "reports/hakios-ios16-storage-host-checks.json"
+}

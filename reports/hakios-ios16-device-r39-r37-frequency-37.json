@@ -1,0 +1,295 @@
+{
+  "attempt": {
+    "schema": 1,
+    "revision": "R37-ram-measure",
+    "phase": "frequency",
+    "attempt_id": "r37-frequency-37",
+    "started_at": "2026-11-22T00:49:06.777671+08:00",
+    "package": "F:\\IOS-MIX1\\artifacts\\hakios\\lithium-ios16\\phase4-r37-ram-frequency-37",
+    "candidate": "R37-frequency-37",
+    "profile": "r37-frequency",
+    "image_sha256": "cf35e2269a4383450d6d897da042b05cfeeab2272a98a3fb061eab8c3274584f",
+    "image_bytes": 16347136,
+    "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=720 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_clock_diag=1 cpu_power_diag=1 cpu_freq_pmu_setup=0 cpu_sanity=1 cpu_spmi_diag=1 cpu_perf_fixed=1 cpu_thermal_diag=1 cpu_perf_hz=614400000 cpu_inherited_supply_r39=1 cpu_rate_soak=1 cpu_rate_soak_parallel=1 cpu_rate_soak_perf_only=1 cpu_rate_soak_long=1 lithium_log_retry=1 cpu_freq_diag=1",
+    "preflight_passed": true,
+    "boot_attempted": true,
+    "command_accepted": true,
+    "automatic_retry": false,
+    "partition_commands": 0,
+    "flash_commands": 0,
+    "erase_commands": 0,
+    "adb_commands": 0,
+    "android_recovery_boots": 0,
+    "qemu": false,
+    "preflight": {
+      "passed": true,
+      "finished_at": "2026-11-22T00:49:06.974072+08:00",
+      "device_commands": 5,
+      "retry": false
+    },
+    "private_image": "F:\\IOS-MIX1\\reports\\local\\r37-attempts\\r37-frequency-37\\lithium-hakios-ios16-r37-ram-frequency-37.img",
+    "usb_capture_started_at": "2026-11-22T00:49:07.200377+08:00",
+    "boot_output": "Sending 'boot.img' (15964 KB)                      OKAY [  0.387s]\nBooting                                            OKAY [  0.835s]\nFinished. Total time: 1.227s\n",
+    "boot_returncode": 0,
+    "accepted_at": "2026-11-22T00:49:08.449592+08:00",
+    "outcome": "boot_accepted_observation_pending",
+    "boot_counts": {
+      "hakios": 90,
+      "ios16": 59
+    },
+    "r39_screening_status": "thermal_limit_stopped"
+  },
+  "analysis": {
+    "passed": false,
+    "scope": "perf_cluster_parallel_pwr_housekeeping_not_final_stability",
+    "attempt": "r37-frequency-37",
+    "accepted_at": "2026-11-22T00:49:08.449592+08:00",
+    "image_sha256": "cf35e2269a4383450d6d897da042b05cfeeab2272a98a3fb061eab8c3274584f",
+    "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=720 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_clock_diag=1 cpu_power_diag=1 cpu_freq_pmu_setup=0 cpu_sanity=1 cpu_spmi_diag=1 cpu_perf_fixed=1 cpu_thermal_diag=1 cpu_perf_hz=614400000 cpu_inherited_supply_r39=1 cpu_rate_soak=1 cpu_rate_soak_parallel=1 cpu_rate_soak_perf_only=1 cpu_rate_soak_long=1 lithium_log_retry=1 cpu_freq_diag=1",
+    "normal_return_and_stream": true,
+    "fastboot_endpoint_verified": true,
+    "correctness_soak_passed": false,
+    "soak": {
+      "result": "3",
+      "reason": "hotstop",
+      "created_mask": "0x7",
+      "ready_mask": "0x7",
+      "done_mask": "0x7",
+      "joined": "1",
+      "errors": "1",
+      "hotstop": "1",
+      "thermal_errors": "0",
+      "samples": "238",
+      "elapsed_ms": "237112",
+      "active_mask": "0x6",
+      "parent_binding_changed": "0",
+      "hard_wall_bound": "0"
+    },
+    "core_results": [
+      {
+        "logical": "0",
+        "affinity": "0x1",
+        "batches": "0",
+        "integer_ok": "0",
+        "copy_ok": "0",
+        "checksum": "0x0",
+        "expected": "0x0",
+        "valid": "1",
+        "active": "0"
+      },
+      {
+        "logical": "1",
+        "affinity": "0x100",
+        "batches": "950246",
+        "integer_ok": "950246",
+        "copy_ok": "950246",
+        "checksum": "0xbf18995994678197",
+        "expected": "0xbf18995994678197",
+        "valid": "1",
+        "active": "1"
+      },
+      {
+        "logical": "2",
+        "affinity": "0x101",
+        "batches": "950247",
+        "integer_ok": "950247",
+        "copy_ok": "950247",
+        "checksum": "0x71d33c67f40fe182",
+        "expected": "0x71d33c67f40fe182",
+        "valid": "1",
+        "active": "1"
+      }
+    ],
+    "temperature": {
+      "0x0": {
+        "min_mC": 47700,
+        "max_mC": 67900,
+        "samples": 390
+      },
+      "0x1": {
+        "min_mC": 44200,
+        "max_mC": 64700,
+        "samples": 390
+      },
+      "0x100": {
+        "min_mC": 41900,
+        "max_mC": 74300,
+        "samples": 390
+      },
+      "0x101": {
+        "min_mC": 41900,
+        "max_mC": 75200,
+        "samples": 390
+      }
+    },
+    "stop_temperature_rows": 4,
+    "soak_temperature_trend": {
+      "0x0": {
+        "periodic_samples": 237,
+        "first10_median_mC": 52350.0,
+        "last10_median_mC": 67500.0,
+        "last10_min_mC": 67200,
+        "last10_max_mC": 67500,
+        "calibration_verified": false,
+        "final_thermal_plateau_proven": false
+      },
+      "0x1": {
+        "periodic_samples": 237,
+        "first10_median_mC": 49450.0,
+        "last10_median_mC": 64700.0,
+        "last10_min_mC": 64300,
+        "last10_max_mC": 64700,
+        "calibration_verified": false,
+        "final_thermal_plateau_proven": false
+      },
+      "0x100": {
+        "periodic_samples": 237,
+        "first10_median_mC": 58050.0,
+        "last10_median_mC": 73600.0,
+        "last10_min_mC": 73600,
+        "last10_max_mC": 74300,
+        "calibration_verified": false,
+        "final_thermal_plateau_proven": false
+      },
+      "0x101": {
+        "periodic_samples": 237,
+        "first10_median_mC": 59050.0,
+        "last10_median_mC": 74900.0,
+        "last10_min_mC": 74900,
+        "last10_max_mC": 75200,
+        "calibration_verified": false,
+        "final_thermal_plateau_proven": false
+      }
+    },
+    "temperature_samples": 1560,
+    "benchmarks": [
+      {
+        "test": "integer",
+        "logical": "0",
+        "count": "5",
+        "errors": "0",
+        "min_us": "2441",
+        "avg_us": "2454",
+        "max_us": "2459",
+        "ns_per_iteration": "2",
+        "cntvct_min": "46878",
+        "cntvct_avg": "47115",
+        "cntvct_max": "47218",
+        "checksum": "0x1ccc1ea74481e979"
+      },
+      {
+        "test": "memcpy",
+        "logical": "0",
+        "count": "5",
+        "errors": "0",
+        "min_us": "9142",
+        "avg_us": "9451",
+        "max_us": "9691",
+        "MBps_min": "3462",
+        "MBps_avg": "3550",
+        "MBps_max": "3670",
+        "warm_cache": "1"
+      },
+      {
+        "test": "integer",
+        "logical": "1",
+        "count": "5",
+        "errors": "0",
+        "min_us": "4883",
+        "avg_us": "4895",
+        "max_us": "4902",
+        "ns_per_iteration": "4",
+        "cntvct_min": "93754",
+        "cntvct_avg": "93985",
+        "cntvct_max": "94117",
+        "checksum": "0x1ccc1ea74481e979"
+      },
+      {
+        "test": "memcpy",
+        "logical": "1",
+        "count": "5",
+        "errors": "0",
+        "min_us": "10775",
+        "avg_us": "10894",
+        "max_us": "10947",
+        "MBps_min": "3064",
+        "MBps_avg": "3080",
+        "MBps_max": "3113",
+        "warm_cache": "1"
+      },
+      {
+        "test": "integer",
+        "logical": "2",
+        "count": "5",
+        "errors": "0",
+        "min_us": "4883",
+        "avg_us": "4894",
+        "max_us": "4899",
+        "ns_per_iteration": "4",
+        "cntvct_min": "93752",
+        "cntvct_avg": "93965",
+        "cntvct_max": "94059",
+        "checksum": "0x1ccc1ea74481e979"
+      },
+      {
+        "test": "memcpy",
+        "logical": "2",
+        "count": "5",
+        "errors": "0",
+        "min_us": "10732",
+        "avg_us": "10781",
+        "max_us": "10845",
+        "MBps_min": "3093",
+        "MBps_avg": "3112",
+        "MBps_max": "3126",
+        "warm_cache": "1"
+      }
+    ],
+    "panic_seen": false,
+    "source_writer_contention_dropped_bytes": 0,
+    "transport": {
+      "raw_bytes": 545692,
+      "console_bytes": 482876,
+      "frames": 1963,
+      "raw_sha256": "79db7df70c0f3f7d3dbf87d4e57bae56d34da2596800c024d9eb5d348b1ed9cc",
+      "console_sha256": "223f606c0c7256d09cf67c5be4ed0090697a779b2bb1a2ada6d27291f1fc6361",
+      "first_offset": 0,
+      "final_offset": 482876,
+      "missing_bytes": 0,
+      "duplicate_bytes": 0,
+      "incomplete_frame_bytes": 0,
+      "device_lost_max": 0,
+      "frames_reporting_device_loss": 0,
+      "independent_parser_agrees_with_frozen_receiver": true,
+      "frozen_redecode_equals_complete_console": true,
+      "transport_verified": true,
+      "kernel_banner_offset": 0,
+      "timer_offset": 481406,
+      "normal_return_offset": 482759,
+      "drain_success": true,
+      "drain_records": [
+        {
+          "offset": 482826,
+          "drained": 1,
+          "target": 482826
+        }
+      ],
+      "emitted_kernel_stream_through_timer_verified": true,
+      "all_firmware_daemon_and_original_printf_logs_complete": false,
+      "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
+    },
+    "device_operations": 0,
+    "simultaneous_load_tested": true,
+    "stress_active_affinities": [
+      "0x100",
+      "0x101"
+    ],
+    "pwr_housekeeping_only": true,
+    "requested_load_seconds": 600,
+    "ten_minute_load_completed": false,
+    "sustained_desktop_tested": false,
+    "measured_cpu_mhz": null
+  },
+  "screening_only": true,
+  "final_sweet_spot_verified": false
+}

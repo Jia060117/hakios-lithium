@@ -1,0 +1,109 @@
+{
+  "schema": 1,
+  "recorded_at": "2026-11-19T23:43:24.184263+08:00",
+  "revision": "R29-touch-qup-init",
+  "phase": "host_prepared_before_device_operations",
+  "passed": true,
+  "image_path": "artifacts/hakios/lithium-ios16/phase4-r29-touch-qup-init/lithium-hakios-ios16-r29-touch-qup-init.img",
+  "image_sha256": "2dec085c75a29ea770a56231ff359ae76da0d13aa36e11836d657ea1a03b9d65",
+  "image_bytes": 16285696,
+  "kernel_sha256": "d57837a730a58a3e748c2a8ed45b5035faae01cd3c17068b60a32340ef932222",
+  "payload_boot_args": "bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 touch_stage=1 touch_clock_init=1 touch_diag=1 touch_qup_init=1",
+  "package_contract": "artifacts/hakios/lithium-ios16/phase4-r29-touch-qup-init/contract.json",
+  "display_baseline": "R20-display",
+  "full_hakios_kernel_build": true,
+  "normal_mu_d22ap_support_build": true,
+  "launchd_jobs": 413,
+  "source_review_checks": 82,
+  "instruction_scans": 46,
+  "base_suites": 25,
+  "followup_suites": 17,
+  "total_suites": 42,
+  "sanitizers": [
+    "ASan",
+    "UBSan"
+  ],
+  "qup_init_enabled_scenarios": 6095,
+  "qup_init_adapter_scenarios": 24632,
+  "diagnostic_init_scenarios": 374,
+  "package_isolated_groups": 82,
+  "merged_source_hashes": 100,
+  "new_features_default_off": true,
+  "max_sw_reset": 1,
+  "conditional_original_id": true,
+  "strict_id_guard_unchanged": true,
+  "qup_initializer_read_only": false,
+  "qup_base_error_flags_en": "0x3c",
+  "qup_error_sources_enable_requested": true,
+  "gic_view_is_global_exclusion": false,
+  "ownership_verified": false,
+  "physical_touch_verified": false,
+  "physical_screen_verified": false,
+  "hardware_verified": false,
+  "source_backup_files": 791,
+  "original_index_preserved": true,
+  "historical_aggregate_passed": false,
+  "historical_aggregate_note": "Existing R9 geometry0021 hash gate remains unresolved and is not relabelled passed",
+  "parallel_execution": [
+    {
+      "agent": "Ptolemy",
+      "scope": "Fixed MiCode/Linux/stock-DT protocol and reset/config/clock evidence",
+      "main_review": "Read original driver215-295/704-724/1870-1903/2870-2885 and source hashes; OP-zero guarantee absent, error-enable caveat retained",
+      "write_conflicts": "None; shared parser/adapter/kernel/contracts/build/device operations owned by main"
+    },
+    {
+      "agent": "Planck",
+      "scope": "Portable initializer core and actual default/enabled tests",
+      "main_review": "Reviewed ordering, monotonic poison boundary, read/FIFO and write phase whitelist, shared limits and valid failed offsets; full final 6095 cases independently rerun by main regression",
+      "write_conflicts": "None; shared parser/adapter/kernel/contracts/build/device operations owned by main"
+    },
+    {
+      "agent": "Meitner",
+      "scope": "Actual adapter/core, board/GIC/mapping/lifetime fault injection tests",
+      "main_review": "Initial compile-blocked history retained; fixed fixture preinclude macros/nonconst observer to match production, without weakening assertions. All seven groups/24632 cases independently rerun",
+      "write_conflicts": "None; shared parser/adapter/kernel/contracts/build/device operations owned by main"
+    },
+    {
+      "agent": "Locke",
+      "scope": "New R29 packager and synthetic validators",
+      "main_review": "Read exact parent/protected/provenance/argument/APFS gates; independently reran final82 tests and full image readback. No package main or device operation delegated",
+      "write_conflicts": "None; shared parser/adapter/kernel/contracts/build/device operations owned by main"
+    }
+  ],
+  "device_queries": 0,
+  "device_boots": 0,
+  "partition_operations": 0,
+  "adb_commands": 0,
+  "qemu": false,
+  "r28_retried": false,
+  "r19_retested": false,
+  "normal_build_notes": [
+    "Existing upstream wrapper kext symbol-set exit2 follows successful real link; no new compiler/link failure"
+  ],
+  "corrections": [
+    "Experimental dependency macro/API setup reconciled before normal build",
+    "Inactive callback clock sealed; pending bit checked before every write; incomplete raw ID logs unread",
+    "Initial fixture compile errors retained; no excluded test groups or weakened assertions",
+    "Initial core verification shell-variable quoting error corrected; optional cleanup rejected and not retried, executables retained",
+    "Initial main packager count assumption80 superseded by final82 tests; actual unit tests passed"
+  ],
+  "unverified": [
+    "Physical reset effects, real I2C/ID/ACK/NACK and touch controller identity",
+    "Exclusive handoff, secure-world ownership, actual electrical/power/source/SCL rates",
+    "FIFO full/count meanings in inherited and initialized I2C state, count read side effects",
+    "Hardware accesses that never return, abort/SError/XPU are uncontained by software budgets",
+    "GPIO105/125 wiring, IRQ/HID/UI input and physical retained end screen",
+    "Unchanged PID1 initial boot_arg read-failure can miss opt-in"
+  ],
+  "evidence_sha256": {
+    "evidence/touch-r29-20261119/main/final-offline-preflight.json": "d368096eadfc22a0ce40ac856bc8b7e6d77c288cceeef63be7ab08e062224049",
+    "evidence/touch-r29-20261119/main/production-freeze.json": "fdd7eecd6b3d978515d8f48e679c79ac5c92602482a4b6a36afc1488d2b98bf6",
+    "evidence/touch-r29-20261119/main/primary-source-review.json": "c51d7df9d37b0d9c3f73f8a775b73a80aacd52c64ef8c64487024aeb4676d99b",
+    "evidence/touch-r29-20261119/main/packager-tests.json": "a6aa676245232e458a4a4749a3815f6d28c3514b53f18901eccd348ec880c3d1",
+    "evidence/touch-r29-20261119/protocol/findings.md": "e4a0b583d88ddbd37655cd57e81df5781c7bec9dbf2ed48ec33e0fc9b7e02918",
+    "evidence/touch-r29-20261119/core/results.json": "80cd68d0f6ee102a2a089d64c8f8d55c55fe04b12787f7d037d711061a098bbd",
+    "evidence/touch-r29-20261119/adapter/report.md": "ef430fa868cfbe1bcd9e61676e80c6f43a104bf8c17e083a2dc948050a39146c",
+    "evidence/touch-r29-20261119/adapter/run-04/result.json": "e34afc9aa0ed729529a20011d29103af53760b47f67024dca14a10ac1bf8e15d",
+    "evidence/touch-r29-20261119/packager/unit-tests.json": "23b1973d35fe3701dad1aca20943efe49ad120e69cd36fff71973941ddd5c42f"
+  }
+}

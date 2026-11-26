@@ -1,0 +1,1328 @@
+{
+  "schema": "lithium-gpu-cx-cycle-runtime-v1",
+  "passed": true,
+  "analyzed_at": "2026-11-25T17:00:55.683107+00:00",
+  "accepted_at": "2026-11-26T00:54:43.644324+08:00",
+  "image_sha256": "51810ee0c4006aa2781bacebc14967c4ca97d81c734e7a6315f9b2b5c5c9f730",
+  "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_sanity=1 cpu_perf_fixed=1 cpu_perf_hz=614400000 cpu_thermal_diag=1 cpu_inherited_supply_r39=1 gpu_stage=1 gpu_probe=1 gpu_wd=1 lithium_log_retry=1 gpu_cx_cycle=1",
+  "cx_on_observed": true,
+  "cx_local_configuration_restored": true,
+  "global_off_required": false,
+  "lifecycle_passed": true,
+  "rows": {
+    "begin": [
+      {
+        "logical": "0",
+        "affinity": "0x1",
+        "control_pa": "0x8c4034",
+        "status_pa": "0x8c4038",
+        "poll_cap": "500",
+        "poll_us": "500",
+        "global_us": "20000",
+        "local_request_only": "1"
+      }
+    ],
+    "snapshot": [
+      {
+        "control": "0x222001",
+        "control_valid": "1",
+        "status": "0x5ff0",
+        "status_valid": "1",
+        "inherited": "0",
+        "inherited_reason": "0"
+      }
+    ],
+    "on": [
+      {
+        "control": "0xa0282000",
+        "status": "0x80001fe0",
+        "pair_valid": "1",
+        "on_observed": "1",
+        "active_verified": "1",
+        "polls": "1",
+        "poll_elapsed_us": "3"
+      }
+    ],
+    "write": [
+      {
+        "index": "0",
+        "pa": "0x8c4034",
+        "raw": "0x282001"
+      },
+      {
+        "index": "1",
+        "pa": "0x8c4034",
+        "raw": "0x282000"
+      },
+      {
+        "index": "2",
+        "pa": "0x8c4034",
+        "raw": "0xa0282001"
+      },
+      {
+        "index": "3",
+        "pa": "0x8c4034",
+        "raw": "0x222001"
+      }
+    ],
+    "end": [
+      {
+        "rc": "0",
+        "error": "0",
+        "cleanup_error": "0",
+        "request_attempted": "1",
+        "active_verified": "1",
+        "inherited": "0",
+        "restore_verified": "1",
+        "cleanup_complete": "1",
+        "final_control": "0x222001",
+        "final_control_valid": "1",
+        "final_status": "0x5ff0",
+        "final_status_valid": "1",
+        "restore_mask": "0xfff001",
+        "dirty": "0",
+        "uncertain": "0",
+        "ambiguous_stores": "0",
+        "loads": "16",
+        "load_cap": "1024",
+        "stores": "4",
+        "store_cap": "4",
+        "maps": "1",
+        "unmaps": "1",
+        "elapsed_us": "548",
+        "global_us": "20000",
+        "global_overrun": "0",
+        "adapter_error": "0",
+        "global_off_required": "0",
+        "gx": "untouched",
+        "pll": "untouched",
+        "pmic": "0",
+        "rpm_votes": "0",
+        "gpu_aperture": "unread",
+        "smmu": "unread",
+        "bus_abort_proven": "0",
+        "owned_mask": "0xfff007"
+      }
+    ],
+    "capture": [
+      {
+        "index": "1",
+        "phase": "timing_set",
+        "step": "done",
+        "rc": "0",
+        "mask": "0xfff000",
+        "value": "0x282000",
+        "prior_shadow": "0x222001",
+        "prior_attempted": "0x0",
+        "prior_uncertain": "0",
+        "pre": "0x222001",
+        "pre_callback_ok": "1",
+        "pre_valid": "1",
+        "expected": "0x282001",
+        "expected_valid": "1",
+        "store_attempted": "1",
+        "after": "0x282001",
+        "after_callback_ok": "1",
+        "after_valid": "1",
+        "compare_mask": "0xfff007",
+        "mismatch": "0x0",
+        "mismatch_valid": "1",
+        "raw_xor": "0x0"
+      },
+      {
+        "index": "2",
+        "phase": "request_on",
+        "step": "done",
+        "rc": "0",
+        "mask": "0x1",
+        "value": "0x0",
+        "prior_shadow": "0x282001",
+        "prior_attempted": "0x282001",
+        "prior_uncertain": "0",
+        "pre": "0x282001",
+        "pre_callback_ok": "1",
+        "pre_valid": "1",
+        "expected": "0x282000",
+        "expected_valid": "1",
+        "store_attempted": "1",
+        "after": "0x8282000",
+        "after_callback_ok": "1",
+        "after_valid": "1",
+        "compare_mask": "0xfff007",
+        "mismatch": "0x0",
+        "mismatch_valid": "1",
+        "raw_xor": "0x8000000"
+      },
+      {
+        "index": "3",
+        "phase": "restore_request",
+        "step": "done",
+        "rc": "0",
+        "mask": "0x1",
+        "value": "0x222001",
+        "prior_shadow": "0x8282000",
+        "prior_attempted": "0x282000",
+        "prior_uncertain": "0",
+        "pre": "0xa0282000",
+        "pre_callback_ok": "1",
+        "pre_valid": "1",
+        "expected": "0xa0282001",
+        "expected_valid": "1",
+        "store_attempted": "1",
+        "after": "0x282001",
+        "after_callback_ok": "1",
+        "after_valid": "1",
+        "compare_mask": "0xfff007",
+        "mismatch": "0x0",
+        "mismatch_valid": "1",
+        "raw_xor": "0xa0000000"
+      },
+      {
+        "index": "4",
+        "phase": "restore_timing",
+        "step": "done",
+        "rc": "0",
+        "mask": "0xfff000",
+        "value": "0x222001",
+        "prior_shadow": "0x282001",
+        "prior_attempted": "0xa0282001",
+        "prior_uncertain": "0",
+        "pre": "0x282001",
+        "pre_callback_ok": "1",
+        "pre_valid": "1",
+        "expected": "0x222001",
+        "expected_valid": "1",
+        "store_attempted": "1",
+        "after": "0x222001",
+        "after_callback_ok": "1",
+        "after_valid": "1",
+        "compare_mask": "0xfff007",
+        "mismatch": "0x0",
+        "mismatch_valid": "1",
+        "raw_xor": "0x0"
+      }
+    ],
+    "control_read": [
+      {
+        "load": "1",
+        "phase": "snapshot_control",
+        "step": "read",
+        "raw": "0x222001",
+        "loaded": "1",
+        "post_guard_rc": "0"
+      },
+      {
+        "load": "4",
+        "phase": "timing_set",
+        "step": "pre_read",
+        "raw": "0x222001",
+        "loaded": "1",
+        "post_guard_rc": "0"
+      },
+      {
+        "load": "5",
+        "phase": "timing_set",
+        "step": "after_read",
+        "raw": "0x282001",
+        "loaded": "1",
+        "post_guard_rc": "0"
+      },
+      {
+        "load": "6",
+        "phase": "request_on",
+        "step": "pre_read",
+        "raw": "0x282001",
+        "loaded": "1",
+        "post_guard_rc": "0"
+      },
+      {
+        "load": "7",
+        "phase": "request_on",
+        "step": "after_read",
+        "raw": "0x8282000",
+        "loaded": "1",
+        "post_guard_rc": "0"
+      },
+      {
+        "load": "9",
+        "phase": "on_verify",
+        "step": "read",
+        "raw": "0xa0282000",
+        "loaded": "1",
+        "post_guard_rc": "0"
+      },
+      {
+        "load": "11",
+        "phase": "restore_request",
+        "step": "pre_read",
+        "raw": "0xa0282000",
+        "loaded": "1",
+        "post_guard_rc": "0"
+      },
+      {
+        "load": "12",
+        "phase": "restore_request",
+        "step": "after_read",
+        "raw": "0x282001",
+        "loaded": "1",
+        "post_guard_rc": "0"
+      },
+      {
+        "load": "13",
+        "phase": "restore_timing",
+        "step": "pre_read",
+        "raw": "0x282001",
+        "loaded": "1",
+        "post_guard_rc": "0"
+      },
+      {
+        "load": "14",
+        "phase": "restore_timing",
+        "step": "after_read",
+        "raw": "0x222001",
+        "loaded": "1",
+        "post_guard_rc": "0"
+      },
+      {
+        "load": "15",
+        "phase": "final_control",
+        "step": "read",
+        "raw": "0x222001",
+        "loaded": "1",
+        "post_guard_rc": "0"
+      }
+    ],
+    "failure": [
+      {
+        "capture_rev": "3",
+        "error": "0",
+        "phase": "none",
+        "step": "none",
+        "change": "0",
+        "cleanup_error": "0",
+        "cleanup_phase": "none",
+        "cleanup_step": "none",
+        "cleanup_change": "0",
+        "capture_count": "4",
+        "capture_cap": "4",
+        "capture_dropped": "0",
+        "control_count": "11",
+        "control_cap": "16",
+        "control_dropped": "0"
+      }
+    ]
+  },
+  "original_console_modified": false,
+  "original_console_sha256": "5452932728353eb665bc6fe18d6f747789211f17f6052e40f7845501e7a490d9",
+  "complete_temperature_spans_in_derived_view": [
+    {
+      "start": 9644,
+      "end": 9903,
+      "text": "LITHIUM CPU TEMP source=uefi phase=before_pll_low generation=0x31544552d0c7d851 observed_us=350886758 affinity=0x0 id=4 valid=1 native_mC=51800 ctrl=0x0de0fff9 trdy=0x00000008 raw=0x00204206 status_reads=1 result=0 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 9903,
+      "end": 10162,
+      "text": "LITHIUM CPU TEMP source=uefi phase=before_pll_low generation=0x31544552d0c7d851 observed_us=350886758 affinity=0x1 id=6 valid=1 native_mC=44200 ctrl=0x0de0fff9 trdy=0x00000008 raw=0x002061ba status_reads=1 result=0 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 10162,
+      "end": 10423,
+      "text": "LITHIUM CPU TEMP source=uefi phase=before_pll_low generation=0x31544552d0c7d851 observed_us=350886758 affinity=0x100 id=9 valid=1 native_mC=41900 ctrl=0x0de0fff9 trdy=0x00000008 raw=0x002091a3 status_reads=1 result=0 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 10423,
+      "end": 10685,
+      "text": "LITHIUM CPU TEMP source=uefi phase=before_pll_low generation=0x31544552d0c7d851 observed_us=350886758 affinity=0x101 id=11 valid=1 native_mC=41900 ctrl=0x0de0fff9 trdy=0x00000008 raw=0x0020b1a3 status_reads=1 result=0 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 14981,
+      "end": 15239,
+      "text": "LITHIUM CPU TEMP source=uefi phase=after_pll_low generation=0x31544552d0c7d851 observed_us=351166356 affinity=0x1 id=6 valid=1 native_mC=44800 ctrl=0x0de0fff9 trdy=0x00000008 raw=0x002061c0 status_reads=1 result=0 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 15239,
+      "end": 15499,
+      "text": "LITHIUM CPU TEMP source=uefi phase=after_pll_low generation=0x31544552d0c7d851 observed_us=351166356 affinity=0x100 id=9 valid=1 native_mC=42200 ctrl=0x0de0fff9 trdy=0x00000008 raw=0x002091a6 status_reads=1 result=0 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 15499,
+      "end": 15760,
+      "text": "LITHIUM CPU TEMP source=uefi phase=after_pll_low generation=0x31544552d0c7d851 observed_us=351166356 affinity=0x101 id=11 valid=1 native_mC=42200 ctrl=0x0de0fff9 trdy=0x00000008 raw=0x0020b1a6 status_reads=1 result=0 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 15760,
+      "end": 16003,
+      "text": "LITHIUM CPU TEMP phase=start affinity=0x0 sensor=TSENS0 id=4 raw=0x002041dd enabled=1 valid=1 native_mC=47700 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6756747327 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 16027,
+      "end": 16270,
+      "text": "LITHIUM CPU TEMP phase=start affinity=0x1 sensor=TSENS0 id=6 raw=0x002061e3 enabled=1 valid=1 native_mC=48300 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6756747327 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 16270,
+      "end": 16515,
+      "text": "LITHIUM CPU TEMP phase=start affinity=0x100 sensor=TSENS0 id=9 raw=0x002091b6 enabled=1 valid=1 native_mC=43800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6756747327 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 16515,
+      "end": 16761,
+      "text": "LITHIUM CPU TEMP phase=start affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1b0 enabled=1 valid=1 native_mC=43200 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6756747327 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 17809,
+      "end": 18060,
+      "text": "LITHIUM CPU TEMP phase=cpu_bench_mid affinity=0x0 sensor=TSENS0 id=4 raw=0x002041ea enabled=1 valid=1 native_mC=49000 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6757575287 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 18060,
+      "end": 18311,
+      "text": "LITHIUM CPU TEMP phase=cpu_bench_mid affinity=0x1 sensor=TSENS0 id=6 raw=0x00206210 enabled=1 valid=1 native_mC=52800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6757575287 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 18311,
+      "end": 18564,
+      "text": "LITHIUM CPU TEMP phase=cpu_bench_mid affinity=0x100 sensor=TSENS0 id=9 raw=0x002091b3 enabled=1 valid=1 native_mC=43500 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6757575287 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 18564,
+      "end": 18818,
+      "text": "LITHIUM CPU TEMP phase=cpu_bench_mid affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1b3 enabled=1 valid=1 native_mC=43500 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6757575287 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 20104,
+      "end": 20355,
+      "text": "LITHIUM CPU TEMP phase=cpu_bench_mid affinity=0x0 sensor=TSENS0 id=4 raw=0x002041e3 enabled=1 valid=1 native_mC=48300 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6759293618 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 20355,
+      "end": 20606,
+      "text": "LITHIUM CPU TEMP phase=cpu_bench_mid affinity=0x1 sensor=TSENS0 id=6 raw=0x002061ca enabled=1 valid=1 native_mC=45800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6759293618 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 20606,
+      "end": 20859,
+      "text": "LITHIUM CPU TEMP phase=cpu_bench_mid affinity=0x100 sensor=TSENS0 id=9 raw=0x002091e3 enabled=1 valid=1 native_mC=48300 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6759293618 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 20859,
+      "end": 21113,
+      "text": "LITHIUM CPU TEMP phase=cpu_bench_mid affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1bd enabled=1 valid=1 native_mC=44500 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6759293618 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 21829,
+      "end": 22080,
+      "text": "LITHIUM CPU TEMP phase=cpu_bench_mid affinity=0x0 sensor=TSENS0 id=4 raw=0x002041e0 enabled=1 valid=1 native_mC=48000 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6761288309 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 22080,
+      "end": 22331,
+      "text": "LITHIUM CPU TEMP phase=cpu_bench_mid affinity=0x1 sensor=TSENS0 id=6 raw=0x002061c3 enabled=1 valid=1 native_mC=45100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6761288309 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 22331,
+      "end": 22584,
+      "text": "LITHIUM CPU TEMP phase=cpu_bench_mid affinity=0x100 sensor=TSENS0 id=9 raw=0x002091c0 enabled=1 valid=1 native_mC=44800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6761288309 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 22584,
+      "end": 22838,
+      "text": "LITHIUM CPU TEMP phase=cpu_bench_mid affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1f3 enabled=1 valid=1 native_mC=49900 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6761288309 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 23268,
+      "end": 23521,
+      "text": "LITHIUM CPU TEMP phase=after_cpu_bench affinity=0x0 sensor=TSENS0 id=4 raw=0x002041e0 enabled=1 valid=1 native_mC=48000 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6762115374 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 23521,
+      "end": 23774,
+      "text": "LITHIUM CPU TEMP phase=after_cpu_bench affinity=0x1 sensor=TSENS0 id=6 raw=0x002061c3 enabled=1 valid=1 native_mC=45100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6762115374 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 23774,
+      "end": 24029,
+      "text": "LITHIUM CPU TEMP phase=after_cpu_bench affinity=0x100 sensor=TSENS0 id=9 raw=0x002091c0 enabled=1 valid=1 native_mC=44800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6762115374 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 24029,
+      "end": 24285,
+      "text": "LITHIUM CPU TEMP phase=after_cpu_bench affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1f3 enabled=1 valid=1 native_mC=49900 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6762115374 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 24793,
+      "end": 25039,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041d3 enabled=1 valid=1 native_mC=46700 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6852772566 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 25039,
+      "end": 25285,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061b6 enabled=1 valid=1 native_mC=43800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6852772566 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 25285,
+      "end": 25533,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091b0 enabled=1 valid=1 native_mC=43200 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6852772566 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 25533,
+      "end": 25782,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1b0 enabled=1 valid=1 native_mC=43200 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6852772566 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 25782,
+      "end": 26028,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041d6 enabled=1 valid=1 native_mC=47000 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6948794880 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 26028,
+      "end": 26274,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061ba enabled=1 valid=1 native_mC=44200 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6948794880 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 26274,
+      "end": 26522,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091b0 enabled=1 valid=1 native_mC=43200 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6948794880 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 26522,
+      "end": 26771,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1b3 enabled=1 valid=1 native_mC=43500 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=6948794880 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 26771,
+      "end": 27017,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041d6 enabled=1 valid=1 native_mC=47000 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7044820155 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 27017,
+      "end": 27263,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061bd enabled=1 valid=1 native_mC=44500 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7044820155 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 27263,
+      "end": 27511,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091b3 enabled=1 valid=1 native_mC=43500 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7044820155 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 27511,
+      "end": 27760,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1b3 enabled=1 valid=1 native_mC=43500 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7044820155 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 27760,
+      "end": 28006,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041da enabled=1 valid=1 native_mC=47400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7140845677 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 28006,
+      "end": 28252,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061bd enabled=1 valid=1 native_mC=44500 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7140845677 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 28252,
+      "end": 28500,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091b3 enabled=1 valid=1 native_mC=43500 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7140845677 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 28500,
+      "end": 28749,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1b3 enabled=1 valid=1 native_mC=43500 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7140845677 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 28749,
+      "end": 28995,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041dd enabled=1 valid=1 native_mC=47700 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7236870953 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 28995,
+      "end": 29241,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061bd enabled=1 valid=1 native_mC=44500 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7236870953 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 29241,
+      "end": 29489,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091b6 enabled=1 valid=1 native_mC=43800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7236870953 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 29489,
+      "end": 29738,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1ba enabled=1 valid=1 native_mC=44200 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7236870953 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 30212,
+      "end": 30458,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041dd enabled=1 valid=1 native_mC=47700 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7332878701 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 30458,
+      "end": 30704,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061c0 enabled=1 valid=1 native_mC=44800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7332878701 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 30704,
+      "end": 30952,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091ba enabled=1 valid=1 native_mC=44200 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7332878701 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 30952,
+      "end": 31201,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1ba enabled=1 valid=1 native_mC=44200 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7332878701 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 31201,
+      "end": 31447,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041da enabled=1 valid=1 native_mC=47400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7428903879 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 31447,
+      "end": 31693,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061c0 enabled=1 valid=1 native_mC=44800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7428903879 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 31693,
+      "end": 31941,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091b6 enabled=1 valid=1 native_mC=43800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7428903879 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 31941,
+      "end": 32190,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1ba enabled=1 valid=1 native_mC=44200 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7428903879 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 32190,
+      "end": 32436,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041da enabled=1 valid=1 native_mC=47400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7524929016 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 32436,
+      "end": 32682,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061c0 enabled=1 valid=1 native_mC=44800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7524929016 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 32682,
+      "end": 32930,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091ba enabled=1 valid=1 native_mC=44200 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7524929016 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 32930,
+      "end": 33179,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1ba enabled=1 valid=1 native_mC=44200 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7524929016 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 33179,
+      "end": 33425,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041e0 enabled=1 valid=1 native_mC=48000 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7620954220 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 33425,
+      "end": 33671,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061c0 enabled=1 valid=1 native_mC=44800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7620954220 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 33671,
+      "end": 33919,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091ba enabled=1 valid=1 native_mC=44200 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7620954220 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 33919,
+      "end": 34168,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1ba enabled=1 valid=1 native_mC=44200 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7620954220 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 34333,
+      "end": 34579,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041e3 enabled=1 valid=1 native_mC=48300 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7716979496 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 34579,
+      "end": 34825,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061c3 enabled=1 valid=1 native_mC=45100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7716979496 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 34825,
+      "end": 35073,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091ba enabled=1 valid=1 native_mC=44200 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7716979496 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 35073,
+      "end": 35322,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1bd enabled=1 valid=1 native_mC=44500 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7716979496 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 35322,
+      "end": 35568,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041e0 enabled=1 valid=1 native_mC=48000 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7813004944 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 35568,
+      "end": 35814,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061c3 enabled=1 valid=1 native_mC=45100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7813004944 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 35814,
+      "end": 36062,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091ba enabled=1 valid=1 native_mC=44200 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7813004944 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 36062,
+      "end": 36311,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1bd enabled=1 valid=1 native_mC=44500 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7813004944 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 36423,
+      "end": 36669,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041e0 enabled=1 valid=1 native_mC=48000 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7909030398 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 36669,
+      "end": 36915,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061c3 enabled=1 valid=1 native_mC=45100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7909030398 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 36915,
+      "end": 37163,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091bd enabled=1 valid=1 native_mC=44500 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7909030398 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 37163,
+      "end": 37412,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1bd enabled=1 valid=1 native_mC=44500 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=7909030398 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 37412,
+      "end": 37658,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041e0 enabled=1 valid=1 native_mC=48000 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8005055682 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 37658,
+      "end": 37904,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061c6 enabled=1 valid=1 native_mC=45400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8005055682 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 37904,
+      "end": 38152,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091bd enabled=1 valid=1 native_mC=44500 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8005055682 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 38152,
+      "end": 38401,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1bd enabled=1 valid=1 native_mC=44500 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8005055682 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 38401,
+      "end": 38647,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041e0 enabled=1 valid=1 native_mC=48000 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8101080977 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 38647,
+      "end": 38893,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061c3 enabled=1 valid=1 native_mC=45100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8101080977 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 38893,
+      "end": 39141,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091bd enabled=1 valid=1 native_mC=44500 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8101080977 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 39141,
+      "end": 39390,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1bd enabled=1 valid=1 native_mC=44500 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8101080977 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 39390,
+      "end": 39636,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041e0 enabled=1 valid=1 native_mC=48000 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8197096459 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 39636,
+      "end": 39882,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061c6 enabled=1 valid=1 native_mC=45400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8197096459 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 39882,
+      "end": 40130,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091bd enabled=1 valid=1 native_mC=44500 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8197096459 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 40130,
+      "end": 40379,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1c0 enabled=1 valid=1 native_mC=44800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8197096459 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 40379,
+      "end": 40625,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041e3 enabled=1 valid=1 native_mC=48300 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8293121701 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 40625,
+      "end": 40871,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061c6 enabled=1 valid=1 native_mC=45400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8293121701 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 40871,
+      "end": 41119,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091bd enabled=1 valid=1 native_mC=44500 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8293121701 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 41119,
+      "end": 41368,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1c0 enabled=1 valid=1 native_mC=44800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8293121701 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 41368,
+      "end": 41614,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041e3 enabled=1 valid=1 native_mC=48300 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8389144767 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 41614,
+      "end": 41860,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061c3 enabled=1 valid=1 native_mC=45100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8389144767 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 41860,
+      "end": 42108,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091c0 enabled=1 valid=1 native_mC=44800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8389144767 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 42108,
+      "end": 42357,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1c0 enabled=1 valid=1 native_mC=44800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8389144767 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 42357,
+      "end": 42603,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041e3 enabled=1 valid=1 native_mC=48300 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8485167890 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 42603,
+      "end": 42849,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061ca enabled=1 valid=1 native_mC=45800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8485167890 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 42849,
+      "end": 43097,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091c0 enabled=1 valid=1 native_mC=44800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8485167890 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 43097,
+      "end": 43346,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1c3 enabled=1 valid=1 native_mC=45100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8485167890 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 43346,
+      "end": 43592,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041e6 enabled=1 valid=1 native_mC=48600 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8581193115 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 43592,
+      "end": 43838,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061c6 enabled=1 valid=1 native_mC=45400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8581193115 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 43838,
+      "end": 44086,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091c0 enabled=1 valid=1 native_mC=44800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8581193115 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 44086,
+      "end": 44335,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1c3 enabled=1 valid=1 native_mC=45100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8581193115 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 44335,
+      "end": 44581,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041e6 enabled=1 valid=1 native_mC=48600 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8677215967 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 44581,
+      "end": 44827,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061c6 enabled=1 valid=1 native_mC=45400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8677215967 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 44827,
+      "end": 45075,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091c3 enabled=1 valid=1 native_mC=45100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8677215967 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 45075,
+      "end": 45324,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1c3 enabled=1 valid=1 native_mC=45100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8677215967 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 45324,
+      "end": 45570,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041e6 enabled=1 valid=1 native_mC=48600 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8773238742 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 45570,
+      "end": 45816,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061c6 enabled=1 valid=1 native_mC=45400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8773238742 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 45816,
+      "end": 46064,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091c0 enabled=1 valid=1 native_mC=44800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8773238742 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 46064,
+      "end": 46313,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1c3 enabled=1 valid=1 native_mC=45100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8773238742 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 46478,
+      "end": 46724,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041e6 enabled=1 valid=1 native_mC=48600 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8869261441 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 46724,
+      "end": 46970,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061ca enabled=1 valid=1 native_mC=45800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8869261441 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 46970,
+      "end": 47218,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091c0 enabled=1 valid=1 native_mC=44800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8869261441 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 47218,
+      "end": 47467,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1c3 enabled=1 valid=1 native_mC=45100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8869261441 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 47467,
+      "end": 47713,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041ea enabled=1 valid=1 native_mC=49000 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8965284106 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 47713,
+      "end": 47959,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061ca enabled=1 valid=1 native_mC=45800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8965284106 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 47959,
+      "end": 48207,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091c0 enabled=1 valid=1 native_mC=44800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8965284106 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 48207,
+      "end": 48456,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1c3 enabled=1 valid=1 native_mC=45100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=8965284106 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 48456,
+      "end": 48702,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041e6 enabled=1 valid=1 native_mC=48600 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9061301074 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 48702,
+      "end": 48948,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061ca enabled=1 valid=1 native_mC=45800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9061301074 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 48948,
+      "end": 49196,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091c0 enabled=1 valid=1 native_mC=44800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9061301074 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 49196,
+      "end": 49445,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1c3 enabled=1 valid=1 native_mC=45100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9061301074 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 49445,
+      "end": 49691,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041ea enabled=1 valid=1 native_mC=49000 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9157320513 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 49691,
+      "end": 49937,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061ca enabled=1 valid=1 native_mC=45800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9157320513 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 49937,
+      "end": 50185,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091c3 enabled=1 valid=1 native_mC=45100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9157320513 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 50185,
+      "end": 50434,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1c6 enabled=1 valid=1 native_mC=45400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9157320513 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 50434,
+      "end": 50680,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041e6 enabled=1 valid=1 native_mC=48600 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9253345487 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 50680,
+      "end": 50926,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061cd enabled=1 valid=1 native_mC=46100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9253345487 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 50926,
+      "end": 51174,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091c3 enabled=1 valid=1 native_mC=45100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9253345487 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 51174,
+      "end": 51423,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1c6 enabled=1 valid=1 native_mC=45400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9253345487 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 51423,
+      "end": 51669,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041ea enabled=1 valid=1 native_mC=49000 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9349351194 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 51669,
+      "end": 51915,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061cd enabled=1 valid=1 native_mC=46100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9349351194 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 51915,
+      "end": 52163,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091c3 enabled=1 valid=1 native_mC=45100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9349351194 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 52163,
+      "end": 52412,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1c6 enabled=1 valid=1 native_mC=45400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9349351194 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 52412,
+      "end": 52658,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041ea enabled=1 valid=1 native_mC=49000 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9445376641 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 52658,
+      "end": 52904,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061cd enabled=1 valid=1 native_mC=46100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9445376641 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 52904,
+      "end": 53152,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091c6 enabled=1 valid=1 native_mC=45400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9445376641 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 53152,
+      "end": 53401,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1c6 enabled=1 valid=1 native_mC=45400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9445376641 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 53401,
+      "end": 53647,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041ea enabled=1 valid=1 native_mC=49000 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9541391436 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 53647,
+      "end": 53893,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061ca enabled=1 valid=1 native_mC=45800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9541391436 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 53893,
+      "end": 54141,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091c3 enabled=1 valid=1 native_mC=45100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9541391436 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 54141,
+      "end": 54390,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1c6 enabled=1 valid=1 native_mC=45400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9541391436 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 54390,
+      "end": 54636,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041ea enabled=1 valid=1 native_mC=49000 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9637414019 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 54636,
+      "end": 54882,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061cd enabled=1 valid=1 native_mC=46100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9637414019 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 54882,
+      "end": 55130,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091c6 enabled=1 valid=1 native_mC=45400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9637414019 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 55130,
+      "end": 55379,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1c6 enabled=1 valid=1 native_mC=45400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9637414019 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 55379,
+      "end": 55625,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041ea enabled=1 valid=1 native_mC=49000 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9733426796 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 55625,
+      "end": 55871,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061cd enabled=1 valid=1 native_mC=46100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9733426796 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 55871,
+      "end": 56119,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091c6 enabled=1 valid=1 native_mC=45400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9733426796 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 56119,
+      "end": 56368,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1c6 enabled=1 valid=1 native_mC=45400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9733426796 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 56368,
+      "end": 56614,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041ea enabled=1 valid=1 native_mC=49000 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9829452175 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 56614,
+      "end": 56860,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061cd enabled=1 valid=1 native_mC=46100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9829452175 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 56860,
+      "end": 57108,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091c6 enabled=1 valid=1 native_mC=45400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9829452175 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 57108,
+      "end": 57357,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1ca enabled=1 valid=1 native_mC=45800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9829452175 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 57357,
+      "end": 57603,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041ed enabled=1 valid=1 native_mC=49300 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9925477956 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 57603,
+      "end": 57849,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061cd enabled=1 valid=1 native_mC=46100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9925477956 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 57849,
+      "end": 58097,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091c6 enabled=1 valid=1 native_mC=45400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9925477956 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 58097,
+      "end": 58346,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1c6 enabled=1 valid=1 native_mC=45400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=9925477956 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 58511,
+      "end": 58758,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041ed enabled=1 valid=1 native_mC=49300 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=10021501706 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 58758,
+      "end": 59005,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061cd enabled=1 valid=1 native_mC=46100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=10021501706 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 59005,
+      "end": 59254,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091c6 enabled=1 valid=1 native_mC=45400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=10021501706 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 59254,
+      "end": 59504,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1ca enabled=1 valid=1 native_mC=45800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=10021501706 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 59504,
+      "end": 59751,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x0 sensor=TSENS0 id=4 raw=0x002041ed enabled=1 valid=1 native_mC=49300 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=10117527013 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 59751,
+      "end": 59998,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x1 sensor=TSENS0 id=6 raw=0x002061d0 enabled=1 valid=1 native_mC=46400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=10117527013 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 59998,
+      "end": 60247,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x100 sensor=TSENS0 id=9 raw=0x002091c6 enabled=1 valid=1 native_mC=45400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=10117527013 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 60247,
+      "end": 60497,
+      "text": "LITHIUM CPU TEMP phase=periodic affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1c6 enabled=1 valid=1 native_mC=45400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=10117527013 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 60534,
+      "end": 60777,
+      "text": "LITHIUM CPU TEMP phase=stop affinity=0x0 sensor=TSENS0 id=4 raw=0x002041ed enabled=1 valid=1 native_mC=49300 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=10209776555 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 60777,
+      "end": 61020,
+      "text": "LITHIUM CPU TEMP phase=stop affinity=0x1 sensor=TSENS0 id=6 raw=0x002061cd enabled=1 valid=1 native_mC=46100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=10209776555 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 61020,
+      "end": 61265,
+      "text": "LITHIUM CPU TEMP phase=stop affinity=0x100 sensor=TSENS0 id=9 raw=0x002091ca enabled=1 valid=1 native_mC=45800 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=10209776555 calibration_verified=0 freshness_verified=0\n"
+    },
+    {
+      "start": 61265,
+      "end": 61511,
+      "text": "LITHIUM CPU TEMP phase=stop affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1c6 enabled=1 valid=1 native_mC=45400 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=10209776555 calibration_verified=0 freshness_verified=0\n"
+    }
+  ],
+  "stop_temperatures": [
+    {
+      "phase": "stop",
+      "affinity": "0x0",
+      "sensor": "TSENS0",
+      "id": "4",
+      "raw": "0x002041ed",
+      "enabled": "1",
+      "valid": "1",
+      "native_mC": "49300",
+      "reason": "native_hardware_units",
+      "trdy_read": "1",
+      "trdy": "0",
+      "status_reads": "1",
+      "reads": "4",
+      "at_abs": "10209776555",
+      "calibration_verified": "0",
+      "freshness_verified": "0"
+    },
+    {
+      "phase": "stop",
+      "affinity": "0x1",
+      "sensor": "TSENS0",
+      "id": "6",
+      "raw": "0x002061cd",
+      "enabled": "1",
+      "valid": "1",
+      "native_mC": "46100",
+      "reason": "native_hardware_units",
+      "trdy_read": "1",
+      "trdy": "0",
+      "status_reads": "1",
+      "reads": "4",
+      "at_abs": "10209776555",
+      "calibration_verified": "0",
+      "freshness_verified": "0"
+    },
+    {
+      "phase": "stop",
+      "affinity": "0x100",
+      "sensor": "TSENS0",
+      "id": "9",
+      "raw": "0x002091ca",
+      "enabled": "1",
+      "valid": "1",
+      "native_mC": "45800",
+      "reason": "native_hardware_units",
+      "trdy_read": "1",
+      "trdy": "0",
+      "status_reads": "1",
+      "reads": "4",
+      "at_abs": "10209776555",
+      "calibration_verified": "0",
+      "freshness_verified": "0"
+    },
+    {
+      "phase": "stop",
+      "affinity": "0x101",
+      "sensor": "TSENS0",
+      "id": "11",
+      "raw": "0x0020b1c6",
+      "enabled": "1",
+      "valid": "1",
+      "native_mC": "45400",
+      "reason": "native_hardware_units",
+      "trdy_read": "1",
+      "trdy": "0",
+      "status_reads": "1",
+      "reads": "4",
+      "at_abs": "10209776555",
+      "calibration_verified": "0",
+      "freshness_verified": "0"
+    }
+  ],
+  "usb": {
+    "raw_bytes": 69999,
+    "console_bytes": 61967,
+    "frames": 251,
+    "raw_sha256": "299c13ec5ae516319e3ac2ccc70f19696aa8afaf3ceafb4aa741d98f6ab04a43",
+    "console_sha256": "5452932728353eb665bc6fe18d6f747789211f17f6052e40f7845501e7a490d9",
+    "first_offset": 0,
+    "final_offset": 61967,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "incomplete_frame_bytes": 0,
+    "device_lost_max": 0,
+    "frames_reporting_device_loss": 0,
+    "independent_parser_agrees_with_frozen_receiver": true,
+    "frozen_redecode_equals_complete_console": true,
+    "transport_verified": true,
+    "kernel_banner_offset": 0,
+    "timer_offset": 60498,
+    "normal_return_offset": 61851,
+    "drain_success": true,
+    "drain_records": [
+      {
+        "offset": 61918,
+        "drained": 1,
+        "target": 61918
+      }
+    ],
+    "emitted_kernel_stream_through_timer_verified": true,
+    "all_firmware_daemon_and_original_printf_logs_complete": false,
+    "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
+  },
+  "receiver": {
+    "started_at": "2026-11-26T00:54:42.363430+08:00",
+    "enumerated": true,
+    "frames": 251,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "status": "capture_failed",
+    "output": "F:\\IOS-MIX1\\evidence\\gpu-metal-20261123\\package\\runs\\gpu-g1-cx-cycle-03\\console.log",
+    "device_commands_sent": false,
+    "candidate_seen": true,
+    "identity_verified": true,
+    "descriptor_errors": 0,
+    "descriptor_error_samples": [],
+    "configuration_verified": true,
+    "console_bytes": 61967,
+    "failure_stage": "capturing",
+    "failure": "[Errno 32] Pipe error",
+    "finished_at": "2026-11-26T00:58:16.379113+08:00"
+  },
+  "return_verification": {
+    "started_at": "2026-11-26T01:00:55.023215+08:00",
+    "elapsed_seconds": 371.377999,
+    "devices_query_count": 1,
+    "product_query_count": 1,
+    "device_rows": [
+      [
+        "54223ce9",
+        "fastboot"
+      ]
+    ],
+    "same_serial_fastboot": true,
+    "observed_product": "MSM8996_A8",
+    "product_verified": true,
+    "passed": true,
+    "retry": false,
+    "attempt_id": "gpu-g1-cx-cycle-03",
+    "phase": "g1-cx-cycle",
+    "capture_stop_requested": true,
+    "finished_at": "2026-11-26T01:00:55.554110+08:00"
+  },
+  "gx_enabled": false,
+  "gpu_clock_initialized": false,
+  "chip_id": null,
+  "gpu_power_on_passed": false,
+  "metal_acceleration_verified": false,
+  "capture_revision": 3,
+  "software_field_compare_mask": "0x00fff007",
+  "unowned_control_bit_semantics_verified": false,
+  "readback_failures": []
+}

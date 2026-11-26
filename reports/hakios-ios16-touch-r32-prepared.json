@@ -1,0 +1,133 @@
+{
+  "schema": 1,
+  "revision": "R32-touch-qup-transfer",
+  "recorded_at": "2026-11-20T02:38:38.475708+08:00",
+  "passed": true,
+  "phase": "host_prepared_no_device_operations",
+  "image_path": "artifacts/hakios/lithium-ios16/phase4-r32-touch-qup-transfer/lithium-hakios-ios16-r32-touch-qup-transfer.img",
+  "image_sha256": "b260776a3fff5513134b2c594e364eb58fb95a495c9a7625e6866354345fe767",
+  "image_bytes": 16302080,
+  "kernel_sha256": "d88137b422c89892222279c87d1cb4798c7c40e6b4810955afd7909bada3a1a9",
+  "payload_boot_args": "bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 touch_stage=1 touch_clock_init=1 touch_diag=1 touch_qup_transfer=1",
+  "full_hakios_build": true,
+  "normal_mu_d22ap_build": true,
+  "launchd_jobs": 413,
+  "source_review_checks": 82,
+  "instruction_scans": 46,
+  "base_suites": 35,
+  "followup_suites": 17,
+  "total_suites": 52,
+  "sanitizers": [
+    "ASan",
+    "UBSan"
+  ],
+  "core_test_output": "PASS success: all 256 raw payload bytes including 00/ff, arbitrary overhead, 500 accesses, exact writes, per-FIFO guards, checked second RUN, delayed completion/STOP, absolute origins, retained flags/no cleanup\nPASS invalid API: NULL and each missing callback, no callbacks\nPASS exhaustive callback poison: 7134 faults across 2960 baseline callbacks; false/false+late/late/rollback on actual initializer and transfer paths; zero callbacks after poison\nPASS own validity: 122 partial/late/rollback sample reads; later partial pass clears earlier evidence; raw RX retained but ID uncommitted through STOP failure\nPASS fresh sequencing: 197 mutation/partial cases, full programming guard, STATE last before EACH FIFO and second RUN, all service/done/RX/full/unknown bits rejected pre-RUN\nPASS runtime evidence: 4565 error/unknown/OP cases, all 4096 dynamic FSM field combinations, 256 arbitrary RX overhead pairs, missing/extra RX, raw occupancy only\nPASS bounds: frozen-time completion/STOP and shared 256-poll cap, 71 persistent outer-cap positions, 8192 core access cap, exact 20ms/200ms limits, poisoned helpers and illegal writes/read whitelist\nPASS touch-qup-transfer-core enabled: 12375 scenarios; host model only, physical transaction/ACK/STOP/identity/ownership untested\n",
+  "actual_adapter_test_output": "physical faults: 1950 independently replayed callback positions x late/rollback\nR32 actual adapter: 10177 scenarios, 0 failed checks, 7492247 assertions; evidence_runs=5198 mode=actual-production\n",
+  "actual_pid1_test_output": "PASS touch-diagnostic-init scenarios=380 exact-main=1 baseline-equivalence=1 storage-on-hold=0 reboot-on-hold=0 session-lines=2 mock-termination=1\nPASS patch applicability/reversal, exact-main host mocks, one arm64 object; inputs unchanged\n",
+  "packager_tests": 115,
+  "packager_subtests": 753,
+  "merged_source_hashes": 116,
+  "source_backup_files": 1126,
+  "git_index_unchanged": true,
+  "compiled_stack_record_chain_bytes": 8560,
+  "configured_kernel_stack_bytes": 16384,
+  "worker_frame_released": true,
+  "static_retained_record": true,
+  "full_stack_maximum_proof": false,
+  "display_baseline": "R20-display",
+  "old_twelve_modules_and_pid1_unchanged": true,
+  "host_interruptions": [
+    "First prepare WindowsPowerShell5 native stderr terminated pipe/status120; preserved journal and target hash readback; idempotent retry in PowerShell7 completed",
+    "Windows-only final verifier could not resolve WSL /home files; rerun in WSL passed116-source readback without package changes",
+    "First exact patch validation caught CR in generated Windows path within Markdown command; fixed to forward-slash path and re-exported source patch, no production/package changes"
+  ],
+  "host_stack_adjustment": "Actual original linked record chain near16KiB; new static destination + noinline final call verified tail release; full rebuild and regression rerun",
+  "evidence_sha256": {
+    "evidence/touch-r32-20261120/main/protocol-main-review.json": "84163943978db4634bbba8329ffda1c21a43396d5f6e08a18a33c0901704c97f",
+    "evidence/touch-r32-20261120/main/production-freeze-stack.json": "b5ed9a902e3b2275ab97f175ac0eb170f4e91e66c6f34b575704e65a34f92816",
+    "evidence/touch-r32-20261120/main/kernel-stack-final-review.json": "5e3a613126ac5651e381a18dc1f05136ff97bb1ac646226812d037c7d79c2614",
+    "evidence/touch-r32-20261120/main/package-unit-main-review.json": "fdbef65d56e15ffc8d24932166c631c99e3de37a7575c8d7313a0108b02dd967",
+    "evidence/touch-r32-20261120/main/final-offline-preflight.json": "c537863ee205a5f5b9cedb2136a428da6c8a78a0104f68ed749f4ea220218f63",
+    "evidence/touch-r32-20261120/stack-review-final/final-checks.json": "4c80384849aeb825ba636884d6b4f0c8cdd941be2336d7e5f4169c8f735aa29d"
+  },
+  "new_feature_default_off": true,
+  "attempt_max": 1,
+  "qup_sw_reset_max": 1,
+  "qup_run_max": 2,
+  "qup_write_max": 22,
+  "tx_words": [
+    "0x01827081",
+    "0x877181a3",
+    "0x00000001"
+  ],
+  "tx_significant_bytes": 9,
+  "rx_bytes": 3,
+  "payload_bytes": 1,
+  "terminal_reset": false,
+  "recovery_reset": false,
+  "service_ack": false,
+  "error_ack": false,
+  "retry": false,
+  "terminal_quarantine": true,
+  "terminal_gic": "unread",
+  "physical_touch_verified": false,
+  "hardware_verified": false,
+  "device_queries": 0,
+  "device_boots": 0,
+  "partition_operations": 0,
+  "adb_commands": 0,
+  "qemu": false,
+  "boot_totals_unchanged": {
+    "hakios": 55,
+    "ios16": 24
+  },
+  "historical_aggregate_passed": false,
+  "historical_note": "Historical R9 geometry0021 aggregate hash gate remains unresolved; not relabelled passed",
+  "parallel_execution": [
+    {
+      "agent": "Wegener",
+      "work": "Pinned source audit, TX/RX/STOP/status and occupancy limits",
+      "main_review": "Rehashed six files and read protocol windows; retained physical unknowns"
+    },
+    {
+      "agent": "Banach",
+      "work": "New default-off transaction core and sanitizer/fault tests",
+      "main_review": "Reviewed callbacks, per-write PAUSE guards, partial evidence and deferred ID commit; independently reran final tests"
+    },
+    {
+      "agent": "Laplace",
+      "work": "Actual adapter/core numeric oracle and fault tests",
+      "main_review": "Reviewed22-write numeric sequence, one-shot/context/poison/return caps and log validity; independently reran full suite"
+    },
+    {
+      "agent": "Epicurus",
+      "work": "R32 package ancestry, readback validator and115 synthetic tests",
+      "main_review": "Read source checks and preserved pins, independently reran115 tests and final image/APFS readback"
+    },
+    {
+      "agent": "Hypatia",
+      "work": "Independent production audit and actual parser/adapter/core probes",
+      "main_review": "Checked concrete repros; fixed early ID commit, prepoison external calls and premap deadline, then verified final source hashes"
+    },
+    {
+      "agent": "Goodall",
+      "work": "Independent destination/tail-dispatch revision audit and API equivalence smoke",
+      "main_review": "Checked final diff and destination/value outputs, isolation and guarded storage; main checked actual arm64 tail branch/prologues"
+    },
+    {
+      "agent": "Main",
+      "work": "Parser/dispatch/contract/integration/build/package/checkpoints",
+      "main_review": "All integration, complete build, instruction scans, final readback and original index verification performed locally"
+    }
+  ],
+  "unverified": [
+    "Physical ID transaction/ACK/NACK/electrical response and address/model identity",
+    "Polling completion/error visibility with ERROR_EN0/service mask300",
+    "FIFO occupancy units and destructive-read side effects",
+    "Secure ownership, IRQ available-view isolation and transient bus activity",
+    "Actual SCL frequency, dynamic numeric FSM semantics and physical STOP waveform",
+    "New package timer/USB/physical end-screen behavior",
+    "IRQ/HID/physical touch; no event producer implemented",
+    "Permanent MMIO/map/barrier stall, abort/SError/XPU not contained by returning budgets"
+  ]
+}

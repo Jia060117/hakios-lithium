@@ -1,0 +1,49 @@
+From: ios14-lithium
+Subject: [candidate] arm64: read GIC redistributor stride from ADT
+
+Backport the property interface from joranv1/ios-sailfish
+6f27e41ff249f2680540ebe8ee5ab982c5e641c9, patch 0079.
+Target: Apple xnu-7195.141.2. Existing default is retained.
+Not compiled or tested on hardware.
+
+--- a/pexpert/arm/pe_fiq.c
++++ b/pexpert/arm/pe_fiq.c
+@@ -22,6 +22,7 @@
+ static vm_offset_t gicd_base;
+ static vm_offset_t gicr_base;
+ static vm_offset_t gicr_size;
++static uint32_t gicr_stride = GICR_PE_SIZE;
+ 
+ static uint32_t
+ _gic_read32(vm_offset_t addr)
+@@ -53,7 +54,7 @@
+ 	// We only care about aff1 and aff0
+ 	uint32_t phys_id = __builtin_arm_rsr64("MPIDR_EL1") & (MPIDR_AFF1_MASK | MPIDR_AFF0_MASK);
+ 
+-	for (vm_offset_t offset = 0; offset < gicr_size; offset += GICR_PE_SIZE) {
++	for (vm_offset_t offset = 0; offset < gicr_size; offset += gicr_stride) {
+ 		vm_offset_t gicr_pe_base = gicr_base + offset;
+ 		uint64_t gicr_typer = gicr_read64(GICR_TYPER);
+ 		uint32_t aff_value = (uint32_t) (gicr_typer >> GICR_TYPER_AFFINITY_VALUE_SHIFT) & (MPIDR_AFF1_MASK | MPIDR_AFF0_MASK);
+@@ -122,6 +123,21 @@
+ 
+ 	gicr_size = gicr_size_prop;
+ 
++	// Optional ADT u32, matching the sailfish MSM8996 platform interface.
++	// Linux FDT uses a different encoding; the ADT generator must convert it.
++	void const *stride_prop;
++	unsigned int stride_size;
++	if (SecureDTGetProperty(entry, "redistributor-stride", &stride_prop, &stride_size) == kSuccess) {
++		if (stride_size != sizeof(uint32_t)) {
++			panic("%s: redistributor-stride must be a 32-bit ADT value", __func__);
++		}
++		uint32_t stride = *(const uint32_t *)stride_prop;
++		if (stride != GICR_PE_SIZE && stride != 0x40000) {
++			panic("%s: unsupported redistributor-stride 0x%x", __func__, stride);
++		}
++		gicr_stride = stride;
++	}
++
+ 	// Find the redistributor for this processor
+ 	vm_offset_t gicr_pe_base = find_gicr_pe_base();
+ 

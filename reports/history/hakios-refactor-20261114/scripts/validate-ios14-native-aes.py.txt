@@ -1,0 +1,120 @@
+#!/usr/bin/env python3
+"""Validate the actual 7195 AES wrapper and staged provider against NIST vectors.
+
+Host algorithm/ABI check, not hardware emulation. Uses the original 7195
+corecrypto headers and excludes only the unrelated, still unsupported GCM API.
+"""
+import ctypes
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+
+ROOT = Path(__file__).resolve().parents[1]
+WORK = Path.home() / 'ios-mix1-build/xnu7195-lithium'
+
+
+def main():
+    tree = WORK / 'src'
+    crypto = tree / 'libkern/crypto'
+    bear = crypto / 'lithium_bearssl'
+    out = WORK / 'aes-validation'
+    shim = out / 'include'
+    headers = {
+        'libkern/libkern.h': '#include <stdint.h>\n#include <stddef.h>\n#include <string.h>\n',
+        'libkern/crypto/crypto_internal.h': '#include <stdint.h>\n#include <string.h>\n',
+        'kern/debug.h': '#include <stdlib.h>\n#define panic(...) abort()\n',
+    }
+    for name, content in headers.items():
+        target = shim / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content)
+    wrapper = (crypto / 'corecrypto_aes.c').read_text()
+    wrapper = wrapper[:wrapper.index('aes_rval\naes_encrypt_key_gcm(')]
+    wrapper += '\nsize_t aes_context_bytes(void) { return sizeof(aes_encrypt_ctx); }\n'
+    harness = out / 'legacy-wrapper.c'
+    harness.write_text(wrapper)
+    support = out / 'support.c'
+    support.write_text('#include <stddef.h>\nvoid cc_clear(size_t n, void *p) { volatile unsigned char *q=p; while(n--) *q++=0; }\n')
+    names = ('aes', 'aes_ct', 'aes_ct_enc', 'aes_ct_dec', 'aes_ct_cbcenc', 'aes_ct_cbcdec')
+    inputs = [harness, support] + [crypto / f'lithium_{n}.c' for n in names]
+    library = out / 'liblithium-aes.so'
+    command = ['clang', '-shared', '-fPIC', '-O2', '-Wall', '-Wextra', '-Werror',
+               '-DARM64_BOARD_CONFIG_LITHIUM', f'-I{shim}', f'-I{tree / "libkern"}',
+               f'-I{tree / "EXTERNAL_HEADERS"}', f'-I{crypto}', f'-I{bear / "inc"}', f'-I{bear / "src"}',
+               *map(str, inputs), '-o', str(library)]
+    subprocess.run(command, check=True)
+    lib = ctypes.CDLL(str(library))
+    lib.aes_context_bytes.restype = ctypes.c_size_t
+    size = lib.aes_context_bytes()
+    void = ctypes.c_void_p
+    for direction in ('encrypt', 'decrypt'):
+        getattr(lib, f'aes_{direction}_key').argtypes = [void, ctypes.c_int, void]
+        getattr(lib, f'aes_{direction}_cbc').argtypes = [void, void, ctypes.c_uint, void, void]
+        getattr(lib, f'aes_{direction}').argtypes = [void, void, void]
+    def buf(value):
+        return ctypes.create_string_buffer(value, len(value))
+    plain = bytes.fromhex('6bc1bee22e409f96e93d7e117393172a' 'ae2d8a571e03ac9c9eb76fac45af8e51'
+                          '30c81c46a35ce411e5fbc1191a0a52ef' 'f69f2445df4f9b17ad2b417be66c3710')
+    iv = bytes.fromhex('000102030405060708090a0b0c0d0e0f')
+    vectors = [
+        ('2b7e151628aed2a6abf7158809cf4f3c',
+         '7649abac8119b246cee98e9b12e9197d5086cb9b507219ee95db113a917678b2'
+         '73bed6b8e3c1743b7116e69e222295163ff1caa1681fac09120eca307586e1a7'),
+        ('8e73b0f7da0e6452c810f32b809079e562f8ead2522c6b7b',
+         '4f021db243bc633d7178183a9fa071e8b4d9ada9ad7dedf4e5e738763f69145a'
+         '571b242012fb7ae07fa9baac3df102e008b0e27988598881d920a9e64f5615cd'),
+        ('603deb1015ca71be2b73aef0857d77811f352c073b6108d72d9810a30914dff4',
+         'f58c4c04d6e5f1ba779eabfb5f7bfbd69cfc4e967edb808d679f777bc6702c7d'
+         '39f23369a9d9bacfa530e26304231461b2eb05e2c39be9fcda6c19078c6a9d1b'),
+    ]
+    cases = []
+    for keyhex, cipherhex in vectors:
+        key, cipher = bytes.fromhex(keyhex), bytes.fromhex(cipherhex)
+        for direction, incoming, expected in (('encrypt', plain, cipher), ('decrypt', cipher, plain)):
+            context = ctypes.create_string_buffer(size)
+            assert getattr(lib, f'aes_{direction}_key')(buf(key), len(key), context) == 0
+            # XNU consumers copy contexts; the provider may not retain a
+            # pointer into the caller's key or into its old context address.
+            copied = buf(context.raw)
+            for inplace in (False, True):
+                data = buf(incoming)
+                output = data if inplace else ctypes.create_string_buffer(len(data))
+                vector = buf(iv)
+                assert getattr(lib, f'aes_{direction}_cbc')(data, vector, 4, output, copied) == 0
+                assert output.raw == expected and vector.raw == iv
+                cases.append(f'NIST-CBC-{len(key)*8}-{direction}-inplace={inplace}')
+            assert getattr(lib, f'aes_{direction}_cbc')(None, None, 0, None, copied) == 0
+    # FIPS-197 single-block vectors exercise the same NULL-IV ECB entry
+    # used by TCP Fast Open, including its 128-bit key setup.
+    plain = bytes.fromhex('00112233445566778899aabbccddeeff')
+    for n, cipherhex in ((16, '69c4e0d86a7b0430d8cdb78070b4c55a'),
+                         (24, 'dda97ca4864cdfe06eaf70a0ec0d7191'),
+                         (32, '8ea2b7ca516745bfeafc49904b496089')):
+        key, cipher = bytes(range(n)), bytes.fromhex(cipherhex)
+        for direction, incoming, expected in (('encrypt', plain, cipher), ('decrypt', cipher, plain)):
+            context = ctypes.create_string_buffer(size)
+            assert getattr(lib, f'aes_{direction}_key')(buf(key), n, context) == 0
+            output = ctypes.create_string_buffer(16)
+            assert getattr(lib, f'aes_{direction}')(buf(incoming), output, context) == 0
+            assert output.raw == expected
+            cases.append(f'FIPS197-ECB-{n*8}-{direction}')
+    for direction in ('encrypt', 'decrypt'):
+        context = ctypes.create_string_buffer(size)
+        for n in (0, 15, 17, 31, 33, -1):
+            assert getattr(lib, f'aes_{direction}_key')(buf(bytes(32)), n, context) != 0
+        assert getattr(lib, f'aes_{direction}_key')(None, 16, context) != 0
+    inputs += [crypto / 'corecrypto_aes.c', tree / 'libkern/libkern/crypto/aes.h']
+    inputs += list((tree / 'EXTERNAL_HEADERS/corecrypto').glob('*.h'))
+    inputs += list(bear.rglob('*.h')) + list((bear / 'src/symcipher').glob('*.c'))
+    record = dict(all_passed=True, cases=cases, context_bytes=size, invalid_keys_rejected=True,
+                  zero_block_calls_passed=True, copied_contexts_passed=True, caller_iv_unchanged=True,
+                  command=command, input_sha256={str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in inputs},
+                  qemu_used=False, hardware_verified=False,
+                  scope='Host NIST/FIPS AES CBC/ECB algorithm and 7195 wrapper check; no GCM/XTS or hardware proof')
+    (ROOT / 'reports/ios14-native-aes-validation.json').write_text(json.dumps(record, indent=2) + '\n')
+    print(json.dumps(dict(all_passed=True, vector_cases=len(cases), context_bytes=size)))
+
+
+if __name__ == '__main__':
+    main()

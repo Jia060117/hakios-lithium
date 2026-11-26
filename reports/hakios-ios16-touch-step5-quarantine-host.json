@@ -1,0 +1,53 @@
+{
+  "date": "2026-11-19",
+  "stage": "touch-step5-quarantine-host",
+  "passed": true,
+  "scope": "host-only QUP/I2C ownership and quarantine contract",
+  "full_host_regression": true,
+  "existing_suites_passed": 14,
+  "new_suites_passed": 5,
+  "sanitizers": ["AddressSanitizer", "UndefinedBehaviorSanitizer"],
+  "qup_fault_coverage": {
+    "mmio_points": 1792,
+    "error_paths": 117,
+    "no_reset_probe_mmio_points": 54,
+    "hard_deadline_points": 54
+  },
+  "test_evidence": "reports/touch-step5-host-run-20261119-r3/passed.json",
+  "patch": {
+    "path": "reports/hakios-ios16-touch-step5-quarantine-host.patch",
+    "sha256": "9f77e477a8aba3f963565181fc0d8d161cc2fcb6e700045e76e98708c0e19863",
+    "files": [
+      "maintenance/hakios-lithium/peripherals/touch-i2c.h",
+      "maintenance/hakios-lithium/peripherals/touch-i2c-test.c",
+      "maintenance/hakios-lithium/peripherals-next/qup-combined.h",
+      "maintenance/hakios-lithium/peripherals-next/qup-combined-test.c"
+    ]
+  },
+  "baselines": {
+    "display_revision": "R20-display",
+    "R20_display_sha256": "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82",
+    "R15_desktop_sha256": "ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55",
+    "R19": "archived; user reports incorrect display resolution; no retest"
+  },
+  "production_kernel_integration": false,
+  "production_build": false,
+  "touch_package_ready": false,
+  "device_operations": false,
+  "qemu_used": false,
+  "unverified": [
+    "QUP6 ownership and UEFI-to-XNU handoff",
+    "QUP6 clock, pinmux, supply, and safe recovery",
+    "runtime touch controller identity and frame consistency",
+    "GPIO105 versus GPIO125 interrupt line",
+    "GPIO89 reset and shared supply state"
+  ],
+  "independent_review": {
+    "completed": true,
+    "found_timeout_status_mapping_issue": true,
+    "fixed": true,
+    "helper_tests_added": true,
+    "confirmed_unsafe_release_bug": false,
+    "final_full_regression_passed": true
+  }
+}

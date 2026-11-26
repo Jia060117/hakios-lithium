@@ -1,0 +1,2016 @@
+--- a/ports/hakios-lithium/peripherals/kernel.inc
++++ b/ports/hakios-lithium/peripherals/kernel.inc
+@@ -49,6 +49,10 @@
+ 
+ static struct lithium_peripheral_options lithium_peripheral_requested;
+ 
++#if !defined(LITHIUM_PERIPHERAL_HOST_TEST)
++#include "touch-live.inc"
++#endif
++
+ static void
+ lithium_peripheral_worker(__unused thread_call_param_t p0, __unused thread_call_param_t p1)
+ {
+@@ -73,6 +77,12 @@
+         }
+         return;
+     }
++#if !defined(LITHIUM_PERIPHERAL_HOST_TEST)
++    if (lithium_peripheral_requested.touch) {
++        lithium_touch_live_start(lithium_peripheral_requested.touch_log);
++        return;
++    }
++#endif
+     /* R32 has a large retained diagnostic record. A final, out-of-line
+      * transfer call lets the compiler release this legacy worker frame.
+      * GPU remains a bounded stand-in log before the call, as below. */
+--- /dev/null
++++ b/ports/hakios-lithium/peripherals/touch-live.inc
+@@ -0,0 +1,195 @@
++/* Lithium FT8716/FT5x46 input producer. Explicit touch=1 only.
++ * Board: stock lithium DT /soc/i2c@75ba000/ft5x46_i2c@38.
++ * GPIO89 reset low 10ms, high 300ms follows ft5x46_hw_init_work/probe.
++ * Supplies are inherited from the illuminated panel; no firmware update or
++ * regulator voltage programming. If the chip does not answer, stop and log.
++ * Polling uses the actual HakiOS input queue consumed by libhakios/inject.c.
++ */
++#include "touch-live-qup.h"
++#include "touch-live-events.h"
++
++static struct {
++    vm_offset_t qup, reset, irq, scl, sda;
++    thread_call_t poll_call;
++    struct ltle_state events;
++    uint64_t reports, posted, failures, malformed;
++    uint32_t consecutive_errors;
++    bool running, verbose;
++} lt_live;
++
++void hakios_lithium_touch_stop(void);
++
++void hakios_lithium_touch_stop(void)
++{
++    __atomic_store_n(&lt_live.running, false, __ATOMIC_RELEASE);
++    if (lt_live.poll_call) {
++        thread_call_cancel_wait(lt_live.poll_call);
++        thread_call_cancel(lt_live.poll_call);
++    }
++    if (lt_live.events.initialized)
++        (void)ltle_release_all(&lt_live.events, ltle_hakios_sink, NULL);
++}
++
++static uint32_t lt_live_rd(vm_offset_t address)
++{
++    __asm__ volatile("dmb sy" ::: "memory");
++    uint32_t value = *(volatile uint32_t *)address;
++    __asm__ volatile("dmb sy" ::: "memory");
++    return value;
++}
++
++static void lt_live_wr(vm_offset_t address, uint32_t value)
++{
++    __asm__ volatile("dmb sy" ::: "memory");
++    *(volatile uint32_t *)address = value;
++    __asm__ volatile("dmb sy" ::: "memory");
++}
++
++static uint32_t lt_live_read(void *cookie, uint32_t offset)
++{
++    (void)cookie;
++    return lt_live_rd(lt_live.qup + offset);
++}
++
++static void lt_live_write(void *cookie, uint32_t offset, uint32_t value)
++{
++    (void)cookie;
++    lt_live_wr(lt_live.qup + offset, value);
++}
++
++static uint64_t lt_live_now(void *cookie)
++{
++    (void)cookie;
++    return lts1_now();
++}
++
++static void lt_live_delay(void *cookie, uint32_t us)
++{
++    (void)cookie;
++    delay_for_interval(us, NSEC_PER_USEC);
++}
++
++static struct ltlq_io lt_live_bus = {
++    NULL, lt_live_read, lt_live_write, lt_live_now, lt_live_delay
++};
++
++/* Single coordinate mapping lives in touch-live-events.h. Queue coordinates
++ * are normalized 0..65535; software display remains R20 1080x2040/scale3. */
++static int lt_live_emit(void *cookie, const struct ltle_batch *batch)
++{
++    (void)cookie;
++    int error = ltle_hakios_sink(NULL, batch);
++    if (error) return error;
++    for (unsigned i = 0; i < batch->count; ++i) {
++        const struct ltle_event *e = &batch->events[i];
++        ++lt_live.posted;
++        if (lt_live.verbose && (e->type != HAKIOS_TOUCH_MOVE || lt_live.posted % 20 == 0))
++            printf("LITHIUM TOUCH event type=%u finger=%u x=%u y=%u total=%llu\n",
++                e->type, e->finger, e->x, e->y, (unsigned long long)lt_live.posted);
++    }
++    return 0;
++}
++
++static void lt_live_poll(__unused thread_call_param_t p0,
++    __unused thread_call_param_t p1)
++{
++    if (!__atomic_load_n(&lt_live.running, __ATOMIC_ACQUIRE)) return;
++    uint8_t report[63];
++    struct ltlq_result result = {0};
++    int error = ltlq_read_register(&lt_live_bus, 0, report, sizeof(report), &result);
++    if (!error) {
++        ++lt_live.reports;
++        lt_live.consecutive_errors = 0;
++        enum ltle_result parsed = ltle_report(&lt_live.events, report, sizeof(report),
++            lt_live_emit, NULL);
++        if (parsed != LTLE_OK && (++lt_live.malformed == 1 || lt_live.malformed % 120 == 0))
++            printf("LITHIUM TOUCH report_error code=%u total=%llu prefix=%02x%02x%02x first=%02x%02x%02x%02x\n",
++                (unsigned)parsed, (unsigned long long)lt_live.malformed,
++                report[0], report[1], report[2], report[3], report[4], report[5], report[6]);
++        if (lt_live.reports == 1 || (lt_live.verbose && lt_live.reports % 600 == 0))
++            printf("LITHIUM TOUCH report number=%llu mode=0x%02x points=%u posted=%llu irq=%u\n",
++                (unsigned long long)lt_live.reports, report[0], report[2] & 15u,
++                (unsigned long long)lt_live.posted, lt_live_rd(lt_live.irq + 4) & 1u);
++    } else {
++        ++lt_live.failures;
++        if (++lt_live.consecutive_errors == 1)
++            printf("LITHIUM TOUCH read_error error=%d status=0x%08x op=0x%08x core=0x%08x polls=%u\n",
++                error, result.status, result.op, result.core, result.polls);
++        if (lt_live.consecutive_errors >= 3) {
++            __atomic_store_n(&lt_live.running, false, __ATOMIC_RELEASE);
++            (void)ltle_release_all(&lt_live.events, lt_live_emit, NULL);
++            printf("LITHIUM TOUCH stopped reason=three_consecutive_read_errors reports=%llu failures=%llu\n",
++                (unsigned long long)lt_live.reports, (unsigned long long)lt_live.failures);
++            return;
++        }
++    }
++    if (!__atomic_load_n(&lt_live.running, __ATOMIC_ACQUIRE)) return;
++    uint64_t deadline;
++    clock_interval_to_deadline(16, NSEC_PER_MSEC, &deadline);
++    thread_call_enter_delayed(lt_live.poll_call, deadline);
++}
++
++static __attribute__((noinline)) void lithium_touch_live_start(bool verbose)
++{
++    if (lt_live.running || lt_live.poll_call) return;
++    lithium_touch_stage1_run(true);
++    if (!lts1.clocks_ready || !lts1.pins_ready || lts1.poisoned) {
++        printf("LITHIUM TOUCH live stopped reason=controller_clock_or_pin_setup\n");
++        return;
++    }
++    lt_live.qup = ml_io_map(0x075ba000, 0x1000);
++    lt_live.reset = ml_io_map(0x01069000, 0x1000); /* TLMM GPIO89 */
++    lt_live.irq = ml_io_map(0x0108d000, 0x1000);   /* GPIO125, polled */
++    lt_live.scl = ml_io_map(0x01067000, 0x1000);   /* GPIO87/88 QUP12 */
++    lt_live.sda = ml_io_map(0x01068000, 0x1000);
++    if (!lt_live.qup || !lt_live.reset || !lt_live.irq || !lt_live.scl || !lt_live.sda) {
++        printf("LITHIUM TOUCH live stopped reason=mmio_mapping\n");
++        return;
++    }
++    vm_offset_t gic = ml_io_map(0x09bc0000, 0x1000);
++    if (!gic || (lt_live_rd(gic + 0x110) & (1u << 10))) {
++        printf("LITHIUM TOUCH live stopped reason=qup_irq138_already_enabled\n");
++        return;
++    }
++    /* Stock i2c_12_active: function3, 2mA, bias-disable, input. Unlike the
++     * historical snapshot path this also removes inherited sleep pulldowns. */
++    lt_live_wr(lt_live.scl, (lt_live_rd(lt_live.scl) & ~0x3ffu) | 0x0cu);
++    lt_live_wr(lt_live.sda, (lt_live_rd(lt_live.sda) & ~0x3ffu) | 0x0cu);
++    /* Stock ts_active: GPIO125 input, 16mA, pull-up. GIC stays untouched. */
++    lt_live_wr(lt_live.irq, (lt_live_rd(lt_live.irq) & ~0x3ffu) | 0x1c3u);
++    uint32_t reset_cfg = lt_live_rd(lt_live.reset);
++    uint32_t reset_io = lt_live_rd(lt_live.reset + 4);
++    printf("LITHIUM TOUCH live board bus=12 addr=0x38 reset_gpio=89 irq_gpio=125 poll_ms=16 inherited_reset_cfg=0x%08x io=0x%08x\n",
++        reset_cfg, reset_io);
++    /* Set the latch before enabling the output to avoid a high glitch. */
++    lt_live_wr(lt_live.reset + 4, reset_io & ~2u);
++    lt_live_wr(lt_live.reset, (reset_cfg & ~0x3ffu) | 0x200u);
++    delay_for_interval(10, NSEC_PER_MSEC);
++    lt_live_wr(lt_live.reset + 4, (reset_io & ~2u) | 2u);
++    delay_for_interval(300, NSEC_PER_MSEC);
++    printf("LITHIUM TOUCH live reset low_ms=10 high_settle_ms=300 cfg=0x%08x io=0x%08x supplies=inherited firmware_write=0\n",
++        lt_live_rd(lt_live.reset), lt_live_rd(lt_live.reset + 4));
++
++    uint8_t id = 0;
++    struct ltlq_result result = {0};
++    int error = ltlq_read_register(&lt_live_bus, 0xa3, &id, 1, &result);
++    printf("LITHIUM TOUCH live id error=%d byte=0x%02x status=0x%08x op=0x%08x core=0x%08x polls=%u\n",
++        error, id, result.status, result.op, result.core, result.polls);
++    if (error) return;
++    /* FT8716 and FTE716 normal register IDs in the stock driver. Unknown
++     * successful reads are retained but do not authorize parsing reports. */
++    if (id != 0x87 && id != 0xe7 && id != 0x54) {
++        printf("LITHIUM TOUCH live stopped reason=unexpected_chip_id raw=0x%02x\n", id);
++        return;
++    }
++    lt_live.verbose = verbose;
++    (void)ltle_init(&lt_live.events, 1080, 2040, 0);
++    lt_live.poll_call = thread_call_allocate(lt_live_poll, NULL);
++    if (!lt_live.poll_call) {
++        printf("LITHIUM TOUCH live stopped reason=poll_allocation\n");
++        return;
++    }
++    __atomic_store_n(&lt_live.running, true, __ATOMIC_RELEASE);
++    printf("LITHIUM TOUCH live ready id=0x%02x report_bytes=63 sink=hakios_touch_post coordinates=normalized65535 polling=1\n", id);
++    thread_call_enter(lt_live.poll_call);
++}
+--- /dev/null
++++ b/ports/hakios-lithium/peripherals/touch-live-qup.h
+@@ -0,0 +1,262 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* QUPv2 definitions/sequencing derived from MiCode i2c-msm-v2.[ch]:
++ * Copyright (c) 2014-2015, The Linux Foundation. All rights reserved.
++ *
++ * Small synchronous FIFO transport for lithium BLSP2 QUP6, I2C address 0x38.
++ * Local primary source: evidence/touch-r31-20261120/protocol/
++ * micode-i2c-msm-v2.c:177-212 (tags), 299-390 (FIFO setup), 394-470 (clock),
++ * 573-619 (two RX tag bytes), 667-724 (transaction), 1499-1528 (bus idle).
++ *
++ * Caller supplies ordered, bounded 32-bit MMIO at offsets relative to QUP6,
++ * monotonic microseconds and delay, and serializes the entire call. Caller
++ * owns mapping, power, 19.2 MHz source clock, pinmux and IRQ exclusion; no
++ * GPIO/rail/clock-controller/GIC accesses are made here. Software timeouts
++ * cannot interrupt a callback which never returns.
++ *
++ * Reads are 1..63 bytes. Drain RX_NOT_EMPTY while the transfer is running,
++ * before waiting for INPUT_DONE: a 63-byte report plus two tag bytes exceeds
++ * the 64-byte FIFO. Staging needs only 63 bytes, not a diagnostic structure.
++ * data is committed only after completion, bus-idle and final RESET succeed.
++ * result.status/op/core preserve the last pre-cleanup raw I2C_STATUS,
++ * OPERATIONAL and ERROR_FLAGS. All co-occurring error bits remain visible.
++ * polls counts every STATE/completion/RX-ready/STOP/cleanup poll.
++ */
++#ifndef LITHIUM_TOUCH_LIVE_QUP_H
++#define LITHIUM_TOUCH_LIVE_QUP_H
++
++#include <stdint.h>
++
++struct ltlq_io {
++    void *cookie;
++    uint32_t (*read)(void *, uint32_t);
++    void (*write)(void *, uint32_t, uint32_t);
++    uint64_t (*now_us)(void *);
++    void (*delay_us)(void *, uint32_t);
++};
++
++struct ltlq_result {
++    int error;
++    uint32_t status, op, core;
++    uint32_t polls;
++};
++
++enum ltlq_error {
++    LTLQ_OK = 0,
++    LTLQ_EINVAL = -22,
++    LTLQ_ETIMEOUT = -110,
++    LTLQ_ENACK = -107,       /* MiCode post_xfer returns -ENOTCONN for NACK */
++    LTLQ_EARBITRATION = -11,
++    LTLQ_EIO = -5
++};
++
++enum ltlq_register {
++    LTLQ_CONFIG = 0x000, LTLQ_STATE = 0x004, LTLQ_IO_MODES = 0x008,
++    LTLQ_SW_RESET = 0x00c, LTLQ_OPERATIONAL = 0x018,
++    LTLQ_ERROR_FLAGS = 0x01c, LTLQ_ERROR_FLAGS_EN = 0x020,
++    LTLQ_OPERATIONAL_MASK = 0x028, LTLQ_MX_OUTPUT_COUNT = 0x100,
++    LTLQ_OUT_FIFO = 0x110, LTLQ_MX_WRITE_COUNT = 0x150,
++    LTLQ_MX_INPUT_COUNT = 0x200, LTLQ_MX_READ_COUNT = 0x208,
++    LTLQ_IN_FIFO = 0x218, LTLQ_CLK_CTL = 0x400,
++    LTLQ_I2C_STATUS = 0x404, LTLQ_MASTER_CONFIG = 0x408
++};
++
++#define LTLQ_MAX_READ 63u
++#define LTLQ_POLL_US 5u
++#define LTLQ_STATE_TIMEOUT_US 15000u
++#define LTLQ_TRANSFER_TIMEOUT_US 50000u
++#define LTLQ_BUS_ERRORS UINT32_C(0x038000fc)
++#define LTLQ_CORE_ERRORS UINT32_C(0x3c)
++#define LTLQ_INPUT_DONE UINT32_C(0x800)
++#define LTLQ_INPUT_NOT_EMPTY UINT32_C(0x20)
++#define LTLQ_BUS_ACTIVE UINT32_C(0x100)
++#define LTLQ_CLK_100KHZ UINT32_C(0x003e007c) /* vendor FS=124, HT=62 */
++
++static inline void
++ltlq_snapshot(struct ltlq_io *io, struct ltlq_result *r)
++{
++    r->status = io->read(io->cookie, LTLQ_I2C_STATUS);
++    r->op = io->read(io->cookie, LTLQ_OPERATIONAL);
++    r->core = io->read(io->cookie, LTLQ_ERROR_FLAGS);
++}
++
++static inline int
++ltlq_snapshot_error(const struct ltlq_result *r)
++{
++    if (r->status & 8u)
++        return LTLQ_ENACK;
++    if ((r->core & LTLQ_CORE_ERRORS) ||
++        (r->status & (LTLQ_BUS_ERRORS & ~UINT32_C(0x10))))
++        return LTLQ_EIO;
++    if (r->status & 0x10u)
++        return LTLQ_EARBITRATION;
++    return LTLQ_OK;
++}
++
++/* Waits have BOTH a deadline and a fixed poll limit for a stalled timer.
++ * Unsigned subtraction also bounds a backwards clock; natural wrap is fine. */
++static inline int
++ltlq_wait_state(struct ltlq_io *io, struct ltlq_result *r,
++                uint32_t state, int only_valid)
++{
++    uint64_t start = io->now_us(io->cookie);
++    unsigned n;
++    for (n = 0; n <= LTLQ_STATE_TIMEOUT_US / LTLQ_POLL_US; ++n) {
++        uint32_t v = io->read(io->cookie, LTLQ_STATE);
++        ++r->polls;
++        if (io->now_us(io->cookie) - start >= LTLQ_STATE_TIMEOUT_US)
++            break;
++        if ((v & 4u) && (only_valid || (v & 3u) == state))
++            return LTLQ_OK;
++        io->delay_us(io->cookie, LTLQ_POLL_US);
++    }
++    return LTLQ_ETIMEOUT;
++}
++
++static inline int
++ltlq_set_state(struct ltlq_io *io, struct ltlq_result *r, uint32_t state)
++{
++    int error = ltlq_wait_state(io, r, 0, 1);
++    if (error)
++        return error;
++    io->write(io->cookie, LTLQ_STATE, state);
++    return ltlq_wait_state(io, r, state, 0);
++}
++
++/* mode 0: input done; 1: input word available; 2: STOP/bus released.
++ * MiCode uses BUS_ACTIVE, not exact STATUS equality or BUS_MASTER, for STOP.
++ * Snapshot errors take precedence over simultaneous done/idle bits.
++ * All RX/completion waits share one deadline supplied by the caller. */
++static inline int
++ltlq_wait_transfer(struct ltlq_io *io, struct ltlq_result *r, unsigned mode,
++                   uint64_t start)
++{
++    unsigned n;
++    for (n = 0; n <= LTLQ_TRANSFER_TIMEOUT_US / LTLQ_POLL_US; ++n) {
++        int error;
++        ltlq_snapshot(io, r);
++        ++r->polls;
++        error = ltlq_snapshot_error(r);
++        if (error)
++            return error;
++        if (io->now_us(io->cookie) - start >= LTLQ_TRANSFER_TIMEOUT_US)
++            break;
++        if ((mode == 0 && (r->op & LTLQ_INPUT_DONE)) ||
++            (mode == 1 && (r->op & LTLQ_INPUT_NOT_EMPTY)) ||
++            (mode == 2 && !(r->status & LTLQ_BUS_ACTIVE)))
++            return LTLQ_OK;
++        io->delay_us(io->cookie, LTLQ_POLL_US);
++    }
++    return LTLQ_ETIMEOUT;
++}
++
++static inline int
++ltlq_read_register(struct ltlq_io *io, uint8_t reg, uint8_t *data,
++                   unsigned len, struct ltlq_result *r)
++{
++    uint8_t rx[LTLQ_MAX_READ];
++    uint8_t tx[9] = {0x81, 0x70, 0x82, 1, 0, 0x81, 0x71, 0x87, 0};
++    uint32_t v;
++    uint64_t start;
++    unsigned i, j;
++    int error, reset_attempted = 0;
++
++    if (!r)
++        return LTLQ_EINVAL;
++    *r = (struct ltlq_result){0};
++    if (!io || !io->read || !io->write || !io->now_us || !io->delay_us ||
++        !data || !len || len > LTLQ_MAX_READ) {
++        r->error = LTLQ_EINVAL;
++        return r->error;
++    }
++
++    /* Fresh core, then ordinary RESET; SW_RESET clears stale FIFO/errors.
++     * No bus-clear command or transaction retry is ever issued. */
++    io->write(io->cookie, LTLQ_SW_RESET, 1);
++    error = ltlq_wait_state(io, r, 0, 0);
++    if (error)
++        goto state_failure;
++    error = ltlq_set_state(io, r, 0);
++    if (error)
++        goto state_failure;
++
++    io->write(io->cookie, LTLQ_CONFIG, 0x207);
++    io->write(io->cookie, LTLQ_ERROR_FLAGS_EN, LTLQ_CORE_ERRORS);
++    /* Polling transport: keep service IRQs masked; caller owns GIC/IRQ. */
++    io->write(io->cookie, LTLQ_OPERATIONAL_MASK, 0x300);
++    io->write(io->cookie, LTLQ_MASTER_CONFIG, 1);
++    io->write(io->cookie, LTLQ_MX_INPUT_COUNT, 0);
++    io->write(io->cookie, LTLQ_MX_OUTPUT_COUNT, 0);
++    io->write(io->cookie, LTLQ_MX_READ_COUNT, len + 2u);
++    io->write(io->cookie, LTLQ_MX_WRITE_COUNT, sizeof(tx));
++    /* FIFO (mode 0), PACK/UNPACK; preserve hardwired geometry/reserved bits. */
++    v = io->read(io->cookie, LTLQ_IO_MODES);
++    io->write(io->cookie, LTLQ_IO_MODES,
++              (v & ~UINT32_C(0x1fc00)) | UINT32_C(0xc000));
++
++    error = ltlq_set_state(io, r, 1);
++    if (error)
++        goto state_failure;
++    io->write(io->cookie, LTLQ_CLK_CTL, LTLQ_CLK_100KHZ);
++    error = ltlq_set_state(io, r, 3);
++    if (error)
++        goto state_failure;
++
++    /* Two messages aggregated into ONE byte stream, no word/message padding:
++     * START,0x70,WRITE,1,reg,START,0x71,READ_N_STOP,len. */
++    tx[4] = reg;
++    tx[8] = (uint8_t)len;
++    for (i = 0; i < sizeof(tx); i += 4) {
++        v = 0;
++        for (j = 0; j < 4 && i + j < sizeof(tx); ++j)
++            v |= (uint32_t)tx[i + j] << (8u * j);
++        io->write(io->cookie, LTLQ_OUT_FIFO, v);
++    }
++    start = io->now_us(io->cookie);
++    error = ltlq_set_state(io, r, 1);
++    if (error)
++        goto state_failure;
++
++    /* Drain BEFORE input-done, so 65 received bytes cannot fill a 64-byte
++     * FIFO while waiting for the last byte. Drop the two input tag bytes.
++     * Their contents are not an invented chip-ID or protocol admission test. */
++    for (i = 0; i < len + 2u; i += 4) {
++        error = ltlq_wait_transfer(io, r, 1, start);
++        if (error)
++            goto finish;
++        v = io->read(io->cookie, LTLQ_IN_FIFO);
++        for (j = 0; j < 4 && i + j < len + 2u; ++j)
++            if (i + j >= 2)
++                rx[i + j - 2u] = (uint8_t)(v >> (8u * j));
++    }
++    error = ltlq_wait_transfer(io, r, 0, start);
++    if (error)
++        goto finish;
++    /* READ_N_STOP already requests physical STOP; wait for release BEFORE
++     * resetting. Do not reset in lieu of observing successful completion. */
++    error = ltlq_wait_transfer(io, r, 2, io->now_us(io->cookie));
++    if (error)
++        goto finish;
++    reset_attempted = 1;
++    error = ltlq_set_state(io, r, 0);
++    if (error)
++        goto state_failure;
++    for (i = 0; i < len; ++i)
++        data[i] = rx[i];
++    r->error = LTLQ_OK;
++    return LTLQ_OK;
++
++state_failure:
++    /* STATE polls do not overwrite raw diagnostics; capture before cleanup. */
++    ltlq_snapshot(io, r);
++finish:
++    r->error = error;
++    if (!reset_attempted) {
++        /* One best-effort controller RESET; preserve original cause/tuple
++         * even if cleanup times out. Never retry the I2C transaction. */
++        io->write(io->cookie, LTLQ_STATE, 0);
++        (void)ltlq_wait_state(io, r, 0, 0);
++    }
++    return r->error;
++}
++
++#endif /* LITHIUM_TOUCH_LIVE_QUP_H */
+--- /dev/null
++++ b/ports/hakios-lithium/peripherals/touch-live-events.h
+@@ -0,0 +1,249 @@
++/* SPDX-License-Identifier: BSD-2-Clause-Patent */
++#ifndef LITHIUM_TOUCH_LIVE_EVENTS_H
++#define LITHIUM_TOUCH_LIVE_EVENTS_H
++
++#include <stdbool.h>
++#include <stddef.h>
++#include <stdint.h>
++
++/*
++ * FT5x46 register-0 report -> the real HakiOS touch queue ABI.
++ * One ordinary-thread producer calls ltle_report() at its polling cadence.
++ * No allocation, I/O, timer or enable policy here: main owns touch=1 and 60 Hz.
++ *
++ * Wire layout: stock ft5x46_ts.c, ft5x46_read_touchdata/report_value:
++ * 3 header bytes, ten 6-byte records, ID 0xf terminates. DOWN=0,
++ * UP=1, CONTACT=2. Header count/tail padding are not record delimiters.
++ *
++ * HakiOS consumes DOWN=1/MOVE=2/UP=3, fingers 0..9, coordinates 0..65535.
++ * Its backboardd inject.c converts those samples to digitizer HID events.
++ * Hardware IDs 0..14 therefore map to stable, compact consumer slots 0..9.
++ */
++enum {
++    LTLE_REPORT_BYTES = 63,
++    LTLE_MAX_CONTACTS = 10,
++    LTLE_ID_COUNT = 15,
++    LTLE_BATCH_MAX = 20,
++    LTLE_RAW_X_MAX = 1080,
++    LTLE_RAW_Y_MAX = 2040,
++    LTLE_DOWN = 1,
++    LTLE_MOVE = 2,
++    LTLE_UP = 3
++};
++
++enum ltle_result {
++    LTLE_OK = 0,
++    LTLE_BAD_ARGUMENT,
++    LTLE_BAD_REPORT,
++    LTLE_SINK_REJECTED
++};
++
++struct ltle_event { uint32_t type, finger, x, y; };
++struct ltle_batch {
++    uint32_t count;
++    struct ltle_event events[LTLE_BATCH_MAX];
++};
++struct ltle_geometry {
++    uint32_t screen_width, screen_height; /* pixels, e.g. 1080 x 2040 */
++    unsigned rotation;                   /* clockwise 0/90/180/270 */
++};
++struct ltle_position {
++    uint32_t x, y;                       /* HakiOS normalized coordinates */
++    uint32_t pixel_x, pixel_y;           /* diagnostic screen coordinates */
++};
++struct ltle_contact {
++    uint32_t x, y;                       /* last successfully posted position */
++    uint8_t id;
++    bool active;
++};
++struct ltle_state {
++    struct ltle_geometry geometry;
++    struct ltle_contact contacts[LTLE_MAX_CONTACTS];
++    bool initialized;
++};
++
++/*
++ * Synchronous borrowed batch; return 0 only after accepting EVERY event in
++ * order, nonzero only when NONE were accepted. No callback recursion.
++ * Queue rejection leaves state unchanged; the next complete report can retry.
++ * Empty/stationary reports return OK without calling the sink.
++ */
++typedef int (*ltle_sink_fn)(void *cookie, const struct ltle_batch *batch);
++
++static inline bool
++ltle_geometry_valid(const struct ltle_geometry *g)
++{
++    return g && g->screen_width >= 2 && g->screen_height >= 2 &&
++        g->screen_width <= 65536 && g->screen_height <= 65536 &&
++        (g->rotation == 0 || g->rotation == 90 ||
++         g->rotation == 180 || g->rotation == 270);
++}
++
++/*
++ * The only coordinate transform. Inclusive DT range 0..1080/0..2040 maps
++ * directly to 0..65535 without first quantizing through screen pixels.
++ * Full-screen normalization is unchanged by fbwidth/fbheight or UIKit scale;
++ * screen dimensions affect only pixel_x/y. Never use framebuffer stride.
++ * If the native range/orientation changes, update this function/config only.
++ */
++static inline bool
++ltle_map(const struct ltle_geometry *g, uint16_t raw_x, uint16_t raw_y,
++    struct ltle_position *p)
++{
++    uint32_t u = raw_x, v = raw_y, ux = LTLE_RAW_X_MAX, vy = LTLE_RAW_Y_MAX;
++    if (!p || !ltle_geometry_valid(g) || raw_x > ux || raw_y > vy)
++        return false;
++    switch (g->rotation) {
++    case 90:
++        u = LTLE_RAW_Y_MAX - raw_y; v = raw_x;
++        ux = LTLE_RAW_Y_MAX; vy = LTLE_RAW_X_MAX;
++        break;
++    case 180:
++        u = LTLE_RAW_X_MAX - raw_x; v = LTLE_RAW_Y_MAX - raw_y;
++        break;
++    case 270:
++        u = raw_y; v = LTLE_RAW_X_MAX - raw_x;
++        ux = LTLE_RAW_Y_MAX; vy = LTLE_RAW_X_MAX;
++        break;
++    default: break;
++    }
++    p->x = (u * 65535u + ux / 2) / ux;
++    p->y = (v * 65535u + vy / 2) / vy;
++    p->pixel_x = (uint32_t)(((uint64_t)p->x * (g->screen_width - 1) +
++        32767u) / 65535u);
++    p->pixel_y = (uint32_t)(((uint64_t)p->y * (g->screen_height - 1) +
++        32767u) / 65535u);
++    return true;
++}
++
++/* Call once before starting the producer, never to reset live contacts. */
++static inline enum ltle_result
++ltle_init(struct ltle_state *s, uint32_t width, uint32_t height,
++    unsigned rotation)
++{
++    const struct ltle_geometry g = {width, height, rotation};
++    if (!s || !ltle_geometry_valid(&g)) return LTLE_BAD_ARGUMENT;
++    *s = (struct ltle_state){.geometry = g, .initialized = true};
++    return LTLE_OK;
++}
++
++/* Explicit UP, or disappearance from the next valid report, releases the
++ * last accepted position. CONTACT without a preceding DOWN starts a stroke.
++ * Repeated DOWN on a still-active ID is a continuation (stock MT-slot
++ * behavior): polling the same register contents must not invent extra taps.
++ * Invalid/short reports neither publish nor release: after a persistent bus
++ * failure call ltle_release_all() explicitly instead of parsing stale bytes.
++ */
++static inline enum ltle_result
++ltle_report(struct ltle_state *s, const uint8_t *raw, size_t size,
++    ltle_sink_fn sink, void *cookie)
++{
++    struct {
++        uint16_t x, y;
++        bool seen, active;
++    } decoded[LTLE_ID_COUNT] = {{0}};
++    struct ltle_batch batch = {0};
++    struct ltle_state next;
++    unsigned i, id, slot;
++    if (!s || !s->initialized || !ltle_geometry_valid(&s->geometry) ||
++        !raw || !sink) return LTLE_BAD_ARGUMENT;
++    if (size != LTLE_REPORT_BYTES) return LTLE_BAD_REPORT;
++    for (i = 0; i < LTLE_MAX_CONTACTS; ++i) {
++        const uint8_t *r = raw + 3 + 6 * i;
++        const unsigned event = r[0] >> 6;
++        id = r[2] >> 4;
++        if (id == LTLE_ID_COUNT) break;
++        if (decoded[id].seen || event > 2) return LTLE_BAD_REPORT;
++        decoded[id].seen = true;
++        decoded[id].active = event != 1;
++        decoded[id].x = (uint16_t)(((r[0] & 15u) << 8) | r[1]);
++        decoded[id].y = (uint16_t)(((r[2] & 15u) << 8) | r[3]);
++        /* UP coordinates are not consumed; retain the last posted position. */
++        if (decoded[id].active && (decoded[id].x > LTLE_RAW_X_MAX ||
++            decoded[id].y > LTLE_RAW_Y_MAX)) return LTLE_BAD_REPORT;
++    }
++    next = *s;
++    /* All releases precede any slot reuse, including a ten-finger turnover. */
++    for (slot = 0; slot < LTLE_MAX_CONTACTS; ++slot) {
++        struct ltle_contact *c = &next.contacts[slot];
++        if (c->active && !decoded[c->id].active) {
++            batch.events[batch.count++] = (struct ltle_event){
++                LTLE_UP, slot, c->x, c->y};
++            c->active = false;
++        }
++    }
++    for (id = 0; id < LTLE_ID_COUNT; ++id) {
++        struct ltle_contact *c;
++        struct ltle_position p;
++        bool existing;
++        if (!decoded[id].active) continue;
++        for (slot = 0; slot < LTLE_MAX_CONTACTS; ++slot)
++            if (next.contacts[slot].active && next.contacts[slot].id == id)
++                break;
++        existing = slot < LTLE_MAX_CONTACTS;
++        if (!existing)
++            for (slot = 0; slot < LTLE_MAX_CONTACTS; ++slot)
++                if (!next.contacts[slot].active) break;
++        if (slot == LTLE_MAX_CONTACTS ||
++            !ltle_map(&s->geometry, decoded[id].x, decoded[id].y, &p))
++            return LTLE_BAD_REPORT;
++        c = &next.contacts[slot];
++        if (!existing || c->x != p.x || c->y != p.y)
++            batch.events[batch.count++] = (struct ltle_event){
++                existing ? LTLE_MOVE : LTLE_DOWN, slot, p.x, p.y};
++        *c = (struct ltle_contact){p.x, p.y, (uint8_t)id, true};
++    }
++    if (batch.count && sink(cookie, &batch) != 0)
++        return LTLE_SINK_REJECTED;
++    *s = next;
++    return LTLE_OK;
++}
++
++/* Stop/bus-loss path; post once, or try again later if the queue rejected it. */
++static inline enum ltle_result
++ltle_release_all(struct ltle_state *s, ltle_sink_fn sink, void *cookie)
++{
++    uint8_t empty[LTLE_REPORT_BYTES] = {0};
++    empty[5] = 0xf0;
++    return ltle_report(s, empty, sizeof(empty), sink, cookie);
++}
++
++/*
++ * Production binding, not a mock API. With sys/hakios.input.h (patch 0020)
++ * already included, this adapter posts one atomic batch to the existing
++ * /dev/hakios-touch queue. It returns its real errno and takes no new lock.
++ * Use only from ordinary thread context, after hakios_input_init().
++ *
++ *   static struct ltle_state live;
++ *   ltle_init(&live, fbwidth, fbheight, 0);            // once, touch=1
++ *   ltle_report(&live, raw, 63, ltle_hakios_sink, NULL); // each valid read
++ *   ltle_release_all(&live, ltle_hakios_sink, NULL);   // stop/lost stream
++ *
++ * Main can instead pass its own synchronous atomic sink using ltle_sink_fn.
++ * Do not replace the batch call with a loop of best-effort single posts.
++ */
++#ifdef HAKIOS_TOUCH_BATCH_MAX
++_Static_assert(HAKIOS_TOUCH_BATCH_MAX >= LTLE_BATCH_MAX, "touch batch capacity");
++_Static_assert(HAKIOS_TOUCH_DOWN == LTLE_DOWN &&
++    HAKIOS_TOUCH_MOVE == LTLE_MOVE && HAKIOS_TOUCH_UP == LTLE_UP,
++    "HakiOS touch event ABI");
++
++static inline int
++ltle_hakios_sink(void *cookie, const struct ltle_batch *batch)
++{
++    struct hakios_touch events[LTLE_BATCH_MAX];
++    uint32_t i;
++    (void)cookie;
++    if (!batch || batch->count == 0 || batch->count > LTLE_BATCH_MAX)
++        return -1;
++    for (i = 0; i < batch->count; ++i) {
++        const struct ltle_event *e = &batch->events[i];
++        events[i] = (struct hakios_touch){
++            .time = 0, .type = e->type, .finger = e->finger,
++            .x = e->x, .y = e->y};
++    }
++    return hakios_touch_post_batch(events, batch->count);
++}
++#endif
++
++#endif /* LITHIUM_TOUCH_LIVE_EVENTS_H */
+--- /dev/null
++++ b/ports/hakios-lithium/patches/0024-lithium-touch-live.patch
+@@ -0,0 +1,29 @@
++--- a/xnu/files/osfmk/arm64/loader_return.c
+++++ b/xnu/files/osfmk/arm64/loader_return.c
++@@ -583,6 +583,8 @@
++ 	if (!as_panic) {
++ #if defined(LITHIUM_ARMV8_0)
++ 		extern void lithium_lsdb_finalize(void);
+++		extern void hakios_lithium_touch_stop(void);
+++		hakios_lithium_touch_stop();
++ 		lithium_lsdb_finalize();
++ #endif
++ 		hakios_var_save_on_return();   /* the data volume kept, while the system is still whole */
++--- a/userland/src/init.c
+++++ b/userland/src/init.c
++@@ -203,9 +203,12 @@
++ 	    !lithium_touch_diag_is(value, length, "1")) {
++ 		return 1;
++ 	}
++-	*reason = "touch_stage_requires_exact_1";
++-	if (lithium_touch_diag_arg(args, "touch_stage", &value, &length) != 1 ||
++-	    !lithium_touch_diag_is(value, length, "1")) {
+++	*reason = "touch_stage_or_live_required";
+++	unsigned stages = lithium_touch_diag_arg(args, "touch_stage", &value, &length);
+++	int stage_one = stages == 1 && lithium_touch_diag_is(value, length, "1");
+++	unsigned lives = lithium_touch_diag_arg(args, "touch", &value, &length);
+++	int live_one = lives == 1 && lithium_touch_diag_is(value, length, "1");
+++	if (!((stage_one && lives == 0) || (live_one && stages == 0))) {
++ 		return 1;
++ 	}
++ 	*reason = "ufs_requires_exact_0";
+--- /dev/null
++++ b/maintenance/hakios-lithium/peripherals/touch-live-qup-test.c
+@@ -0,0 +1,334 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Focused host tests for the real header, no device or QEMU needed.
++ * From the repository root:
++ * clang -std=c11 -Wall -Wextra -Werror -O1 -g \
++ *   -fsanitize=address,undefined -fno-omit-frame-pointer \
++ *   maintenance/hakios-lithium/peripherals/touch-live-qup-test.c \
++ *   -o /tmp/touch-live-qup-test && /tmp/touch-live-qup-test
++ */
++#include <assert.h>
++#include <limits.h>
++#include <stdio.h>
++#include <string.h>
++
++#include "../../../ports/hakios-lithium/peripherals/touch-live-qup.h"
++
++enum fault {
++    NONE, NACK, ARBITRATION, BUS_ERROR, CORE_ERROR, DONE_TIMEOUT,
++    RX_TIMEOUT, STOP_TIMEOUT, RX_ERROR, RESET_TIMEOUT, STATE_TIMEOUT
++};
++
++struct mock {
++    uint32_t regs[0x410 / 4];
++    struct { uint32_t offset, value; } writes[64];
++    unsigned nwrites, nreads, starts, resets, state_writes, runs, rx_words;
++    unsigned data_bytes, stop_polls, delay_calls, stall_state_write;
++    uint64_t time;
++    int freeze, backwards, cleanup_stall;
++    enum fault fault;
++};
++
++static unsigned cases;
++
++static uint8_t
++payload(unsigned n)
++{
++    return (uint8_t)(0xe3u + n * 37u);
++}
++
++static uint32_t
++mock_read(void *cookie, uint32_t off)
++{
++    struct mock *m = cookie;
++    assert(off < 0x410 && !(off & 3u));
++    ++m->nreads;
++    if (off == 4) {
++        if ((m->fault == RESET_TIMEOUT && !m->state_writes) ||
++            (m->fault == STATE_TIMEOUT &&
++             m->state_writes == m->stall_state_write) ||
++            (m->cleanup_stall && m->resets >= 2))
++            return 0;
++        return 0x11cu | m->regs[off / 4];
++    }
++    if (off == 0x404 && m->runs >= 2) {
++        if (m->fault == NACK)
++            return 0x0d1300c8; /* retain NACK + FAIL(3) + INVALID_READ_ADDR */
++        if (m->fault == ARBITRATION)
++            return 0x0c110010;
++        if (m->fault == BUS_ERROR)
++            return 0x0c110004;
++        if (m->fault == RX_ERROR && m->rx_words)
++            return 0x0c110080; /* late error before caller data commit */
++        if (m->rx_words == (m->data_bytes + 5u) / 4u) {
++            ++m->stop_polls;
++            if (m->fault != STOP_TIMEOUT && m->stop_polls >= 3)
++                return 0x0c110000;
++        }
++        return 0x0c110300;
++    }
++    if (off == 0x18 && m->runs >= 2) {
++        if (m->fault == NACK || m->fault == BUS_ERROR ||
++            m->fault == ARBITRATION)
++            return 0x10;
++        if (m->fault == DONE_TIMEOUT)
++            return 0x20; /* data visible alone is not input completion */
++        if (m->fault == RX_TIMEOUT && m->rx_words)
++            return 0x800;
++        /* Producer cannot finish until the consumer drains the FIFO.
++         * In particular, len=63 means 65 stream bytes > 64 FIFO bytes. */
++        return ((m->rx_words == (m->data_bytes + 5u) / 4u) ? 0x800 : 0) |
++            ((m->rx_words < (m->data_bytes + 5u) / 4u) ? 0x20 : 0);
++    }
++    if (off == 0x1c && m->runs >= 2 && m->fault == CORE_ERROR)
++        return 0x2c;
++    if (off == 0x218) {
++        uint32_t word = 0;
++        unsigned base = m->rx_words * 4u, j;
++        assert(m->runs == 2);
++        assert(m->rx_words < (m->data_bytes + 5u) / 4u);
++        for (j = 0; j < 4; ++j) {
++            unsigned index = base + j;
++            /* Deliberately arbitrary overhead; not interpreted as data. */
++            uint8_t byte = index < 2 ? (uint8_t)(0x90 + index) :
++                payload(index - 2);
++            word |= (uint32_t)byte << (8u * j);
++        }
++        ++m->rx_words;
++        return word;
++    }
++    return m->regs[off / 4];
++}
++
++static void
++mock_write(void *cookie, uint32_t off, uint32_t value)
++{
++    struct mock *m = cookie;
++    assert(off < 0x410 && !(off & 3u));
++    assert(m->nwrites < sizeof(m->writes) / sizeof(m->writes[0]));
++    m->writes[m->nwrites].offset = off;
++    m->writes[m->nwrites++].value = value;
++    if (off == 0xc) {
++        assert(value == 1);
++        ++m->starts;
++        m->regs[4 / 4] = 0;
++        return;
++    }
++    if (off == 4) {
++        ++m->state_writes;
++        if (value == 1)
++            ++m->runs;
++        if (!value) {
++            ++m->resets;
++            m->runs = 0; /* cleanup erases live error registers */
++        }
++    }
++    if (off == 0x208) {
++        assert(value >= 3 && value <= 65);
++        m->data_bytes = value - 2;
++    }
++    if (off == 0x110)
++        assert(m->regs[4 / 4] == 3); /* FIFO writes only during PAUSE */
++    m->regs[off / 4] = value;
++}
++
++static uint64_t
++mock_now(void *cookie)
++{
++    struct mock *m = cookie;
++    return m->time;
++}
++
++static void
++mock_delay(void *cookie, uint32_t us)
++{
++    struct mock *m = cookie;
++    ++m->delay_calls;
++    if (!m->freeze)
++        m->time += m->backwards ? -(uint64_t)us : us;
++}
++
++static struct ltlq_io
++setup(struct mock *m)
++{
++    memset(m, 0, sizeof(*m));
++    m->regs[0x8 / 4] = 0x1fca5; /* old mode/shift bits must be cleared */
++    return (struct ltlq_io){m, mock_read, mock_write, mock_now, mock_delay};
++}
++
++static void
++check_order(const struct mock *m, uint8_t reg, unsigned len)
++{
++    const uint32_t offsets[] = {
++        0xc, 4, 0, 0x20, 0x28, 0x408, 0x200, 0x100, 0x208, 0x150,
++        8, 4, 0x400, 4, 0x110, 0x110, 0x110, 4, 4
++    };
++    uint32_t values[] = {
++        1, 0, 0x207, 0x3c, 0x300, 1, 0, 0, len + 2, 9,
++        0xc0a5, 1, 0x003e007c, 3, 0x01827081,
++        0x87718100u | reg, len, 1, 0
++    };
++    unsigned i;
++    assert(m->nwrites == sizeof(offsets) / sizeof(offsets[0]));
++    for (i = 0; i < m->nwrites; ++i) {
++        assert(m->writes[i].offset == offsets[i]);
++        assert(m->writes[i].value == values[i]);
++    }
++}
++
++static void
++success_cases(void)
++{
++    unsigned len, i;
++    for (len = 1; len <= 63; ++len) {
++        struct mock m;
++        struct ltlq_io io = setup(&m);
++        struct ltlq_result r;
++        uint8_t out[65];
++        memset(out, 0x5a, sizeof(out));
++        /* Also exercise natural clock rollover on an actual delayed STOP. */
++        if (len == 63)
++            m.time = UINT64_MAX - 4;
++        assert(ltlq_read_register(&io, 0xa3, out + 1, len, &r) == 0);
++        assert(r.error == 0 && r.status == 0x0c110000 && r.core == 0);
++        assert(m.starts == 1 && m.resets == 2);
++        assert(m.rx_words == (len + 5) / 4);
++        /* Completion sampling consumes the first bus-active observation;
++         * STOP then sees one active poll followed by idle. */
++        assert(m.delay_calls == 1 && r.polls > 0);
++        assert(out[0] == 0x5a && out[len + 1] == 0x5a);
++        for (i = 0; i < len; ++i)
++            assert(out[i + 1] == payload(i));
++        check_order(&m, 0xa3, len);
++        ++cases;
++    }
++    puts("PASS: lengths 1..63, aggregate tags/counts/order, drain-before-done, wrap");
++}
++
++static void
++invalid_cases(void)
++{
++    struct mock m;
++    struct ltlq_io io = setup(&m), bad;
++    struct ltlq_result r;
++    uint8_t out[64];
++    unsigned invalid[] = {0, 64, 65, UINT_MAX}, i;
++    for (i = 0; i < sizeof(invalid) / sizeof(invalid[0]); ++i) {
++        assert(ltlq_read_register(&io, 0, out, invalid[i], &r) == LTLQ_EINVAL);
++        assert(r.error == LTLQ_EINVAL && !r.polls);
++        ++cases;
++    }
++    assert(ltlq_read_register(NULL, 0, out, 1, &r) == LTLQ_EINVAL);
++    assert(ltlq_read_register(&io, 0, NULL, 1, &r) == LTLQ_EINVAL);
++    assert(ltlq_read_register(&io, 0, out, 1, NULL) == LTLQ_EINVAL);
++    for (i = 0; i < 4; ++i) {
++        bad = io;
++        if (i == 0) bad.read = NULL;
++        if (i == 1) bad.write = NULL;
++        if (i == 2) bad.now_us = NULL;
++        if (i == 3) bad.delay_us = NULL;
++        assert(ltlq_read_register(&bad, 0, out, 1, &r) == LTLQ_EINVAL);
++    }
++    assert(!m.nreads && !m.nwrites);
++    cases += 7;
++    puts("PASS: invalid lengths/pointers/callbacks cause no MMIO");
++}
++
++static void
++failure_cases(void)
++{
++    const struct {
++        enum fault fault;
++        int error;
++        uint32_t status, core;
++    } failures[] = {
++        {NACK, LTLQ_ENACK, 0x0d1300c8, 0},
++        {ARBITRATION, LTLQ_EARBITRATION, 0x0c110010, 0},
++        {BUS_ERROR, LTLQ_EIO, 0x0c110004, 0},
++        {CORE_ERROR, LTLQ_EIO, 0x0c110300, 0x2c},
++        {DONE_TIMEOUT, LTLQ_ETIMEOUT, 0x0c110000, 0},
++        {RX_TIMEOUT, LTLQ_ETIMEOUT, 0x0c110300, 0},
++        {STOP_TIMEOUT, LTLQ_ETIMEOUT, 0x0c110300, 0},
++        {RX_ERROR, LTLQ_EIO, 0x0c110080, 0}
++    };
++    unsigned i, j;
++    for (i = 0; i < sizeof(failures) / sizeof(failures[0]); ++i) {
++        struct mock m;
++        struct ltlq_io io = setup(&m);
++        struct ltlq_result r;
++        uint8_t out[12];
++        memset(out, 0xcc, sizeof(out));
++        m.fault = failures[i].fault;
++        assert(ltlq_read_register(&io, 0x02, out, sizeof(out), &r) ==
++               failures[i].error);
++        assert(r.error == failures[i].error && r.status == failures[i].status);
++        assert(r.core == failures[i].core);
++        assert(m.starts == 1 && m.resets == 2 && m.runs == 0);
++        assert(m.nwrites == 19); /* exactly one final/cleanup RESET, no retry */
++        for (j = 0; j < sizeof(out); ++j)
++            assert(out[j] == 0xcc);
++        if (m.fault == NACK) {
++            assert(r.op == 0x10 && m.rx_words == 0);
++            assert((r.status & 0x010000c8u) == 0x010000c8u);
++        }
++        ++cases;
++    }
++    puts("PASS: NACK/co-errors, arbitration, core/bus errors, all transfer waits");
++}
++
++static void
++state_and_clock_cases(void)
++{
++    unsigned i;
++    for (i = 0; i < 6; ++i) {
++        struct mock m;
++        struct ltlq_io io = setup(&m);
++        struct ltlq_result r;
++        uint8_t out = 0x5a;
++        m.fault = i == 0 ? RESET_TIMEOUT : STATE_TIMEOUT;
++        m.stall_state_write = i;
++        assert(ltlq_read_register(&io, 0xa3, &out, 1, &r) == LTLQ_ETIMEOUT);
++        assert(out == 0x5a && r.error == LTLQ_ETIMEOUT);
++        assert(m.starts == 1);
++        /* A failed terminal RESET is not attempted a second time. */
++        if (i == 5)
++            assert(m.state_writes == 5 && m.resets == 2);
++        ++cases;
++    }
++    for (i = 0; i < 2; ++i) {
++        struct mock m;
++        struct ltlq_io io = setup(&m);
++        struct ltlq_result r;
++        uint8_t out = 0x5a;
++        m.fault = DONE_TIMEOUT;
++        m.freeze = i == 0;
++        m.backwards = i == 1;
++        assert(ltlq_read_register(&io, 0, &out, 1, &r) == LTLQ_ETIMEOUT);
++        assert(out == 0x5a && m.starts == 1 && m.resets == 2);
++        assert(r.polls < 14000);
++        ++cases;
++    }
++    {
++        struct mock m;
++        struct ltlq_io io = setup(&m);
++        struct ltlq_result r;
++        uint8_t out = 0x5a;
++        m.fault = NACK;
++        m.cleanup_stall = 1;
++        assert(ltlq_read_register(&io, 0, &out, 1, &r) == LTLQ_ENACK);
++        assert(r.status == 0x0d1300c8 && r.op == 0x10);
++        assert(out == 0x5a && m.resets == 2 && m.starts == 1);
++        ++cases;
++    }
++    puts("PASS: every STATE transition, stalled/backwards time, cleanup failure");
++}
++
++int
++main(void)
++{
++    success_cases();
++    invalid_cases();
++    failure_cases();
++    state_and_clock_cases();
++    printf("PASS: touch-live-qup (%u focused cases)\n", cases);
++    return 0;
++}
+--- /dev/null
++++ b/maintenance/hakios-lithium/peripherals/touch-live-events-test.c
+@@ -0,0 +1,218 @@
++/* SPDX-License-Identifier: BSD-2-Clause-Patent */
++/* Run from the repository root; all output stays under the evidence path:
++ * clang -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined \
++ *   maintenance/hakios-lithium/peripherals/touch-live-events-test.c \
++ *   -o evidence/touch-live-20261120/events/events-test
++ * evidence/touch-live-20261120/events/events-test
++ */
++#include <assert.h>
++#include <stdio.h>
++#include <string.h>
++#include "../../../upstream/hakios-xnu-kernel/xnu/files/bsd/sys/hakios.input.h"
++
++/* Upstream's unmodified public header lacks the local 0020 batch extension.
++ * Reproduce only that declaration for the host receiver below. The real
++ * prepared kernel already exports it, as verified in the integration note.
++ */
++#ifndef HAKIOS_TOUCH_BATCH_MAX
++#define HAKIOS_TOUCH_BATCH_MAX 20
++int hakios_touch_post_batch(const struct hakios_touch *, uint32_t);
++#endif
++#include "../../../ports/hakios-lithium/peripherals/touch-live-events.h"
++
++static struct hakios_touch posted[LTLE_BATCH_MAX];
++static uint32_t posted_count, calls;
++static int reject;
++
++/* Host spy for the exact production sink symbol, not a second event parser. */
++int
++hakios_touch_post_batch(const struct hakios_touch *events, uint32_t count)
++{
++    ++calls;
++    assert(count > 0 && count <= LTLE_BATCH_MAX);
++    if (reject) return reject;
++    memcpy(posted, events, count * sizeof(*events));
++    posted_count = count;
++    for (uint32_t i = 0; i < count; ++i) {
++        assert(events[i].time == 0);
++        assert(events[i].type >= HAKIOS_TOUCH_DOWN &&
++            events[i].type <= HAKIOS_TOUCH_UP);
++        assert(events[i].finger < 10);
++        assert(events[i].x <= 65535 && events[i].y <= 65535);
++    }
++    return 0;
++}
++
++static void
++frame(uint8_t *r)
++{
++    memset(r, 0, LTLE_REPORT_BYTES);
++    for (unsigned i = 0; i < 10; ++i) r[5 + 6 * i] = 0xf0;
++}
++
++static void
++point(uint8_t *r, unsigned slot, unsigned id, unsigned event,
++    unsigned x, unsigned y)
++{
++    uint8_t *p = r + 3 + slot * 6;
++    p[0] = (uint8_t)((event << 6) | ((x >> 8) & 15));
++    p[1] = (uint8_t)x;
++    p[2] = (uint8_t)((id << 4) | ((y >> 8) & 15));
++    p[3] = (uint8_t)y;
++}
++
++static void
++report(struct ltle_state *s, uint8_t *r)
++{
++    posted_count = 0;
++    assert(ltle_report(s, r, 63, ltle_hakios_sink, NULL) == LTLE_OK);
++}
++
++static void
++single_and_missing_release(void)
++{
++    struct ltle_state s;
++    uint8_t r[63];
++    assert(ltle_init(&s, 1080, 2040, 0) == LTLE_OK);
++    frame(r);
++    point(r, 0, 14, 0, 540, 1020);
++    report(&s, r);
++    assert(posted_count == 1 && posted[0].type == HAKIOS_TOUCH_DOWN);
++    assert(posted[0].finger == 0 && posted[0].x == 32768 &&
++        posted[0].y == 32768);
++    const unsigned before = calls;
++    report(&s, r); /* same DOWN register contents, not another tap */
++    assert(posted_count == 0 && calls == before);
++    point(r, 0, 14, 2, 1080, 2040);
++    report(&s, r);
++    assert(posted_count == 1 && posted[0].type == HAKIOS_TOUCH_MOVE);
++    assert(posted[0].x == 65535 && posted[0].y == 65535);
++    frame(r); /* dropped UP: disappearance releases last accepted position */
++    report(&s, r);
++    assert(posted_count == 1 && posted[0].type == HAKIOS_TOUCH_UP);
++    assert(posted[0].x == 65535 && posted[0].y == 65535);
++    report(&s, r);
++    assert(posted_count == 0);
++    puts("PASS single/down/move/repeated-report/missing-UP");
++}
++
++static void
++multitouch_and_slot_reuse(void)
++{
++    struct ltle_state s;
++    uint8_t r[63];
++    assert(ltle_init(&s, 1080, 2040, 0) == LTLE_OK);
++    frame(r);
++    for (unsigned i = 0; i < 10; ++i)
++        point(r, i, i + 5, 2, i * 100, i * 200); /* CONTACT rejoin */
++    report(&s, r);
++    assert(posted_count == 10);
++    for (unsigned i = 0; i < 10; ++i) {
++        assert(posted[i].type == HAKIOS_TOUCH_DOWN);
++        assert(posted[i].finger == i);
++    }
++    frame(r);
++    for (unsigned i = 0; i < 10; ++i)
++        point(r, 9 - i, i + 5, 2, i * 100, i * 200);
++    report(&s, r); /* shuffled hardware record order leaves consumer IDs alone */
++    assert(posted_count == 0);
++    frame(r);
++    for (unsigned i = 0; i < 10; ++i)
++        point(r, i, i, 2, i * 100, i * 200);
++    report(&s, r);
++    assert(posted_count == 15); /* 5 UP, 5 new DOWN, 5 moved survivors */
++    for (unsigned i = 0; i < 5; ++i)
++        assert(posted[i].type == HAKIOS_TOUCH_UP);
++    for (unsigned i = 5; i < 10; ++i) {
++        assert(posted[i].type == HAKIOS_TOUCH_DOWN);
++        assert(posted[i].finger == i);
++    }
++    assert(ltle_release_all(&s, ltle_hakios_sink, NULL) == LTLE_OK);
++    assert(posted_count == 10);
++    for (unsigned i = 0; i < 10; ++i)
++        assert(posted[i].type == HAKIOS_TOUCH_UP);
++    puts("PASS ten contacts/high hardware IDs/shuffle/releases-before-reuse");
++}
++
++static void
++mapping_and_explicit_up(void)
++{
++    struct ltle_state s;
++    struct ltle_position p;
++    uint8_t r[63];
++    assert(ltle_init(&s, 1080, 2040, 0) == LTLE_OK);
++    assert(ltle_map(&s.geometry, 0, 0, &p) && p.x == 0 && p.y == 0);
++    assert(ltle_map(&s.geometry, 1080, 2040, &p));
++    assert(p.x == 65535 && p.y == 65535 &&
++        p.pixel_x == 1079 && p.pixel_y == 2039);
++    assert(ltle_init(&s, 360, 680, 0) == LTLE_OK);
++    assert(ltle_map(&s.geometry, 540, 1020, &p));
++    assert(p.x == 32768 && p.y == 32768);
++    for (unsigned i = 0; i < 4; ++i) {
++        static const unsigned rotations[] = {0, 90, 180, 270};
++        static const unsigned xs[] = {0, 65535, 65535, 0};
++        static const unsigned ys[] = {0, 0, 65535, 65535};
++        assert(ltle_init(&s, 1080, 2040, rotations[i]) == LTLE_OK);
++        assert(ltle_map(&s.geometry, 0, 0, &p));
++        assert(p.x == xs[i] && p.y == ys[i]);
++    }
++    assert(ltle_init(&s, 1080, 2040, 0) == LTLE_OK);
++    frame(r);
++    point(r, 0, 2, 0, 0, 2040);
++    report(&s, r);
++    point(r, 0, 2, 1, 4095, 4095); /* unusable UP position is ignored */
++    report(&s, r);
++    assert(posted_count == 1 && posted[0].type == HAKIOS_TOUCH_UP &&
++        posted[0].x == 0 && posted[0].y == 65535);
++    puts("PASS geometry/rotation/normalization/explicit-UP-last-position");
++}
++
++static void
++rejection_and_bad_reports(void)
++{
++    struct ltle_state s, before;
++    uint8_t r[63];
++    assert(ltle_init(&s, 1080, 2040, 0) == LTLE_OK);
++    frame(r);
++    point(r, 0, 1, 0, 100, 200);
++    before = s;
++    reject = 55; /* real sink convention: nonzero means none enqueued */
++    assert(ltle_report(&s, r, 63, ltle_hakios_sink, NULL) ==
++        LTLE_SINK_REJECTED);
++    assert(memcmp(&before, &s, sizeof(s)) == 0);
++    reject = 0;
++    report(&s, r);
++    assert(posted_count == 1 && posted[0].type == HAKIOS_TOUCH_DOWN);
++    before = s;
++    const unsigned old_calls = calls;
++    assert(ltle_report(&s, r, 62, ltle_hakios_sink, NULL) == LTLE_BAD_REPORT);
++    point(r, 1, 1, 2, 100, 200); /* duplicate ID */
++    assert(ltle_report(&s, r, 63, ltle_hakios_sink, NULL) == LTLE_BAD_REPORT);
++    frame(r);
++    point(r, 0, 1, 3, 100, 200); /* reserved event */
++    assert(ltle_report(&s, r, 63, ltle_hakios_sink, NULL) == LTLE_BAD_REPORT);
++    point(r, 0, 1, 2, 1081, 200);
++    assert(ltle_report(&s, r, 63, ltle_hakios_sink, NULL) == LTLE_BAD_REPORT);
++    assert(memcmp(&before, &s, sizeof(s)) == 0 && calls == old_calls);
++    reject = 55;
++    assert(ltle_release_all(&s, ltle_hakios_sink, NULL) == LTLE_SINK_REJECTED);
++    assert(memcmp(&before, &s, sizeof(s)) == 0);
++    reject = 0;
++    assert(ltle_release_all(&s, ltle_hakios_sink, NULL) == LTLE_OK);
++    assert(posted_count == 1 && posted[0].type == HAKIOS_TOUCH_UP);
++    const unsigned released = calls;
++    assert(ltle_release_all(&s, ltle_hakios_sink, NULL) == LTLE_OK);
++    assert(calls == released);
++    puts("PASS short/duplicate/reserved/out-of-range/rejected-batch/release-retry");
++}
++
++int
++main(void)
++{
++    single_and_missing_release();
++    multitouch_and_slot_reuse();
++    mapping_and_explicit_up();
++    rejection_and_bad_reports();
++    puts("PASS all 4 focused touch-live groups; production sink adapter exercised");
++    return 0;
++}
+--- /dev/null
++++ b/scripts/prepare-hakios-touch-live.py
+@@ -0,0 +1,47 @@
++#!/usr/bin/env python3
++"""Add the live touch producer to the existing HakiOS build, host only."""
++import difflib
++from pathlib import Path
++import sys
++sys.dont_write_bytecode = True
++import hakios
++
++ROOT = Path(__file__).resolve().parents[1]
++WORK = Path('/home/jia/ios-mix1-build/hakios-lithium-ios16')
++PATCH = ROOT/'ports/hakios-lithium/patches/0024-lithium-touch-live.patch'
++
++
++def main():
++    if not PATCH.exists():
++        name = 'xnu/files/osfmk/arm64/loader_return.c'
++        before = (WORK/name).read_text()
++        old = '\t\tlithium_lsdb_finalize();\n'
++        assert before.count(old) == 1
++        after = before.replace(old, '\t\textern void hakios_lithium_touch_stop(void);\n'
++            '\t\thakios_lithium_touch_stop();\n'+old)
++        chunks = [''.join(difflib.unified_diff(before.splitlines(True), after.splitlines(True),
++            fromfile='a/'+name, tofile='b/'+name))]
++        name = 'userland/src/init.c'
++        before = (WORK/name).read_text()
++        old = ('\t*reason = "touch_stage_requires_exact_1";\n'
++            '\tif (lithium_touch_diag_arg(args, "touch_stage", &value, &length) != 1 ||\n'
++            '\t    !lithium_touch_diag_is(value, length, "1")) {\n\t\treturn 1;\n\t}\n')
++        assert before.count(old) == 1
++        new = ('\t*reason = "touch_stage_or_live_required";\n'
++            '\tunsigned stages = lithium_touch_diag_arg(args, "touch_stage", &value, &length);\n'
++            '\tint stage_one = stages == 1 && lithium_touch_diag_is(value, length, "1");\n'
++            '\tunsigned lives = lithium_touch_diag_arg(args, "touch", &value, &length);\n'
++            '\tint live_one = lives == 1 && lithium_touch_diag_is(value, length, "1");\n'
++            '\tif (!((stage_one && lives == 0) || (live_one && stages == 0))) {\n'
++            '\t\treturn 1;\n\t}\n')
++        after = before.replace(old, new)
++        chunks.append(''.join(difflib.unified_diff(before.splitlines(True), after.splitlines(True),
++            fromfile='a/'+name, tofile='b/'+name)))
++        PATCH.write_text(''.join(chunks))
++    spec = hakios.read(hakios.MANIFEST)
++    hakios.prepare(spec, hakios.policy(spec))
++    print('Live touch sources synchronized; existing frozen images retained.')
++
++
++if __name__ == '__main__':
++    main()
+--- /dev/null
++++ b/scripts/build-hakios-touch-live.py
+@@ -0,0 +1,93 @@
++#!/usr/bin/env python3
++"""Build changed live-touch kernel and init; reuse unchanged firmware/userland."""
++import argparse
++import json
++import os
++from pathlib import Path
++import shutil
++import subprocess
++import sys
++import time
++sys.dont_write_bytecode = True
++import hakios
++
++ROOT = Path(__file__).resolve().parents[1]
++EVIDENCE = ROOT/'evidence/touch-live-20261120/main'
++WORK = Path('/home/jia/ios-mix1-build/hakios-lithium-ios16')
++
++
++def run(label, argv, *, env=None, cwd=WORK):
++    path = EVIDENCE/(label+'.log')
++    if path.exists():
++        path = EVIDENCE/(label+'-'+str(time.time_ns())+'.log')
++    with path.open('w') as sink:
++        proc = subprocess.run(argv, cwd=cwd, env=env, stdout=sink, stderr=subprocess.STDOUT)
++    if proc.returncode:
++        print(path.read_text(errors='replace')[-7000:])
++        raise RuntimeError(f'{label} failed ({proc.returncode}); log retained: {path}')
++    print('PASS '+label, flush=True)
++    return path
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('phase', choices=('prepare', 'kernel', 'root'))
++    args = parser.parse_args()
++    EVIDENCE.mkdir(parents=True, exist_ok=True)
++    hakios.resource_check()
++    spec = hakios.read(hakios.MANIFEST)
++    if args.phase == 'prepare':
++        run('prepare', [sys.executable, '-B', str(ROOT/'scripts/prepare-hakios-touch-live.py')])
++        # Input overlays are real compile sources, not documentation markers.
++        overlay = WORK/'xnu/files/osfmk/arm64/loader_return.c'
++        shutil.copyfile(overlay, WORK/'xnu-src/xnu-8796.121.2/osfmk/arm64/loader_return.c')
++        return
++    hakios.verify_workspace(spec)
++    env = dict(os.environ, HAKIOS_SOC='msm8996')
++    if args.phase == 'kernel':
++        deps = hakios.read(ROOT/'reports/hakios-ios16-dependencies.json')
++        env.update(JOBS='12', MAKEFLAGS='-j12', MAKEJOBS='--jobs=12',
++                   THEOS=deps['theos_linux_path'])
++        env['PATH'] = '/home/jia/ios-mix1-build/venv/bin:'+env['PATH']
++        log = run('kernel', ['make', 'kernel', 'SHELL=/bin/bash', 'MAKEJOBS=--jobs=12',
++                  'DEVICE=lithium', 'JOBS=12'], env=env)
++        kernel = WORK/'hakios-kernel'
++        data = kernel.read_bytes()
++        assert b'LITHIUM TOUCH live ready' in data
++        assert b'LITHIUM TOUCH live reset' in data
++        hakios.write(EVIDENCE/'kernel-result.json', dict(passed=True,
++            kernel=str(kernel), sha256=hakios.sha(kernel), bytes=len(data),
++            inputs=hakios.inputs(spec), command_log=str(log), device_operations=0))
++    else:
++        # Recompile actual PID1; all unchanged applications/libs/jobs are reused.
++        shell = ('source ./xnu-env.sh\n'
++            'xnu-clang -arch arm64 -Os -static -nostdlib -ffreestanding '
++            '-fno-stack-protector -fno-builtin -Wall -Wextra -Iuserland/libmini '
++            '-Wl,-e,_start -Wl,-pagezero_size,0x100000000 '
++            '-o userland/obj/init.touch-live userland/src/init.c '
++            'userland/obj/mini.o userland/obj/start.o\n')
++        env['PATH'] = str(WORK/'xnu-deps/host/bin')+':'+env['PATH']
++        run('init', ['bash', '-e', '-c', shell], env=env)
++        init = WORK/'userland/obj/init.touch-live'
++        assert b'touch_stage_or_live_required' in init.read_bytes()
++        # Native ext4 staging preserves existing owner/modes and all userspace.
++        stage = WORK/'userland/root.touch-live'
++        if stage.exists():
++            stage = WORK/('userland/root.touch-live-'+str(time.time_ns()))
++        shutil.copytree(WORK/'userland/root', stage, copy_function=shutil.copy2,
++                        symlinks=True)
++        shutil.copyfile(init, stage/'sbin/init')
++        os.chmod(stage/'sbin/init', 0o755)
++        output = WORK/'userland/root.touch-live.apfs'
++        run('ram-root', [sys.executable, str(WORK/'tools/apfs/mkapfs.py'),
++            '-z', '--plain', 'fw', '-o', str(output), 'redwood='+str(stage)], env=env)
++        run('ram-root-check', [str(WORK/'tools/apfs/check-image.sh'),str(output),
++            'redwood='+str(stage)],env=env)
++        hakios.write(EVIDENCE/'root-result.json', dict(passed=True, root=str(output),
++            sha256=hakios.sha(output), init_sha256=hakios.sha(init),
++            inputs=hakios.inputs(spec), unchanged_libs_jobs_reused=True,
++            device_operations=0))
++
++
++if __name__ == '__main__':
++    main()
+--- /dev/null
++++ b/scripts/package-hakios-touch-live.py
+@@ -0,0 +1,345 @@
++#!/usr/bin/env python3
++"""Package R34 touch-live with frozen R33 RAM or R20 UFS boot support.
++
++Host only; writes solely to a new private --output directory. No build, phone
++query, firmware download, or external provenance/regression gate is invoked.
++"""
++import argparse
++from datetime import datetime, timezone
++import gzip
++import hashlib
++import importlib.util
++import json
++from pathlib import Path
++import struct
++import sys
++
++# Importing existing helpers must not create files outside --output.
++sys.dont_write_bytecode = True
++ROOT = Path(__file__).resolve().parents[1]
++BASE = ROOT / "artifacts/hakios/lithium-ios16"
++SUPPORT = {
++    "ram": ("phase4-r33-return-fastboot",
++            "lithium-hakios-ios16-r33-return-fastboot.img",
++            "7a4010a051e16c9f339d1ed5b04ea64abc7ac69e952de3072d78dab94a5a956e"),
++    "ufs": ("phase4-r20-display", "lithium-hakios-ios16-r20-display.img",
++            "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82"),
++}
++RAM_ARGS = (
++    "bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 "
++    "fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 "
++    "loader_return_after=180 usertraps=1 epoch=1794940756 "
++    "touch=1 touch_log=1 touch_poll=1 touch_diag=1 "
++    "return_fastboot=1 return_fastboot_delay=10"
++)
++FD_AT, XNUP_AT = 0x1000, 0x301000
++IMAGE_LIMIT, PAYLOAD_LIMIT, COMMAND_CAPACITY = 0x2433000, 0x3F00000, 608
++NOP = struct.pack("<I", 0xD503201F)
++ENTRY_NAMES = {"kernel", "ramdisk", "resident", "cmdline", "kernel.ver"}
++
++
++def require(ok, message):
++    if not ok:
++        raise RuntimeError(message)
++
++
++def digest(data):
++    return hashlib.sha256(data).hexdigest()
++
++
++def metadata(data):
++    return {"bytes": len(data), "sha256": digest(data)}
++
++
++def bootstrap():
++    """Import codec/check_boot functions, without running their CLI gate engines."""
++    scripts = str(ROOT / "scripts")
++    if scripts not in sys.path:
++        sys.path.insert(0, scripts)
++    modules = []
++    for name, filename in (
++            ("touch_live_codec", "package-hakios-ios16-touch-r21.py"),
++            ("touch_live_boot", "package-hakios-ios16.py")):
++        spec = importlib.util.spec_from_file_location(name, ROOT / "scripts" / filename)
++        module = importlib.util.module_from_spec(spec)
++        spec.loader.exec_module(module)
++        modules.append(module)
++    return modules
++
++
++def text_entry(data):
++    require(data.endswith(b"\0") and b"\0" not in data[:-1], "invalid XNUP text entry")
++    return data[:-1].decode("ascii")
++
++
++def make_args(profile, previous):
++    if profile == "ram":
++        return RAM_ARGS
++    # Keep all non-touch R20 arguments, including root, Data and write settings.
++    tokens = [word for word in previous.split()
++              if not word.split("=", 1)[0].startswith("touch")]
++    require(not any(word.split("=", 1)[0].startswith("return_fastboot")
++                    for word in tokens), "UFS support unexpectedly requests automatic Fastboot")
++    return " ".join(tokens + ["touch=1", "touch_log=1", "touch_poll=1"])
++
++
++def command_budget(args, version, profile):
++    # Both frozen loaders add rd=md0 for resident Boot and own the watchdog.
++    prefix = "debug=0x8 rd=md0 hv_wdt_pet=1 "
++    if profile == "ufs":
++        prefix += "ufs_shared_pa=0x" + "0" * 16 + " "
++    prefix += "hakios_kver=" + version + " "
++    used = len((prefix + args).encode("ascii")) + 1
++    require(used <= COMMAND_CAPACITY, "loader command line would truncate")
++    return {"capacity_including_nul": COMMAND_CAPACITY,
++            "reserved_bytes": used, "spare_bytes": COMMAND_CAPACITY - used}
++
++
++def verify_kernel(data, profile):
++    require(0x100000 < len(data) < IMAGE_LIMIT, "kernel size outside boot bounds")
++    magic, cpu, subtype, kind, commands, command_bytes, _, _ = struct.unpack_from("<8I", data)
++    require(magic == 0xFEEDFACF and cpu == 0x100000C and
++            (subtype & 0xFFFFFF) in (0, 1) and kind == 2,
++            "kernel must be thin arm64 Mach-O executable, not arm64e")
++    require(0 < commands <= command_bytes // 8 and 32 + command_bytes <= len(data),
++            "invalid kernel load-command bounds")
++    at = 32
++    for _ in range(commands):
++        require(at + 8 <= 32 + command_bytes, "truncated kernel load command")
++        _, size = struct.unpack_from("<II", data, at)
++        require(size >= 8 and size % 8 == 0 and at + size <= 32 + command_bytes,
++                "invalid kernel load command")
++        at += size
++    require(at == 32 + command_bytes, "kernel load-command extent differs")
++    markers = [b"Darwin Kernel Version", b"8796.121.2",
++               b"LITHIUM TOUCH live id", b"LITHIUM TOUCH live ready",
++               b"loader_return_after"]
++    if profile == "ram":
++        markers += [b"return_fastboot", b"LITHIUM FASTBOOT status=armed"]
++    for marker in markers:
++        require(marker in data, "kernel marker missing: " + marker.decode())
++    return {"architecture": "arm64", "cpu_subtype": subtype,
++            "markers": [marker.decode() for marker in markers]}
++
++
++def verify_root(data):
++    require(len(data) >= 4096 and data[32:36] == b"NXSB",
++            "--root must be a raw APFS container, not an init executable")
++    block, count = struct.unpack_from("<IQ", data, 36)
++    require(block >= 4096 and block <= 65536 and block & (block - 1) == 0 and
++            count > 0 and block * count == len(data), "APFS container extent differs")
++    return {"block_bytes": block, "blocks": count,
++            "contents": "supplied by caller; filesystem files not inspected"}
++
++
++def fat_loader(data):
++    """Read the frozen FAT12/16 root file HAKIOS.EFI; no mtools or FAT rewrite."""
++    require(len(data) >= 512 and data[510:512] == b"\x55\xaa", "invalid loader FAT")
++    sector = struct.unpack_from("<H", data, 11)[0]
++    cluster_sectors = data[13]
++    reserved = struct.unpack_from("<H", data, 14)[0]
++    copies = data[16]
++    roots, total = struct.unpack_from("<HH", data, 17)
++    fat_sectors = struct.unpack_from("<H", data, 22)[0]
++    total = total or struct.unpack_from("<I", data, 32)[0]
++    require(sector in (512, 1024, 2048, 4096) and cluster_sectors > 0 and
++            cluster_sectors & (cluster_sectors - 1) == 0 and reserved and
++            copies and roots and fat_sectors and total * sector == len(data),
++            "invalid frozen FAT geometry")
++    root_at = (reserved + copies * fat_sectors) * sector
++    data_at = root_at + ((roots * 32 + sector - 1) // sector) * sector
++    unit = sector * cluster_sectors
++    clusters = (len(data) - data_at) // unit
++    require(0 < clusters < 65525, "only frozen FAT12/16 supported")
++    bits = 12 if clusters < 4085 else 16
++    table = data[reserved * sector:(reserved + fat_sectors) * sector]
++    files = []
++    for at in range(root_at, root_at + roots * 32, 32):
++        item = data[at:at + 32]
++        require(len(item) == 32, "FAT root out of bounds")
++        if item[0] == 0:
++            break
++        if item[:11] == b"HAKIOS  EFI" and not (item[11] & 0x18):
++            files.append((struct.unpack_from("<H", item, 26)[0],
++                          struct.unpack_from("<I", item, 28)[0]))
++    require(len(files) == 1, "frozen FAT must contain one HAKIOS.EFI")
++    cluster, length = files[0]
++    require(0 < length <= len(data), "invalid loader size")
++    result, seen = bytearray(), set()
++    while len(result) < length:
++        require(2 <= cluster < clusters + 2 and cluster not in seen,
++                "FAT loader chain invalid or cyclic")
++        seen.add(cluster)
++        start = data_at + (cluster - 2) * unit
++        require(start + unit <= len(data), "FAT cluster out of bounds")
++        result += data[start:start + unit]
++        pos = cluster * 3 // 2 if bits == 12 else cluster * 2
++        require(pos + 2 <= len(table), "FAT entry out of bounds")
++        entry = struct.unpack_from("<H", table, pos)[0]
++        cluster = ((entry >> 4 if cluster & 1 else entry & 0xFFF)
++                   if bits == 12 else entry)
++    require(cluster >= (0xFF8 if bits == 12 else 0xFFF8), "loader chain has trailing clusters")
++    loader = bytes(result[:length])
++    require(loader.startswith(b"MZ"), "frozen loader is not a PE executable")
++    return loader
++
++
++def replace_copy_length(shim, old_bytes, new_bytes):
++    """Retain code/geometry; update the literal loaded by `ldr x6, =size`."""
++    require(len(shim) == FD_AT and shim[56:60] == b"ARM\x64" and
++            struct.unpack_from("<Q", shim, 16)[0] == IMAGE_LIMIT,
++            "unexpected frozen Linux Image geometry")
++    targets = []
++    for at in range(64, 0x800, 4):
++        insn = struct.unpack_from("<I", shim, at)[0]
++        if insn & 0xFF00001F == 0x58000006:
++            offset = (insn >> 5) & 0x7FFFF
++            if offset & 0x40000:
++                offset -= 0x80000
++            target = at + 4 * offset
++            if 64 <= target <= FD_AT - 8:
++                targets.append(target)
++    require(len(targets) == 1, "cannot identify unique shim XNUP copy-length literal")
++    target = targets[0]
++    require(struct.unpack_from("<Q", shim, target)[0] == (old_bytes + 15) & ~15,
++            "frozen shim copy length differs from actual payload")
++    updated = bytearray(shim)
++    struct.pack_into("<Q", updated, target, (new_bytes + 15) & ~15)
++    require(updated[:target] == shim[:target] and updated[target + 8:] == shim[target + 8:],
++            "shim changed beyond its copy-length literal")
++    return bytes(updated), target
++
++
++def make_android(raw, dtbs, fat, base_header):
++    packed = gzip.compress(raw, compresslevel=9, mtime=0) + dtbs
++    header = bytearray(base_header)
++    struct.pack_into("<I", header, 8, len(packed))
++    struct.pack_into("<I", header, 16, len(fat))
++    checksum = hashlib.sha1()
++    for part in (packed, fat, b""):
++        checksum.update(part)
++        checksum.update(struct.pack("<I", len(part)))
++    header[576:608] = checksum.digest() + bytes(12)
++    return (bytes(header) + packed + bytes((-len(packed)) % 4096) +
++            fat + bytes((-len(fat)) % 4096))
++
++
++def package(kernel_path, root_path, profile, output):
++    output = Path(output).resolve()
++    require(not output.exists(), "output exists; choose a new private artifact directory")
++    codec, boot = bootstrap()
++    directory, image_name, expected_sha = SUPPORT[profile]
++    base_path = BASE / directory / image_name
++    frozen = base_path.read_bytes()
++    require(digest(frozen) == expected_sha, "frozen support image hash differs")
++    old_raw, dtbs, fat, header = codec.decode_android(frozen)
++    boot.check_boot(frozen, old_raw, dtbs, fat, header)
++    require(len(old_raw) > XNUP_AT + 32 and old_raw[XNUP_AT:XNUP_AT + 4] == b"XNUP",
++            "frozen shim/XNUP offset differs")
++    old_size = struct.unpack_from("<I", old_raw, XNUP_AT + 4)[0] + 8
++    require(old_size < PAYLOAD_LIMIT and XNUP_AT + old_size <= len(old_raw),
++            "frozen payload exceeds Image")
++    previous = codec.parse_payload(old_raw[XNUP_AT:XNUP_AT + old_size])
++    require(set(previous) == ENTRY_NAMES and
++            old_raw[XNUP_AT + old_size:] == NOP * ((-old_size) % 16 // 4),
++            "unexpected frozen payload entries or padding")
++    loader = fat_loader(fat)
++    kernel_path, root_path = Path(kernel_path).resolve(), Path(root_path).resolve()
++    kernel, root = kernel_path.read_bytes(), root_path.read_bytes()
++    kernel_info, root_info = verify_kernel(kernel, profile), verify_root(root)
++    args = make_args(profile, text_entry(previous["cmdline"]))
++    budget = command_budget(args, text_entry(previous["kernel.ver"]), profile)
++    entries = dict(previous, kernel=kernel, ramdisk=root, cmdline=args.encode("ascii") + b"\0")
++    payload = codec.encode_payload(list(entries.items()))
++    end = XNUP_AT + ((len(payload) + 15) & ~15)
++    require(0 < len(payload) < PAYLOAD_LIMIT and end <= IMAGE_LIMIT,
++            "new payload exceeds high-DDR or incoming Image reservation")
++    shim, literal_at = replace_copy_length(old_raw[:FD_AT], old_size, len(payload))
++    fd = old_raw[FD_AT:XNUP_AT]
++    raw = shim + fd + payload + NOP * ((-len(payload)) % 16 // 4)
++    require(len(raw) == end and len(fd) == 0x300000, "new shim layout differs")
++    image = make_android(raw, dtbs, fat, header)
++    image_name = "lithium-hakios-ios16-r34-touch-live-" + profile + ".img"
++    components = {"hakios-kernel": kernel, "root.apfs": root,
++                  "flashboot.apfs": entries["resident"], "lithium.fd": fd,
++                  "loader.efi": loader, "loader.fat": fat, "payload.bin": payload,
++                  "Image": raw, image_name: image, "boot-args.txt": (args + "\n").encode()}
++    # mkdir without exist_ok also protects against a concurrent output creator.
++    output.mkdir(parents=True)
++    for name, data in components.items():
++        with (output / name).open("xb") as stream:
++            stream.write(data)
++    # Check bytes actually written, not only the in-memory construction.
++    require(all((output / name).read_bytes() == data for name, data in components.items()),
++            "written package component differs")
++    returned = (output / image_name).read_bytes()
++    boot.check_boot(returned, raw, dtbs, fat, header)
++    final_raw, final_dtbs, final_fat, _ = codec.decode_android(returned)
++    final_payload = final_raw[XNUP_AT:XNUP_AT + len(payload)]
++    require(final_raw == raw and final_dtbs == dtbs and final_fat == fat and
++            final_raw[:FD_AT] == shim and final_raw[FD_AT:XNUP_AT] == fd and
++            codec.parse_payload(final_payload) == entries and
++            fat_loader(final_fat) == loader, "final embedded layer readback differs")
++    topology = {
++        "bootcpu": 1, "cpus": 1, "expected_physical_affinity": "0x1",
++        "expected_mpidr": "0x80000001", "loader_adds": "rd=md0",
++        "md0": "resident Boot/flashboot.apfs: stage0",
++        "md1": "ramdisk redwood/root.apfs: supplied init",
++        "system_root": "md1 RAM diagnostic" if profile == "ram" else "ufs_userdata",
++        "data": None if profile == "ram" else "ufs_darwin_data (read-write)",
++        "physical_cpu_runtime_verified": False,
++    }
++    contract = {
++        "schema": "hakios-touch-live-package-v1", "candidate": "R34-touch-live-" + profile,
++        "created_at": datetime.now(timezone.utc).isoformat(), "profile": profile,
++        "passed": True, "package_host_ready": True, "physical_touch_verified": False,
++        "device_operations": False, "partition_operations": False, "qemu_used": False,
++        "cmdline": args, "boot_args": args, "command_budget": budget,
++        "boot_topology": topology, "return_fastboot": profile == "ram",
++        "ufs_automatic_return_supported": False,
++        "normal_boot_may_write_userdata": profile == "ufs",
++        "support": {"path": str(base_path), "sha256": expected_sha,
++                    "frozen_mu_fat_loader_resident_dtb_reused": True},
++        "inputs": {"kernel": dict(path=str(kernel_path), **metadata(kernel)),
++                   "root": dict(path=str(root_path), **metadata(root))},
++        "kernel": kernel_info, "root": root_info,
++        "kernel_version_entry_source": "unchanged frozen support label; input hash identifies new build",
++        "image": dict(path=image_name, **metadata(image)),
++        "components": {name: metadata(data) for name, data in components.items()},
++        "payload_entries": {name: metadata(data) for name, data in entries.items()},
++        "layout": {"fd_offset": FD_AT, "xnup_offset": XNUP_AT, "image_end": end,
++                   "image_limit": IMAGE_LIMIT, "payload_limit": PAYLOAD_LIMIT,
++                   "shim_copy_length_literal_offset": literal_at,
++                   "shim_copy_bytes": (len(payload) + 15) & ~15,
++                   "dtbs": metadata(dtbs), "base_header": metadata(header)},
++        "readback": {"android_header_and_sha1": True, "gzip_dtb_fat": True,
++                     "shim_literal_and_mu": True, "xnup_exact_entries": True,
++                     "fat_loader": True, "all_written_components": True},
++        "script_sha256": digest(Path(__file__).read_bytes()),
++    }
++    with (output / "contract.json").open("x", encoding="utf-8", newline="\n") as stream:
++        json.dump(contract, stream, indent=2, ensure_ascii=False)
++        stream.write("\n")
++    print("PASS: R34 touch-live host package; exact final layers and bounds checked")
++    print("image=" + str(output / image_name))
++    print("sha256=" + digest(image))
++    print("boot-args=" + args)
++    print("contract=" + str(output / "contract.json"))
++    return contract
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--kernel", type=Path, required=True, help="new full HakiOS arm64 Mach-O")
++    parser.add_argument("--root", type=Path, required=True, help="raw APFS root containing caller's init")
++    parser.add_argument("--profile", choices=("ram", "ufs"), required=True)
++    parser.add_argument("--output", type=Path, required=True, help="new private artifact directory")
++    args = parser.parse_args()
++    try:
++        package(args.kernel, args.root, args.profile, args.output)
++    except (OSError, RuntimeError, ValueError, struct.error) as error:
++        parser.exit(1, "ERROR: " + str(error) + "\n")
++
++
++if __name__ == "__main__":
++    main()
+--- /dev/null
++++ b/reports/local/run-touch-live-build.ps1
+@@ -0,0 +1,15 @@
++param(
++    [Parameter(Mandatory=$true)]
++    [ValidateSet('prepare','kernel','root')]
++    [string]$Task
++)
++$ErrorActionPreference = 'Stop'
++$arguments = @('-d','Ubuntu','-u','root','--exec','systemd-run',
++    '--unit=ios-mix1-touch-live','--wait','--pipe','--collect',
++    '-p','MemoryMax=14G','-p','MemoryHigh=12G','-p','MemorySwapMax=1G',
++    '-p','CPUQuota=1200%','-p','TasksMax=1024','-p','User=jia',
++    '-p','WorkingDirectory=/mnt/f/IOS-MIX1',
++    '--setenv=JOBS=12','--setenv=MAKEFLAGS=-j12','--setenv=MAKEJOBS=--jobs=12',
++    '/usr/bin/python3','-B','/mnt/f/IOS-MIX1/scripts/build-hakios-touch-live.py',$Task)
++& wsl.exe @arguments
++exit $LASTEXITCODE
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -1,3 +1,5 @@
++2026-11-20 R34触摸完整路径主机候选已完成：按用户“减少审查、门禁、测试，今天做出成果”改为直接实现与针对性验证，不重复历史总回归。touch=1默认关闭；新增GPIO89低10ms/高300ms复位、QUP6/0x38组合读取、63字节报告轮询、多点到真实hakios_touch_post_batch及结束停止。内核799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c实际链接；实际init/APFS486项读回clean；91个QUP与4组事件专项通过。RAM最终包d1bbc6bf94defeacacf3ffbbae32bd3e227b70ef74bb1ceda2fb5539f8ad0d3b（phase4-r34-touch-live-ram-final，180秒+自动Fastboot）；UFS最终包47740664f56fcf021096493444cc96934223f49ce0dfc099920bfb73cfc426ed（phase4-r34-touch-live-ufs-final，R20原参数+touch）。同名无-final目录为停止等待修正前候选，不启动。R34未操作手机，真实ID/触点/HID响应未验证，供电继承、无固件写入；R20/R32/R33冻结和原索引不变。下一步说明GPIO89复位+QUP持续读取范围并获对应确认后，仅一次RAM短测；若成功，可直接用已备UFS候选验收界面，不再拆成多个仅初始化轮次。无分区刷写，不自动启动。见reports/hakios-ios16-touch-r34-prepared.md/json。
++
+ 2026-11-20 R33自动返回复核更新：用户确认“没有”按电源/音量键；结合同序列号54223ce9及产品MSM8996_A8在单次测试后被Fastboot枚举，R33独立RAM诊断配置自动返回Fastboot记为真机验证通过。UEFI prepare/commit内部串流字段仍未捕获；该缺口不改变物理终点证据。仅RAM profile通过，不代表UFS配置支持。随后只推进R32触摸错误的主机侧来源/板级审计，不自动启动手机。见reports/hakios-ios16-device-r33-return-fastboot-attempt2.md及对应local目录。
+ 
+ 2026-11-20 R33第二次真机尝试：用户报告手机有电并要求测试。04:59:57.288+08:00 Fastboot 单次接受冻结 RAM 镜像7a4010a051e16c9f339d1ed5b04ea64abc7ac69e952de3072d78dab94a5a956e；启动前只读身份/解锁/电量/download-size通过。USB保存41帧/9226字节，独立重放一致、缺口/重复/残帧/device-loss为0，正常180秒timer及首次drain=1可见；05:03:29接收器Pipe error。启动后约245秒，一次只读fastboot devices发现同序列号54223ce9，product MSM8996_A8。故已核实同一设备在本次临时启动后回到Fastboot；是否全由自动复位造成尚待用户确认期间未按硬件键，UEFI prepare/commit全链条未由USB证明。不重试，无分区/刷写/ADB/Android/Recovery/QEMU/触摸I2C。计数58/27。见reports/hakios-ios16-device-r33-return-fastboot-attempt2.md及reports/local/20261120-r33-return-fastboot-attempt2/。R33首次耗尽电量无效尝试独立保留；R20/R32冻结不变。
+--- a/project.json
++++ b/project.json
+@@ -1278,5 +1278,42 @@
+     },
+     "no_keys_user_confirmed": true,
+     "user_confirmation": "没有，这次结果支持自动返回 Fastboot"
++  },
++  "live_touch": {
++    "status": "R34_complete_live_driver_built_pending_first_hardware_run",
++    "report": "reports/hakios-ios16-touch-r34-prepared.json",
++    "default_off": true,
++    "enable": "touch=1",
++    "hardware_verified": false,
++    "id_read_verified": false,
++    "display_baseline": "R20-display",
++    "physical_irq": false,
++    "poll_interval_ms": 16,
++    "firmware_writes": false,
++    "regulator_writes": false,
++    "reset_gpio": 89,
++    "irq_gpio_polled": 125,
++    "profiles": {
++      "ram": {
++        "path": "artifacts\\hakios\\lithium-ios16\\phase4-r34-touch-live-ram-final\\lithium-hakios-ios16-r34-touch-live-ram.img",
++        "image_sha256": "d1bbc6bf94defeacacf3ffbbae32bd3e227b70ef74bb1ceda2fb5539f8ad0d3b",
++        "image_bytes": 16318464,
++        "kernel_sha256": "799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c",
++        "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 touch=1 touch_log=1 touch_poll=1 touch_diag=1 return_fastboot=1 return_fastboot_delay=10",
++        "components_rehashed": 10,
++        "unique_fastboot_return_record": true
++      },
++      "ufs": {
++        "path": "artifacts\\hakios\\lithium-ios16\\phase4-r34-touch-live-ufs-final\\lithium-hakios-ios16-r34-touch-live-ufs.img",
++        "image_sha256": "47740664f56fcf021096493444cc96934223f49ce0dfc099920bfb73cfc426ed",
++        "image_bytes": 16318464,
++        "kernel_sha256": "799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c",
++        "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1",
++        "components_rehashed": 10,
++        "unique_fastboot_return_record": true
++      }
++    },
++    "device_operations_this_phase": 0,
++    "next": "one separately authorized RAM short run; then prepared UFS desktop candidate if reads succeed"
+   }
+ }
+--- /dev/null
++++ b/reports/hakios-ios16-touch-r34-prepared.md
+@@ -0,0 +1,48 @@
++# R34：完整触摸读取与输入投递候选
++
++2026-11-20。按用户要求减少重复审查和总回归，本轮直接实现并构建生产路径，只验证新增模块、实际编译和最终镜像。没有手机操作；触摸效果尚未真机验证。
++
++本轮把 `touch=1` 从占位日志改为真实 FT8716/FTE716 输入生产者：
++
++- 使用 lithium 原厂 DTS 的 QUP6/I2C12、地址0x38、GPIO87/88、GPIO89复位与GPIO125报告输入。原厂 DTS 的通用 interrupts 字段为GPIO105，但驱动 `gpio_to_irq(pdata->irq_gpio)` 使用GPIO125；本轮采用GPIO125读回并轮询，不修改GIC路由。
++- GPIO89输出低至少10ms，再输出高等待300ms，随后读取0xA3芯片ID。低/高时序来自原厂 `ft5x46_probe` / `ft5x46_hw_init_work`；原诊断路径没有执行这一步。这是值得直接验证的初始化补齐，尚不能宣布它就是R32 NACK的根因。
++- 实现每次有界QUPv2组合寄存器读取、错误保留及控制器RESET。63字节报告加两字节开销超过64字节FIFO，因此接收期间持续排空，避免等收满后才读取。
++- 将最多10点的按下/移动/抬起批量送到真实 `hakios_touch_post_batch()` → `/dev/hakios-touch` → backboardd digitizer。重复报告不重复点击、消失触点释放、坐标集中映射到0..65535。
++- 使用约16ms轮询间隔；先推进可用输入，IRQ中断接入后续再优化。定时结束前停止轮询和释放触点。
++
++电源继承已亮屏环境，不修改L14/LAB/IBB电压或下载、升级触摸固件；原厂代码是有驻留固件的按需升级路径。供电继承是否足够、真实ID和报告数据仍需真机确认。
++
++## 已完成验证
++
++实际完整HakiOS内核增量编译及链接成功，保持8796.121.2/arm64和原功能；上游已有kext symbol-set末尾失败仍按原构建器规则识别，并未通过删除功能处理。最终内核SHA-256：
++
++`799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c`
++
++实际PID1重编译完成，RAM诊断支持 `touch=1 touch_diag=1`。APFS检查为clean，486项文件读回与实际暂存目录一致。QUP新增91个针对性用例、事件新增4组针对性ASan/UBSan测试通过；打包器RAM/UFS合成检查和两份真实最终镜像逐层读回通过。未重复运行原52套历史外围回归，也未重建未改动的Mu/loader/系统库和服务。
++
++构建命令：
++
++```powershell
++pwsh -File reports/local/run-touch-live-build.ps1 -Task prepare
++pwsh -File reports/local/run-touch-live-build.ps1 -Task kernel
++pwsh -File reports/local/run-touch-live-build.ps1 -Task root
++```
++
++第一轮root暂存复制遇到原目录的符号链接，已改为保留链接后构建；失败记录和暂存保留。最终包核验见 `evidence/touch-live-20261120/main/package-final-check.json`。
++
++## 两份候选
++
++| 用途 | 镜像 | SHA-256 |
++| --- | --- | --- |
++| R34 RAM短测：ID/报告/输入队列，180秒后自动回Fastboot | `artifacts/hakios/lithium-ios16/phase4-r34-touch-live-ram-final/lithium-hakios-ios16-r34-touch-live-ram.img` | `d1bbc6bf94defeacacf3ffbbae32bd3e227b70ef74bb1ceda2fb5539f8ad0d3b` |
++| R34 UFS桌面：R20原参数加真实触摸 | `artifacts/hakios/lithium-ios16/phase4-r34-touch-live-ufs-final/lithium-hakios-ios16-r34-touch-live-ufs.img` | `47740664f56fcf021096493444cc96934223f49ce0dfc099920bfb73cfc426ed` |
++
++RAM包不挂载或写入物理分区；继承R33隔离Mu与返回机制。UFS包保留R20完整系统/数据参数，正常运行可能写入userdata；本轮没有启动任一候选。UFS自动返回仍不支持，没有擅自开启。
++
++下一次真机仅需一轮RAM短测，同时核验 `live reset`、`live id`、`live ready`、`report`、`event` 或第一条 `read_error`。如果读取成功，可直接使用已经构建的UFS候选检验界面，不再重复仅初始化的诊断轮次。用户授权并确认Fastboot后，才进行对应单次临时启动。
++
++## 分工与保留
++
++Descartes实现QUP传输和91例测试；Huygens实现实际输入队列绑定、坐标/触点状态和4组测试；Avicenna核对原厂复位/固件管理关键流程；McClintock实现精简RAM/UFS打包；主代理完成板级MMIO、后台轮询、PID1与返回停止接入、实际内核/init/APFS构建及双包实际读回。
++
++新增代码为 `peripherals/touch-live.inc`、`touch-live-qup.h`、`touch-live-events.h`；共享集成在 `peripherals/kernel.inc` 和新增 `patches/0024-lithium-touch-live.patch`。各模块源码与测试均由主代理读取并核对接口，实际编译覆盖整条集成路径。R20/R32/R33冻结镜像与原Git索引SHA均未改变。回退补丁见本报告同名 `.patch`，不含固件或其他供应商二进制。
+--- /dev/null
++++ b/reports/hakios-ios16-touch-r34-prepared.json
+@@ -0,0 +1,66 @@
++{
++  "schema": 1,
++  "revision": "R34-touch-live",
++  "recorded_at": "2026-11-20T17:02:52.706498+08:00",
++  "host_built": true,
++  "hardware_verified": false,
++  "device_operations": 0,
++  "enable_arg": "touch=1",
++  "profiles": {
++    "ram": {
++      "path": "artifacts\\hakios\\lithium-ios16\\phase4-r34-touch-live-ram-final\\lithium-hakios-ios16-r34-touch-live-ram.img",
++      "image_sha256": "d1bbc6bf94defeacacf3ffbbae32bd3e227b70ef74bb1ceda2fb5539f8ad0d3b",
++      "image_bytes": 16318464,
++      "kernel_sha256": "799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c",
++      "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 touch=1 touch_log=1 touch_poll=1 touch_diag=1 return_fastboot=1 return_fastboot_delay=10",
++      "components_rehashed": 10,
++      "unique_fastboot_return_record": true
++    },
++    "ufs": {
++      "path": "artifacts\\hakios\\lithium-ios16\\phase4-r34-touch-live-ufs-final\\lithium-hakios-ios16-r34-touch-live-ufs.img",
++      "image_sha256": "47740664f56fcf021096493444cc96934223f49ce0dfc099920bfb73cfc426ed",
++      "image_bytes": 16318464,
++      "kernel_sha256": "799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c",
++      "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1",
++      "components_rehashed": 10,
++      "unique_fastboot_return_record": true
++    }
++  },
++  "focused_tests": {
++    "qup_cases": 91,
++    "events_groups": 4,
++    "sanitizers": [
++      "ASan",
++      "UBSan"
++    ],
++    "actual_kernel_link": true,
++    "actual_init_build": true,
++    "apfs_clean_and_entries_read_back": 486,
++    "package_layers_readback": true,
++    "historical_full_regression_repeated": false
++  },
++  "source_sha256": {
++    "ports/hakios-lithium/peripherals/kernel.inc": "87f4b11f19e75b0cd06addae90d5f2d8f169aed4b419c72ea00810bf18bb2bab",
++    "ports/hakios-lithium/peripherals/touch-live.inc": "025dc0d2f9023ac55817b8608f5dcf41ec664c8a88f9818e040f12e868614538",
++    "ports/hakios-lithium/peripherals/touch-live-qup.h": "dde6eb52f693084c56acba60ce6f0d54348a37ddf052af5d2f65e5a05d588fe5",
++    "ports/hakios-lithium/peripherals/touch-live-events.h": "a3acea8a6d9cdcb7296c840424cfce9abe0289d62763f9162d84d38fcd1ac195",
++    "ports/hakios-lithium/patches/0024-lithium-touch-live.patch": "2149a49ba75a75fd86b8cee06793849dfc48a3955ec9b51e6d8f07459acffdac",
++    "maintenance/hakios-lithium/peripherals/touch-live-qup-test.c": "4a3cc4a70ee48d9f5c67f7afe36ed5aa56a8a3af9509a25b8d2be1cdabb8325b",
++    "maintenance/hakios-lithium/peripherals/touch-live-events-test.c": "b3f5d6497d195182d28ade5049f2d784a508d93360b733e51c9b8dc49af74f2d",
++    "scripts/prepare-hakios-touch-live.py": "5fbad31c0d5b4d0001773726b17d4a3a3e4efbfc23c4810a5ec2d295891f54ac",
++    "scripts/build-hakios-touch-live.py": "053617f8ff2a39f6a7ff30ffc83a18eb23ebe30683a2affb74d2a99f23e34ec3",
++    "scripts/package-hakios-touch-live.py": "7e1e8e2b2345af0fcd76887c6a17bc8cf60268748c2594df00d597d80a37d64b",
++    "reports/local/run-touch-live-build.ps1": "7e9be40af4b7aa2dd71f1e65203b5cc66ed91212d3331590b8d9772e8bbc99f2"
++  },
++  "index_sha256": "ead184543d0a1d907521c4acaddb65b98f8e8a8783bb05c16eff8dea64011f47",
++  "frozen_baselines": {
++    "phase4-r20-display": "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82",
++    "phase4-r32-touch-qup-transfer": "b260776a3fff5513134b2c594e364eb58fb95a495c9a7625e6866354345fe767",
++    "phase4-r33-return-fastboot": "7a4010a051e16c9f339d1ed5b04ea64abc7ac69e952de3072d78dab94a5a956e"
++  },
++  "no_firmware_write": true,
++  "no_regulator_write": true,
++  "reset_sequence": "GPIO89 low10ms high300ms",
++  "followup": "authorized once RAM short test, then already built UFS desktop candidate",
++  "goal_complete": false
++}

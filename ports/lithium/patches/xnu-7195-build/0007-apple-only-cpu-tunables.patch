@@ -1,0 +1,33 @@
+From: ios14-lithium
+Subject: [build] apply Apple CPU tunables only to Apple CPU targets
+
+Backport of UniXNU c34f018aafd6befd5dc93c05a8dccd5bdce6724b,
+patches/xnu/apple-only-cpu-tunables.patch. The 7195 macro takes two
+registers. Qualcomm has no Apple implementation-defined tunable registers.
+
+diff --git a/osfmk/arm64/start.s b/osfmk/arm64/start.s
+--- a/osfmk/arm64/start.s
++++ b/osfmk/arm64/start.s
+@@ -32,7 +32,9 @@
+ #include <mach_assert.h>
+ #include <machine/asm.h>
+ #include "assym.s"
++#if defined(APPLE_ARM64_ARCH_FAMILY)
+ #include <arm64/tunables/tunables.s>
++#endif
+ #include <arm64/exception_asm.h>
+ 
+ #if __ARM_KERNEL_PROTECT__
+@@ -792,10 +794,12 @@
+ #endif  // !APPLEVIRTUALPLATFORM
+ #endif  // APPLE_ARM64_ARCH_FAMILY
+ 
++#if defined(APPLE_ARM64_ARCH_FAMILY)
+ 	// Read MIDR before start of per-SoC tunables
+ 	mrs x12, MIDR_EL1
+ 
+ 	APPLY_TUNABLES x12, x13
++#endif
+ 
+ 
+ 

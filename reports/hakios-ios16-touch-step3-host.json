@@ -1,0 +1,31 @@
+{
+  "date": "2026-11-19",
+  "scope": "touch host step 3",
+  "parallel_rule_updated": true,
+  "max_subagents": 9,
+  "phone_operations": false,
+  "qemu_used": false,
+  "physical_touch_verified": false,
+  "r19_image_sha256": "2f74a8da0fe182d39c66a86db398f9816067cb05cce8a6a774398700ed38f60a",
+  "r20_image_sha256": "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82",
+  "r15_baseline_sha256": "ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55",
+  "host_tests": {
+    "existing_14_suites": "pass",
+    "ft5x46_parser_asan_ubsan": "pass",
+    "qup_combined_model": "pass",
+    "touch_delivery_model": "pass",
+    "irq_affinity_audit": "pass",
+    "a5xx_fence_packet_model": "pass",
+    "exact_patch_0020_harness": "pass",
+    "next_runner_frozen_contract": "blocked_by_existing_reports_hakios_kernel_build_drift"
+  },
+  "hardware_unverified": [
+    "QUP6 ownership/clock/reset/pinmux",
+    "FT5x46 runtime ID and firmware",
+    "GPIO105 versus GPIO125 IRQ",
+    "shared L14/LAB/IBB power handoff",
+    "raw report consistency",
+    "HakiOS queue to IOHID to screen"
+  ],
+  "next_gate": "default-off production QUP6/FT5x46 backend, full build/freeze, then one-variable temporary boot"
+}

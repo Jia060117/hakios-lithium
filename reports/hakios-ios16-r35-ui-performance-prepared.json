@@ -1,0 +1,126 @@
+{
+  "schema": 1,
+  "revision": "R35-ui-performance",
+  "recorded_at": "2026-11-20T18:03:37.737526+08:00",
+  "host_built": true,
+  "hardware_verified": false,
+  "device_operations": 0,
+  "boot_totals": {
+    "hakios": 60,
+    "ios16": 29
+  },
+  "kernel_sha256": "86f36fdf4e047e0f2da18138a39629e584975e4c6689036946ae71195bd924aa",
+  "root_unchanged": true,
+  "profiles": {
+    "quiet": {
+      "path": "artifacts/hakios/lithium-ios16/phase4-r35-ui-perf/quiet/lithium-hakios-ios16-r35-ui-perf-quiet.img",
+      "image_sha256": "bb8eae118bde5e877510b6ea17ba96e866378eb1e42d29a7320ff67059718511",
+      "bytes": 16318464,
+      "boot_args": "bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1",
+      "command_budget": {
+        "capacity_including_nul": 608,
+        "reserved_bytes": 545,
+        "spare_bytes": 63
+      },
+      "cpus": 1,
+      "ui_lite_persistence": false,
+      "readback_passed": true
+    },
+    "lite": {
+      "path": "artifacts/hakios/lithium-ios16/phase4-r35-ui-perf/lite/lithium-hakios-ios16-r35-ui-perf-lite.img",
+      "image_sha256": "fda8fd7a18b8f0468c7be483e3080a30a2b9aee97d862fefc077f4c99eced9d3",
+      "bytes": 16318464,
+      "boot_args": "bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1",
+      "command_budget": {
+        "capacity_including_nul": 608,
+        "reserved_bytes": 555,
+        "spare_bytes": 53
+      },
+      "cpus": 1,
+      "ui_lite_persistence": true,
+      "readback_passed": true
+    },
+    "cpu3": {
+      "path": "artifacts/hakios/lithium-ios16/phase4-r35-ui-perf/cpu3/lithium-hakios-ios16-r35-ui-perf-cpu3.img",
+      "image_sha256": "74db47b0879e3148f0d3a438dd22cc197f62d96d89d8ae12cf280810c9761475",
+      "bytes": 16318464,
+      "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1",
+      "command_budget": {
+        "capacity_including_nul": 608,
+        "reserved_bytes": 545,
+        "spare_bytes": 63
+      },
+      "cpus": 3,
+      "ui_lite_persistence": false,
+      "readback_passed": true
+    }
+  },
+  "default_profile": "quiet",
+  "recommended_interaction_candidate": "lite",
+  "implemented": {
+    "ui_quiet_gate": true,
+    "existing_ui_lite_available_in_unchanged_userspace": true,
+    "cpu_per_core_sctlr_probe": true,
+    "cpu_governor_repaired": false,
+    "clock_or_voltage_writes": false,
+    "physical_cpu_topology_changed_this_phase": false,
+    "four_core_xnu_supported": false
+  },
+  "focused_checks": {
+    "ui_gate_cases": 540,
+    "actual_kernel_incremental_link": true,
+    "actual_kernel_new_markers_verified": true,
+    "package_actual_layer_readback_profiles": 3,
+    "historical_full_regression_repeated": false,
+    "unchanged_firmware_userspace_rebuilt": false
+  },
+  "user_feedback": {
+    "recorded_at": "2026-11-20T17:57:00.525531+08:00",
+    "user_report": "Now usable for testing in applications; touch position, swipe and long press normal; SpringBoard home and app-switcher severely laggy",
+    "application_touch_usable_reported": true,
+    "coordinate_position_correct_reported": true,
+    "swipe_correct_reported": true,
+    "long_press_correct_reported": true,
+    "springboard_home_switcher_performance_accepted": false,
+    "physical_multitouch_not_reported": true
+  },
+  "index_sha256": "ead184543d0a1d907521c4acaddb65b98f8e8a8783bb05c16eff8dea64011f47",
+  "source_sha256": {
+    "ports/hakios-lithium/patches/0025-lithium-ui-performance.patch": "ce830f467bf797de9b8a8ac1a6bbc3b8a703e67bf1dea029ca8b7b1f91b423bc",
+    "ports/hakios-lithium/diagnostics/cpu-sanity.inc": "55ae44db12b14b4b3a8b9c4e4592f2c4d97be2e640ae509ea5d82020628005a9",
+    "scripts/build-hakios-ui-perf-r35.py": "fddec49243316b73388f37f026fd1e783e7cbb68469854485ca2ba9658ba0f0a",
+    "scripts/package-hakios-ui-perf-r35.py": "ed3a3054fcf4d6f70b6a17feef31454d694e7a9450c689d6f4ff4d808148352f",
+    "reports/local/run-ui-perf-r35-build.ps1": "d5fe2ba0a739b452fe3da91701b9610526e07dd0371f48dcab3ea49a4a0c70d7"
+  },
+  "subagents": [
+    {
+      "name": "Huygens",
+      "work": "UIquiet commonpatch/actualdelta/focusedcheck",
+      "main_review": "Read exact gate/innerpatch changes, check results, generatedenv, and actualcompile"
+    },
+    {
+      "name": "Einstein",
+      "work": "percoreSCTLRdiagnostic and boundedsourcecheck",
+      "main_review": "Read exact newfields, startupsourceanchors, and actualkernelstring"
+    },
+    {
+      "name": "Poincare",
+      "work": "three-profilepackager",
+      "main_review": "Read args/contractimplementation and actualpackage/profilediffs"
+    }
+  ],
+  "r34_capture": {
+    "audit": "reports/local/20261120-r34-touch-live-ufs-approved/usb-audit-host-stopped.json",
+    "host_process_absent": true,
+    "phone_terminal_unqueried": true,
+    "timer_or_final_drain_captured": false
+  },
+  "unverified": [
+    "R35runtimebenefit",
+    "UIlitepreferenceeffect/persistence",
+    "slowcorecache/clockruntime",
+    "CPUgovernorrepair",
+    "threecorethroughput/latencybenefit"
+  ],
+  "report": "reports/hakios-ios16-r35-ui-performance-prepared.md"
+}

@@ -1,0 +1,26 @@
+--- a/xnu/files/osfmk/arm64/loader_return.c
++++ b/xnu/files/osfmk/arm64/loader_return.c
+@@ -590,6 +590,8 @@
+ #if defined(LITHIUM_ARMV8_0)
+ 		extern void lithium_lsdb_finalize(void);
+ 		extern void hakios_lithium_touch_stop(void);
++		extern void lithium_cpu_thermal_stop(void);
++		lithium_cpu_thermal_stop();
+ 		hakios_lithium_touch_stop();
+ 		lithium_lsdb_finalize();
+ #endif
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -3509,6 +3509,12 @@
+ 	if (epoch != 0) {
+ 		dt_prop_u64(&w, "boot-epoch", epoch);
+ 	}
++#if defined(HAKIOS_LITHIUM_RAM_DIAGNOSTIC) && defined(HAKIOS_LITHIUM_TSENS)
++	if (r38u_temp_receipt.phase_mask) {
++		dt_prop(&w, R38_TSENS_RECEIPT_PROPERTY, &r38u_temp_receipt,
++		    sizeof(r38u_temp_receipt));
++	}
++#endif
+ 	/*
+ 	 * More of what iBoot reports about the phone. MobileGestalt builds the device identifier
+ 	 * (UDID) from the serial number, the chip ID and the two addresses; when one is missing it

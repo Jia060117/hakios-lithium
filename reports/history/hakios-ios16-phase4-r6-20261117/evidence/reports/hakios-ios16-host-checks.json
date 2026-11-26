@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "checks": [
+    "PASS actual log reader: head, wrap, gap, short reads, end, contention, linearization, drain boundary snapshot",
+    "PASS host USB split/combined frames, duplicates and explicit gaps",
+    "PASS corrupt/oversized USB frames rejected",
+    "PASS USB2 transfer termination for every payload size",
+    "PASS LANGID failure recovers only with exact serial; wrong/inaccessible identities rejected",
+    "PASS setup failure preserves terminal status, descriptor errors and releases resources"
+  ],
+  "sanitizers": [
+    "address",
+    "undefined"
+  ],
+  "actual_production_functions": true,
+  "evidence_sha256": {
+    "/home/jia/ios-mix1-build/hakios-lithium-ios16/xnu/files/osfmk/arm64/loader_return.c": "9a31434244cdf6b791fd1c5c8244a5b7d16402380c5c16e71b66b57a62a74cbb",
+    "capture_script": "d5a9aecdd3c5ac728b233628d9ae810a598a35ba05d9068d0db3ed70fde3791c",
+    "test_script": "daec81fd16b44af4d97592f274ee6b49d2131dea7d6dd44478f7e7fa762c48d8"
+  },
+  "hardware_verified": false
+}

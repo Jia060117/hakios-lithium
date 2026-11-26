@@ -1,0 +1,159 @@
+{
+  "schema": "r38-stock-opp-ufs-host-preparation-v1",
+  "date": "2026-11-21T13:35:41.812576+08:00",
+  "phase": "stock_source_voltage_temperature_review_and_proven_low_rate_UFS_host_integration",
+  "user_constraints": [
+    "MiCode/actual-fuse voltage model first",
+    "voltage condition and settle before frequency",
+    "one stock step at a time",
+    "record valid temperatures before/during/end",
+    "no dynamic governor"
+  ],
+  "status": "host_prepared_higher_rate_and_UFS_runtime_unverified",
+  "next_stock_step": {
+    "from_hz": 307200000,
+    "to_hz": 384000000,
+    "delta_hz": 76800000,
+    "stock_steps": 1,
+    "corner_1based": 2,
+    "cpu_model": {
+      "floor_uv": 505000,
+      "open_loop_uv": 585000,
+      "ceiling_uv": 585000,
+      "absolute_ceiling_uv": 670000
+    },
+    "unaged_cpu_model": {
+      "unaged_floor_uv": 490000,
+      "unaged_open_loop_uv": 570000,
+      "unaged_ceiling_uv": 570000
+    },
+    "why": "second entry in stock rawbin0 clock plan; first four corners are at/below MinSVS Fmax",
+    "inherited_supply_comparison": {
+      "source": "reports/hakios-ios16-device-r38-perf-fixed05.json:199",
+      "observation_kind": "historical S11 digital setpoint, not current/analog CPU voltage",
+      "digital_setpoint_uv": 905000,
+      "next_cpu_open_loop_with_max_aging_uv": 585000,
+      "numerical_difference_uv": 320000,
+      "inherited_setpoint_numerically_exceeds_next_model": true,
+      "next_model_equals_current_307200000_model": true,
+      "voltage_increase_required_by_this_CPU_model": false,
+      "action": "Preserve the inherited 905 mV setting in planning. Do not lower the shared rail to the 585 mV CPU model or bump above 905 mV merely because frequency advances; this table authorizes no voltage or frequency change.",
+      "boundary": "The comparison is between supply digital configuration and a CPU-side policy. LDO/BHS/headroom, current settling, ownership, temperature and analog CPU voltage remain unproven."
+    },
+    "preparation_order": [
+      "Establish calibrated, timestamped baseline temperatures and the owned rail/CPR/LDO path.",
+      "Voltage before frequency: establish and confirm the target voltage condition and settling first. If insufficient, raise voltage before any frequency increase; if already sufficient, do not add voltage merely to count a step. This table provides no rail setpoint.",
+      "Only the single stock step 307200000 -> 384000000 Hz is identified; no operation is performed.",
+      "A future source-validated single-step run must record temperatures before/during/after load and frequency evidence, with independently established thermal handling."
+    ],
+    "execution_authorized": false,
+    "execution_authorized_meaning": "The calculator cannot grant I/O permission. This flag does not revoke the user's existing CPU-test authorization or require another approval; remaining prerequisites are scientific evidence.",
+    "register_sequence": null
+  },
+  "voltage_summary": {
+    "current_s11_digital_uv": 905000,
+    "analog_measured": false,
+    "next_cpu_open_loop_with_max_aging_uv": 585000,
+    "next_equals_307_2_model": true,
+    "new_voltage_writes": 0,
+    "no_shared_rail_reduction_to_cpu_model": true,
+    "production_voltage_backend_ready": false,
+    "stock_owner_chain": "CPR3 shared aggregation -> S11 SPM regulator -> system SAW port0",
+    "direct_observer_reads_do_not_prove_writer_ownership": true
+  },
+  "thermal": {
+    "source_reader": "evidence/cpu-r38-20261121/thermal/tsens8996_readonly.h",
+    "production_integrated": false,
+    "hardware_tested": false,
+    "actual_cpu_temperatures": null,
+    "native_units": "signed12-bit tenthsC -> millidegreesC",
+    "cpu_clients": {
+      "0x0": 4,
+      "0x1": 6,
+      "0x100": 9,
+      "0x101": 11
+    },
+    "ctrl0_base": "0x004a8000",
+    "ctrl0_bytes": 8192,
+    "invalid_no_numeric_fallback": true,
+    "calibration_freshness_attestation": false,
+    "host_scenarios": 8235,
+    "host_checks": 147954
+  },
+  "ufs": {
+    "package": "artifacts/hakios/lithium-ios16/phase4-r38-ufs-perf-low01",
+    "image": {
+      "path": "lithium-hakios-ios16-r38-ufs-perf-low01.img",
+      "bytes": 16334848,
+      "sha256": "bb4e8e23e0cc7d9af8198e6974c92cd51cbfdbc2c070b181c59027a608acb5b6"
+    },
+    "cmdline": "bootcpu=1 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1 touch_smp=1 cpu_perf_fixed=1 cpu_perf_ufs=1",
+    "programmed_target_model_hz": 307200000,
+    "measured_mhz": null,
+    "kernel_sha256": "eb5b407451e41be6b2b14ff4c6b7d24d034b1ba30470e396de0d989c35a83a4a",
+    "root_unchanged": true,
+    "physical_UFS_present": true,
+    "automatic_return_supported": false,
+    "booted": false,
+    "normal_filesystem_writes_on_boot": true,
+    "source_edit_owner": "main",
+    "default_off": true,
+    "clock_sequence_unchanged_from_R14": true
+  },
+  "verification": {
+    "stock17_tests_main_rerun": true,
+    "sequencing17_mock_tests_main_rerun": true,
+    "UFS_actual_helper_cases": 42,
+    "UFS_actual_helper_checks": 2244,
+    "RAM_helper_regression_cases": 5,
+    "RAM_helper_regression_checks": 1363,
+    "actual_loader_Mu_build": true,
+    "actual_final_FD_decompression_UFS_PE32_readback": true,
+    "actual_final_Android_FAT_payload_component_readback": true,
+    "main_checked_current_test_source_hashes": true,
+    "historical_broad_regression_repeated": false
+  },
+  "not_yet_verified": [
+    "native TSENS access and enabled/VALID state",
+    "fresh before/during/end load temperature records",
+    "384MHz actual frequency/load stability",
+    "UFS desktop benefit of low-rate fix",
+    "UFS automatic Fastboot writable-storage seal",
+    "four XNU cores; phys0 still resident worker"
+  ],
+  "next_steps": [
+    "integrate read-only TSENS into loader baseline and kernel load snapshots at already proven307.2 target; do not initialize disabled controller",
+    "validate temperature readings and same-generation rail digital/settled conditions before any higher target",
+    "test only next stock384MHz; preserve905mV if existing condition proven adequate rather than invent an increase; insufficient condition requires source-backed owned voltage backend first",
+    "after same profile load/temperature/return passes use validated target for UFS desktop; complete storage-seal auto-return separately before unattended UFS test"
+  ],
+  "authors": {
+    "main": "UFS CPU-init session/profile/integration and package; independent source/hash/FD/package review; source and sequencing test reruns",
+    "Hilbert": "27-corner actual-fuse source table and tests",
+    "Locke": "TSENS source path and read-only parser/tests",
+    "Newton": "shared-rail supply/settle source and host sequencing model",
+    "Curie": "actual UFS/RAM helper and loader control-flow focused tests",
+    "Goodall": "independent UFS loader/Mu build script and compressed final-FD inclusion proof"
+  },
+  "parallel_execution": {
+    "disjoint_write_ownership": true,
+    "production_shared_files_owned_by_main": true,
+    "rework": "FV map lacked nested compressed modules; replaced name check with exact final-FD LZMA/FFS/PE32 proof without rebuild. Compiler output retained.",
+    "main_review_report": "evidence/cpu-r38-20261121/ufs-main/main-review.json"
+  },
+  "device_operations_this_phase": 0,
+  "accepted_boot_counts": {
+    "hakios": 77,
+    "ios16": 46
+  },
+  "partition_operations": 0,
+  "index_sha256": "fdf775be66b9e456182cd10df6271edadef7f977b6d0b02fa275030f985d1eb2",
+  "references": {
+    "stock_table": "evidence/cpu-r38-20261121/stock-opp/stock-opp.md",
+    "supply": "evidence/cpu-r38-20261121/voltage-control/report.md",
+    "temperature": "evidence/cpu-r38-20261121/thermal/thermal-read-path.md",
+    "UFS_build": "evidence/cpu-r38-20261121/ufs-build/ufs-support.json",
+    "UFS_tests": "evidence/cpu-r38-20261121/ufs-tests/README.md",
+    "main_FD_review": "evidence/cpu-r38-20261121/ufs-main/main-fd-readback.json"
+  }
+}

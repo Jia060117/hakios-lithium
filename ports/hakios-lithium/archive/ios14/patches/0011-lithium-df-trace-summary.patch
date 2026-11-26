@@ -1,0 +1,52 @@
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -375,6 +375,24 @@
+ }
+ 
+ static void
++lithium_show_df_trace(const char *log, uint64_t bytes)
++{
++	/* Reuse HakiOS systrace; retain at most three completed BSD calls from df. */
++	const char *lines[3];
++	unsigned count = 0;
++	uint64_t remaining = bytes;
++	while (count < 3) {
++		const char *line = lithium_last_line(log, remaining, "systrace: df[");
++		if (line == NULL) break;
++		const char *end = line;
++		while (end < log + remaining && *end != '\n') end++;
++		if (end < log + remaining) lines[count++] = line;
++		remaining = (uint64_t)(line - log);
++	}
++	while (count != 0) lithium_show_line(lines[--count], log + bytes);
++}
++
++static void
+ lithium_return_screen(const char *log, uint64_t bytes)
+ {
+ 	((efi_status (EFIAPI *)(efi_text_output *, uint8_t))ST->con_out->reset)(ST->con_out, 0);
+@@ -389,7 +407,7 @@
+ 	lithium_show_line(lithium_last_line(log_buf, log_len, "LITHIUM P2 STOP "), log_buf + log_len);
+ 	if (log == NULL) { print("KERNEL NOT STARTED; STORAGE/PSCI STOP\n"); return; }
+ 	print("P2 STORAGE KERNEL:\n");
+-	static const char *dynamic[] = {"LITHIUM P2 DYNSTART ", "LITHIUM P2 DYNROOT ",
++	static const char *dynamic[] = {"LITHIUM P2 DYNBUDGET DF ", "LITHIUM P2 DYNBUDGET MOUNT ", "LITHIUM P2 DYNSTART ", "LITHIUM P2 DYNROOT ",
+ 	    "LITHIUM P2 DYNCACHE ", "LITHIUM P2 SR438 ", "LITHIUM P2 DYNEXEC ",
+ 	    "LITHIUM P2 MACH14 ",
+ 	    "LITHIUM P2 DYNCS ", "LITHIUM P2 DYNCSFILE ",
+@@ -399,13 +417,14 @@
+ 	    "LITHIUM P2 DYNRUN DF ", "LITHIUM P2 DYNRUN MOUNT ", "LITHIUM P2 DYNRESULT "};
+ 	for (unsigned i=0; i<sizeof(dynamic)/sizeof(dynamic[0]); i++)
+ 	    lithium_show_line(lithium_last_line(log, bytes, dynamic[i]), log + bytes);
++	lithium_show_df_trace(log, bytes);
+ 	static const char *p2[] = {"LITHIUM P2 START ", "LITHIUM P2 HEADER ", "LITHIUM P2 MOUNT ",
+ 	    "LITHIUM P2 VERSION ", "LITHIUM P2 DYLD ", "LITHIUM P2 LAUNCHD ",
+ 	    "LITHIUM P2 UNMOUNT ", "LITHIUM P2 RESULT "};
+ 	for (unsigned i=0; i<sizeof(p2)/sizeof(p2[0]); i++)
+ 	    lithium_show_line(lithium_last_line(log, bytes, p2[i]), log + bytes);
+ 	static const char *faults[] = {"LITHIUM P2 PAGEIN ", "LITHIUM P2 FAULT ",
+-	    "LITHIUM P2 STATE ", "LITHIUM P2 ABORT ", "exectrace: ", "systrace: "};
++	    "LITHIUM P2 STATE ", "LITHIUM P2 ABORT ", "exectrace: "};
+ 	for (unsigned i=0; i<sizeof(faults)/sizeof(faults[0]); i++)
+ 	    lithium_show_line(lithium_last_line(log, bytes, faults[i]), log + bytes);
+ 	const char *panic_line = lithium_last_line(log, bytes, "panic(cpu ");

@@ -1,0 +1,43 @@
+--- a/xnu/files/iokit/Kernel/MiniIOSurface.cpp
++++ b/xnu/files/iokit/Kernel/MiniIOSurface.cpp
+@@ -1697,6 +1697,40 @@
+ 	struct minisurf_client_ref * ref;
+ 	IOReturn ret;
+ 
++#if defined(LITHIUM_ARMV8_0)
++    /* 18H17 uses methods where16 uses traps. Keep the existing ownership,
++     * reference and lock implementation; translate only the call envelope. */
++    if (selector == 1 || selector == 14 || selector == 15) {
++        if (args->scalarInputCount != 1) return kIOReturnBadArgument;
++        uint32_t sid = (uint32_t)args->scalarInput[0];
++        if (selector == 1) return trapRelease((void *)(uintptr_t)sid, NULL, NULL, NULL, NULL, NULL);
++        return useCountCommon(sid, 0, selector == 14 ? 1 : -1);
++    }
++    if (selector == 2 || selector == 3) {
++        if (in == NULL || inSize != 12 || args->structureOutput == NULL ||
++            args->structureOutputSize < (selector == 2 ? 0xd8u : 4u)) return kIOReturnBadArgument;
++        uint32_t request[3]; memcpy(request, in, sizeof(request));
++        ret = lockCommon(request[0], request[1], 0);
++        if (ret != kIOReturnSuccess) return ret;
++        IOLockLock(gSurfaceLock);
++        ref = findRef(request[0], false);
++        if (ref == NULL) ret = kIOReturnNotFound;
++        else if (selector == 2) {
++            ret = returnSurface(ref, false, args);
++            if (ret == kIOReturnSuccess) {
++                uint32_t seed = ref->surface->shared()->seed;
++                memcpy((uint8_t *)args->structureOutput + 0x48, &seed, sizeof(seed));
++            }
++        } else {
++            uint32_t seed = ref->surface->shared()->seed;
++            memcpy(args->structureOutput, &seed, sizeof(seed));
++            args->structureOutputSize = sizeof(seed);
++        }
++        IOLockUnlock(gSurfaceLock);
++        return ret;
++    }
++#endif
++
+ 	switch (selector) {
+ 	case kSurfaceMethodInit:
+ 		return methodInit(args);

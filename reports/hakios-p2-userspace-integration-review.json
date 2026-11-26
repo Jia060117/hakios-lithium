@@ -1,0 +1,80 @@
+{
+  "reviewed_at": "2026-11-15T21:13:50.104483+08:00",
+  "baseline": {
+    "project": "HakiOS",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2"
+  },
+  "storage_gate_report": "reports/hakios-device-r17.json",
+  "storage_gate_passed": false,
+  "storage_gate_observation_pending": true,
+  "kernel_sha256": "3556a5e8543aae8ab8cfabc41fda08fabc457305f8d99e1c8a852d289ad0dd78",
+  "existing_linked_interfaces": {
+    "_hakios_sysctl_switch_root": "fffffff0074847e8 s _hakios_sysctl_switch_root",
+    "_hfs_mount": "fffffff00753f5c8 S _hfs_mount",
+    "_load_dylinker": "fffffff00781f048 s _load_dylinker",
+    "_shared_region_check_np": "fffffff0078377c4 S _shared_region_check_np",
+    "_shared_region_map_and_slide_2_np": "fffffff007837b34 S _shared_region_map_and_slide_2_np",
+    "_vfs_switch_root": "fffffff0074b35c0 S _vfs_switch_root"
+  },
+  "pinned_upstream_sources": {
+    "upstream/hakios-xnu-kernel/userland/src/init.c": "564e948ac7aa9ecab0da54b932df184f357efbd35d76dbe8591b3cf5c149c157",
+    "upstream/hakios-xnu-kernel/userland/src/stage0.c": "18d12e7ea4fd51ccdd21a2b8e30fca4d893bfec1ffe7da28836a96843730ae2c",
+    "upstream/hakios-xnu-kernel/userland/build.sh": "48500c2b0602d7b5d71e9c63369851d9fe39ec76a4edc83b4f8775c34896ded3",
+    "upstream/hakios-xnu-kernel/userland/libmini/mini.c": "4aafe4461e79a503336fc149c263d96fef7d5e9d28eaf7375ce968f838c4aa68",
+    "upstream/hakios-xnu-kernel/userland/libmini/mini.h": "7f633455ab782794b11e2daa04480fe27bd8d8eb4f470e1e7bcbfc77246f09cb",
+    "upstream/hakios-xnu-kernel/userland/libmini/start.S": "75024af4f60a89ff82269a7076be303bcb50779f9f1d4ef504231bcf4ea1012c",
+    "upstream/hakios-xnu-kernel/drivers/storage/hakios.apfs_check.c": "1b1d0d7f361c94a51647a74f65d484d9387eb16f3141f4a3ecfc62fc751e6e60"
+  },
+  "commpage_legacy_writes": {
+    "USER_PAGE_SHIFT_32": "*((uint8_t*)(_COMM_PAGE_USER_PAGE_SHIFT_32_LEGACY + _COMM_PAGE_RW_OFFSET)) = (uint8_t) page_shift_user32;",
+    "USER_PAGE_SHIFT_64": "*((uint8_t*)(_COMM_PAGE_USER_PAGE_SHIFT_64_LEGACY + _COMM_PAGE_RW_OFFSET)) = (uint8_t) SIXTEENK_PAGE_SHIFT;",
+    "KERNEL_PAGE_SHIFT": "*((uint8_t*)(_COMM_PAGE_KERNEL_PAGE_SHIFT_LEGACY + _COMM_PAGE_RW_OFFSET)) = (uint8_t) page_shift;",
+    "DEV_FIRM": "*((uint32_t*)(_COMM_PAGE_DEV_FIRM_LEGACY + _COMM_PAGE_RW_OFFSET)) = (uint32_t)PE_i_can_has_debugger(NULL);"
+  },
+  "dyld_shared_cache_callers": {
+    "23520": {
+      "target": "532dc",
+      "syscall": 536
+    },
+    "2395c": {
+      "target": "53304",
+      "syscall": 438
+    }
+  },
+  "dyld_sha256": "54fd7d7f710554dc976dddcdb0902fe7a779d37634c0ffc343b6febca61e6c2b",
+  "legacy_syscall_438_status": "nosys in active 8796; original cache mappingCount=3 selects the 438 branch in normal shared-cache mapping; hardware execution unverified",
+  "original_cache": {
+    "path": "/home/jia/ios-mix1-build/hakios-ios14-root-ro/root/System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64",
+    "header_bytes": 512,
+    "header_sha256": "07c8d8b2d4b7b13bc60876371f59c76008f426c03d8d72cd4f693a40145116a7",
+    "mapping_offset": 320,
+    "mapping_count": 3,
+    "normal_shared_mapping_syscall": 438
+  },
+  "evidence": {
+    "symbols_path": "reports/local/20261115-210419-356443-hakios-preflight/next-integration-linked-symbols.txt",
+    "symbols_sha256": "9a797b1840ea22270882a3289e4fcb688d3e589d0efe5ef46dfbbefdbd888e40",
+    "commpage_path": "reports/local/20261115-210419-356443-hakios-preflight/next-integration-commpage.c",
+    "commpage_sha256": "9b1050a77cca5b2aad668ef87f5a6edbe5faee8c0b658e71ea5ff45c947d58e8",
+    "syscall_table_path": "reports/local/20261115-210419-356443-hakios-preflight/next-integration-syscalls.master",
+    "syscall_table_sha256": "163824910a25029dfc559fabd518ed3d2ec3539d7ff9f157dcd56067e6a6952b",
+    "dyld_callers_path": "reports/local/20261115-210419-356443-hakios-preflight/next-integration-18h17-dyld-callers.txt",
+    "dyld_callers_sha256": "9e7285055f9e58fb20179628f43709865cec295f4b3243aa4b4d086f929a2010",
+    "cache_header_path": "reports/local/20261115-210419-356443-hakios-preflight/next-integration-18h17-cache-header.bin",
+    "cache_header_sha256": "07c8d8b2d4b7b13bc60876371f59c76008f426c03d8d72cd4f693a40145116a7"
+  },
+  "named_integration_gaps": [
+    "Upstream init flash_root is APFS/Cryptex-specific; installed 18H17 volume is HFSX",
+    "HFSX mountpoints and writable Data directories must be checked before adapting root selection",
+    "Original 18H17 cache mappingCount=3 selects syscall 438 in normal shared-cache mapping; active 8796 has nosys there, so a bounded argument adapter to the existing shared-region core is needed",
+    "No 18H17 process has yet executed through this baseline dyld/shared-region interfaces"
+  ],
+  "next_scope": "After R17 storage pass, retain full upstream init/libmini, bindfs, root switch and shared-region implementations; adapt only HFSX/iOS14 mount/layout differences and execute original 18H17 programs",
+  "source_or_linkage_is_runtime_proof": false,
+  "ios14_compatibility_verified": false,
+  "new_boot_issued": false,
+  "partition_writes_performed": false,
+  "legacy_7195_used": false,
+  "qemu_used": false
+}

@@ -1,0 +1,20 @@
+From: ios14-lithium
+Subject: [build] omit unpublished Apple AMCC source from generic ARM build
+
+The public files list selects a source file that is absent from the release.
+AMCC is an Apple memory-controller feature. The generic BCM2837 baseline
+does not define KERNEL_INTEGRITY_KTRR/CTRR and its callers are compiled out.
+This patch is for the non-Apple build only; it supplies no replacement AMCC.
+
+diff --git a/osfmk/conf/files.arm64 b/osfmk/conf/files.arm64
+--- a/osfmk/conf/files.arm64
++++ b/osfmk/conf/files.arm64
+@@ -19,7 +19,7 @@
+ osfmk/arm64/WKdmData.s		standard
+ osfmk/arm64/lz4_decode_arm64.s  standard
+ osfmk/arm64/lz4_encode_arm64.s  standard
+-osfmk/arm64/amcc_rorgn.c optional nos_arm_asm
++# Apple AMCC implementation is not public and is unused on generic ARM.
+ osfmk/arm64/bcopy.s standard
+ osfmk/arm64/bzero.s standard
+ osfmk/arm/caches.c		standard

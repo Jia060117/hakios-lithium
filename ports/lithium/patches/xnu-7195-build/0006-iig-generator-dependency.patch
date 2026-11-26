@@ -1,0 +1,15 @@
+From: ios14-lithium
+Subject: [build] regenerate DriverKit output when the selected IIG changes
+
+diff --git a/iokit/DriverKit/Makefile b/iokit/DriverKit/Makefile
+--- a/iokit/DriverKit/Makefile
++++ b/iokit/DriverKit/Makefile
+@@ -38,6 +38,8 @@
+ 
+ COMP_FILES = ${GENERATED_HEADERS} $(GENERATED_IMPL)
+ 
++$(GENERATED_HEADERS): $(IIG)
++
+ $(GENERATED_HEADERS) : \
+ 	%.h : %.iig
+ 	@$(LOG_IIG) "$@"

@@ -1,0 +1,215 @@
+#!/usr/bin/env python3
+"""Build a preboot catalog/data delta using a private mapping of the HFS image.
+
+The original file is opened O_RDONLY. No device is accessed. The seed carries
+old-sector CRCs; XNU refuses it if the underlying sectors differ. Only a
+regular disposable host image is materialized for fsck and complete import
+verification. No iOS executable, signature or entitlement is altered.
+"""
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import struct
+import subprocess
+import sys
+import zlib
+
+ROOT = Path(__file__).resolve().parents[1]
+WORK = Path.home() / 'ios-mix1-build'
+OUT = ROOT / 'out/mount-phase1'
+
+
+def sha(p):
+    digest = hashlib.sha256()
+    with p.open('rb') as f:
+        while data := f.read(8 * 1024 * 1024):
+            digest.update(data)
+    return digest.hexdigest()
+
+
+def main():
+    OUT.mkdir(exist_ok=True)
+    work = WORK / 'preboot-seed'
+    work.mkdir(exist_ok=True)
+    root = json.loads((ROOT / 'reports/ios14-hfs-root.json').read_text())
+    base = Path(root['image'])
+    assert base.is_file() and base.stat().st_size == 16 << 30
+    actual = sha(base)
+    assert actual == root['sha256'], (actual, root['sha256'])
+    ref = ROOT / 'upstream/research/ios-sailfish'
+    assert subprocess.check_output(['git', '-C', ref, 'rev-parse', 'HEAD'], text=True).strip() == '6f27e41ff249f2680540ebe8ee5ab982c5e641c9'
+    sys.path.insert(0, str(ref / 'tools'))
+    spec = importlib.util.spec_from_file_location('mkadt_seed', ref / 'tools/mkadt.py')
+    adt = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(adt)
+    manifest_hash = adt.BOOT_MANIFEST_HASH.hex().upper()
+    assert len(manifest_hash) == 96
+    prefix = '/private/preboot/' + manifest_hash
+    entries = []
+    with Path(root['manifest']).open('rb') as f:
+        assert f.read(8) == b'MIXHFS01'
+        while h := f.read(40):
+            pl, sl, ll, mode, uid, gid, mt, at, size = struct.unpack('<8IQ', h)
+            path, src, link = f.read(pl).decode(), f.read(sl).decode(), f.read(ll).decode()
+            if path == '/usr/standalone/firmware' or path.startswith('/usr/standalone/firmware/'):
+                assert not link and (mode & 0o170000) in (0o040000, 0o100000)
+                entries.append(dict(path=path, mode=mode, uid=uid, gid=gid, mt=mt, at=at, size=size))
+    assert len(entries) == 24, len(entries)
+    # Metadata and bytes are read from the actual HFS catalog/forks below.
+    plan = work / 'copy-plan.txt'
+    plan.write_text('\n'.join(e['path'] for e in entries) + '\n')
+    importer = (ROOT / 'ports/lithium/host/hfs-root-copy.c').read_text()
+    source = importer.split('static char *readstr(', 1)[0]
+    source = source.replace('struct mapped_image {', 'static const char *seed_path;\nstatic uint8_t touched[4194304];\nstruct mapped_image {')
+    source = source.replace('memcpy(m->base+(size_t)pos,data,n);return 1;', '''if(n) for(uint64_t b=(uint64_t)pos/4096;b<=((uint64_t)pos+n-1)/4096;b++) touched[b]=1;
+    memcpy(m->base+(size_t)pos,data,n);return 1;''')
+    start = source.index('    if(m->writable && (msync(')
+    end = source.index('    if(munmap(', start)
+    source = source[:start] + r'''    FILE *out=fopen(seed_path,"wb");if(!out)die("seed open",seed_path);
+    uint64_t bytes=m->size;uint32_t header[4]={0,4104,1,0};
+    fwrite("LCOWSE01",1,8,out);fwrite(&bytes,8,1,out);fwrite(header,4,4,out);
+    uint8_t before[4096];uint32_t count=0;
+    for(uint32_t b=0;b<4194304;b++) {
+        if(!touched[b])continue;
+        if(pread(m->fd,before,4096,(off_t)b*4096)!=4096)die("base sector read","");
+        if(!memcmp(before,m->base+(size_t)b*4096,4096))continue;
+        uint32_t crc=(uint32_t)crc32(0,before,4096);
+        if(fwrite(&b,4,1,out)!=1 || fwrite(&crc,4,1,out)!=1 ||
+           fwrite(m->base+(size_t)b*4096,1,4096,out)!=4096)die("seed write","");
+        count++;
+    }
+    if(fseek(out,16,SEEK_SET) || fwrite(&count,4,1,out)!=1 || fclose(out))die("seed close","");
+    printf("seed blocks=%u\n",count);
+''' + source[end:]
+    source = source.replace('(writable?O_RDWR:O_RDONLY)|O_NOFOLLOW', 'O_RDONLY|O_NOFOLLOW')
+    source = source.replace('MAP_SHARED,fd,0', 'MAP_PRIVATE|MAP_NORESERVE,fd,0')
+    source = source.replace('#include <abstractfile.h>', '#include <abstractfile.h>\n#include <zlib.h>')
+    source += r'''
+static HFSPlusCatalogRecord *record(Volume *v,const char *path) {
+    return getRecordFromPath3(path,v,NULL,NULL,0,0,kHFSRootFolderID);
+}
+static void mkdir_root(Volume *v,const char *path) {
+    if(record(v,path))die("unexpected preexisting path",path);
+    HFSCatalogNodeID id=newFolder(path,v);if(!id)die("mkdir",path);
+    HFSPlusCatalogFolder *r=(HFSPlusCatalogFolder*)getRecordByCNID(id,v);
+    r->permissions.ownerID=0;r->permissions.groupID=0;r->permissions.fileMode=040755;
+    if(!updateCatalog(v,(HFSPlusCatalogRecord*)r))die("mkdir metadata",path);free(r);
+}
+int main(int argc,char **argv) {
+    if(argc!=5)return 2;TestByteOrder();seed_path=argv[4];
+    io_func *disk=mapped_open(argv[1],1);Volume *v=openVolume(disk);if(!v)return 3;
+    char dst[2048],path[1024];
+    mkdir_root(v,argv[3]);
+    snprintf(dst,sizeof(dst),"%s/usr",argv[3]);mkdir_root(v,dst);
+    snprintf(dst,sizeof(dst),"%s/usr/standalone",argv[3]);mkdir_root(v,dst);
+    FILE *plan=fopen(argv[2],"r");if(!plan)return 4;
+    while(fgets(path,sizeof(path),plan)) {
+        path[strcspn(path,"\n")]=0;
+        if(strncmp(path,"/usr/standalone/firmware",strlen("/usr/standalone/firmware")))die("unexpected source",path);
+        HFSPlusCatalogRecord *r=record(v,path);if(!r)die("source missing",path);
+        snprintf(dst,sizeof(dst),"%s%s",argv[3],path);
+        if(record(v,dst))die("duplicate destination",dst);
+        int dir=r->recordType==kHFSPlusFolderRecord;
+        if(!dir && r->recordType!=kHFSPlusFileRecord)die("source type",path);
+        HFSCatalogNodeID id=dir?newFolder(dst,v):newFile(dst,v);
+        if(!id)die("create destination",dst);
+        HFSPlusCatalogRecord *d=getRecordByCNID(id,v);
+        if(dir) {
+            HFSPlusCatalogFolder *a=(void*)r,*b=(void*)d;
+            b->permissions=a->permissions;b->createDate=a->createDate;
+            b->contentModDate=a->contentModDate;b->attributeModDate=a->attributeModDate;b->accessDate=a->accessDate;
+        } else {
+            HFSPlusCatalogFile *a=(void*)r,*b=(void*)d;
+            if((a->permissions.fileMode&0170000)!=0100000)die("nonregular source",path);
+            io_func *from=openRawFile(a->fileID,&a->dataFork,r,v);
+            io_func *to=openRawFile(b->fileID,&b->dataFork,d,v);
+            uint8_t buffer[65536];if(!from||!to)die("fork open",path);
+            for(uint64_t off=0;off<a->dataFork.logicalSize;) {
+                size_t n=a->dataFork.logicalSize-off;if(n>sizeof(buffer))n=sizeof(buffer);
+                if(!READ(from,off,n,buffer)||!WRITE(to,off,n,buffer))die("fork copy",path);off+=n;
+            }
+            CLOSE(from);CLOSE(to);
+            b->permissions=a->permissions;b->createDate=a->createDate;
+            b->contentModDate=a->contentModDate;b->attributeModDate=a->attributeModDate;b->accessDate=a->accessDate;
+            b->userInfo=a->userInfo;b->finderInfo=a->finderInfo;
+        }
+        if(!updateCatalog(v,d))die("copy metadata",dst);
+        free(d);free(r);
+    }
+    fclose(plan);closeVolume(v);CLOSE(disk);return 0;
+}
+'''
+    cfile = work / 'preboot-seed.c'
+    cfile.write_text(source)
+    host = WORK / 'hfs-host'
+    exe = work / 'preboot-seed'
+    subprocess.run(['clang', '-O2', '-I'+str(host / 'includes'), cfile, host / 'build/hfs/libhfs.a', host / 'build/common/libcommon.a', '-lz', '-o', exe], check=True)
+    seed = OUT / 'preboot-seed.bin'
+    subprocess.run([exe, base, plan, prefix, seed], check=True)
+    data = seed.read_bytes()
+    magic, size, count, stride, version, reserved = struct.unpack_from('<8sQ4I', data)
+    assert (magic, size, stride, version, reserved) == (b'LCOWSE01', 16 << 30, 4104, 1, 0)
+    assert 0 < count < 16384 and len(data) == 32 + count * stride
+    candidate = work / 'seeded-root.img'
+    # This is a new regular disposable file, never a block device.
+    assert not candidate.exists(), 'Remove or move only this reviewed test artifact before regenerating'
+    subprocess.run(['cp', '--sparse=always', base, candidate], check=True)
+    previous = -1
+    with base.open('rb') as f, candidate.open('r+b') as out:
+        for i in range(count):
+            p = 32 + i * stride
+            block, expected = struct.unpack_from('<II', data, p)
+            assert previous < block < size // 4096
+            previous = block
+            f.seek(block * 4096)
+            assert zlib.crc32(f.read(4096)) == expected
+            out.seek(block * 4096)
+            out.write(data[p+8:p+stride])
+    logs = {}
+    def run(label, argv):
+        p = subprocess.run(list(map(str, argv)), capture_output=True, text=True)
+        log = OUT / (label + '.log')
+        log.write_text(p.stdout+p.stderr)
+        assert p.returncode == 0, (label, p.returncode, p.stdout[-2000:], p.stderr[-2000:])
+        logs[label] = dict(path=str(log.relative_to(ROOT)), sha256=sha(log))
+    run('preboot-fsck', [WORK / 'hfsprogs/sbin/fsck.hfsplus', '-f', '-n', candidate])
+    compare_source = importer.split('static char *readstr(', 1)[0]
+    compare_source += (ROOT / 'ports/lithium/host/hfs-image-compare.inc').read_text()
+    compare_c = work / 'compare.c'
+    compare_c.write_text(compare_source)
+    compare_exe = work / 'compare'
+    subprocess.run(['clang', '-O2', '-I'+str(host / 'includes'), compare_c, host / 'build/hfs/libhfs.a', host / 'build/common/libcommon.a', '-lz', '-o', compare_exe], check=True)
+    run('preboot-original-files', [compare_exe, base, candidate, root['manifest']])
+    # Verify every new byte and mode independently with the normal importer.
+    copied_manifest = work / 'copied.manifest.bin'
+    reader = WORK / 'dyld-inspection/read-file'
+    files = []
+    with copied_manifest.open('wb') as f:
+        f.write(b'MIXHFS01')
+        for i, e in enumerate(entries):
+            src = work / ('source-'+str(i))
+            if e['mode'] & 0o170000 == 0o100000:
+                subprocess.run([reader, base, e['path'], src], check=True)
+                assert src.stat().st_size == e['size']
+                files.append(dict(path=prefix+e['path'], source=e['path'], bytes=e['size'], sha256=sha(src)))
+            path_bytes, src_bytes = (prefix+e['path']).encode(), str(src).encode()
+            f.write(struct.pack('<8IQ', len(path_bytes), len(src_bytes), 0, e['mode'], e['uid'], e['gid'], e['mt'], e['at'], e['size']))
+            f.write(path_bytes+src_bytes)
+    run('preboot-copied-files', [host / 'build/hfs-root-copy', candidate, copied_manifest, 'verify'])
+    assert sha(base) == root['sha256']
+    result = dict(all_passed=True, qemu_used=False, device_operations=False,
+        base_image_sha256=root['sha256'], base_opened_read_only=True,
+        seed_path=str(seed.relative_to(ROOT)), seed_sha256=sha(seed), seed_bytes=len(data), seed_blocks=count,
+        manifest_hash=manifest_hash, manifest_hash_is_apple_authenticated=False,
+        purpose='Retained synthetic boot-manifest-hash namespace; real copy of existing root firmware directory',
+        directory_entries=len(entries), copied_files=files, logs=logs,
+        original_files_and_metadata_verified=True, copied_files_and_metadata_verified=True, fsck_passed=True,
+        candidate_path=str(candidate), candidate_sha256=sha(candidate),
+        source_sha256={str(p.relative_to(ROOT)):sha(p) for p in [Path(__file__), ROOT / 'ports/lithium/host/hfs-root-copy.c']})
+    (ROOT / 'reports/ios14-preboot-seed.json').write_text(json.dumps(result, indent=2)+'\n')
+    print(json.dumps({k:result[k] for k in ('all_passed','seed_blocks','seed_bytes','manifest_hash','candidate_sha256')}, indent=2))
+
+
+if __name__ == '__main__':
+    main()

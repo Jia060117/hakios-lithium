@@ -1,0 +1,268 @@
+"""Build a stock-kernel-chained observer; offline only, never contacts a phone."""
+import gzip
+import hashlib
+import json
+from pathlib import Path
+import struct
+import subprocess
+import zlib
+import importlib.util
+import argparse
+
+ROOT = Path(__file__).resolve().parents[1]
+spec = importlib.util.spec_from_file_location("stock", ROOT / "scripts/extract-stock.py")
+stock = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(stock)
+OUT = ROOT / "out/entry-probe"
+MARKER = b"MIX1ENTRYPROBEv1"
+PROPERTY = "mix1,entry-probe-v1"
+RECORD_SIZE = 512
+PROFILE = "entry"
+DISPLAY_REGISTERS = []
+FIELDS = ["entry_pc", "image_base", "continuation_pc", "fdt_address", "fdt_size",
+          "x0", "x1", "x2", "x3", "sp", "current_el_raw", "daif", "midr_el1",
+          "mpidr_el1", "id_aa64mmfr0_el1", "id_aa64mmfr1_el1", "id_aa64isar0_el1",
+          "id_aa64isar1_el1", "id_aa64pfr0_el1", "ctr_el0", "dczid_el0", "cntfrq_el0",
+          "sctlr_el1", "tcr_el1", "ttbr0_el1", "ttbr1_el1", "mair_el1", "vbar_el1",
+          "cpacr_el1", "sctlr_el2", "tcr_el2", "ttbr0_el2", "mair_el2", "vbar_el2",
+          "hcr_el2", "vttbr_el2", "vtcr_el2", "cntvoff_el2"]
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def wslpath(path):
+    path = path.resolve()
+    return "/mnt/" + path.drive[0].lower() + path.as_posix()[2:]
+
+
+def linux(*args):
+    run = subprocess.run(["wsl.exe", "-d", "Ubuntu", "--exec", *map(str, args)],
+                         capture_output=True, timeout=60)
+    if run.returncode:
+        raise RuntimeError(run.stderr.decode(errors="replace"))
+    return run.stdout
+
+
+def record_template():
+    data = bytearray(RECORD_SIZE)
+    assert len(MARKER) == 16
+    data[:16] = MARKER
+    struct.pack_into("<II", data, 16, 1, RECORD_SIZE)
+    data[64:] = b"\xff" * (RECORD_SIZE - 64)
+    return bytes(data)
+
+
+def add_property(blob):
+    """Insert one chosen property, preserving every existing value/reservation."""
+    nodes, reservations = stock.parse_fdt(blob)
+    assert "/chosen" in nodes and PROPERTY not in nodes["/chosen"]
+    h = list(struct.unpack_from(">10I", blob))
+    so, st, slen, nlen = h[2], h[3], h[8], h[9]
+    assert 40 <= h[4] < so < st
+    structure = bytearray(blob[so:so+nlen])
+    strings = blob[st:st+slen]
+    stack, p, inserted = [], 0, False
+    while p < len(structure):
+        token = struct.unpack_from(">I", structure, p)[0]
+        p += 4
+        if token == 1:
+            end = structure.index(0, p)
+            stack.append(structure[p:end].decode())
+            p = (end + 4) & ~3
+            if stack == ["", "chosen"]:
+                prop = struct.pack(">III", 3, RECORD_SIZE, len(strings)) + record_template()
+                structure[p:p] = prop
+                inserted = True
+                break
+        elif token == 2:
+            stack.pop()
+        elif token == 3:
+            length = struct.unpack_from(">I", structure, p)[0]
+            p = (p + 8 + length + 3) & ~3
+        elif token not in (4, 9):
+            raise ValueError("Invalid FDT token")
+    assert inserted
+    strings += PROPERTY.encode() + b"\0"
+    h[3], h[8], h[9] = so + len(structure), len(strings), len(structure)
+    h[1] = h[3] + len(strings)
+    result = bytearray(blob[:so]) + structure + strings
+    struct.pack_into(">10I", result, 0, *h)
+    expected = {path: dict(props) for path, props in nodes.items()}
+    expected["/chosen"][PROPERTY] = record_template()
+    assert stock.parse_fdt(bytes(result)) == (expected, reservations)
+    assert result.count(MARKER) == 1
+    return bytes(result)
+
+
+def compile_probe(offset, name="probe", test_trap=False):
+    source = ROOT / "diagnostics/entry-probe.S"
+    obj, elf, binary = [OUT / (name + ext) for ext in (".o", ".elf", ".bin")]
+    args = ["clang", "--target=aarch64-none-elf", "-march=armv8-a", "-c",
+            wslpath(source), "-o", wslpath(obj)]
+    if test_trap:
+        args.insert(1, "-DPROBE_TEST_TRAP=1")
+    if PROFILE == "display":
+        args[1:1] = ["-DPROBE_DISPLAY=1", "-DPROBE_RECORD_SIZE=4096",
+                     '-DPROBE_MAGIC="MIX1DISPLAYPROBE"', f"-DDISPLAY_REG_COUNT={len(DISPLAY_REGISTERS)}",
+                     "-I" + wslpath(OUT)]
+    if PROFILE == "journal":
+        args[1:1] = ["-DPROBE_JOURNAL=1", "-DPROBE_RECORD_SIZE=8192", '-DPROBE_MAGIC="MIX1JOURNALPROB1"']
+    linux(*args)
+    linker = OUT / (name + ".ld")
+    linker.write_text(f"ENTRY(probe_entry)\nstock_entry = 0x1000;\nprobe_offset = {offset};\n"
+                      f"SECTIONS {{ . = {offset}; .text : {{ *(.text) }} /DISCARD/ : {{ *(.comment) *(.note*) }} }}\n")
+    linux("ld.lld", "-T", wslpath(linker), "-o", wslpath(elf), wslpath(obj))
+    linux("llvm-objcopy", "-O", "binary", wslpath(elf), wslpath(binary))
+    (OUT / (name + ".disasm.txt")).write_bytes(linux("llvm-objdump", "-d", wslpath(elf)))
+    return binary.read_bytes()
+
+
+def check_occupancy(build):
+    """Check this stock-chained probe, without claiming a UEFI allocation map."""
+    memory = json.loads((ROOT / "reports/live-memory.json").read_text())
+    base, offset = 0x40080000, int(build["probe_offset"], 16)
+    regions = [("stock kernel declared reservation", base, base + build["image_header_declared_bytes"]),
+               ("aboot DT editing window", 0x42800000, 0x42a00000),
+               ("unchanged stock ramdisk", 0x42a00000, 0x42a00000 + build["ramdisk_bytes"]),
+               ("stock aboot live segment", 0x92a00000, 0x92bd74f8)]
+    for index, (name, start, end) in enumerate(regions):
+        assert any(int(bank["start"], 16) <= start < end <= int(bank["end_exclusive"], 16)
+                   for bank in memory["ram_ranges"]), (name, "outside RAM")
+        for other, s, e in regions[:index]:
+            assert end <= s or e <= start, (name, other, "overlap")
+        for node in memory["reserved_memory"]:
+            for area in node.get("fixed_ranges", []):
+                assert end <= int(area["start"], 16) or int(area["end_exclusive"], 16) <= start, (name, node["node"])
+    assert offset + build["probe_bytes"] <= build["image_header_declared_bytes"]
+    assert (OUT / "dtb-03.dtb").stat().st_size < 0x200000
+    report = dict(schema=1, image_sha256=build["image_sha256"],
+                  address_basis="aboot data flow plus observed stock initrd; see entry-state.json for actual PC proof",
+                  bounded_stock_chained_probe_check_passed=True,
+                  regions=[dict(name=n, start=hex(s), end_exclusive=hex(e)) for n, s, e in regions],
+                  probe=dict(start=hex(base+offset), end_exclusive=hex(base+offset+build["probe_bytes"]),
+                             contained_in_stock_kernel_reservation=True,
+                             lifetime="before original head.S; original BSS zeroing may overwrite probe after continuation"),
+                  limitations=["Not a complete allocation map for UEFI.",
+                               "Fastboot download/decompression scratch locations remain allocated by unchanged stock aboot, unobserved by this probe.",
+                               "Linux-time dynamic pools are not treated as free UEFI memory."])
+    path = ROOT / "reports" / ("boot-occupancy.json" if PROFILE == "entry" else PROFILE+"-probe-occupancy.json")
+    path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+
+
+def main():
+    global OUT, MARKER, PROPERTY, RECORD_SIZE, PROFILE, DISPLAY_REGISTERS
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--profile", choices=("entry", "display", "journal"), default="entry")
+    args = parser.parse_args()
+    PROFILE = args.profile
+    if PROFILE == "display":
+        import display_probe
+        OUT = ROOT / "out/display-probe"
+        MARKER, PROPERTY, RECORD_SIZE = display_probe.MARKER, display_probe.PROPERTY, display_probe.RECORD_SIZE
+    if PROFILE == "journal":
+        OUT=ROOT/'out/journal-probe'
+        MARKER,PROPERTY,RECORD_SIZE=b'MIX1JOURNALPROB1','mix1,uefi-journal-v1',8192
+    OUT.mkdir(parents=True, exist_ok=True)
+    if PROFILE == "display":
+        nodes, _ = stock.parse_fdt((ROOT / "artifacts/stock/V9.5.2.0.NAHCNFA/lithium-stock.dtb").read_bytes())
+        header = (ROOT / "artifacts/research/mdss/mdss_mdp_hwio.h").read_text()
+        DISPLAY_REGISTERS = display_probe.register_list(nodes, header)
+        (OUT / "display-registers.inc").write_text("\n".join(f".word {hex(x['address'])} /* {x['group']} {x['name']} */" for x in DISPLAY_REGISTERS) + "\n")
+    source = ROOT / "artifacts/stock/V9.5.2.0.NAHCNFA/boot/boot.img"
+    original = source.read_bytes()
+    assert sha(original) == "2c070c67b07000a02de42fa05a6bcd93b7c32b3770d3fa9e495f321626278f44"
+    ks, ka, rs, ra, ss, sa, tags, page, reserved, osfield = struct.unpack_from("<10I", original, 8)
+    align = lambda n: (n + page - 1) // page * page
+    ro = page + align(ks)
+    so = ro + align(rs)
+    end = so + align(ss)
+    assert ss == 0 and reserved == 0 and page == 4096
+    signature = original[end:]
+    # This exact stock hash has an ASN.1 Android BootSignature: format v1,
+    # sha256WithRSAEncryption, target /boot, original payload length 0x1655000.
+    # A modified payload cannot retain its signature. Emit an explicitly
+    # unsigned diagnostic for the verified unlocked bootloader.
+    assert len(signature) == 1354 and signature[:4] == bytes.fromhex("30820546")
+    (OUT / "stock-boot-signature.der").write_bytes(signature)
+    kernel, ramdisk = original[page:page+ks], original[ro:ro+rs]
+    decoder = zlib.decompressobj(31)
+    image = decoder.decompress(kernel) + decoder.flush()
+    assert decoder.eof and image[56:60] == b"ARMd"
+    declared = struct.unpack_from("<Q", image, 16)[0]
+    code0, code1 = struct.unpack_from("<II", image)
+    assert code0 == 0x91005a4d and code1 == 0x140003ff
+    assert 4 + ((code1 & 0x3ffffff) << 2) == 0x1000
+    offset = (len(image) + 4095) & ~4095
+    probe = compile_probe(offset)
+    trap_probe = compile_probe(offset, "probe-test-trap", test_trap=True)
+    assert offset + max(len(probe), len(trap_probe)) <= declared
+    patched = bytearray(image)
+    patched.extend(bytes(offset - len(patched)))
+    patched.extend(probe)
+    branch = 0x14000000 | ((offset - 4) // 4)
+    struct.pack_into("<I", patched, 4, branch)
+    assert patched[:4] == image[:4] and patched[8:len(image)] == image[8:]
+    (OUT / "Image.probe").write_bytes(patched)
+    tail, pos, dtbs = decoder.unused_data, 0, []
+    while pos < len(tail):
+        assert tail[pos:pos+4] == bytes.fromhex("d00dfeed")
+        size = struct.unpack_from(">I", tail, pos + 4)[0]
+        blob = tail[pos:pos+size]
+        changed = add_property(blob)
+        dtbs.append(changed)
+        (OUT / f"dtb-{len(dtbs)-1:02d}.dtb").write_bytes(changed)
+        pos += size
+    assert pos == len(tail) and len(dtbs) == 20
+    newkernel = gzip.compress(patched, compresslevel=9, mtime=0) + b"".join(dtbs)
+    header = bytearray(original[:page])
+    struct.pack_into("<I", header, 8, len(newkernel))
+    h = hashlib.sha1()
+    for part in (newkernel, ramdisk, b""):
+        h.update(part)
+        h.update(struct.pack("<I", len(part)))
+    header[576:608] = h.digest() + bytes(12)
+    result = bytes(header) + newkernel + bytes(align(len(newkernel))-len(newkernel))
+    result += ramdisk + bytes(align(len(ramdisk))-len(ramdisk))
+    assert len(result) < 64 * 1024**2
+    output = OUT / ("lithium-" + PROFILE + "-probe.img")
+    output.write_bytes(result)
+    # Independent roundtrip via the existing stock boot extractor.
+    check, tail_check = stock.unpack_boot(output, OUT / "roundtrip")
+    assert check["android_sha1_id_valid"] and tail_check == b"".join(dtbs)
+    assert (OUT / "roundtrip/Image").read_bytes() == patched
+    assert (OUT / "roundtrip/ramdisk.cpio.gz").read_bytes() == ramdisk
+    report = dict(schema=1, profile=PROFILE, purpose="ARM64 observer chained to unchanged stock kernel body",
+                  target_os="iOS 14 (diagnostic preparatory stage; this image runs stock Android)",
+                  stock_boot_sha256=sha(original), image_sha256=sha(result),
+                  image_path=output.relative_to(ROOT).as_posix(), image_bytes=len(result), ramdisk_bytes=len(ramdisk),
+                  image_header_declared_bytes=declared, stock_image_file_bytes=len(image),
+                  probe_offset=hex(offset), probe_bytes=len(probe), probe_sha256=sha(probe),
+                  modified_original_kernel_bytes=[4, 5, 6, 7], ramdisk_unchanged=True,
+                  stock_boot_signature_removed_as_invalidated=True, diagnostic_is_signed=False,
+                  all_twenty_dtbs_preserved_with_one_added_property_each=True,
+                  image_size_header_unchanged=True, android_sha1_roundtrip_valid=True,
+                  property=PROPERTY, marker=MARKER.decode(), record_bytes=RECORD_SIZE, fields=FIELDS,
+                  qemu_validation_status="pending", device_validation_status="not attempted",
+                  expected_addresses=dict(kernel="0x40080000", fdt="0x42800000", ramdisk="0x42a00000"),
+                  limitations=["Expected addresses are aboot inference until actual probe PC is collected.",
+                               "Same-EL synchronous trap recovery only; higher-EL trapping is outside this observer.",
+                               "Does not establish UEFI/XNU boot or display scanout parameters."])
+    if PROFILE == "display":
+        report["display_registers"] = DISPLAY_REGISTERS
+        report["display_mmio_operations"] = "read-only; whitelist derived from matching stock DT and mdss source"
+        report["mdss_sources"] = json.loads((ROOT / "artifacts/research/mdss/sources.json").read_text())
+    previous_path = ROOT / "reports" / (PROFILE + "-probe-build.json")
+    if previous_path.exists():
+        previous = json.loads(previous_path.read_text(encoding="utf-8"))
+        if previous.get("image_sha256") == report["image_sha256"] and previous.get("probe_sha256") == report["probe_sha256"]:
+            for key in ("qemu_validation_status", "device_validation_status"):
+                report[key] = previous[key]
+    check_occupancy(report)
+    previous_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps({k: report[k] for k in ("image_path", "image_bytes", "image_sha256", "probe_offset", "probe_bytes")}, indent=2))
+
+
+if __name__ == "__main__":
+    main()

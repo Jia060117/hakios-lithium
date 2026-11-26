@@ -1,0 +1,192 @@
+"""Execute the exact appended diagnostic and its malformed-input paths in QEMU.
+
+Runs under WSL. The phone's stock Linux continuation alone becomes `b .`.
+No phone commands. This cannot verify aboot loading or Qualcomm Linux boot.
+"""
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import re
+import socket
+import struct
+import subprocess
+import tempfile
+import time
+
+ROOT=Path(__file__).resolve().parents[1]
+OUT=ROOT/'out/handoff-probe'
+spec=importlib.util.spec_from_file_location('stock',ROOT/'scripts/extract-stock.py')
+stock=importlib.util.module_from_spec(spec); spec.loader.exec_module(stock)
+
+def sha(data): return hashlib.sha256(data).hexdigest()
+def run(*args): subprocess.run(list(map(str,args)),check=True,capture_output=True,timeout=20)
+
+class Qmp:
+    def __init__(self,path):
+        self.socket=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
+        self.socket.settimeout(10); self.socket.connect(str(path))
+        self.stream=self.socket.makefile('rwb',buffering=0)
+        assert 'QMP' in json.loads(self.stream.readline())
+        self.call('qmp_capabilities')
+    def call(self,name,arguments=None):
+        command={'execute':name}
+        if arguments is not None: command['arguments']=arguments
+        self.stream.write(json.dumps(command).encode()+b'\n')
+        while True:
+            reply=json.loads(self.stream.readline())
+            if 'error' in reply: raise RuntimeError(reply)
+            if 'return' in reply: return reply['return']
+    def hmp(self,command): return self.call('human-monitor-command',{'command-line':command})
+    def dump(self,address,size,path):
+        result=self.hmp(f'pmemsave {address:#x} {size} "{path}"')
+        assert not result.strip(),result
+        return path.read_bytes()
+    def close(self): self.stream.close(); self.socket.close()
+
+def main():
+    package=json.loads((OUT/'package.json').read_text())
+    production=(OUT/'Image').read_bytes(); blob=(OUT/'handoff-ramdisk.bin').read_bytes()
+    assert sha(production)==package['kernel_image_sha256'] and sha(blob)==package['ramdisk_sha256']
+    assert sha((ROOT/package['image_path']).read_bytes())==package['image_sha256']
+    offset=int(package['probe_offset'],16)
+    assert sha(production[offset:])==package['probe_sha256']
+    for name,digest in package['sources'].items(): assert sha((ROOT/name).read_bytes())==digest,name
+    emulated=bytearray(production); struct.pack_into('<I',emulated,0x1000,0x14000000)
+    (OUT/'qemu-DO-NOT-BOOT-Image').write_bytes(emulated)
+    source=OUT/'qemu-harness.S'
+    source.write_text('''
+.text
+.global _start
+_start:
+  msr daifset,#15
+  mov x0,#0x80000000
+  msr hcr_el2,x0
+  msr cptr_el2,xzr
+  mov x0,#3
+  msr cnthctl_el2,x0
+  msr cntvoff_el2,xzr
+  mov x0,#0x3c5
+  msr spsr_el2,x0
+  adr x0,el1
+  msr elr_el2,x0
+  eret
+el1:
+  ldr x17,=0x10c00800
+  msr sctlr_el1,x17
+  ldr x17,=0x92a00000
+  msr vbar_el1,x17
+  ldr x17,=0x0b1ff000
+  mov sp,x17
+  mov x17,#0x1c0
+  msr daif,x17
+  isb
+  mov x0,#0x42800000
+  mov x1,xzr
+  mov x2,xzr
+  mov x3,xzr
+  ldr x17,=0x40080000
+  br x17
+''')
+    run('clang','--target=aarch64-none-elf','-c',source,'-o',OUT/'qemu-harness.o')
+    run('ld.lld','-Ttext=0x40000000','-e','_start','-o',OUT/'qemu-harness.elf',OUT/'qemu-harness.o')
+    cases=[('valid-32',0),('valid-64',0),('valid-mixed-widths',0),
+           ('bad-fdt-magic',1),('oversized-total',2),('bad-structure-bounds',3),
+           ('unknown-token',4),('missing-start',7),('wrong-start',8),('wrong-end',8),
+           ('bad-property-width',6),('bad-image-magic',9),('corrupt-slot',10),('corrupt-initrd',11)]
+    results=[]
+    for name,expected_reason in cases:
+        directory=OUT/'qemu'/name; directory.mkdir(parents=True,exist_ok=True)
+        fdt=directory/'input.dtb'
+        fdt.write_bytes((ROOT/'out/journal-probe/dtb-03.dtb').read_bytes())
+        for key,value in [('linux,initrd-start',0x42a00000),('linux,initrd-end',0x44a00000+2264305)]:
+            values=['0',f'{value:x}'] if name=='valid-64' or (name=='valid-mixed-widths' and key.endswith('end')) else [f'{value:x}']
+            run('fdtput','-t','x',fdt,'/chosen',key,*values)
+        if name=='missing-start': run('fdtput','-d',fdt,'/chosen','linux,initrd-start')
+        if name=='wrong-start': run('fdtput','-t','x',fdt,'/chosen','linux,initrd-start','42a01000')
+        if name=='wrong-end': run('fdtput','-t','x',fdt,'/chosen','linux,initrd-end','44c28cf0')
+        if name=='bad-property-width': run('fdtput','-t','x',fdt,'/chosen','linux,initrd-start','0','0','42a00000')
+        data=bytearray(fdt.read_bytes())
+        if name=='bad-fdt-magic': data[0]^=1
+        if name=='oversized-total': struct.pack_into('>I',data,4,0x200001)
+        if name=='bad-structure-bounds': struct.pack_into('>I',data,36,len(data))
+        if name=='unknown-token': struct.pack_into('>I',data,struct.unpack_from('>I',data,8)[0],0x1234)
+        fdt.write_bytes(data)
+        guest_blob=OUT/'handoff-ramdisk.bin'
+        if name in ('bad-image-magic','corrupt-slot','corrupt-initrd'):
+            corrupt=bytearray(blob)
+            corrupt[{'bad-image-magic':56,'corrupt-slot':0x1234,'corrupt-initrd':0x2000040}[name]]^=1
+            guest_blob=directory/'input-blob.bin'; guest_blob.write_bytes(corrupt)
+        with tempfile.TemporaryDirectory(prefix='mix1-handoff-') as temporary:
+            sock=Path(temporary)/'qmp.sock'
+            command=['qemu-system-aarch64','-machine','virt,virtualization=on,gic-version=3',
+                '-cpu','cortex-a57','-m','2G','-smp','1','-display','none','-serial','none','-nic','none','-no-reboot',
+                '-qmp',f'unix:{sock},server=on,wait=off','-S',
+                '-device',f'loader,file={OUT}/qemu-DO-NOT-BOOT-Image,addr=0x40080000,force-raw=on',
+                '-device',f'loader,file={guest_blob},addr=0x42a00000,force-raw=on',
+                '-device',f'loader,file={fdt},addr=0x42800000,force-raw=on',
+                '-kernel',str(OUT/'qemu-harness.elf')]
+            with (directory/'qemu-stderr.log').open('w') as stderr:
+                proc=subprocess.Popen(command,stderr=stderr)
+                qmp=None
+                try:
+                    deadline=time.monotonic()+5
+                    while not sock.exists() and time.monotonic()<deadline:
+                        if proc.poll() is not None: raise RuntimeError((directory/'qemu-stderr.log').read_text())
+                        time.sleep(.02)
+                    qmp=Qmp(sock); qmp.call('cont')
+                    deadline=time.monotonic()+20
+                    while time.monotonic()<deadline:
+                        time.sleep(.1); qmp.call('stop')
+                        journal=qmp.dump(0x84000000,4096,directory/'journal.bin')
+                        status,reason=struct.unpack_from('<II',journal,24)
+                        registers=qmp.hmp('info registers')
+                        pc=int(re.search(r'PC=([0-9a-fA-F]+)',registers).group(1),16)
+                        if (expected_reason and status==0xffffffff) or (not expected_reason and status==4 and pc==0x40081000): break
+                        qmp.call('cont')
+                    else: raise RuntimeError(f'{name}: timeout, stage={status:#x}, reason={reason}, pc={pc:#x}')
+                    (directory/'registers.txt').write_text(registers)
+                    observed=qmp.dump(0x42800000,len(data),directory/'output.dtb')
+                    assert journal[:16]==package['journal_marker'].encode()
+                    assert struct.unpack_from('<II',journal,16)==(1,4096)
+                    assert struct.unpack_from('<Q',journal,112)[0]==int(package['build_tag'],16)
+                    unchanged=observed==data
+                    if expected_reason:
+                        assert status==0xffffffff and reason==expected_reason,(name,status,reason)
+                        assert unchanged,'Rejected input changed FDT bytes'
+                    else:
+                        assert reason==0
+                        old_nodes,old_reserved=stock.parse_fdt(bytes(data))
+                        nodes,reserved=stock.parse_fdt(observed)
+                        record=nodes['/chosen'][package['property']]
+                        assert record[:16]==package['record_marker'].encode()
+                        assert struct.unpack_from('<I',record,24)[0]==1
+                        assert record[512:4608]==journal,'Collector did not copy this diagnostic journal'
+                        for key,value in [('linux,initrd-start',0x44a00000),('linux,initrd-end',0x44a00000+2264305)]:
+                            assert int.from_bytes(nodes['/chosen'][key],'big')==value
+                            nodes['/chosen'][key]=old_nodes['/chosen'][key]
+                        nodes['/chosen'][package['property']]=old_nodes['/chosen'][package['property']]
+                        assert nodes==old_nodes and reserved==old_reserved,'Unrelated FDT property changed'
+                        assert struct.unpack_from('<QQQQQ',journal,72)==(0xb1ff000,0x10c00800,0x1c0,0x92a00000,4)
+                        assert struct.unpack_from('<QQ',journal,56)==(int(package['slot_fnv64'],16),int(package['stock_initrd_fnv64'],16))
+                        fields=json.loads((ROOT/'reports/journal-probe-build.json').read_text())['fields']
+                        regs=dict(zip(fields,struct.unpack_from('<'+'Q'*len(fields),record,64)))
+                        assert regs['sp']==0xb1ff000 and regs['vbar_el1']==0x92a00000
+                        assert regs['daif']==0x1c0 and regs['sctlr_el1']==0x10c00800
+                        assert [regs[f'x{i}'] for i in range(4)]==[0x42800000,0,0,0]
+                    qmp.call('quit'); proc.wait(timeout=5)
+                    results.append(dict(name=name,passed=True,status=hex(status),reason=reason,
+                        rejected_fdt_unchanged=unchanged if expected_reason else None,
+                        collector_executed=not expected_reason,pc=hex(pc)))
+                    print(f'PASS {name}',flush=True)
+                finally:
+                    if qmp is not None: qmp.close()
+                    if proc.poll() is None: proc.kill(); proc.wait(timeout=5)
+    report=dict(schema=1,image_sha256=package['image_sha256'],probe_sha256=package['probe_sha256'],
+        build_tag=package['build_tag'],sources=package['sources'],
+        validator_source_sha256=sha(Path(__file__).read_bytes()),validated_cases=len(results),all_passed=all(r['passed'] for r in results),
+        cases=results,phone_boot_performed=False,limitations=package['limitations'])
+    (ROOT/'reports/handoff-probe-qemu.json').write_text(json.dumps(report,indent=2)+'\n')
+    print(json.dumps(dict(all_passed=report['all_passed'],validated_cases=len(results),image_sha256=package['image_sha256']),indent=2))
+
+if __name__=='__main__': main()

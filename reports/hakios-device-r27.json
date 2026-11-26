@@ -1,0 +1,225 @@
+{
+  "schema": 1,
+  "attempt": "HakiOS lithium R27",
+  "started_at": "2026-11-16T02:00:43.292207+08:00",
+  "recorded_at": "2026-11-16T02:00:44.696987+08:00",
+  "baseline": {
+    "project": "HakiOS",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2"
+  },
+  "package": {
+    "image_sha256": "d1f3af4e79baef473cb1308cd52e7604ca92a62231f38ea18f80b9057ee6f4fa",
+    "image_bytes": 15773696,
+    "kernel_sha256": "648320e505088c834eff8c8c0cb17b4ee29ba6d96a4c7da8aba1554fbe063748",
+    "loader_sha256": "86ef4b3480818e32b87c31b9b49a36cc2d14ae6439f5b377ac79eeefd55d93b9",
+    "fd_sha256": "87235b3e93b4351e86418ceaf45f74ecdca173f6d5d52faaa1df422e4d0d5a0f",
+    "payload_sha256": "156764426001869b0ab6434785a6a64f53b2fa8289a52cdb6af64fb35a2d2bcd",
+    "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=2 lithium_storage_test=1 systrace=2 systrace_name=launchd loader_return_after=120 lithium_ios14_test=1 lithium_launchd_test=1 applog=1 applog_name=launchd",
+    "stock_dtb_table_sha256": "ab929abf55ad4822ae83489a58d6b550b7b24ea8398ce8ead1de7b1d2caed6aa",
+    "test_profile": "p2-ios14-launchd",
+    "ramdisk_sha256": "b7936ab44f372bc891eb4ddf6bfa16bdcd26dadff840cacfcac2cd7272d02c07",
+    "dynamic_init_sha256": "4a879fd4c5544e22016de48dc1045d1e39dc1dbb9086e47395db11766821958b",
+    "loader_identity": {
+      "target": "iPhone10,1 / D20AP",
+      "source_sha256": "1827dfc68e87b822c43e86781872caa6a5d490efc5145a2a60feba0e2bd54b93",
+      "generator_sha256": "ae6cebdcfa22994661211e0bc35fd14770484173f951ceef6a65e9b84ad3ff99",
+      "header_sha256": "71874512c290ec24d799173f2aa10131c6f61573d598c0e281252e373c5b6630",
+      "placeholder": false
+    }
+  },
+  "frozen_artifacts_path": "artifacts/hakios/p2-ios14-launchd-handoff-ready",
+  "frozen_boot_image": "reports/local/20261116-020043-269612-hakios-preflight/lithium-hakios-test.img",
+  "local_log_path": "reports/local/20261116-020043-269612-hakios-preflight",
+  "test_contract_path": "reports/local/20261116-020043-269612-hakios-preflight/test-contract.json",
+  "filesystem_input": {
+    "report": "reports/hakios-hfs-journal-repair.json",
+    "frozen_contract_path": "reports/local/20261116-020043-269612-hakios-preflight/filesystem-input.json",
+    "original_volume_plus_verified_journal_delta": true,
+    "prior_maintenance_written_bytes": 8192,
+    "first8192_unchanged": true,
+    "full_volume_after_hash_measured": false
+  },
+  "identity_verified": true,
+  "bootloader_unlocked": true,
+  "userdata_bytes": 250710192128,
+  "temporary_boot_issued": true,
+  "fastboot_returncode": 0,
+  "command_accepted": true,
+  "fastboot_boot_output": "Sending 'boot.img' (15404 KB)                      OKAY [  0.377s]\nBooting                                            OKAY [  0.786s]\nFinished. Total time: 1.169s\n",
+  "latest_usb": {
+    "checked_at": "2026-11-16T02:00:44.696987+08:00",
+    "authorized_device_in_fastboot": false,
+    "adb_present": false,
+    "local_log_path": "reports/local/20261116-020043-269612-hakios-preflight/post-boot-usb.json"
+  },
+  "battery_preflight": {
+    "battery_soc_ok": "yes",
+    "local_log_path": "reports/local/20261116-020043-269612-hakios-preflight/battery-query.json"
+  },
+  "user_screen_observation": {
+    "source": "user_photo",
+    "observation_pending": false,
+    "current_screen": "R27 retained timed-return summary; launchd child PID3/PPID1 started; service result absent",
+    "automatic_reboot_observed": false
+  },
+  "verified_stages": {
+    "fastboot_command": true,
+    "uefi": true,
+    "loader": true,
+    "kernel": true,
+    "hello": false,
+    "full_init": true,
+    "hfs_root_switch": true,
+    "original_launchd_pid1": true,
+    "original_selected_jobs": false,
+    "original_launchd_file_identity": true,
+    "upstream_ramfs_data_initialization": true,
+    "stdout_nonterminal_contract": true,
+    "original_launchd_exec_path_entered": true,
+    "original_launchd_pid1_started": true,
+    "original_launchd_started_observer": true,
+    "original_dyld_shared_region_call": true
+  },
+  "outcome": "original_launchd_PID1_started_observer_orderly_return_service_verification_incomplete",
+  "exact_failure_stage": "No failure result visible; observer process snapshot not reached or not retained",
+  "runtime_acceptance": {
+    "launchd_test_passed": null,
+    "final_summary_pending": false,
+    "orderly_return_observed": true,
+    "panic_return_observed": false,
+    "final_summary_retained": true,
+    "original_launchd_handoff_passed": true,
+    "observer_started_by_PID1": true,
+    "service_snapshot_complete": false,
+    "selected_jobs_verified": false,
+    "P2_overall_passed": false,
+    "status": "handoff_and_observer_start_passed_services_incomplete",
+    "no_panic_observation_seconds": 121.313
+  },
+  "hardware_verified": true,
+  "ios14_compatibility_verified": false,
+  "partition_writes_performed": false,
+  "qemu_used": false,
+  "observation_recorded_at": "2026-11-16T02:07:46.343924+08:00",
+  "kernel_execution_verified": true,
+  "screen_evidence": {
+    "photos": [
+      {
+        "path": "reports/local/20261116-020043-269612-hakios-preflight/r27-launchd-job-started-timed-return.jpg",
+        "sha256": "f84a62a8fb5bfdebf9b3aeb0f771d394b2db40336ba62232f6c09fd63d0a5d94"
+      }
+    ],
+    "transcription_path": "reports/local/20261116-020043-269612-hakios-preflight/r27-screen-transcription.txt",
+    "transcription_sha256": "126126b26985cc60c0895f4e4d3612262ce5ed0d63090e15a61a6973370688e2",
+    "raw_kernel_log_captured": false,
+    "launchstdio_marker_visible": true,
+    "launchd_job_marker_visible": true,
+    "original_service_snapshots_visible": false,
+    "launch_result_visible": false,
+    "transcription_scope": "Visible text only, normalized wrapping; negative tty sign noted as source inference"
+  },
+  "measurements": {
+    "root_switch_rc": 0,
+    "root_readonly": true,
+    "selected_jobs_configured": 3,
+    "launchd_bytes": 403488,
+    "launchd_match": true,
+    "ramfs_var": true,
+    "upstream_mount_checks": 2,
+    "upstream_mount_failures": 0,
+    "handoff_pid": 1,
+    "rd": "md0",
+    "launchstdio_success_visible": true,
+    "stdin_null": true,
+    "stdout_null": true,
+    "stderr_console": true,
+    "descriptor_steps": {
+      "open": {
+        "rc": 3,
+        "errno": 0
+      },
+      "dup0": {
+        "rc": 0,
+        "errno": 0
+      },
+      "dup1": {
+        "rc": 1,
+        "errno": 0
+      },
+      "close": {
+        "rc": 0,
+        "errno": 0
+      },
+      "tty": {
+        "rc_visible_magnitude": 1,
+        "rc_sign_legible": false,
+        "errno": 19,
+        "rc_negative_inferred_from_success_marker_and_frozen_source": true
+      }
+    },
+    "exec_attempt_pid": 1,
+    "exec_attempted": true,
+    "observer_pid": 3,
+    "observer_ppid": 1,
+    "observer_start_visible": true,
+    "original_service_presence_confirmed": false,
+    "shared_region_count": 3,
+    "shared_region_slide": 225656832,
+    "shared_region_rc": 0,
+    "mach14_platform": 2,
+    "mach14_sdk": "0x000e0800",
+    "mach14_id": 200,
+    "mach14_legacy": true,
+    "other_process_exit": {
+      "pid": 2,
+      "signal": 1,
+      "namespace": 0,
+      "code": 0,
+      "csflags": "0x22000001",
+      "process_identity_not_established": true,
+      "not_a_PID1_exit": true
+    },
+    "clock_ticks_start": 49769899177,
+    "clock_ticks_end": 52099120155,
+    "frequency_hz": 19200000,
+    "hardware_elapsed_ms": 121313,
+    "clock_valid": true,
+    "ppi27_start": 0,
+    "ppi27_end": 19905,
+    "irq_delta": 19905,
+    "samples": 2,
+    "stalled": 0,
+    "min_step": 7193,
+    "last_timer_ppi27": 19181,
+    "last_timer_heartbeat": 12,
+    "last_timer_elapsed_ms": 110185,
+    "launch_result_visible": false,
+    "launch_result": null
+  },
+  "diagnosis": {
+    "R26_pre_exec_stdio_rejection_resolved_in_this_run": true,
+    "original_launchd_PID1_handoff_and_job_start_verified": true,
+    "R25_exit78_panic_not_reproduced_in_observed_run": true,
+    "original_launchd_full_service_acceptance_verified": false,
+    "original_R25_abort_cause_fully_isolated": false,
+    "service_snapshot_missing_cause_established": false,
+    "observer_timing": {
+      "configured_post_start_sleep_seconds": 60,
+      "ps_budget_seconds": 30,
+      "whole_kernel_budget_seconds": 120,
+      "observer_start_elapsed_not_logged": true,
+      "budget_can_end_before_snapshot": true,
+      "this_run_timeout_cause_proven": false
+    },
+    "next_work": "Review observer timing and retain PS/result progress; verify PID1/notifyd/cfprefsd before graphics",
+    "graphics_touch_and_SpringBoard_unverified": true
+  },
+  "observation_archival": {
+    "frozen_evidence_hashes_checked": 190,
+    "device_queries_performed": false,
+    "temporary_boot_issued": false,
+    "partition_writes_performed": false,
+    "new_kernel_compiled": false
+  }
+}

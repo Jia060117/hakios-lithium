@@ -1,0 +1,226 @@
+{
+  "schema": 1,
+  "revision": 3,
+  "checked_at": "2026-11-16T20:44:55.808438+08:00",
+  "connected": true,
+  "identity_verified": true,
+  "temporary_boot_issued": true,
+  "command_accepted": true,
+  "image_sha256": "0fd0502ac4537c92802429fdba90f40357233da2121206d2bceec85a0c6e33ee",
+  "readiness_report": "reports/hakios-ios16-boot-ready.json",
+  "local_log_path": "reports\\local\\20261116-204455-783456-ios16-r3",
+  "host_partition_flash_issued": false,
+  "kernel_data_writes_enabled": true,
+  "kernel_data_write_hardware_verified": true,
+  "hardware_verified": false,
+  "screen_observation_pending": false,
+  "full_services_verified": false,
+  "springboard_display_verified": false,
+  "physical_touch_verified": false,
+  "usb_log_transfer_verified": true,
+  "all_6gb_exposed": false,
+  "qemu_used": false,
+  "legacy_7195_used": false,
+  "userdata_bytes": 250710192128,
+  "bootloader_unlocked": true,
+  "battery_soc_ok": true,
+  "started_at": "2026-11-16T20:44:55.989550+08:00",
+  "usb_capture_started": true,
+  "usb_capture_status_path": "reports\\local\\20261116-204455-783456-ios16-r3\\usb-status.json",
+  "boot_entry_sha256": "bf31154055a3aeecf947e55226bee3b49211ca78e2804f38ac2c7c64429324cc",
+  "fastboot_returncode": 0,
+  "outcome": "returned_to_uefi_reason_unconfirmed",
+  "user_screen_observation": "已停在结束摘要；照片显示 HAKIOS UEFI LOG / LITHIUM IOS16 RETURN / RAW BYTES 252074 / PANIC CAUSE NOT RECOVERED",
+  "user_screen_observation_source": "R3 user response and final summary photo",
+  "usb_enumeration_verified": true,
+  "usb_endpoint_configuration_verified": true,
+  "kernel_hardware_started": true,
+  "original_launchd_pid1_verified": true,
+  "init_checks_passed": 45,
+  "init_checks_failed": 0,
+  "ufs_root_runtime_mounted": true,
+  "os_cryptex_runtime_mounted": true,
+  "app_cryptex_runtime_mounted": true,
+  "data_runtime_read_write_verified": true,
+  "usb_runtime_snapshot": {
+    "recorded_at": "2026-11-16T20:50:33.595472+08:00",
+    "snapshot_path": "reports\\local\\20261116-204455-783456-ios16-r3\\snapshot-205033-595472",
+    "raw_bytes": 99774,
+    "console_bytes": 49118,
+    "raw_sha256": "b0fd3de7abd3e27258be4674f57aa0ff628aa55cf9cb56d303293c3d3a64b6b4",
+    "console_sha256": "2a5cb7f1b4f12d332556b3bf9594799e450813b34ff8288f7b6230f3c68e28fc",
+    "frames": 1583,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "incomplete_frame_bytes": 0,
+    "decoded_console_prefix_matches": true,
+    "capture_still_running": true,
+    "from_init_before_launchd": true,
+    "kernel_early_log_complete": false,
+    "evidence": {
+      "ufs_system_mounted": [
+        {
+          "line": 5,
+          "text": "[ ok ] mount the Darwin volume read only"
+        }
+      ],
+      "os_cryptex_mounted": [
+        {
+          "line": 12,
+          "text": "[ ok ] the OS cryptex (/dev/ufs_userdata,c=1) on /private/preboot/Cryptexes/OS"
+        }
+      ],
+      "app_cryptex_mounted": [
+        {
+          "line": 13,
+          "text": "[ ok ] the App cryptex (/dev/ufs_userdata,c=2) on /private/preboot/Cryptexes/App"
+        }
+      ],
+      "data_ufs_device": [
+        {
+          "line": 22,
+          "text": "/private/var: HFS Plus from /dev/ufs_darwin_data, kept between boots"
+        }
+      ],
+      "data_mounted": [
+        {
+          "line": 23,
+          "text": "[ ok ] mount the data volume on /private/var"
+        }
+      ],
+      "data_write_readback": [
+        {
+          "line": 518,
+          "text": "[ ok ] create a file, write 100 KB, read it back"
+        }
+      ],
+      "data_mmap_readback": [
+        {
+          "line": 528,
+          "text": "[ ok ] and what write() stores is seen through the mapping"
+        }
+      ],
+      "dynamic_program": [
+        {
+          "line": 547,
+          "text": "Hello from a dynamically linked program! pid 4, 3 argument(s)"
+        }
+      ],
+      "init_checks": [
+        {
+          "line": 665,
+          "text": "=== 45 checks, 0 failed ==="
+        }
+      ],
+      "launchd_ignition": [
+        {
+          "line": 706,
+          "text": "libignition: 1:        hello: hello from launchd.1"
+        }
+      ],
+      "launchd_pid1": [
+        {
+          "line": 730,
+          "text": "com.apple.xpc.launchd|1970-01-01 08:12:44.592824 <Notice>: launchd logging initialized. name: com.apple.xpc.launchd pid: 1"
+        }
+      ]
+    }
+  },
+  "runtime_verification_scope": "USB from upstream init through launchd/service startup; 2473 frames / 120934 bytes verified without loss, duplicates or incomplete frames. User and photo confirm UEFI return. Early kernel and return tail absent; no confirmed timer/panic cause, live desktop, container RPC, full RAM or post-reboot persistence verification.",
+  "usb_final_snapshot": {
+    "recorded_at": "2026-11-16T21:41:11.171584+08:00",
+    "snapshot_path": "reports/local/20261116-204455-783456-ios16-r3/snapshot-final",
+    "raw_bytes": 200070,
+    "console_bytes": 120934,
+    "raw_sha256": "1f36030a1372f60d753e5f8a44ac9e03c585eb4075d93c0edd47bebc083edddc",
+    "console_sha256": "e433df9da8970f658a7f2b37e97331221023aaa675d3cb888fbaae4008f98562",
+    "capture_source_sha256": "d5a9aecdd3c5ac728b233628d9ae810a598a35ba05d9068d0db3ed70fde3791c",
+    "frames": 2473,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "incomplete_frame_bytes": 0,
+    "decoded_console_matches": true,
+    "capture_still_running": false,
+    "capture_status": "capture_failed",
+    "capture_failure": "[Errno 32] Pipe error",
+    "capture_finished_at": "2026-11-16T21:15:34.420534+08:00",
+    "from_init_before_launchd": true,
+    "kernel_early_log_complete": false,
+    "return_tail_captured": false,
+    "evidence": {
+      "container_patch": [
+        {
+          "line": 989,
+          "text": "hakios: container manager: no personas"
+        }
+      ],
+      "springboard_running": [
+        {
+          "line": 1244,
+          "text": "com.apple.xpc.launchd|1970-01-01 08:25:27.146708 (user/501/com.apple.SpringBoard [8]) <Notice>: job state = running"
+        }
+      ],
+      "backboardd_running": [
+        {
+          "line": 1230,
+          "text": "com.apple.xpc.launchd|1970-01-01 08:23:55.046407 (user/501/com.apple.backboardd [13]) <Notice>: service state: running"
+        }
+      ],
+      "container_running": [
+        {
+          "line": 1172,
+          "text": "com.apple.xpc.launchd|1970-01-01 08:21:26.273168 (user/501/com.apple.containermanagerd [14]) <Notice>: service state: running"
+        }
+      ],
+      "window_server_hooks": [
+        {
+          "line": 925,
+          "text": "hakios: window server hooks installed"
+        }
+      ],
+      "deadline_marker": [],
+      "panic_marker": [],
+      "usertrap_marker": [],
+      "userabort_marker": []
+    },
+    "photos": [
+      {
+        "path": "reports/local/20261116-204455-783456-ios16-r3/photos/r3-systrace.jpg",
+        "sha256": "c02996cad9d3f57a847ca63efc1fa56fccbb5e3d3049ed3baa93d274ffc3a588",
+        "partial_manual_transcription": [
+          "systrace: launchd[1] open_nocancel ... /XPCServices = 2",
+          "systrace: wifid[11] open ... /System/Library/FeatureFlags/Profiles.plist = 2",
+          "systrace: xpcproxy[29] open ... /Library/Preferences/FeatureFlags/SettingsDisclosures.plist = 2",
+          "No panic text visible in this photograph."
+        ]
+      },
+      {
+        "path": "reports/local/20261116-204455-783456-ios16-r3/photos/r3-return-summary.jpg",
+        "sha256": "dd0b6fec7eb03cb411c931f0afd3f2253cdedbb48fe9515fb0c013980e962006",
+        "partial_manual_transcription": [
+          "HAKIOS UEFI LOG",
+          "LITHIUM IOS16 RETURN  RAW BYTES 252074",
+          "PANIC CAUSE NOT RECOVERED",
+          "LAST TEXT LOG",
+          "SYSTRACE: WIFID[11] OPENAT ... /LIBRARY/PREFERENCES/LOGGING/COM.APPLE.DIAGNOSTICD.FILTER.PLIST ... 2",
+          "SYSTRACE: LAUNCHD[1] ... DATAMIGRATION.FRAMEWORK ... XPCSERVICES ... 2",
+          "RAW LOG AND STACKSHOT RETAINED IN RAM",
+          "SUMMARY RETAINED UNTIL REBOOT",
+          "LITHIUM SESSION ENDED  USE POWER  VOLUME DOWN FOR FASTBOOT"
+        ]
+      }
+    ]
+  },
+  "usb_log_complete": false,
+  "usb_capture_terminal_error": "[Errno 32] Pipe error",
+  "returned_to_uefi_verified": true,
+  "return_reason_verified": false,
+  "return_reason_hypothesis": "Configured 1800-second return is consistent with host duration; deadline marker and reason are not captured, so timer completion is not confirmed.",
+  "springboard_process_started": true,
+  "backboardd_process_started": true,
+  "containermanagerd_process_started": true,
+  "upstream_container_patch_executed": true,
+  "panic_observed": false,
+  "panic_absence_verified": false,
+  "final_summary_raw_log_bytes": 252074
+}

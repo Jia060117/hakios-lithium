@@ -1,0 +1,776 @@
+{
+  "recorded_at": "2026-11-15T17:44:32.302277+00:00",
+  "baseline": {
+    "project": "HakiOS",
+    "path": "upstream/hakios-xnu-kernel",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2",
+    "apple_xnu_commit": "c54f35ca767986246321eb901baf8f5ff7923f6a"
+  },
+  "remote_refs": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438\tHEAD\n63fc2b4633bac3af8e57dadab9f5a8d4cb940438\trefs/heads/main",
+  "upstream_sources": {
+    "userland/src/init.c": "564e948ac7aa9ecab0da54b932df184f357efbd35d76dbe8591b3cf5c149c157",
+    "userland/libmini/mini.c": "4aafe4461e79a503336fc149c263d96fef7d5e9d28eaf7375ce968f838c4aa68",
+    "userland/libmini/mini.h": "7f633455ab782794b11e2daa04480fe27bd8d8eb4f470e1e7bcbfc77246f09cb",
+    "userland/libmini/start.S": "75024af4f60a89ff82269a7076be303bcb50779f9f1d4ef504231bcf4ea1012c",
+    "userland/mkjobs.py": "75a79f8ba1e3abd22608058337584f0c4b70a6fafc410c7e8c9622fb9180bea9",
+    "sysimage/mkvarskel.py": "ea6191dfe4daee9817dad9bd81c358900093af1c626a87e950912965fbd584db",
+    "sysimage/select-system.py": "1224e46719be478a2ee3c1319d8e41bb6438300b36a90fa66445ed0377122d37",
+    "sysimage/unpack.sh": "e28c513b054a379c374c4c8e9715c671fce0f36e5cb2dbcda9df2abeeaacc5fc",
+    "userland/build.sh": "48500c2b0602d7b5d71e9c63369851d9fe39ec76a4edc83b4f8775c34896ded3",
+    "xnuloader/loader.c": "8796088683fcd6f2a28232e1623e4915cb2e1fe1ab10c6ce78a3a613c8440099"
+  },
+  "reference_ipsw_manifest_sha256": "7dd041dc7ac05f2e1f041013024f9062b8166d916c708ff8b46aca5e089e091f",
+  "reference_components": [
+    {
+      "component": "OS",
+      "member": "096-04088-077.dmg",
+      "bytes": 4728546953,
+      "sha256": "64354ba3475d3c34d6fc531f75585a7b24af0fdb7a3a8a2bdf95c7f351a3f290",
+      "zip_crc_verified": true
+    },
+    {
+      "component": "Cryptex1,SystemOS",
+      "member": "096-04666-078.dmg",
+      "bytes": 2726297600,
+      "sha256": "2279bf443856fcb6a3f00b1fa06a32ba02a66fdf6ab6b12019462c7498aafdd3",
+      "zip_crc_verified": true
+    }
+  ],
+  "original_system_versions": {
+    "14.8": {
+      "BuildID": "0C7AAC00-11BE-11EC-BD5B-D1A2FCD51755",
+      "ProductBuildVersion": "18H17",
+      "ProductCopyright": "1983-2021 Apple Inc.",
+      "ProductName": "iPhone OS",
+      "ProductVersion": "14.8",
+      "SystemImageID": "685372C6-3C8C-4DD3-B562-7CD5DBE5C1AE"
+    },
+    "16.5": {
+      "BuildID": "FFEC7764-F0B1-11ED-B719-7ADF6D06363D",
+      "ProductBuildVersion": "20F66",
+      "ProductCopyright": "1983-2023 Apple Inc.",
+      "ProductName": "iPhone OS",
+      "ProductVersion": "16.5",
+      "SystemImageID": "6B192A83-67BB-4A64-844A-C38510C88973"
+    }
+  },
+  "original_binaries": {
+    "sbin/launchd": {
+      "14.8": {
+        "bytes": 403488,
+        "sha256": "cb34041d66dfbeee006ac0f69e4f217b223ad2a7df6046c9f28f317786cf951d",
+        "cpu_subtype": 0,
+        "filetype": 2,
+        "uuid": "c7001fffd43d3903bad2b29938898a9d",
+        "build_version": {
+          "platform": 2,
+          "minos": "0xe0800",
+          "sdk": "0xe0800"
+        },
+        "dylib_imports": [
+          "/usr/lib/libSystem.B.dylib",
+          "/usr/lib/libobjc.A.dylib"
+        ]
+      },
+      "16.5": {
+        "bytes": 525088,
+        "sha256": "4c61512d19b9a55a6ddad27e23b88fc5008fbf77d0c0b5e6bdd7c7d90cef3e06",
+        "cpu_subtype": 0,
+        "filetype": 2,
+        "uuid": "babc0c9dbf6e35138ba8c8e876f3119a",
+        "build_version": {
+          "platform": 2,
+          "minos": "0x100500",
+          "sdk": "0x100500"
+        },
+        "dylib_imports": [
+          "/usr/lib/libSystem.B.dylib",
+          "/usr/lib/libobjc.A.dylib"
+        ]
+      }
+    },
+    "usr/lib/dyld": {
+      "14.8": {
+        "bytes": 733616,
+        "sha256": "54fd7d7f710554dc976dddcdb0902fe7a779d37634c0ffc343b6febca61e6c2b",
+        "cpu_subtype": 0,
+        "filetype": 7,
+        "uuid": "e68adca952203dc9bb4df12eefc90ad0",
+        "build_version": {
+          "platform": 2,
+          "minos": "0xe0800",
+          "sdk": "0xe0800"
+        },
+        "dylib_imports": []
+      },
+      "16.5": {
+        "bytes": 922912,
+        "sha256": "a453aa234fc9bd440dc4e55bd2e18f9a7eb2bc3fd7ef319d8714a664bc55bf5c",
+        "cpu_subtype": 0,
+        "filetype": 7,
+        "uuid": "57d51d047ac8335b95aa734c226e2e9e",
+        "build_version": {
+          "platform": 2,
+          "minos": "0x100500",
+          "sdk": "0x100500"
+        },
+        "dylib_imports": []
+      }
+    },
+    "usr/sbin/notifyd": {
+      "14.8": {
+        "bytes": 109328,
+        "sha256": "cb1c219e44d69ac279a10318fdd0c6ff34c81e985e0ac92e00c882e970e90cef",
+        "cpu_subtype": 0,
+        "filetype": 2,
+        "uuid": "6dcee85847133600886a8642d11e6700",
+        "build_version": {
+          "platform": 2,
+          "minos": "0xe0800",
+          "sdk": "0xe0800"
+        },
+        "dylib_imports": [
+          "/usr/lib/libbsm.0.dylib",
+          "/usr/lib/libSystem.B.dylib"
+        ]
+      },
+      "16.5": {
+        "bytes": 128704,
+        "sha256": "819c8ec6b3bee5cd2f1dcbe0b2b698418c411b4c126f2f97cbdae932c1972907",
+        "cpu_subtype": 0,
+        "filetype": 2,
+        "uuid": "965f207d436a3ff39a15f16676cf1fa3",
+        "build_version": {
+          "platform": 2,
+          "minos": "0x100500",
+          "sdk": "0x100500"
+        },
+        "dylib_imports": [
+          "/usr/lib/libbsm.0.dylib",
+          "/usr/lib/libSystem.B.dylib"
+        ]
+      }
+    },
+    "usr/sbin/cfprefsd": {
+      "14.8": {
+        "bytes": 51376,
+        "sha256": "2b447b3be1fd8dbb0113db7f7b708f4824f4db6870d9c4f597496ee37d713a90",
+        "cpu_subtype": 0,
+        "filetype": 2,
+        "uuid": "05cbe68942ae343ca1e56baf08f95ee2",
+        "build_version": {
+          "platform": 2,
+          "minos": "0xe0800",
+          "sdk": "0xe0800"
+        },
+        "dylib_imports": [
+          "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "/usr/lib/libSystem.B.dylib"
+        ]
+      },
+      "16.5": {
+        "bytes": 53232,
+        "sha256": "05e6c217284c2e4f669243fe24296f3ba9abb53a750c9d3860348b0b43c978e2",
+        "cpu_subtype": 0,
+        "filetype": 2,
+        "uuid": "0bdebd06838e379fa25673743d32f1d7",
+        "build_version": {
+          "platform": 2,
+          "minos": "0x100500",
+          "sdk": "0x100500"
+        },
+        "dylib_imports": [
+          "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "/usr/lib/libSystem.B.dylib"
+        ]
+      }
+    },
+    "bin/ps": {
+      "14.8": {
+        "bytes": 71184,
+        "sha256": "1e292a631b337365a4c691c29f79bf54e362d9b99a94b13417ea738258d5a180",
+        "cpu_subtype": 0,
+        "filetype": 2,
+        "uuid": "802036c53ecd362a9f84e6f2a9bbcfae",
+        "build_version": {
+          "platform": 2,
+          "minos": "0xe0800",
+          "sdk": "0xe0800"
+        },
+        "dylib_imports": [
+          "/usr/lib/libSystem.B.dylib"
+        ]
+      },
+      "16.5": {
+        "bytes": 88752,
+        "sha256": "d540b229ae8b01260fe01280a3495c4c5abf09a4e23340123c0599bc4e355efc",
+        "cpu_subtype": 0,
+        "filetype": 2,
+        "uuid": "b9990ede05ec378aa665cca217f341df",
+        "build_version": {
+          "platform": 2,
+          "minos": "0x100500",
+          "sdk": "0x100500"
+        },
+        "dylib_imports": [
+          "/usr/lib/libSystem.B.dylib"
+        ]
+      }
+    },
+    "usr/libexec/backboardd": {
+      "14.8": {
+        "bytes": 1103024,
+        "sha256": "c4badef4ba5c9052c10bb1c5f4425111829b7cb3b9a18e800b444fc3da9feff2",
+        "cpu_subtype": 0,
+        "filetype": 2,
+        "uuid": "217ad9be7700338d83cc1de7b4ce7f44",
+        "build_version": {
+          "platform": 2,
+          "minos": "0xe0800",
+          "sdk": "0xe0800"
+        },
+        "dylib_imports": [
+          "/System/Library/PrivateFrameworks/StudyLog.framework/StudyLog",
+          "/usr/appleinternal/lib/liblinkguard.dylib",
+          "/System/Library/PrivateFrameworks/ButtonResolver.framework/ButtonResolver",
+          "/System/Library/PrivateFrameworks/Haptics.framework/Haptics",
+          "/System/Library/PrivateFrameworks/BiometricKit.framework/BiometricKit",
+          "/usr/lib/libsp.dylib",
+          "/System/Library/PrivateFrameworks/CrashReporterSupport.framework/CrashReporterSupport",
+          "/usr/lib/liblockdown.dylib",
+          "/System/Library/PrivateFrameworks/IOMobileFramebuffer.framework/IOMobileFramebuffer",
+          "/System/Library/PrivateFrameworks/HangTracer.framework/HangTracer",
+          "/System/Library/PrivateFrameworks/WatchdogClient.framework/WatchdogClient",
+          "/System/Library/PrivateFrameworks/CoreAccessories.framework/CoreAccessories",
+          "/System/Library/Frameworks/QuartzCore.framework/QuartzCore",
+          "/System/Library/PrivateFrameworks/BackBoardHIDEventFoundation.framework/BackBoardHIDEventFoundation",
+          "/System/Library/PrivateFrameworks/BackBoardHIDEventProcessors.framework/BackBoardHIDEventProcessors",
+          "/System/Library/PrivateFrameworks/RunningBoardServices.framework/RunningBoardServices",
+          "/System/Library/PrivateFrameworks/BoardServices.framework/BoardServices",
+          "/System/Library/Frameworks/Metal.framework/Metal",
+          "/System/Library/PrivateFrameworks/AssertionServices.framework/AssertionServices",
+          "/System/Library/PrivateFrameworks/AggregateDictionary.framework/AggregateDictionary",
+          "/System/Library/Frameworks/AVFoundation.framework/AVFoundation",
+          "/System/Library/PrivateFrameworks/BackBoardServices.framework/BackBoardServices",
+          "/System/Library/PrivateFrameworks/BaseBoard.framework/BaseBoard",
+          "/System/Library/PrivateFrameworks/CoreBrightness.framework/CoreBrightness",
+          "/System/Library/PrivateFrameworks/CoreAnalytics.framework/CoreAnalytics",
+          "/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics",
+          "/System/Library/Frameworks/CoreMotion.framework/CoreMotion",
+          "/System/Library/Frameworks/CoreText.framework/CoreText",
+          "/System/Library/PrivateFrameworks/DataMigration.framework/DataMigration",
+          "/System/Library/Frameworks/Foundation.framework/Foundation",
+          "/System/Library/PrivateFrameworks/GraphicsServices.framework/GraphicsServices",
+          "/System/Library/Frameworks/ImageIO.framework/ImageIO",
+          "/System/Library/Frameworks/CoreServices.framework/CoreServices",
+          "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+          "/System/Library/Frameworks/IOSurface.framework/IOSurface",
+          "/usr/lib/libAccessibility.dylib",
+          "/usr/lib/libMobileGestalt.dylib",
+          "/System/Library/PrivateFrameworks/ProgressUI.framework/ProgressUI",
+          "/System/Library/Frameworks/Security.framework/Security",
+          "/System/Library/Frameworks/SystemConfiguration.framework/SystemConfiguration",
+          "/usr/lib/libobjc.A.dylib",
+          "/usr/lib/libc++.1.dylib",
+          "/usr/lib/libSystem.B.dylib",
+          "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "/System/Library/PrivateFrameworks/SoftLinking.framework/SoftLinking"
+        ]
+      },
+      "16.5": {
+        "bytes": 1182960,
+        "sha256": "686f26a6a7b749fd0ae30acca704022da8cb6f85b5c39a0e0e09e25ffd00d273",
+        "cpu_subtype": 0,
+        "filetype": 2,
+        "uuid": "e81fd7fd034f3195a4f53c692536e5aa",
+        "build_version": {
+          "platform": 2,
+          "minos": "0x100500",
+          "sdk": "0x100500"
+        },
+        "dylib_imports": [
+          "/System/Library/PrivateFrameworks/StudyLog.framework/StudyLog",
+          "/usr/appleinternal/lib/liblinkguard.dylib",
+          "/System/Library/PrivateFrameworks/ButtonResolver.framework/ButtonResolver",
+          "/System/Library/PrivateFrameworks/Haptics.framework/Haptics",
+          "/System/Library/PrivateFrameworks/BiometricKit.framework/BiometricKit",
+          "/System/Library/PrivateFrameworks/CarKit.framework/CarKit",
+          "/usr/lib/libsp.dylib",
+          "/System/Library/PrivateFrameworks/CrashReporterSupport.framework/CrashReporterSupport",
+          "/usr/lib/liblockdown.dylib",
+          "/System/Library/PrivateFrameworks/IOMobileFramebuffer.framework/IOMobileFramebuffer",
+          "/System/Library/PrivateFrameworks/HangTracer.framework/HangTracer",
+          "/System/Library/PrivateFrameworks/WatchdogClient.framework/WatchdogClient",
+          "/System/Library/PrivateFrameworks/CoreAccessories.framework/CoreAccessories",
+          "/System/Library/PrivateFrameworks/SystemWake.framework/SystemWake",
+          "/System/Library/PrivateFrameworks/RunningBoardServices.framework/RunningBoardServices",
+          "/System/Library/Frameworks/QuartzCore.framework/QuartzCore",
+          "/System/Library/PrivateFrameworks/BackBoardHIDEventFoundation.framework/BackBoardHIDEventFoundation",
+          "/System/Library/PrivateFrameworks/BackBoardHIDEventProcessors.framework/BackBoardHIDEventProcessors",
+          "/System/Library/PrivateFrameworks/BoardServices.framework/BoardServices",
+          "/System/Library/Frameworks/Metal.framework/Metal",
+          "/System/Library/PrivateFrameworks/AggregateDictionary.framework/AggregateDictionary",
+          "/System/Library/Frameworks/AVFoundation.framework/AVFoundation",
+          "/System/Library/PrivateFrameworks/BackBoardServices.framework/BackBoardServices",
+          "/System/Library/PrivateFrameworks/BaseBoard.framework/BaseBoard",
+          "/System/Library/PrivateFrameworks/CoreBrightness.framework/CoreBrightness",
+          "/System/Library/PrivateFrameworks/CoreAnalytics.framework/CoreAnalytics",
+          "/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics",
+          "/System/Library/Frameworks/CoreMotion.framework/CoreMotion",
+          "/System/Library/Frameworks/CoreText.framework/CoreText",
+          "/System/Library/PrivateFrameworks/DataMigration.framework/DataMigration",
+          "/System/Library/Frameworks/Foundation.framework/Foundation",
+          "/System/Library/PrivateFrameworks/GraphicsServices.framework/GraphicsServices",
+          "/System/Library/Frameworks/ImageIO.framework/ImageIO",
+          "/System/Library/Frameworks/CoreServices.framework/CoreServices",
+          "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+          "/System/Library/Frameworks/IOSurface.framework/IOSurface",
+          "/usr/lib/libAccessibility.dylib",
+          "/usr/lib/libMobileGestalt.dylib",
+          "/System/Library/PrivateFrameworks/ProgressUI.framework/ProgressUI",
+          "/System/Library/Frameworks/Security.framework/Security",
+          "/System/Library/Frameworks/SystemConfiguration.framework/SystemConfiguration",
+          "/usr/lib/libobjc.A.dylib",
+          "/usr/lib/libc++.1.dylib",
+          "/usr/lib/libSystem.B.dylib",
+          "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "/System/Library/PrivateFrameworks/SoftLinking.framework/SoftLinking"
+        ]
+      }
+    },
+    "System/Library/CoreServices/SpringBoard.app/SpringBoard": {
+      "14.8": {
+        "bytes": 96112,
+        "sha256": "262a9325b9a4e88d17167275fa7c494f2228bf3cb0f4cedcff3717ca2a5b9e37",
+        "cpu_subtype": 0,
+        "filetype": 2,
+        "uuid": "898b91c8962c36e685e507a97ac6e67d",
+        "build_version": {
+          "platform": 2,
+          "minos": "0xe0800",
+          "sdk": "0xe0800"
+        },
+        "dylib_imports": [
+          "/System/Library/PrivateFrameworks/SpringBoard.framework/SpringBoard",
+          "/System/Library/Frameworks/Foundation.framework/Foundation",
+          "/usr/lib/libobjc.A.dylib",
+          "/usr/lib/libSystem.B.dylib"
+        ]
+      },
+      "16.5": {
+        "bytes": 112048,
+        "sha256": "7926a1ba0b115cf45102b2c3d8e4eb7bc9c84bcf70b573d2a798690d9148059c",
+        "cpu_subtype": 0,
+        "filetype": 2,
+        "uuid": "40ec75f076c13deb85f139369b09e9d5",
+        "build_version": {
+          "platform": 2,
+          "minos": "0x100500",
+          "sdk": "0x100500"
+        },
+        "dylib_imports": [
+          "/System/Library/PrivateFrameworks/SpringBoard.framework/SpringBoard",
+          "/System/Library/Frameworks/Foundation.framework/Foundation",
+          "/usr/lib/libobjc.A.dylib",
+          "/usr/lib/libSystem.B.dylib"
+        ]
+      }
+    }
+  },
+  "original_job_comparison": {
+    "com.apple.notifyd": {
+      "14.8": {
+        "sha256": "fd09ea79ebd0f1dfe384d4e32254fa402c274516212aa22dc1a0e9577bbf0123",
+        "keys": [
+          "EnablePressuredExit",
+          "EnableTransactions",
+          "EnvironmentVariables",
+          "Label",
+          "MachServices",
+          "POSIXSpawnType",
+          "ProgramArguments",
+          "PublishesEvents"
+        ],
+        "program": "/usr/sbin/notifyd",
+        "MachServices": {
+          "com.apple.system.notification_center": true
+        },
+        "RunAtLoad": null,
+        "UserName": null
+      },
+      "16.5": {
+        "sha256": "627b24feb59a493a50f488bc62ec9e878c333757d4ddb7786a977650ed9b1a05",
+        "keys": [
+          "EnablePressuredExit",
+          "EnableTransactions",
+          "EnvironmentVariables",
+          "Label",
+          "LimitLoadToSessionType",
+          "MachServices",
+          "POSIXSpawnType",
+          "ProgramArguments",
+          "PublishesEvents"
+        ],
+        "program": "/usr/sbin/notifyd",
+        "MachServices": {
+          "com.apple.system.notification_center": true
+        },
+        "RunAtLoad": null,
+        "UserName": null
+      },
+      "keys_only_14": [],
+      "keys_only_16": [
+        "LimitLoadToSessionType"
+      ]
+    },
+    "com.apple.cfprefsd.xpc.daemon": {
+      "14.8": {
+        "sha256": "16aa60c1effb6b7e7775712582bf4572c56ca1a25d1aca322eb822b03a06189f",
+        "keys": [
+          "EnableTransactions",
+          "HardResourceLimits",
+          "Label",
+          "MachServices",
+          "POSIXSpawnType",
+          "ProgramArguments",
+          "SoftResourceLimits"
+        ],
+        "program": "/usr/sbin/cfprefsd",
+        "MachServices": {
+          "com.apple.cfprefsd.daemon": true
+        },
+        "RunAtLoad": null,
+        "UserName": null
+      },
+      "16.5": {
+        "sha256": "16aa60c1effb6b7e7775712582bf4572c56ca1a25d1aca322eb822b03a06189f",
+        "keys": [
+          "EnableTransactions",
+          "HardResourceLimits",
+          "Label",
+          "MachServices",
+          "POSIXSpawnType",
+          "ProgramArguments",
+          "SoftResourceLimits"
+        ],
+        "program": "/usr/sbin/cfprefsd",
+        "MachServices": {
+          "com.apple.cfprefsd.daemon": true
+        },
+        "RunAtLoad": null,
+        "UserName": null
+      },
+      "keys_only_14": [],
+      "keys_only_16": []
+    }
+  },
+  "cache_layout": {
+    "14.8": [
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64",
+        "bytes": 2218328064,
+        "header": "64796c645f763120202061726d363400"
+      }
+    ],
+    "16.5": [
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64",
+        "bytes": 393216,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.01",
+        "bytes": 114589696,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.02",
+        "bytes": 98304,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.03",
+        "bytes": 115736576,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.04",
+        "bytes": 180224,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.05",
+        "bytes": 114475008,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.06",
+        "bytes": 376832,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.07",
+        "bytes": 115408896,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.08",
+        "bytes": 278528,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.09",
+        "bytes": 115572736,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.10",
+        "bytes": 409600,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.11",
+        "bytes": 115769344,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.12",
+        "bytes": 393216,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.13",
+        "bytes": 107954176,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.14",
+        "bytes": 409600,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.15",
+        "bytes": 115081216,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.16",
+        "bytes": 458752,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.17",
+        "bytes": 97419264,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.18",
+        "bytes": 376832,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.19",
+        "bytes": 115916800,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.20",
+        "bytes": 294912,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.21",
+        "bytes": 113721344,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.22",
+        "bytes": 491520,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.23",
+        "bytes": 115621888,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.24",
+        "bytes": 491520,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.25",
+        "bytes": 76529664,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.26",
+        "bytes": 229376,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.27.dylddata",
+        "bytes": 189300736,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.28.dyldlinkedit",
+        "bytes": 19906560,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.29",
+        "bytes": 114573312,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.30",
+        "bytes": 491520,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.31",
+        "bytes": 115703808,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.32",
+        "bytes": 606208,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.33",
+        "bytes": 113115136,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.34",
+        "bytes": 704512,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.35",
+        "bytes": 115834880,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.36",
+        "bytes": 475136,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.37",
+        "bytes": 115851264,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.38",
+        "bytes": 540672,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.39",
+        "bytes": 62521344,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.40",
+        "bytes": 458752,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.41.dylddata",
+        "bytes": 99794944,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.42.dyldlinkedit",
+        "bytes": 333955072,
+        "header": "64796c645f763120202061726d363400"
+      },
+      {
+        "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.symbols",
+        "bytes": 591855616,
+        "header": "64796c645f763120202061726d363400"
+      }
+    ]
+  },
+  "original14_launchd_disassembly_sha256": "148c327813c1c258af5d5f4f859361736ca8cdcae0c8d5f7ee280ad65137ca6c",
+  "original14_launchd_contract": {
+    "mapped_strings": {
+      "0x10004c983": "rd=md0",
+      "0x10004c98a": "Restore",
+      "0x10004c992": "Ramdisk",
+      "0x10004c99a": "RamDisk",
+      "0x100043217": "%s cannot be run directly.\n"
+    },
+    "indirect_stubs": [
+      "0x000000010003d02c   160 _exit",
+      "0x000000010003d1ac   192 _getpid",
+      "0x000000010003d29c   213 _isatty",
+      "0x00000001000543b8   160 _exit",
+      "0x00000001000544b8   192 _getpid",
+      "0x0000000100054558   213 _isatty"
+    ],
+    "terminal_stdout_test": "0x10001079c: fd1;0x1000107a0: isatty;0x1000107fc:exit78",
+    "md0_boot_branch": "0x10003751c-0x100037574",
+    "upstream_FLASHBOOT_retains_rd_md0": true,
+    "boot_branch_runtime_not_yet_verified": true
+  },
+  "upstream_remote_query": {
+    "refs": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438\tHEAD\n63fc2b4633bac3af8e57dadab9f5a8d4cb940438\trefs/heads/main",
+    "source": "https://github.com/oosexgang/hakios-xnu-kernel.git",
+    "queried_at": "2026-11-15T17:41:31.9374529Z"
+  },
+  "evidence_scope": "Original image/metadata/MachO comparison and pinned upstream read-only audit; imports and headers do not prove ABI compatibility",
+  "storage": "Existing UFS/HFSX on-demand root; no partition or filesystem migration",
+  "image_only_compatibility_sufficient": false,
+  "differences": [
+    {
+      "area": "cache/layout",
+      "action": "Keep original18H17 cache inside root; no16.5 Cryptex staging",
+      "layer": "image/deployment"
+    },
+    {
+      "area": "Data/timezone",
+      "action": "Use original18H17 metadata with upstream mkvarskel; retain existing timezone-cycle fix",
+      "layer": "image/deployment"
+    },
+    {
+      "area": "launchd/jobs",
+      "action": "Generate selected original18H17 plists using upstream mkjobs; no16.5 executable substitution",
+      "layer": "image/deployment"
+    },
+    {
+      "area": "PID1 descriptors",
+      "action": "Correct ENOTTY-only diagnostic to target ENODEV19/nonterminal behavior; retain step errno",
+      "layer": "HakiOS init device branch"
+    },
+    {
+      "area": "rd=md0 after UFS switch",
+      "action": "Retain upstream FLASHBOOT contract; verify original14 branch before boot",
+      "layer": "loader/init contract"
+    },
+    {
+      "area": "dyld shared_region438",
+      "action": "Keep previously integrated original18H17 mapping compatibility",
+      "layer": "bounded HakiOS kernel compatibility; R24 exercised"
+    },
+    {
+      "area": "legacy mach_msg",
+      "action": "Keep exact14.8 legacy entry compatibility already exercised by R24",
+      "layer": "bounded HakiOS kernel compatibility"
+    },
+    {
+      "area": "private services/IOKit/graphics",
+      "action": "Not proven by input comparison; evaluate named missing interfaces as observed, retain A530 review limits",
+      "layer": "future version/device integration"
+    }
+  ],
+  "new_kernel_compiled": false,
+  "device_boots": false,
+  "partition_writes": false,
+  "ios14_complete_compatibility_verified": false,
+  "qemu_used": false
+}

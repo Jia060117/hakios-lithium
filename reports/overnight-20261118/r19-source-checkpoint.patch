@@ -1,0 +1,2108 @@
+diff --git a/.gitattributes b/.gitattributes
+index e2b4c28..814d4e4 100644
+--- a/.gitattributes
++++ b/.gitattributes
+@@ -68,3 +68,7 @@ reports/overnight-20261118/** -text
+ scripts/audit-hakios-ios16-display-goal.py -text
+ scripts/analyze-hakios-ios16-display-log.py -text
+ scripts/test-hakios-ios16-display-log.py -text
++scripts/*r19* -text
++scripts/test-hakios-ios16-offline-preflight.py -text
++reports/overnight-20261118/r19*.json -text whitespace=cr-at-eol
++reports/overnight-20261118/r19*.patch -text whitespace=-blank-at-eol,-blank-at-eof,-space-before-tab,cr-at-eol
+diff --git a/reports/overnight-20261118/r19-host-pipeline-final.json b/reports/overnight-20261118/r19-host-pipeline-final.json
+new file mode 100644
+index 0000000..40a894f
+--- /dev/null
++++ b/reports/overnight-20261118/r19-host-pipeline-final.json
+@@ -0,0 +1,27 @@
++{
++  "scope": "R19-only delta against verified rollback bytes, not HEAD",
++  "files": {
++    "scripts/package-hakios-ios16.py": {
++      "before_sha256": "f77b975e16d1136469ae00f82c692b010939245412ab5eefc78471a5c9e0c2e0",
++      "after_sha256": "9c006cb7cd972dbf5398b9a6477ddfc43a1eaba26aebf7370305c8553b4f5f16"
++    },
++    "scripts/check-hakios-ios16-build.py": {
++      "before_sha256": "ea05e9196bf1515b33d795d0b54d5940c4e875ebf16287ace6c211b1c0ce658f",
++      "after_sha256": "ab7b31c287298bd22bfb7a9660a4fc85c19c1019eb60703ea771c3ea61f8821c"
++    },
++    "scripts/freeze-hakios-ios16-boot-userspace.py": {
++      "before_sha256": "8778cfd4c353d60be6fabf7ab834c7b1f3dc91b369217c7f53ea09a5391084d7",
++      "after_sha256": "16e984b1c59c666e29726808bdce3b8052afb0954265e5eca4c91c0bc43b13b2"
++    },
++    "scripts/run-wsl-limited.ps1": {
++      "before_sha256": "97022073f32d4b37cfded40b7b1afd25f5aee372a7c4996175443180f38b165c",
++      "after_sha256": "97759ef2ae53b5684e57069341776e0915571ef2f144978d7e30a582f718c32c"
++    },
++    "scripts/boot-hakios-ios16.py": {
++      "before_sha256": "8f711add9368f357a6dfedaa380ce1cec3af9a6b732701b74f18040ff8b98d74",
++      "after_sha256": "68ea0a7c776acbd2f33354f83ec85a93db21d88c59498c4f651c65e1ea002742"
++    }
++  },
++  "patch_sha256": "00b559c084845a9b166fd21d388638fcd275c83a47d1f22f2e3e9bdf39b720e7",
++  "reverse_apply_check": true
++}
+diff --git a/reports/overnight-20261118/r19-host-pipeline-final.patch b/reports/overnight-20261118/r19-host-pipeline-final.patch
+new file mode 100644
+index 0000000..7e2a177
+--- /dev/null
++++ b/reports/overnight-20261118/r19-host-pipeline-final.patch
+@@ -0,0 +1,280 @@
++diff --git a/scripts/package-hakios-ios16.py b/scripts/package-hakios-ios16.py
++--- a/scripts/package-hakios-ios16.py
+++++ b/scripts/package-hakios-ios16.py
++@@ -22,6 +22,7 @@
++ import hakios_r16
++ import hakios_r17
++ import hakios_r18
+++import hakios_r19
++ 
++ ARCHIVE = hakios.ROOT / 'reports/history/hakios-ios16-phase3-20261116'
++ 
++@@ -72,7 +73,7 @@
++     parser.add_argument('--revision',type=int,required=True)
++     parser.add_argument('--cpus',type=int,choices=(1,3),default=3,help='R13 only: same frozen sources, one or three XNU CPUs')
++     args=parser.parse_args();revision=args.revision
++-    hakios.require(revision in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18),'Revision must have an explicitly reviewed source delta')
+++    hakios.require(revision in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19),'Revision must have an explicitly reviewed source delta')
++     hakios.require(revision in (13,14) or args.cpus==3,'CPU variants are reviewed only for R13/R14')
++     spec = hakios.read(hakios.MANIFEST); hakios.policy(spec); hakios.resource_check(); hakios.frozen_check()
++     state = hakios.read(hakios.ROOT/'project.json')
++@@ -114,6 +115,9 @@
++     if revision>=16:expected_changes.update(hakios_r16.PORT_DELTA)
++     if revision>=17:expected_changes.update(hakios_r17.PORT_DELTA)
++     if revision>=18:expected_changes.update(hakios_r18.PORT_DELTA)
+++    if revision>=19:
+++        hakios_r19.source_checks(hakios.ROOT, work, current)
+++        expected_changes.update(hakios_r19.PORT_DELTA)
++     hakios.require(changed == expected_changes and current['manifest_sha256'] == ready3['inputs']['manifest_sha256'],
++                    'Package reuse requires the exact reviewed source delta for this revision')
++     built = hakios.read(hakios.ROOT/'reports/hakios-kernel-build.json')
++@@ -266,7 +270,7 @@
++             'fbwidth=750 fbheight=1334 fb_threads=1 fb_filter=0 '
++             'loader_return_after=600 ufs_rawbench=1')
++         thread_observation=None
++-    if revision in (13,14,15,16,17,18):
+++    if revision in (13,14,15,16,17,18,19):
++         checks=hakios.read(hakios.ROOT/'reports/hakios-ios16-r13-checks.json')
++         hakios.require(checks['passed'] and checks['inputs']==current and checks['actual_production_functions'],
++             'R13 actual recorder, preserved bodies and stack-bound checks required')
++@@ -310,12 +314,18 @@
++             hakios.require(hakios.sha(Path(name))==digest,'R17 evidence changed: '+name)
++         prior=hakios.read(hakios.ROOT/'artifacts/hakios/lithium-ios16/phase4-r16/contract.json')
++         cmdline=hakios_r17.command_line(prior['cmdline'])
++-    if revision==18:
+++    if revision in (18,19):
++         checks=hakios.read(hakios.ROOT/'reports/hakios-ios16-r18-checks.json')
++         hakios.require(checks['passed'] and checks['inputs']==current and checks['actual_production_functions'], 'R18 actual early-profile tests required')
++         for name,digest in checks['evidence_sha256'].items():
++             hakios.require(hakios.sha(Path(name))==digest, 'R18 evidence changed: '+name)
++         cmdline=hakios_r18.command_line(hakios.read(hakios.ROOT/'artifacts/hakios/lithium-ios16/phase4-r15/contract.json')['cmdline'])
+++    if revision==19:
+++        checks=hakios.read(hakios.ROOT/'reports/hakios-ios16-r19-checks.json')
+++        hakios.require(checks['passed'] and checks['inputs']==current and checks['actual_frozen_command_parser_checked'], 'R19 actual baseline/default-off tests required')
+++        for name,digest in checks['evidence_sha256'].items():
+++            hakios.require(hakios.sha(Path(name))==digest, 'R19 evidence changed: '+name)
+++        cmdline=hakios_r19.command_line(hakios.read(hakios.ROOT/'artifacts/hakios/lithium-ios16/phase4-r18/contract.json')['cmdline'], hakios.read(hakios.ROOT/'artifacts/hakios/lithium-ios16/phase4-r15/contract.json')['cmdline'])
++     budgeter=hakios_r15 if revision>=15 else (hakios_r13 if revision in (13,14) else (hakios_r9 if revision>=9 else service))
++     budget=None
++     if revision>=8:
++@@ -380,7 +390,10 @@
++     generic_spec=importlib.util.spec_from_file_location('artifact_checks',hakios.ROOT/'scripts/package-hakios-lithium.py')
++     generic=importlib.util.module_from_spec(generic_spec);generic_spec.loader.exec_module(generic)
++     literal=generic.verified_sha256_literal(kernel,work)
++-    forbidden=re.compile(r'\b(?:cas[a-z]*|swp[a-z]*|ld(?:add|clr|eor|set|smax|smin|umax|umin)[a-z]*|st(?:add|clr|eor|set|smax|smin|umax|umin)[a-z]*|ldapr[a-z]*|pac[a-z]*|aut(?:ia|ib|da|db)[a-z]*|xpac[a-z]*|retaa|retab)\b|\b(?:PAN|UAO)\b')
+++    filter_path=hakios.ROOT/'scripts/check-hakios-lithium-peripheral-build.py'
+++    filter_spec=importlib.util.spec_from_file_location('checked_package_instruction_filter',filter_path)
+++    isa=importlib.util.module_from_spec(filter_spec);filter_spec.loader.exec_module(isa)
+++    filter_controls=isa.check_filter_controls()
++     hints={'xpaclri','paciasp','pacibsp','autiasp','autibsp','pacia1716','pacib1716','autia1716','autib1716'}
++     scans={}
++     for name,path in [('kernel',kernel),('shim',out/'shim.o')]:
++@@ -397,7 +410,7 @@
++             if name=='kernel' and line.strip()=='<K256>:':skip=64;continue
++             if skip and line.strip():skip-=1;continue
++             if line.strip() in hints:continue
++-            if forbidden.search(line.split('//')[0]):errors.append(line.strip())
+++            if isa.instruction_rejected(line):errors.append(line.strip())
++         hakios.require(not errors,'Unsupported ARMv8.0 instruction: '+str(errors[:5]))
++         scans[name]=dict(sha256=hakios.sha(path),disassembly_sha256=hakios.sha(log),forbidden_instructions=errors)
++     pe=loader.read_bytes(); optional=struct.unpack_from('<I',pe,0x3c)[0]+24
++@@ -512,11 +525,23 @@
++             'scripts/run-hakios-ios16-r17-regressions.py','scripts/test-hakios-ios16-r17-package.py',
++             'reports/hakios-ios16-r17-checks.json']:
++             evidence[name]=hakios.sha(hakios.ROOT/name)
++-    if revision==18:
+++    if revision in (18,19):
++         for name in [*('ports/hakios-lithium/'+p for p in sorted(hakios_r18.PORT_DELTA)),
++             'scripts/hakios_r18.py','scripts/prepare-hakios-ios16-r18.py','scripts/test-hakios-ios16-r18.py',
++             'scripts/test-hakios-ios16-r18-package.py','scripts/run-hakios-ios16-r18-regressions.py','reports/hakios-ios16-r18-checks.json']:
++             evidence[name]=hakios.sha(hakios.ROOT/name)
+++    if revision==19:
+++        for name in [*('ports/hakios-lithium/'+p for p in sorted(hakios_r19.PORT_DELTA)),
+++            'scripts/hakios_r19.py', 'scripts/prepare-hakios-ios16-r19.py',
+++            'scripts/test-hakios-ios16-r19.py', 'scripts/test-hakios-ios16-r19-contract.py',
+++            'scripts/test-hakios-ios16-r19-snapshots.py', 'scripts/test-hakios-ios16-r19-package.py',
+++            'scripts/run-hakios-ios16-r19-regressions.py', 'scripts/integrate-hakios-ios16-r19-host.py',
+++            'scripts/boot-hakios-ios16.py', 'scripts/test-hakios-ios16-offline-preflight.py',
+++            'scripts/check-hakios-lithium-peripheral-build.py',
+++            'scripts/run-wsl-limited.ps1', 'reports/hakios-ios16-r19-prepared-sources.json',
+++            'reports/hakios-ios16-r19-checks.json', 'reports/overnight-20261118/accepted-host-tests/passed.json']:
+++            evidence[name]=hakios.sha(hakios.ROOT/name)
+++        evidence_snapshots=hakios_r19.snapshot_evidence(hakios.ROOT, out, evidence)
++     contract=dict(schema=1,phase=4,revision=revision,prepared_at=datetime.now().astimezone().isoformat(),inputs=current,
++         passed=True,bootable_package_ready=True,image_path=str(target.relative_to(hakios.ROOT)),image_sha256=hakios.sha(target),image_bytes=len(image),
++         kernel_sha256=hakios.sha(kernel),loader_sha256=hakios.sha(loader),fd_sha256=hakios.sha(fd),cmdline=cmdline,
++@@ -524,6 +549,7 @@
++         frozen_contract_path=str((out/'contract.json').relative_to(hakios.ROOT)),evidence_sha256=evidence,
++         sources_changed_since_phase3=sorted(changed),support_sources_unchanged=revision==1,userspace_sources_unchanged=revision<3,compiled_instruction_checks=compiled['instruction_scans'],
++         new_instruction_checks=scans,sha256_literal=literal,stack_contract=stack,
+++        instruction_filter_controls=filter_controls,instruction_filter_sha256=hakios.sha(filter_path),
++         payload_entries={name:dict(bytes=len(data),sha256=hashlib.sha256(data).hexdigest()) for name,data in parts.items()},
++         dual_ram_disks={'md0':'flashboot.apfs / stage0','md1':'root.apfs / upstream init and injection'},
++         system_location='UFS userdata',data_location='bounded journaled UFS HFSX',incoming_image_source_end=hex(0x40080000+len(raw)),
++@@ -559,8 +585,12 @@
++             payload_arguments_preserved_from_r16=True,only_fbwidth_fbheight_changed=True,
++             native_render_profile=dict(width=1125,height=2436,scale=3,artwork_subtype=2436,points=[375,812]),
++             display_acceptance_verified=False)
++-    if revision==18:
+++    if revision in (18,19):
++         contract.update(display_profile_contract='ports/hakios-lithium/diagnostics/r18.json',payload_arguments_preserved_from_r15=True,display_acceptance_verified=False,render_profile=dict(width=750,height=1334,scale=2,subtype=1334,points=[375,667]))
+++    if revision==19:
+++        contract.update(provenance_parent_revision=18, admission_default_off=True,
+++            hardware_backends_implemented=False, evidence_snapshots=evidence_snapshots,
+++            evidence_snapshot_policy='Exact text bytes retained alongside unchanged live guards')
++     hakios.write(out/'contract.json',contract)
++     if revision in (13,14) and args.cpus==1:hakios.write(hakios.ROOT/f'reports/hakios-ios16-boot-ready-r{revision}-cpus1.json',contract)
++     else:hakios.write(hakios.ROOT/'reports/hakios-ios16-boot-ready.json',contract)
++diff --git a/scripts/check-hakios-ios16-build.py b/scripts/check-hakios-ios16-build.py
++--- a/scripts/check-hakios-ios16-build.py
+++++ b/scripts/check-hakios-ios16-build.py
++@@ -15,6 +15,7 @@
++ import hakios_r16
++ import hakios_r17
++ import hakios_r18
+++import hakios_r19
++ 
++ def main():
++     parser=argparse.ArgumentParser(description=__doc__)
++@@ -81,6 +82,9 @@
++             expected.update(hakios_r17.PORT_DELTA)
++         if 'diagnostics/r18.json' in delta:
++             expected.update(hakios_r18.PORT_DELTA)
+++        if 'patches/0019-lithium-peripheral-admission.patch' in delta:
+++            hakios_r19.source_checks(hakios.ROOT, work, hakios.inputs(spec))
+++            expected.update(hakios_r19.PORT_DELTA)
++         hakios.require(delta==expected and
++             ready3['inputs']['manifest_sha256']==hakios.inputs(spec)['manifest_sha256'],
++             'Phase4 reuse permits only explicitly reviewed shim/linker/console/observation changes')
++@@ -120,7 +124,10 @@
++     module_spec=importlib.util.spec_from_file_location('generic_artifact_checks',hakios.ROOT/'scripts/package-hakios-lithium.py')
++     generic=importlib.util.module_from_spec(module_spec);module_spec.loader.exec_module(generic)
++     literal=generic.verified_sha256_literal(kernel,work)
++-    forbidden=re.compile(r'\b(?:cas[a-z]*|swp[a-z]*|ld(?:add|clr|eor|set|smax|smin|umax|umin)[a-z]*|st(?:add|clr|eor|set|smax|smin|umax|umin)[a-z]*|ldapr[a-z]*|pac[a-z]*|aut(?:ia|ib|da|db)[a-z]*|xpac[a-z]*|retaa|retab)\b|\b(?:PAN|UAO)\b')
+++    filter_path=hakios.ROOT/'scripts/check-hakios-lithium-peripheral-build.py'
+++    filter_spec=importlib.util.spec_from_file_location('checked_instruction_filter',filter_path)
+++    isa=importlib.util.module_from_spec(filter_spec);filter_spec.loader.exec_module(isa)
+++    filter_controls=isa.check_filter_controls()
++     hints={'xpaclri','paciasp','pacibsp','autiasp','autibsp','pacia1716','pacib1716','autia1716','autib1716'}
++     firmware=Path(support['firmware_workspace'])/'Build/lithiumPkg/RELEASE_CLANGPDB/AARCH64'
++     binaries={'kernel':kernel,'loader':loader,'shim':check/'shim.o'}
++@@ -151,12 +158,17 @@
++             if skip and line.strip():
++                 hakios.require(not line.endswith(':'),'Invalid SHA256 data exclusion');skip-=1;continue
++             if line.strip() in hints:hint_count+=1;continue
++-            if forbidden.search(line.split('//')[0]):errors.append(line.strip())
+++            if isa.instruction_rejected(line):errors.append(line.strip())
++         scans[name]=dict(sha256=hakios.sha(path),disassembly_sha256=hakios.sha(log),
++             forbidden_instructions=errors,safe_armv8_hint_encodings=hint_count)
++         hakios.require(not errors,'Unsupported instruction in '+name+': '+str(errors[:5]))
++     # Confirm the new optional driver and stream reader actually reached the link.
++     symbols=subprocess.check_output(['llvm-nm',str(kernel)],text=True)
+++    if (work/'devices/lithium/peripherals/contract.json').exists():
+++        hakios.require('_lithium_peripheral_worker' in symbols, 'R19 admission worker missing from actual kernel')
+++        hakios.require(all(token in kernel.read_bytes() for token in (b'LITHIUM TOUCH status=blocked',
+++            b'LITHIUM GPU status=blocked', b'platform_backend_unverified',
+++            b'power_smmu_scm_backend_unverified')), 'Actual default-off admission diagnostics missing')
++     if (work/'devices/lithium/diagnostics/thread-wait-observer.json').exists():
++         content=kernel.read_bytes()
++         hakios.require(all(token in content for token in (b'ustacks_related\0',b'LITHIUM USTACKS begin',
++@@ -213,6 +225,7 @@
++         dest=frozen/name;shutil.copyfile(path,dest)
++         hakios.require(hakios.sha(dest)==hakios.sha(path),'Artifact copy failed')
++     result=dict(passed=True,phase=phase,inputs=hakios.inputs(spec),instruction_scans=scans,
+++        instruction_filter_controls=filter_controls,instruction_filter_sha256=hakios.sha(filter_path),
++         compiled_console_routing=console_objects,
++         sha256_literal=literal,linked_device_symbols=required,kernel_bytes=kernel.stat().st_size,
++         loader_bytes=loader.stat().st_size,firmware_bytes=fd.stat().st_size,
++diff --git a/scripts/freeze-hakios-ios16-boot-userspace.py b/scripts/freeze-hakios-ios16-boot-userspace.py
++--- a/scripts/freeze-hakios-ios16-boot-userspace.py
+++++ b/scripts/freeze-hakios-ios16-boot-userspace.py
++@@ -11,7 +11,7 @@
++ def main():
++     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--revision',type=int,required=True)
++     revision=parser.parse_args().revision
++-    hakios.require(revision in (3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18),'Only reviewed phase4 revisions are supported')
+++    hakios.require(revision in (3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19),'Only reviewed phase4 revisions are supported')
++     spec=hakios.read(hakios.MANIFEST);hakios.policy(spec);hakios.resource_check()
++     work=hakios.verify_workspace(spec);built_path=hakios.ROOT/'reports/hakios-ios16-phase4-userspace-build.json'
++     built=hakios.read(built_path)
++diff --git a/scripts/run-wsl-limited.ps1 b/scripts/run-wsl-limited.ps1
++--- a/scripts/run-wsl-limited.ps1
+++++ b/scripts/run-wsl-limited.ps1
++@@ -1,6 +1,6 @@
++ [CmdletBinding()]
++ param(
++-    [ValidateSet('hakios-audit', 'hakios-version-audit', 'hakios-prepare', 'hakios-check', 'hakios-deps', 'hakios-support', 'hakios-storage', 'hakios-dynamic', 'hakios-kernel', 'hakios-build-check', 'hakios-package', 'hakios-r9-prepare', 'hakios-r9-checks', 'hakios-r9-review', 'hakios-r9-return-checks', 'hakios-r9-static-checks', 'hakios-r9-regressions', 'hakios-r9-userspace', 'hakios-r9-build-check', 'hakios-r9-freeze', 'hakios-r9-package', 'hakios-r9-package-checks', 'hakios-r10-prepare', 'hakios-r10-checks', 'hakios-r10-review', 'hakios-r10-regressions', 'hakios-r10-userspace', 'hakios-r10-build-check', 'hakios-r10-freeze', 'hakios-r10-package', 'hakios-r10-package-checks', 'hakios-r11-prepare', 'hakios-r11-checks', 'hakios-r11-review', 'hakios-r11-regressions', 'hakios-r11-userspace', 'hakios-r11-build-check', 'hakios-r11-freeze', 'hakios-r11-package', 'hakios-r11-package-checks', 'hakios-r12-prepare', 'hakios-r12-checks', 'hakios-r12-review', 'hakios-r12-regressions', 'hakios-r12-userspace', 'hakios-r12-build-check', 'hakios-r12-freeze', 'hakios-r12-package', 'hakios-r12-package-checks', 'hakios-r13-prepare', 'hakios-r13-checks', 'hakios-r13-review', 'hakios-r13-regressions', 'hakios-r13-userspace', 'hakios-r13-build-check', 'hakios-r13-freeze', 'hakios-r13-package', 'hakios-r13-package-checks', 'hakios-r14-prepare', 'hakios-r14-checks', 'hakios-r14-review', 'hakios-r14-regressions', 'hakios-r14-userspace', 'hakios-r14-build-check', 'hakios-r14-freeze', 'hakios-r14-package', 'hakios-r14-package-checks', 'hakios-r15-prepare', 'hakios-r15-checks', 'hakios-r15-review', 'hakios-r15-regressions', 'hakios-r15-userspace', 'hakios-r15-build-check', 'hakios-r15-freeze', 'hakios-r15-package', 'hakios-r15-package-checks', 'hakios-r16-prepare', 'hakios-r16-checks', 'hakios-r16-review', 'hakios-r16-regressions', 'hakios-r16-userspace', 'hakios-r16-build-check', 'hakios-r16-freeze', 'hakios-r16-package', 'hakios-r16-package-checks', 'hakios-r17-prepare', 'hakios-r17-checks', 'hakios-r17-review', 'hakios-r17-regressions', 'hakios-r17-userspace', 'hakios-r17-build-check', 'hakios-r17-freeze', 'hakios-r17-package', 'hakios-r17-package-checks', 'hakios-r18-prepare', 'hakios-r18-checks', 'hakios-r18-review', 'hakios-r18-regressions', 'hakios-r18-userspace', 'hakios-r18-build-check', 'hakios-r18-freeze', 'hakios-r18-package', 'hakios-r18-package-checks', 'kernel', 'native-package', 'root-transfer')]
+++    [ValidateSet('hakios-audit', 'hakios-version-audit', 'hakios-prepare', 'hakios-check', 'hakios-deps', 'hakios-support', 'hakios-storage', 'hakios-dynamic', 'hakios-kernel', 'hakios-build-check', 'hakios-package', 'hakios-r9-prepare', 'hakios-r9-checks', 'hakios-r9-review', 'hakios-r9-return-checks', 'hakios-r9-static-checks', 'hakios-r9-regressions', 'hakios-r9-userspace', 'hakios-r9-build-check', 'hakios-r9-freeze', 'hakios-r9-package', 'hakios-r9-package-checks', 'hakios-r10-prepare', 'hakios-r10-checks', 'hakios-r10-review', 'hakios-r10-regressions', 'hakios-r10-userspace', 'hakios-r10-build-check', 'hakios-r10-freeze', 'hakios-r10-package', 'hakios-r10-package-checks', 'hakios-r11-prepare', 'hakios-r11-checks', 'hakios-r11-review', 'hakios-r11-regressions', 'hakios-r11-userspace', 'hakios-r11-build-check', 'hakios-r11-freeze', 'hakios-r11-package', 'hakios-r11-package-checks', 'hakios-r12-prepare', 'hakios-r12-checks', 'hakios-r12-review', 'hakios-r12-regressions', 'hakios-r12-userspace', 'hakios-r12-build-check', 'hakios-r12-freeze', 'hakios-r12-package', 'hakios-r12-package-checks', 'hakios-r13-prepare', 'hakios-r13-checks', 'hakios-r13-review', 'hakios-r13-regressions', 'hakios-r13-userspace', 'hakios-r13-build-check', 'hakios-r13-freeze', 'hakios-r13-package', 'hakios-r13-package-checks', 'hakios-r14-prepare', 'hakios-r14-checks', 'hakios-r14-review', 'hakios-r14-regressions', 'hakios-r14-userspace', 'hakios-r14-build-check', 'hakios-r14-freeze', 'hakios-r14-package', 'hakios-r14-package-checks', 'hakios-r15-prepare', 'hakios-r15-checks', 'hakios-r15-review', 'hakios-r15-regressions', 'hakios-r15-userspace', 'hakios-r15-build-check', 'hakios-r15-freeze', 'hakios-r15-package', 'hakios-r15-package-checks', 'hakios-r16-prepare', 'hakios-r16-checks', 'hakios-r16-review', 'hakios-r16-regressions', 'hakios-r16-userspace', 'hakios-r16-build-check', 'hakios-r16-freeze', 'hakios-r16-package', 'hakios-r16-package-checks', 'hakios-r17-prepare', 'hakios-r17-checks', 'hakios-r17-review', 'hakios-r17-regressions', 'hakios-r17-userspace', 'hakios-r17-build-check', 'hakios-r17-freeze', 'hakios-r17-package', 'hakios-r17-package-checks', 'hakios-r18-prepare', 'hakios-r18-checks', 'hakios-r18-review', 'hakios-r18-regressions', 'hakios-r18-userspace', 'hakios-r18-build-check', 'hakios-r18-freeze', 'hakios-r18-package', 'hakios-r18-package-checks', 'hakios-r19-prepare', 'hakios-r19-checks', 'hakios-r19-review', 'hakios-r19-regressions', 'hakios-r19-userspace', 'hakios-r19-build-check', 'hakios-r19-freeze', 'hakios-r19-package', 'hakios-r19-package-checks', 'kernel', 'native-package', 'root-transfer')]
++     [string]$Task = 'hakios-check',
++     [ValidateSet(1,3)]
++     [int]$XnuCpus = 3
++@@ -196,6 +196,20 @@
++         'hakios-r18-package-checks' { 'test-hakios-ios16-r18-package.py' }
++     }
++     $entryScript = "$linuxRoot/scripts/$r18Entry"
+++}
+++if ($Task -like 'hakios-r19-*') {
+++    $r19Entry = switch ($Task) {
+++        'hakios-r19-prepare' { 'prepare-hakios-ios16-r19.py' }
+++        'hakios-r19-checks' { 'test-hakios-ios16-r19.py' }
+++        'hakios-r19-review' { 'review-hakios-ios16.py' }
+++        'hakios-r19-regressions' { 'run-hakios-ios16-r19-regressions.py' }
+++        'hakios-r19-userspace' { 'build-hakios-ios16-userspace.py' }
+++        'hakios-r19-build-check' { 'check-hakios-ios16-build.py' }
+++        'hakios-r19-freeze' { 'freeze-hakios-ios16-boot-userspace.py' }
+++        'hakios-r19-package' { 'package-hakios-ios16.py' }
+++        'hakios-r19-package-checks' { 'test-hakios-ios16-r19-package.py' }
+++    }
+++    $entryScript = "$linuxRoot/scripts/$r19Entry"
++ }
++ if ($Task -like 'hakios-r12-*') {
++     $r12Entry = switch ($Task) {
++@@ -227,7 +241,7 @@
++ if ($Task -in @('hakios-r11-freeze', 'hakios-r11-package')) { $arguments += @('--revision', '11') }
++ if ($Task -in @('hakios-r12-userspace', 'hakios-r12-build-check')) { $arguments += '--phase4' }
++ if ($Task -in @('hakios-r12-freeze', 'hakios-r12-package')) { $arguments += @('--revision', '12') }
++-if ($Task -notlike 'hakios-r18-*' -and $Task -notlike 'hakios-r17-*' -and $Task -notlike 'hakios-r16-*' -and $Task -notlike 'hakios-r15-*' -and $Task -notlike 'hakios-r14-*' -and $Task -notlike 'hakios-r13-*' -and $Task -notlike 'hakios-r12-*' -and $Task -notlike 'hakios-r11-*' -and $Task -notlike 'hakios-r10-*' -and $Task -notin @('hakios-deps', 'hakios-support', 'hakios-build-check', 'hakios-storage', 'hakios-dynamic', 'hakios-package', 'hakios-version-audit', 'hakios-r9-prepare', 'hakios-r9-checks', 'hakios-r9-review', 'hakios-r9-return-checks', 'hakios-r9-static-checks', 'hakios-r9-regressions', 'hakios-r9-userspace', 'hakios-r9-build-check', 'hakios-r9-freeze', 'hakios-r9-package', 'hakios-r9-package-checks')) { $arguments += $command }
+++if ($Task -notlike 'hakios-r19-*' -and $Task -notlike 'hakios-r18-*' -and $Task -notlike 'hakios-r17-*' -and $Task -notlike 'hakios-r16-*' -and $Task -notlike 'hakios-r15-*' -and $Task -notlike 'hakios-r14-*' -and $Task -notlike 'hakios-r13-*' -and $Task -notlike 'hakios-r12-*' -and $Task -notlike 'hakios-r11-*' -and $Task -notlike 'hakios-r10-*' -and $Task -notin @('hakios-deps', 'hakios-support', 'hakios-build-check', 'hakios-storage', 'hakios-dynamic', 'hakios-package', 'hakios-version-audit', 'hakios-r9-prepare', 'hakios-r9-checks', 'hakios-r9-review', 'hakios-r9-return-checks', 'hakios-r9-static-checks', 'hakios-r9-regressions', 'hakios-r9-userspace', 'hakios-r9-build-check', 'hakios-r9-freeze', 'hakios-r9-package', 'hakios-r9-package-checks')) { $arguments += $command }
++ if ($Task -in @('hakios-r13-userspace', 'hakios-r13-build-check')) { $arguments += '--phase4' }
++ if ($Task -in @('hakios-r13-freeze', 'hakios-r13-package')) { $arguments += @('--revision', '13') }
++ if ($Task -eq 'hakios-r13-package') { $arguments += @('--cpus', "$XnuCpus") }
++@@ -242,5 +256,7 @@
++ if ($Task -in @('hakios-r17-freeze', 'hakios-r17-package')) { $arguments += @('--revision', '17') }
++ if ($Task -in @('hakios-r18-userspace', 'hakios-r18-build-check')) { $arguments += '--phase4' }
++ if ($Task -in @('hakios-r18-freeze', 'hakios-r18-package')) { $arguments += @('--revision', '18') }
+++if ($Task -in @('hakios-r19-userspace', 'hakios-r19-build-check')) { $arguments += '--phase4' }
+++if ($Task -in @('hakios-r19-freeze', 'hakios-r19-package')) { $arguments += @('--revision', '19') }
++ & wsl.exe @arguments
++ exit $LASTEXITCODE
++diff --git a/scripts/boot-hakios-ios16.py b/scripts/boot-hakios-ios16.py
++--- a/scripts/boot-hakios-ios16.py
+++++ b/scripts/boot-hakios-ios16.py
++@@ -1,5 +1,5 @@
++ #!/usr/bin/env python3
++-"""Guarded iOS16 integrated temporary boot. Default only checks the device."""
+++"""Guarded iOS16 temporary boot. Default checks the device; --offline checks host inputs only."""
++ import argparse
++ from datetime import datetime
++ import hashlib
++@@ -16,7 +16,11 @@
++ 
++ 
++ def main():
++-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--boot',action='store_true');args=parser.parse_args()
+++    parser=argparse.ArgumentParser(description=__doc__)
+++    mode=parser.add_mutually_exclusive_group()
+++    mode.add_argument('--boot',action='store_true')
+++    mode.add_argument('--offline',action='store_true')
+++    args=parser.parse_args()
++     spec=hakios.read(hakios.MANIFEST);hakios.policy(spec);hakios.frozen_check()
++     state=hakios.read(hakios.ROOT/'project.json')
++     hakios.require(state['migration']['phase4_approved'],'Phase4 not authorized')
++@@ -33,6 +37,8 @@
++     revision=ready['revision'];report_path=hakios.ROOT/f'reports/hakios-ios16-device-r{revision}.json'
++     guard=hakios.ROOT/f'reports/local/ios16-r{revision}-boot-intent.json'
++     hakios.require(not guard.exists(),'This revision was already invoked; inspect its recorded outcome before another boot')
+++    if args.offline:
+++        print(f'PASS: offline iOS16 R{revision} package readiness (host checks only).');return
++     target=hakios.read(hakios.ROOT/'reports/local/hakios-device-target.json');serial=target['serial']
++     local=hakios.ROOT/'reports/local'/(datetime.now().strftime('%Y%m%d-%H%M%S-%f')+f'-ios16-r{revision}')
++     local.mkdir(parents=True)
+diff --git a/reports/overnight-20261118/r19-host-pipeline.json b/reports/overnight-20261118/r19-host-pipeline.json
+new file mode 100644
+index 0000000..2415abe
+--- /dev/null
++++ b/reports/overnight-20261118/r19-host-pipeline.json
+@@ -0,0 +1,27 @@
++{
++  "scope": "R19-only delta against verified rollback bytes, not HEAD",
++  "files": {
++    "scripts/package-hakios-ios16.py": {
++      "before_sha256": "f77b975e16d1136469ae00f82c692b010939245412ab5eefc78471a5c9e0c2e0",
++      "after_sha256": "4bb26912d67e5aaa76841ed32eca1ae457fd4fcd9b3628cabb41d7e4199b47e1"
++    },
++    "scripts/check-hakios-ios16-build.py": {
++      "before_sha256": "ea05e9196bf1515b33d795d0b54d5940c4e875ebf16287ace6c211b1c0ce658f",
++      "after_sha256": "bf7674a67045b80fac39ae5a837b057b37dd115340e3720066feeb685f2d7718"
++    },
++    "scripts/freeze-hakios-ios16-boot-userspace.py": {
++      "before_sha256": "8778cfd4c353d60be6fabf7ab834c7b1f3dc91b369217c7f53ea09a5391084d7",
++      "after_sha256": "16e984b1c59c666e29726808bdce3b8052afb0954265e5eca4c91c0bc43b13b2"
++    },
++    "scripts/run-wsl-limited.ps1": {
++      "before_sha256": "97022073f32d4b37cfded40b7b1afd25f5aee372a7c4996175443180f38b165c",
++      "after_sha256": "97759ef2ae53b5684e57069341776e0915571ef2f144978d7e30a582f718c32c"
++    },
++    "scripts/boot-hakios-ios16.py": {
++      "before_sha256": "8f711add9368f357a6dfedaa380ce1cec3af9a6b732701b74f18040ff8b98d74",
++      "after_sha256": "68ea0a7c776acbd2f33354f83ec85a93db21d88c59498c4f651c65e1ea002742"
++    }
++  },
++  "patch_sha256": "1996fe74b7cd5e532da7aa0cc347b6ba2f357950201bdb00178f627368af4ba8",
++  "reverse_apply_check": true
++}
+diff --git a/reports/overnight-20261118/r19-host-pipeline.patch b/reports/overnight-20261118/r19-host-pipeline.patch
+new file mode 100644
+index 0000000..825aef1
+--- /dev/null
++++ b/reports/overnight-20261118/r19-host-pipeline.patch
+@@ -0,0 +1,223 @@
++diff --git a/scripts/package-hakios-ios16.py b/scripts/package-hakios-ios16.py
++--- a/scripts/package-hakios-ios16.py
+++++ b/scripts/package-hakios-ios16.py
++@@ -22,6 +22,7 @@
++ import hakios_r16
++ import hakios_r17
++ import hakios_r18
+++import hakios_r19
++ 
++ ARCHIVE = hakios.ROOT / 'reports/history/hakios-ios16-phase3-20261116'
++ 
++@@ -72,7 +73,7 @@
++     parser.add_argument('--revision',type=int,required=True)
++     parser.add_argument('--cpus',type=int,choices=(1,3),default=3,help='R13 only: same frozen sources, one or three XNU CPUs')
++     args=parser.parse_args();revision=args.revision
++-    hakios.require(revision in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18),'Revision must have an explicitly reviewed source delta')
+++    hakios.require(revision in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19),'Revision must have an explicitly reviewed source delta')
++     hakios.require(revision in (13,14) or args.cpus==3,'CPU variants are reviewed only for R13/R14')
++     spec = hakios.read(hakios.MANIFEST); hakios.policy(spec); hakios.resource_check(); hakios.frozen_check()
++     state = hakios.read(hakios.ROOT/'project.json')
++@@ -114,6 +115,9 @@
++     if revision>=16:expected_changes.update(hakios_r16.PORT_DELTA)
++     if revision>=17:expected_changes.update(hakios_r17.PORT_DELTA)
++     if revision>=18:expected_changes.update(hakios_r18.PORT_DELTA)
+++    if revision>=19:
+++        hakios_r19.source_checks(hakios.ROOT, work, current)
+++        expected_changes.update(hakios_r19.PORT_DELTA)
++     hakios.require(changed == expected_changes and current['manifest_sha256'] == ready3['inputs']['manifest_sha256'],
++                    'Package reuse requires the exact reviewed source delta for this revision')
++     built = hakios.read(hakios.ROOT/'reports/hakios-kernel-build.json')
++@@ -266,7 +270,7 @@
++             'fbwidth=750 fbheight=1334 fb_threads=1 fb_filter=0 '
++             'loader_return_after=600 ufs_rawbench=1')
++         thread_observation=None
++-    if revision in (13,14,15,16,17,18):
+++    if revision in (13,14,15,16,17,18,19):
++         checks=hakios.read(hakios.ROOT/'reports/hakios-ios16-r13-checks.json')
++         hakios.require(checks['passed'] and checks['inputs']==current and checks['actual_production_functions'],
++             'R13 actual recorder, preserved bodies and stack-bound checks required')
++@@ -310,12 +314,18 @@
++             hakios.require(hakios.sha(Path(name))==digest,'R17 evidence changed: '+name)
++         prior=hakios.read(hakios.ROOT/'artifacts/hakios/lithium-ios16/phase4-r16/contract.json')
++         cmdline=hakios_r17.command_line(prior['cmdline'])
++-    if revision==18:
+++    if revision in (18,19):
++         checks=hakios.read(hakios.ROOT/'reports/hakios-ios16-r18-checks.json')
++         hakios.require(checks['passed'] and checks['inputs']==current and checks['actual_production_functions'], 'R18 actual early-profile tests required')
++         for name,digest in checks['evidence_sha256'].items():
++             hakios.require(hakios.sha(Path(name))==digest, 'R18 evidence changed: '+name)
++         cmdline=hakios_r18.command_line(hakios.read(hakios.ROOT/'artifacts/hakios/lithium-ios16/phase4-r15/contract.json')['cmdline'])
+++    if revision==19:
+++        checks=hakios.read(hakios.ROOT/'reports/hakios-ios16-r19-checks.json')
+++        hakios.require(checks['passed'] and checks['inputs']==current and checks['actual_frozen_command_parser_checked'], 'R19 actual baseline/default-off tests required')
+++        for name,digest in checks['evidence_sha256'].items():
+++            hakios.require(hakios.sha(Path(name))==digest, 'R19 evidence changed: '+name)
+++        cmdline=hakios_r19.command_line(hakios.read(hakios.ROOT/'artifacts/hakios/lithium-ios16/phase4-r18/contract.json')['cmdline'], hakios.read(hakios.ROOT/'artifacts/hakios/lithium-ios16/phase4-r15/contract.json')['cmdline'])
++     budgeter=hakios_r15 if revision>=15 else (hakios_r13 if revision in (13,14) else (hakios_r9 if revision>=9 else service))
++     budget=None
++     if revision>=8:
++@@ -512,11 +522,22 @@
++             'scripts/run-hakios-ios16-r17-regressions.py','scripts/test-hakios-ios16-r17-package.py',
++             'reports/hakios-ios16-r17-checks.json']:
++             evidence[name]=hakios.sha(hakios.ROOT/name)
++-    if revision==18:
+++    if revision in (18,19):
++         for name in [*('ports/hakios-lithium/'+p for p in sorted(hakios_r18.PORT_DELTA)),
++             'scripts/hakios_r18.py','scripts/prepare-hakios-ios16-r18.py','scripts/test-hakios-ios16-r18.py',
++             'scripts/test-hakios-ios16-r18-package.py','scripts/run-hakios-ios16-r18-regressions.py','reports/hakios-ios16-r18-checks.json']:
++             evidence[name]=hakios.sha(hakios.ROOT/name)
+++    if revision==19:
+++        for name in [*('ports/hakios-lithium/'+p for p in sorted(hakios_r19.PORT_DELTA)),
+++            'scripts/hakios_r19.py', 'scripts/prepare-hakios-ios16-r19.py',
+++            'scripts/test-hakios-ios16-r19.py', 'scripts/test-hakios-ios16-r19-contract.py',
+++            'scripts/test-hakios-ios16-r19-snapshots.py', 'scripts/test-hakios-ios16-r19-package.py',
+++            'scripts/run-hakios-ios16-r19-regressions.py', 'scripts/integrate-hakios-ios16-r19-host.py',
+++            'scripts/boot-hakios-ios16.py', 'scripts/test-hakios-ios16-offline-preflight.py',
+++            'scripts/run-wsl-limited.ps1', 'reports/hakios-ios16-r19-prepared-sources.json',
+++            'reports/hakios-ios16-r19-checks.json', 'reports/overnight-20261118/accepted-host-tests/passed.json']:
+++            evidence[name]=hakios.sha(hakios.ROOT/name)
+++        evidence_snapshots=hakios_r19.snapshot_evidence(hakios.ROOT, out, evidence)
++     contract=dict(schema=1,phase=4,revision=revision,prepared_at=datetime.now().astimezone().isoformat(),inputs=current,
++         passed=True,bootable_package_ready=True,image_path=str(target.relative_to(hakios.ROOT)),image_sha256=hakios.sha(target),image_bytes=len(image),
++         kernel_sha256=hakios.sha(kernel),loader_sha256=hakios.sha(loader),fd_sha256=hakios.sha(fd),cmdline=cmdline,
++@@ -559,8 +580,12 @@
++             payload_arguments_preserved_from_r16=True,only_fbwidth_fbheight_changed=True,
++             native_render_profile=dict(width=1125,height=2436,scale=3,artwork_subtype=2436,points=[375,812]),
++             display_acceptance_verified=False)
++-    if revision==18:
+++    if revision in (18,19):
++         contract.update(display_profile_contract='ports/hakios-lithium/diagnostics/r18.json',payload_arguments_preserved_from_r15=True,display_acceptance_verified=False,render_profile=dict(width=750,height=1334,scale=2,subtype=1334,points=[375,667]))
+++    if revision==19:
+++        contract.update(provenance_parent_revision=18, admission_default_off=True,
+++            hardware_backends_implemented=False, evidence_snapshots=evidence_snapshots,
+++            evidence_snapshot_policy='Exact text bytes retained alongside unchanged live guards')
++     hakios.write(out/'contract.json',contract)
++     if revision in (13,14) and args.cpus==1:hakios.write(hakios.ROOT/f'reports/hakios-ios16-boot-ready-r{revision}-cpus1.json',contract)
++     else:hakios.write(hakios.ROOT/'reports/hakios-ios16-boot-ready.json',contract)
++diff --git a/scripts/check-hakios-ios16-build.py b/scripts/check-hakios-ios16-build.py
++--- a/scripts/check-hakios-ios16-build.py
+++++ b/scripts/check-hakios-ios16-build.py
++@@ -15,6 +15,7 @@
++ import hakios_r16
++ import hakios_r17
++ import hakios_r18
+++import hakios_r19
++ 
++ def main():
++     parser=argparse.ArgumentParser(description=__doc__)
++@@ -81,6 +82,9 @@
++             expected.update(hakios_r17.PORT_DELTA)
++         if 'diagnostics/r18.json' in delta:
++             expected.update(hakios_r18.PORT_DELTA)
+++        if 'patches/0019-lithium-peripheral-admission.patch' in delta:
+++            hakios_r19.source_checks(hakios.ROOT, work, hakios.inputs(spec))
+++            expected.update(hakios_r19.PORT_DELTA)
++         hakios.require(delta==expected and
++             ready3['inputs']['manifest_sha256']==hakios.inputs(spec)['manifest_sha256'],
++             'Phase4 reuse permits only explicitly reviewed shim/linker/console/observation changes')
++@@ -157,6 +161,11 @@
++         hakios.require(not errors,'Unsupported instruction in '+name+': '+str(errors[:5]))
++     # Confirm the new optional driver and stream reader actually reached the link.
++     symbols=subprocess.check_output(['llvm-nm',str(kernel)],text=True)
+++    if (work/'devices/lithium/peripherals/contract.json').exists():
+++        hakios.require('_lithium_peripheral_worker' in symbols, 'R19 admission worker missing from actual kernel')
+++        hakios.require(all(token in kernel.read_bytes() for token in (b'LITHIUM TOUCH status=blocked',
+++            b'LITHIUM GPU status=blocked', b'platform_backend_unverified',
+++            b'power_smmu_scm_backend_unverified')), 'Actual default-off admission diagnostics missing')
++     if (work/'devices/lithium/diagnostics/thread-wait-observer.json').exists():
++         content=kernel.read_bytes()
++         hakios.require(all(token in content for token in (b'ustacks_related\0',b'LITHIUM USTACKS begin',
++diff --git a/scripts/freeze-hakios-ios16-boot-userspace.py b/scripts/freeze-hakios-ios16-boot-userspace.py
++--- a/scripts/freeze-hakios-ios16-boot-userspace.py
+++++ b/scripts/freeze-hakios-ios16-boot-userspace.py
++@@ -11,7 +11,7 @@
++ def main():
++     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--revision',type=int,required=True)
++     revision=parser.parse_args().revision
++-    hakios.require(revision in (3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18),'Only reviewed phase4 revisions are supported')
+++    hakios.require(revision in (3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19),'Only reviewed phase4 revisions are supported')
++     spec=hakios.read(hakios.MANIFEST);hakios.policy(spec);hakios.resource_check()
++     work=hakios.verify_workspace(spec);built_path=hakios.ROOT/'reports/hakios-ios16-phase4-userspace-build.json'
++     built=hakios.read(built_path)
++diff --git a/scripts/run-wsl-limited.ps1 b/scripts/run-wsl-limited.ps1
++--- a/scripts/run-wsl-limited.ps1
+++++ b/scripts/run-wsl-limited.ps1
++@@ -1,6 +1,6 @@
++ [CmdletBinding()]
++ param(
++-    [ValidateSet('hakios-audit', 'hakios-version-audit', 'hakios-prepare', 'hakios-check', 'hakios-deps', 'hakios-support', 'hakios-storage', 'hakios-dynamic', 'hakios-kernel', 'hakios-build-check', 'hakios-package', 'hakios-r9-prepare', 'hakios-r9-checks', 'hakios-r9-review', 'hakios-r9-return-checks', 'hakios-r9-static-checks', 'hakios-r9-regressions', 'hakios-r9-userspace', 'hakios-r9-build-check', 'hakios-r9-freeze', 'hakios-r9-package', 'hakios-r9-package-checks', 'hakios-r10-prepare', 'hakios-r10-checks', 'hakios-r10-review', 'hakios-r10-regressions', 'hakios-r10-userspace', 'hakios-r10-build-check', 'hakios-r10-freeze', 'hakios-r10-package', 'hakios-r10-package-checks', 'hakios-r11-prepare', 'hakios-r11-checks', 'hakios-r11-review', 'hakios-r11-regressions', 'hakios-r11-userspace', 'hakios-r11-build-check', 'hakios-r11-freeze', 'hakios-r11-package', 'hakios-r11-package-checks', 'hakios-r12-prepare', 'hakios-r12-checks', 'hakios-r12-review', 'hakios-r12-regressions', 'hakios-r12-userspace', 'hakios-r12-build-check', 'hakios-r12-freeze', 'hakios-r12-package', 'hakios-r12-package-checks', 'hakios-r13-prepare', 'hakios-r13-checks', 'hakios-r13-review', 'hakios-r13-regressions', 'hakios-r13-userspace', 'hakios-r13-build-check', 'hakios-r13-freeze', 'hakios-r13-package', 'hakios-r13-package-checks', 'hakios-r14-prepare', 'hakios-r14-checks', 'hakios-r14-review', 'hakios-r14-regressions', 'hakios-r14-userspace', 'hakios-r14-build-check', 'hakios-r14-freeze', 'hakios-r14-package', 'hakios-r14-package-checks', 'hakios-r15-prepare', 'hakios-r15-checks', 'hakios-r15-review', 'hakios-r15-regressions', 'hakios-r15-userspace', 'hakios-r15-build-check', 'hakios-r15-freeze', 'hakios-r15-package', 'hakios-r15-package-checks', 'hakios-r16-prepare', 'hakios-r16-checks', 'hakios-r16-review', 'hakios-r16-regressions', 'hakios-r16-userspace', 'hakios-r16-build-check', 'hakios-r16-freeze', 'hakios-r16-package', 'hakios-r16-package-checks', 'hakios-r17-prepare', 'hakios-r17-checks', 'hakios-r17-review', 'hakios-r17-regressions', 'hakios-r17-userspace', 'hakios-r17-build-check', 'hakios-r17-freeze', 'hakios-r17-package', 'hakios-r17-package-checks', 'hakios-r18-prepare', 'hakios-r18-checks', 'hakios-r18-review', 'hakios-r18-regressions', 'hakios-r18-userspace', 'hakios-r18-build-check', 'hakios-r18-freeze', 'hakios-r18-package', 'hakios-r18-package-checks', 'kernel', 'native-package', 'root-transfer')]
+++    [ValidateSet('hakios-audit', 'hakios-version-audit', 'hakios-prepare', 'hakios-check', 'hakios-deps', 'hakios-support', 'hakios-storage', 'hakios-dynamic', 'hakios-kernel', 'hakios-build-check', 'hakios-package', 'hakios-r9-prepare', 'hakios-r9-checks', 'hakios-r9-review', 'hakios-r9-return-checks', 'hakios-r9-static-checks', 'hakios-r9-regressions', 'hakios-r9-userspace', 'hakios-r9-build-check', 'hakios-r9-freeze', 'hakios-r9-package', 'hakios-r9-package-checks', 'hakios-r10-prepare', 'hakios-r10-checks', 'hakios-r10-review', 'hakios-r10-regressions', 'hakios-r10-userspace', 'hakios-r10-build-check', 'hakios-r10-freeze', 'hakios-r10-package', 'hakios-r10-package-checks', 'hakios-r11-prepare', 'hakios-r11-checks', 'hakios-r11-review', 'hakios-r11-regressions', 'hakios-r11-userspace', 'hakios-r11-build-check', 'hakios-r11-freeze', 'hakios-r11-package', 'hakios-r11-package-checks', 'hakios-r12-prepare', 'hakios-r12-checks', 'hakios-r12-review', 'hakios-r12-regressions', 'hakios-r12-userspace', 'hakios-r12-build-check', 'hakios-r12-freeze', 'hakios-r12-package', 'hakios-r12-package-checks', 'hakios-r13-prepare', 'hakios-r13-checks', 'hakios-r13-review', 'hakios-r13-regressions', 'hakios-r13-userspace', 'hakios-r13-build-check', 'hakios-r13-freeze', 'hakios-r13-package', 'hakios-r13-package-checks', 'hakios-r14-prepare', 'hakios-r14-checks', 'hakios-r14-review', 'hakios-r14-regressions', 'hakios-r14-userspace', 'hakios-r14-build-check', 'hakios-r14-freeze', 'hakios-r14-package', 'hakios-r14-package-checks', 'hakios-r15-prepare', 'hakios-r15-checks', 'hakios-r15-review', 'hakios-r15-regressions', 'hakios-r15-userspace', 'hakios-r15-build-check', 'hakios-r15-freeze', 'hakios-r15-package', 'hakios-r15-package-checks', 'hakios-r16-prepare', 'hakios-r16-checks', 'hakios-r16-review', 'hakios-r16-regressions', 'hakios-r16-userspace', 'hakios-r16-build-check', 'hakios-r16-freeze', 'hakios-r16-package', 'hakios-r16-package-checks', 'hakios-r17-prepare', 'hakios-r17-checks', 'hakios-r17-review', 'hakios-r17-regressions', 'hakios-r17-userspace', 'hakios-r17-build-check', 'hakios-r17-freeze', 'hakios-r17-package', 'hakios-r17-package-checks', 'hakios-r18-prepare', 'hakios-r18-checks', 'hakios-r18-review', 'hakios-r18-regressions', 'hakios-r18-userspace', 'hakios-r18-build-check', 'hakios-r18-freeze', 'hakios-r18-package', 'hakios-r18-package-checks', 'hakios-r19-prepare', 'hakios-r19-checks', 'hakios-r19-review', 'hakios-r19-regressions', 'hakios-r19-userspace', 'hakios-r19-build-check', 'hakios-r19-freeze', 'hakios-r19-package', 'hakios-r19-package-checks', 'kernel', 'native-package', 'root-transfer')]
++     [string]$Task = 'hakios-check',
++     [ValidateSet(1,3)]
++     [int]$XnuCpus = 3
++@@ -196,6 +196,20 @@
++         'hakios-r18-package-checks' { 'test-hakios-ios16-r18-package.py' }
++     }
++     $entryScript = "$linuxRoot/scripts/$r18Entry"
+++}
+++if ($Task -like 'hakios-r19-*') {
+++    $r19Entry = switch ($Task) {
+++        'hakios-r19-prepare' { 'prepare-hakios-ios16-r19.py' }
+++        'hakios-r19-checks' { 'test-hakios-ios16-r19.py' }
+++        'hakios-r19-review' { 'review-hakios-ios16.py' }
+++        'hakios-r19-regressions' { 'run-hakios-ios16-r19-regressions.py' }
+++        'hakios-r19-userspace' { 'build-hakios-ios16-userspace.py' }
+++        'hakios-r19-build-check' { 'check-hakios-ios16-build.py' }
+++        'hakios-r19-freeze' { 'freeze-hakios-ios16-boot-userspace.py' }
+++        'hakios-r19-package' { 'package-hakios-ios16.py' }
+++        'hakios-r19-package-checks' { 'test-hakios-ios16-r19-package.py' }
+++    }
+++    $entryScript = "$linuxRoot/scripts/$r19Entry"
++ }
++ if ($Task -like 'hakios-r12-*') {
++     $r12Entry = switch ($Task) {
++@@ -227,7 +241,7 @@
++ if ($Task -in @('hakios-r11-freeze', 'hakios-r11-package')) { $arguments += @('--revision', '11') }
++ if ($Task -in @('hakios-r12-userspace', 'hakios-r12-build-check')) { $arguments += '--phase4' }
++ if ($Task -in @('hakios-r12-freeze', 'hakios-r12-package')) { $arguments += @('--revision', '12') }
++-if ($Task -notlike 'hakios-r18-*' -and $Task -notlike 'hakios-r17-*' -and $Task -notlike 'hakios-r16-*' -and $Task -notlike 'hakios-r15-*' -and $Task -notlike 'hakios-r14-*' -and $Task -notlike 'hakios-r13-*' -and $Task -notlike 'hakios-r12-*' -and $Task -notlike 'hakios-r11-*' -and $Task -notlike 'hakios-r10-*' -and $Task -notin @('hakios-deps', 'hakios-support', 'hakios-build-check', 'hakios-storage', 'hakios-dynamic', 'hakios-package', 'hakios-version-audit', 'hakios-r9-prepare', 'hakios-r9-checks', 'hakios-r9-review', 'hakios-r9-return-checks', 'hakios-r9-static-checks', 'hakios-r9-regressions', 'hakios-r9-userspace', 'hakios-r9-build-check', 'hakios-r9-freeze', 'hakios-r9-package', 'hakios-r9-package-checks')) { $arguments += $command }
+++if ($Task -notlike 'hakios-r19-*' -and $Task -notlike 'hakios-r18-*' -and $Task -notlike 'hakios-r17-*' -and $Task -notlike 'hakios-r16-*' -and $Task -notlike 'hakios-r15-*' -and $Task -notlike 'hakios-r14-*' -and $Task -notlike 'hakios-r13-*' -and $Task -notlike 'hakios-r12-*' -and $Task -notlike 'hakios-r11-*' -and $Task -notlike 'hakios-r10-*' -and $Task -notin @('hakios-deps', 'hakios-support', 'hakios-build-check', 'hakios-storage', 'hakios-dynamic', 'hakios-package', 'hakios-version-audit', 'hakios-r9-prepare', 'hakios-r9-checks', 'hakios-r9-review', 'hakios-r9-return-checks', 'hakios-r9-static-checks', 'hakios-r9-regressions', 'hakios-r9-userspace', 'hakios-r9-build-check', 'hakios-r9-freeze', 'hakios-r9-package', 'hakios-r9-package-checks')) { $arguments += $command }
++ if ($Task -in @('hakios-r13-userspace', 'hakios-r13-build-check')) { $arguments += '--phase4' }
++ if ($Task -in @('hakios-r13-freeze', 'hakios-r13-package')) { $arguments += @('--revision', '13') }
++ if ($Task -eq 'hakios-r13-package') { $arguments += @('--cpus', "$XnuCpus") }
++@@ -242,5 +256,7 @@
++ if ($Task -in @('hakios-r17-freeze', 'hakios-r17-package')) { $arguments += @('--revision', '17') }
++ if ($Task -in @('hakios-r18-userspace', 'hakios-r18-build-check')) { $arguments += '--phase4' }
++ if ($Task -in @('hakios-r18-freeze', 'hakios-r18-package')) { $arguments += @('--revision', '18') }
+++if ($Task -in @('hakios-r19-userspace', 'hakios-r19-build-check')) { $arguments += '--phase4' }
+++if ($Task -in @('hakios-r19-freeze', 'hakios-r19-package')) { $arguments += @('--revision', '19') }
++ & wsl.exe @arguments
++ exit $LASTEXITCODE
++diff --git a/scripts/boot-hakios-ios16.py b/scripts/boot-hakios-ios16.py
++--- a/scripts/boot-hakios-ios16.py
+++++ b/scripts/boot-hakios-ios16.py
++@@ -1,5 +1,5 @@
++ #!/usr/bin/env python3
++-"""Guarded iOS16 integrated temporary boot. Default only checks the device."""
+++"""Guarded iOS16 temporary boot. Default checks the device; --offline checks host inputs only."""
++ import argparse
++ from datetime import datetime
++ import hashlib
++@@ -16,7 +16,11 @@
++ 
++ 
++ def main():
++-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--boot',action='store_true');args=parser.parse_args()
+++    parser=argparse.ArgumentParser(description=__doc__)
+++    mode=parser.add_mutually_exclusive_group()
+++    mode.add_argument('--boot',action='store_true')
+++    mode.add_argument('--offline',action='store_true')
+++    args=parser.parse_args()
++     spec=hakios.read(hakios.MANIFEST);hakios.policy(spec);hakios.frozen_check()
++     state=hakios.read(hakios.ROOT/'project.json')
++     hakios.require(state['migration']['phase4_approved'],'Phase4 not authorized')
++@@ -33,6 +37,8 @@
++     revision=ready['revision'];report_path=hakios.ROOT/f'reports/hakios-ios16-device-r{revision}.json'
++     guard=hakios.ROOT/f'reports/local/ios16-r{revision}-boot-intent.json'
++     hakios.require(not guard.exists(),'This revision was already invoked; inspect its recorded outcome before another boot')
+++    if args.offline:
+++        print(f'PASS: offline iOS16 R{revision} package readiness (host checks only).');return
++     target=hakios.read(hakios.ROOT/'reports/local/hakios-device-target.json');serial=target['serial']
++     local=hakios.ROOT/'reports/local'/(datetime.now().strftime('%Y%m%d-%H%M%S-%f')+f'-ios16-r{revision}')
++     local.mkdir(parents=True)
+diff --git a/scripts/export-hakios-ios16-r19-checkpoint.py b/scripts/export-hakios-ios16-r19-checkpoint.py
+new file mode 100644
+index 0000000..beb722c
+--- /dev/null
++++ b/scripts/export-hakios-ios16-r19-checkpoint.py
+@@ -0,0 +1,57 @@
++"""Export only the R19 shared-script delta against verified rollback bytes."""
++import argparse
++import difflib
++import hashlib
++import json
++from pathlib import Path
++import subprocess
++import zipfile
++
++ROOT = Path(__file__).resolve().parents[1]
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--name", choices=("r19-host-pipeline", "r19-host-pipeline-final"),
++                        default="r19-host-pipeline")
++    args = parser.parse_args()
++    base = ROOT / "artifacts/hakios/lithium-ios16/display-r19-before-host-refresh-20261118"
++    destination = ROOT / "reports/overnight-20261118" / (args.name + ".patch")
++    archive_path = base / "current-source-and-report-bytes.zip"
++    backup = json.loads((base / "backup.json").read_bytes())
++    digest = lambda data: hashlib.sha256(data).hexdigest()
++    assert digest(archive_path.read_bytes()) == backup["archive_sha256"]
++    names = ["scripts/package-hakios-ios16.py", "scripts/check-hakios-ios16-build.py",
++             "scripts/freeze-hakios-ios16-boot-userspace.py", "scripts/run-wsl-limited.ps1",
++             "scripts/boot-hakios-ios16.py"]
++    chunks, files = [], {}
++    with zipfile.ZipFile(archive_path) as archive:
++        for name in names:
++            if name == "scripts/boot-hakios-ios16.py":
++                before = (base / "boot-hakios-ios16.pre-r19.py").read_bytes()
++                assert digest(before) == "8f711add9368f357a6dfedaa380ce1cec3af9a6b732701b74f18040ff8b98d74"
++            else:
++                before = archive.read(name)
++                assert digest(before) == backup["files"][name]
++            after = (ROOT / name).read_bytes()
++            if name == "scripts/boot-hakios-ios16.py":
++                anchor = b"    target=hakios.read("
++                assert before.split(anchor, 1)[1] == after.split(anchor, 1)[1], "Device/boot tail changed"
++            chunks.append(f"diff --git a/{name} b/{name}\n")
++            chunks.extend(difflib.unified_diff(before.decode().splitlines(keepends=True),
++                                              after.decode().splitlines(keepends=True),
++                                              fromfile="a/" + name, tofile="b/" + name))
++            files[name] = dict(before_sha256=digest(before), after_sha256=digest(after))
++    data = "".join(chunks).encode()
++    if destination.exists() and destination.read_bytes() != data:
++        raise RuntimeError("Preserve the existing stage checkpoint; review drift first")
++    destination.write_bytes(data)
++    subprocess.run(["git", "apply", "--reverse", "--check", str(destination)], cwd=ROOT, check=True)
++    record = dict(scope="R19-only delta against verified rollback bytes, not HEAD", files=files,
++                  patch_sha256=digest(data), reverse_apply_check=True)
++    destination.with_suffix(".json").write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
++    print("PASS R19-only five-script rollback patch; ordinary device/boot tail preserved")
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/scripts/hakios_r19.py b/scripts/hakios_r19.py
+new file mode 100644
+index 0000000..6abf33a
+--- /dev/null
++++ b/scripts/hakios_r19.py
+@@ -0,0 +1,115 @@
++"""R19: freeze current provenance while retaining the R18 display experiment."""
++import hashlib
++import json
++from pathlib import Path
++
++PORT_DELTA = {
++    "patches/0019-lithium-peripheral-admission.patch",
++    "peripherals/boot-options.h", "peripherals/contract.json", "peripherals/kernel.inc",
++}
++R18_CONTRACT_SHA256 = "2220293e49729357f66971adc5ff15dfb493f686c7a400676c1227b68ed53599"
++PERIPHERAL_ARGS = {"touch", "touch_log", "touch_poll", "gpu_probe", "gpu_stage", "gpu_wd"}
++
++
++def require(condition, message):
++    if not condition:
++        raise RuntimeError(message)
++
++
++def sha(path):
++    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
++
++
++def read(path):
++    return json.loads(Path(path).read_text(encoding="utf-8"))
++
++
++def validate_delta(prior, current):
++    delta = {name for name in set(prior) | set(current) if prior.get(name) != current.get(name)}
++    require(delta == PORT_DELTA, "R19 permits exactly the reviewed four admission additions")
++    require(all(name not in prior and name in current for name in delta),
++            "R19 additions must not replace or remove an R18 source")
++    return sorted(delta)
++
++
++def command_line(prior, baseline):
++    require(isinstance(prior, str) and prior == baseline, "R19 must preserve the exact R15/R18 command line")
++    words = prior.split()
++    for token in ("bootcpu=1", "cpus=1", "ufs=2", "root_apfs=ufs_userdata",
++                  "var_hfs=ufs_darwin_data", "ufs_write=1", "lithiumusb=2", "gl=0", "metal=0",
++                  "fbwidth=750", "fbheight=1334", "loader_return_after=10800"):
++        name = token.split("=", 1)[0]
++        require(words.count(token) == 1 and sum(word.split("=", 1)[0] == name for word in words) == 1,
++                "Missing/duplicated/conflicting baseline argument: " + token)
++    require(not any(word.split("=", 1)[0] in PERIPHERAL_ARGS for word in words),
++            "Do not enable or add peripheral arguments to the display experiment")
++    return prior
++
++
++def source_checks(root, work, current):
++    """Verify the explicit source relationship, not the missing historical reports."""
++    root, work = Path(root), Path(work)
++    prior_path = root / "artifacts/hakios/lithium-ios16/phase4-r18/contract.json"
++    require(sha(prior_path) == R18_CONTRACT_SHA256, "Frozen R18 contract changed")
++    prior = read(prior_path)
++    old_inputs = prior["inputs"]
++    delta = validate_delta(old_inputs["port_files"], current["port_files"])
++    require({k: v for k, v in old_inputs.items() if k != "port_files"} ==
++            {k: v for k, v in current.items() if k != "port_files"}, "Non-port baseline inputs changed")
++    r15 = read(root / "artifacts/hakios/lithium-ios16/phase4-r15/contract.json")
++    args = command_line(prior["cmdline"], r15["cmdline"])
++    port = root / "ports/hakios-lithium"
++    display = port / "diagnostics/r18.json"
++    require(sha(display) == prior["evidence_sha256"]["ports/hakios-lithium/diagnostics/r18.json"],
++            "R18 display source contract changed")
++    for name, digest in read(display)["after_sha256"].items():
++        require(sha(work / name) == digest, "R18 display implementation changed: " + name)
++    admission = read(port / "peripherals/contract.json")
++    require(admission["default_off"] is True and admission["mmio_access"] is False and
++            admission["touch_driver_implemented"] is False and admission["gpu_driver_implemented"] is False,
++            "Admission must remain default-off and without hardware backends")
++    for name, digest in admission["after_sha256"].items():
++        require(sha(work / name) == digest, "Unexpected peripheral integration: " + name)
++    require(sha(port / "peripherals/kernel.inc") == admission["header_sha256"], "Admission header changed")
++    require(sha(port / "peripherals/boot-options.h") == admission["parser_sha256"] ==
++            sha(root / "maintenance/hakios-lithium/peripherals/boot-options.h"), "Admission parser changed")
++    tests_path = root / "reports/overnight-20261118/accepted-host-tests/passed.json"
++    tests = read(tests_path)
++    for name, digest in tests["source_sha256"].items():
++        require(sha(root / name) == digest, "Previously tested peripheral source changed: " + name)
++    return dict(passed=True, display_sources_unchanged=True, exact_post_r18_port_delta=delta,
++                cmdline=args, peripheral_arguments_absent=True, admission_default_off=True,
++                admission_test_manifest_sha256=sha(tests_path), tested_source_hashes=len(tests["source_sha256"]),
++                hardware_verified=False, display_acceptance_verified=False, device_operations=False)
++
++
++def snapshot_evidence(root, output, evidence):
++    """Keep exact text evidence bytes in the new revision, retaining live guards."""
++    root, output = Path(root).resolve(), Path(output).resolve()
++    require(output != root and output.is_relative_to(root),
++            "Evidence output must be a separate directory inside the repository")
++    saved = {}
++    for name, digest in sorted(evidence.items()):
++        relative = Path(name)
++        require(not relative.is_absolute() and ".." not in relative.parts and relative.parts and
++                relative.parts[0] in {"scripts", "reports", "ports", "config"}, "Unsafe evidence path")
++        original, target = (root / relative).resolve(), (output / "evidence" / relative).resolve()
++        require(original.is_relative_to(root) and target.is_relative_to(output / "evidence"),
++                "Evidence path escapes its source/snapshot directory")
++        require(original != target, "Evidence source must not alias its snapshot")
++        data = original.read_bytes()
++        require(bytes([0]) not in data and hashlib.sha256(data).hexdigest() == digest,
++                "Evidence changed or is not text: " + name)
++        try:
++            data.decode("utf-8")
++        except UnicodeDecodeError as error:
++            raise RuntimeError("Evidence must be UTF-8 text: " + name) from error
++        target.parent.mkdir(parents=True, exist_ok=True)
++        if target.exists():
++            require(target.read_bytes() == data, "Preserve existing evidence snapshot: " + name)
++        else:
++            with target.open("xb") as stream:
++                stream.write(data)
++        require(sha(original) == sha(target) == digest, "Evidence copy/readback changed: " + name)
++        saved[name] = dict(path=str(target.relative_to(root)), sha256=digest)
++    return saved
+diff --git a/scripts/integrate-hakios-ios16-r19-host.py b/scripts/integrate-hakios-ios16-r19-host.py
+new file mode 100644
+index 0000000..dafcce6
+--- /dev/null
++++ b/scripts/integrate-hakios-ios16-r19-host.py
+@@ -0,0 +1,128 @@
++"""Register R19 host provenance without changing the R18 display implementation."""
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[1]
++
++
++def edit(name, pairs):
++    path = ROOT / name
++    text = path.read_text(encoding="utf-8")
++    for old, new in pairs:
++        if text.count(old) != 1:
++            raise RuntimeError(f"{name}: unexpected R19 anchor {old!r}")
++        text = text.replace(old, new, 1)
++    path.write_text(text, encoding="utf-8", newline="\n")
++
++
++def main():
++    edit("scripts/check-hakios-ios16-build.py", [
++        ("import hakios_r18", "import hakios_r18\nimport hakios_r19"),
++        ("            expected.update(hakios_r18.PORT_DELTA)",
++         "            expected.update(hakios_r18.PORT_DELTA)\n"
++         "        if 'patches/0019-lithium-peripheral-admission.patch' in delta:\n"
++         "            hakios_r19.source_checks(hakios.ROOT, work, hakios.inputs(spec))\n"
++         "            expected.update(hakios_r19.PORT_DELTA)"),
++        ("    symbols=subprocess.check_output(['llvm-nm',str(kernel)],text=True)",
++         "    symbols=subprocess.check_output(['llvm-nm',str(kernel)],text=True)\n"
++         "    if (work/'devices/lithium/peripherals/contract.json').exists():\n"
++         "        hakios.require('_lithium_peripheral_worker' in symbols, 'R19 admission worker missing from actual kernel')\n"
++         "        hakios.require(all(token in kernel.read_bytes() for token in (b'LITHIUM TOUCH status=blocked',\n"
++         "            b'LITHIUM GPU status=blocked', b'platform_backend_unverified',\n"
++         "            b'power_smmu_scm_backend_unverified')), 'Actual default-off admission diagnostics missing')"),
++    ])
++    edit("scripts/freeze-hakios-ios16-boot-userspace.py", [
++        ("(3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18)",
++         "(3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19)"),
++    ])
++    edit("scripts/package-hakios-ios16.py", [
++        ("import hakios_r18", "import hakios_r18\nimport hakios_r19"),
++        ("(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18)",
++         "(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19)"),
++        ("    if revision>=18:expected_changes.update(hakios_r18.PORT_DELTA)",
++         "    if revision>=18:expected_changes.update(hakios_r18.PORT_DELTA)\n"
++         "    if revision>=19:\n"
++         "        hakios_r19.source_checks(hakios.ROOT, work, current)\n"
++         "        expected_changes.update(hakios_r19.PORT_DELTA)"),
++        ("(13,14,15,16,17,18)", "(13,14,15,16,17,18,19)"),
++        ("    if revision==18:\n        checks=", "    if revision in (18,19):\n        checks="),
++        ("    budgeter=hakios_r15",
++         "    if revision==19:\n"
++         "        checks=hakios.read(hakios.ROOT/'reports/hakios-ios16-r19-checks.json')\n"
++         "        hakios.require(checks['passed'] and checks['inputs']==current and checks['actual_frozen_command_parser_checked'], 'R19 actual baseline/default-off tests required')\n"
++         "        for name,digest in checks['evidence_sha256'].items():\n"
++         "            hakios.require(hakios.sha(Path(name))==digest, 'R19 evidence changed: '+name)\n"
++         "        cmdline=hakios_r19.command_line(hakios.read(hakios.ROOT/'artifacts/hakios/lithium-ios16/phase4-r18/contract.json')['cmdline'], hakios.read(hakios.ROOT/'artifacts/hakios/lithium-ios16/phase4-r15/contract.json')['cmdline'])\n"
++         "    budgeter=hakios_r15"),
++        ("    if revision==18:\n        for name in", "    if revision in (18,19):\n        for name in"),
++        ("    contract=dict(schema=1",
++         "    if revision==19:\n"
++         "        for name in [*('ports/hakios-lithium/'+p for p in sorted(hakios_r19.PORT_DELTA)),\n"
++         "            'scripts/hakios_r19.py', 'scripts/prepare-hakios-ios16-r19.py',\n"
++         "            'scripts/test-hakios-ios16-r19.py', 'scripts/test-hakios-ios16-r19-contract.py',\n"
++         "            'scripts/test-hakios-ios16-r19-snapshots.py', 'scripts/test-hakios-ios16-r19-package.py',\n"
++         "            'scripts/run-hakios-ios16-r19-regressions.py', 'scripts/integrate-hakios-ios16-r19-host.py',\n"
++         "            'scripts/boot-hakios-ios16.py', 'scripts/test-hakios-ios16-offline-preflight.py',\n"
++         "            'scripts/run-wsl-limited.ps1', 'reports/hakios-ios16-r19-prepared-sources.json',\n"
++         "            'reports/hakios-ios16-r19-checks.json', 'reports/overnight-20261118/accepted-host-tests/passed.json']:\n"
++         "            evidence[name]=hakios.sha(hakios.ROOT/name)\n"
++         "        evidence_snapshots=hakios_r19.snapshot_evidence(hakios.ROOT, out, evidence)\n"
++         "    contract=dict(schema=1"),
++        ("    if revision==18:\n        contract.update(display_profile_contract=",
++         "    if revision in (18,19):\n        contract.update(display_profile_contract="),
++        ("    hakios.write(out/'contract.json',contract)",
++         "    if revision==19:\n"
++         "        contract.update(provenance_parent_revision=18, admission_default_off=True,\n"
++         "            hardware_backends_implemented=False, evidence_snapshots=evidence_snapshots,\n"
++         "            evidence_snapshot_policy='Exact text bytes retained alongside unchanged live guards')\n"
++         "    hakios.write(out/'contract.json',contract)"),
++    ])
++    p = ROOT / "scripts/run-wsl-limited.ps1"
++    text = p.read_text(encoding="utf-8")
++    tasks = ["prepare", "checks", "review", "regressions", "userspace",
++             "build-check", "freeze", "package", "package-checks"]
++    anchor = "'hakios-r18-package-checks', 'kernel'"
++    if text.count(anchor) != 1:
++        raise RuntimeError("R19 task allowlist anchor changed")
++    text = text.replace(anchor, "'hakios-r18-package-checks', " +
++                        ", ".join("'hakios-r19-" + x + "'" for x in tasks) + ", 'kernel'", 1)
++    begin = text.index("if ($Task -like 'hakios-r18-*') {")
++    end = text.index("if ($Task -like 'hakios-r12-*') {", begin)
++    text = text[:end] + text[begin:end].replace("r18", "r19") + text[end:]
++    text = text.replace("if ($Task -notlike 'hakios-r18-*'",
++                        "if ($Task -notlike 'hakios-r19-*' -and $Task -notlike 'hakios-r18-*'", 1)
++    text = text.replace("& wsl.exe @arguments",
++                        "if ($Task -in @('hakios-r19-userspace', 'hakios-r19-build-check')) { $arguments += '--phase4' }\n"
++                        "if ($Task -in @('hakios-r19-freeze', 'hakios-r19-package')) { $arguments += @('--revision', '19') }\n"
++                        "& wsl.exe @arguments", 1)
++    p.write_text(text, encoding="utf-8", newline="\n")
++    # The old regex matched symbol annotations (for example selftest.cases).
++    # Reuse the already-tested mnemonic/operand parser and run its controls.
++    for name, label in (("scripts/check-hakios-ios16-build.py", "checked_instruction_filter"),
++                        ("scripts/package-hakios-ios16.py", "checked_package_instruction_filter")):
++        old_filter = next(line for line in (ROOT / name).read_text().splitlines()
++                          if line.startswith("    forbidden=re.compile("))
++        new_filter = ("    filter_path=hakios.ROOT/'scripts/check-hakios-lithium-peripheral-build.py'\n"
++                      f"    filter_spec=importlib.util.spec_from_file_location('{label}',filter_path)\n"
++                      "    isa=importlib.util.module_from_spec(filter_spec);filter_spec.loader.exec_module(isa)\n"
++                      "    filter_controls=isa.check_filter_controls()")
++        edit(name, [(old_filter, new_filter),
++                    ("if forbidden.search(line.split('//')[0]):errors.append(line.strip())",
++                     "if isa.instruction_rejected(line):errors.append(line.strip())")])
++    edit("scripts/check-hakios-ios16-build.py", [
++        ("    result=dict(passed=True,phase=phase,inputs=hakios.inputs(spec),instruction_scans=scans,",
++         "    result=dict(passed=True,phase=phase,inputs=hakios.inputs(spec),instruction_scans=scans,\n"
++         "        instruction_filter_controls=filter_controls,instruction_filter_sha256=hakios.sha(filter_path),"),
++    ])
++    edit("scripts/package-hakios-ios16.py", [
++        ("            'scripts/boot-hakios-ios16.py', 'scripts/test-hakios-ios16-offline-preflight.py',",
++         "            'scripts/boot-hakios-ios16.py', 'scripts/test-hakios-ios16-offline-preflight.py',\n"
++         "            'scripts/check-hakios-lithium-peripheral-build.py',"),
++        ("        new_instruction_checks=scans,sha256_literal=literal,stack_contract=stack,",
++         "        new_instruction_checks=scans,sha256_literal=literal,stack_contract=stack,\n"
++         "        instruction_filter_controls=filter_controls,instruction_filter_sha256=hakios.sha(filter_path),"),
++    ])
++    print("Registered R19 exact-source delta, live evidence plus snapshots, normal capped tasks")
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/scripts/prepare-hakios-ios16-r19.py b/scripts/prepare-hakios-ios16-r19.py
+new file mode 100644
+index 0000000..888a1d3
+--- /dev/null
++++ b/scripts/prepare-hakios-ios16-r19.py
+@@ -0,0 +1,26 @@
++"""Check R19 source preservation; no runtime edit or device command."""
++from pathlib import Path
++import hakios
++import hakios_r19
++
++
++def main():
++    spec = hakios.read(hakios.MANIFEST)
++    hakios.policy(spec)
++    hakios.resource_check()
++    work = hakios.verify_workspace(spec)
++    frozen = hakios.ROOT / "artifacts/hakios/lithium-ios16/phase4-r19/contract.json"
++    hakios.require(not frozen.exists(), "Preserve the frozen R19 package")
++    backup = hakios.ROOT / "artifacts/hakios/lithium-ios16/display-r19-before-host-refresh-20261118/backup.json"
++    record = hakios.read(backup)
++    hakios.require(hakios.sha(Path(record["archive_path"])) == record["archive_sha256"], "R19 rollback bytes changed")
++    result = hakios_r19.source_checks(hakios.ROOT, work, hakios.inputs(spec))
++    result.update(revision=19, inputs=hakios.inputs(spec), rollback_record_sha256=hakios.sha(backup),
++                  source_script_sha256=hakios.sha(Path(__file__)),
++                  purpose="Refresh normal build evidence; retain exact R18 display and R15 arguments")
++    hakios.write(hakios.ROOT / "reports/hakios-ios16-r19-prepared-sources.json", result)
++    print("PASS R19 source relationship and rollback; no phone or runtime source changes")
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/scripts/run-hakios-ios16-r19-regressions.py b/scripts/run-hakios-ios16-r19-regressions.py
+new file mode 100644
+index 0000000..db59cad
+--- /dev/null
++++ b/scripts/run-hakios-ios16-r19-regressions.py
+@@ -0,0 +1,14 @@
++"""Run prior display/system regressions plus the default-off R19 integration checks."""
++import subprocess
++import sys
++import hakios
++
++
++def main():
++    for name in ("run-hakios-ios16-r18-regressions.py", "test-hakios-ios16-r19.py",
++                 "test-hakios-lithium-peripherals.py", "test-hakios-ios16-display-log.py"):
++        subprocess.run([sys.executable, "-B", str(hakios.ROOT / "scripts" / name)], check=True)
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/scripts/test-hakios-ios16-offline-preflight.py b/scripts/test-hakios-ios16-offline-preflight.py
+new file mode 100644
+index 0000000..dd429c6
+--- /dev/null
++++ b/scripts/test-hakios-ios16-offline-preflight.py
+@@ -0,0 +1,355 @@
++#!/usr/bin/env python3
++"""Host-only regression harness; all package/device data and writes are in memory.
++
++Run with python -B scripts/test-hakios-ios16-offline-preflight.py.
++This does not establish readiness of the real package or authorize device work.
++"""
++import argparse
++import builtins
++from contextlib import ExitStack, redirect_stderr, redirect_stdout
++from copy import deepcopy
++import io
++from pathlib import Path, PurePosixPath
++import subprocess
++import sys
++import time
++from types import ModuleType, SimpleNamespace
++import unittest
++from unittest.mock import patch
++
++
++SCRIPT = Path(__file__).with_name('boot-hakios-ios16.py')
++SUBJECT = compile(SCRIPT.read_bytes(), str(SCRIPT), 'exec')
++READY = 'reports/hakios-ios16-boot-ready.json'
++CONTRACT = 'artifacts/frozen.json'
++PACKAGE = 'reports/hakios-ios16-package-host-checks.json'
++TARGET = 'reports/local/hakios-device-target.json'
++HOST = 'reports/hakios-ios16-host-checks.json'
++GUARD = 'reports/local/ios16-r19-boot-intent.json'
++
++
++class CopyBoundary(RuntimeError):
++    """Stop an entirely simulated boot path before any copy, intent or capture."""
++
++
++class Fixture:
++    def __init__(self, simulate_device=False):
++        self.simulate_device = simulate_device
++        self.consumed = False
++        self.usb_available = False
++        self.fail_stage = None
++        self.events = []
++        self.commands = []
++        self.directories = []
++        self.writes = []
++        self.copy_attempts = []
++        self.stdout, self.stderr = io.StringIO(), io.StringIO()
++        fixture = self
++
++        class FixturePath(PurePosixPath):
++            """No method on this path type accesses the host filesystem."""
++            def exists(self):
++                fixture.events.append(('exists', str(self)))
++                if self == fixture.root / GUARD:
++                    return fixture.consumed
++                raise AssertionError('Unexpected existence check: ' + str(self))
++
++            def mkdir(self, **kwargs):
++                fixture.directories.append(self)
++
++            def stat(self):
++                if self != fixture.root / 'artifacts/boot.img':
++                    raise AssertionError('Unexpected stat: ' + str(self))
++                fixture.events.append(('stat', str(self)))
++                return SimpleNamespace(st_size=512)
++
++            def is_file(self):
++                fixture.events.append(('is_file', str(self)))
++                if str(self) != 'E:/IOS-MIX1-artifacts/host-usb-venv/Scripts/python.exe':
++                    raise AssertionError('Unexpected file check: ' + str(self))
++                return fixture.usb_available
++
++            def open(self, *args, **kwargs):
++                return fixture.reject_io(self)
++
++            write_text = open
++            write_bytes = open
++            touch = open
++
++        self.path_type = FixturePath
++        self.root = FixturePath('/offline-fixture')
++        self.inputs = {'fixture_source': 'current'}
++        ready = dict(passed=True, bootable_package_ready=True, inputs=self.inputs,
++                     frozen_contract_path=CONTRACT, evidence_sha256={'reports/evidence.json': 'evidence-sha'},
++                     image_path='artifacts/boot.img', image_sha256='image-sha', revision=19,
++                     cmdline='fixture-only')
++        self.documents = {
++            'config/manifest.json': {'fixture_manifest': True},
++            'project.json': {'migration': {'phase4_approved': True}},
++            READY: ready, CONTRACT: deepcopy(ready),
++            PACKAGE: dict(passed=True, image_sha256='image-sha',
++                          package_script_sha256='package-sha', test_script_sha256='test-sha'),
++            TARGET: dict(serial='fixture-serial', product='fixture-product', userdata_bytes=4096),
++            HOST: dict(passed=True, evidence_sha256={'capture_script': 'capture-sha'}),
++        }
++        self.hashes = {
++            'reports/evidence.json': 'evidence-sha', 'artifacts/boot.img': 'image-sha',
++            'scripts/package-hakios-ios16.py': 'package-sha',
++            'scripts/test-hakios-ios16-package.py': 'test-sha',
++            'scripts/capture-hakios-usb.py': 'capture-sha',
++        }
++        self.responses = {
++            ('devices',): (0, 'fixture-serial fastboot\n', ''),
++            ('getvar', 'product'): (0, '', 'product: fixture-product\n'),
++            ('oem', 'device-info'): (0, '', 'Device unlocked: true\n'),
++            ('getvar', 'partition-size:userdata'): (0, '', 'partition-size:userdata: 1000\n'),
++            ('getvar', 'battery-soc-ok'): (0, '', 'battery-soc-ok: yes\n'),
++            ('getvar', 'max-download-size'): (0, '', 'max-download-size: 1000\n'),
++        }
++
++    @staticmethod
++    def reject_io(*args, **kwargs):
++        raise AssertionError('Host filesystem I/O tripwire')
++
++    @staticmethod
++    def reject_process(*args, **kwargs):
++        raise AssertionError('Real subprocess tripwire: no commands may run')
++
++    @staticmethod
++    def require(condition, message):
++        if not condition:
++            raise RuntimeError(message)
++
++    def stage(self, name):
++        self.events.append((name,))
++        self.require(self.fail_stage != name, 'Fixture ' + name + ' rejected')
++
++    def read(self, path):
++        name = path.relative_to(self.root).as_posix()
++        self.events.append(('read', name))
++        return deepcopy(self.documents[name])
++
++    def sha(self, path):
++        name = path.relative_to(self.root).as_posix()
++        self.events.append(('sha', name))
++        return self.hashes[name]
++
++    def write(self, path, value):
++        self.writes.append((path.relative_to(self.root).as_posix(), deepcopy(value)))
++
++    def command(self, argv, **kwargs):
++        # This is an in-memory emulator, never a forwarding subprocess wrapper.
++        if not self.simulate_device:
++            return self.reject_process(argv)
++        argv = tuple(map(str, argv))
++        if argv[0] != 'C:/platform-tools/fastboot.exe':
++            raise AssertionError('Unexpected simulated executable: ' + repr(argv))
++        self.commands.append(argv)
++        if argv[1:] == ('devices',):
++            key = ('devices',)
++        else:
++            if argv[1:3] != ('-s', 'fixture-serial'):
++                raise AssertionError('Simulated command lacks exact target serial: ' + repr(argv))
++            key = argv[3:]
++        if key not in self.responses:
++            raise AssertionError('Unexpected simulated command: ' + repr(argv))
++        code, stdout, stderr = self.responses[key]
++        return SimpleNamespace(returncode=code, stdout=stdout, stderr=stderr)
++
++    def copyfile(self, source, destination):
++        self.copy_attempts.append((source, destination))
++        raise CopyBoundary('All simulated pre-copy boot gates passed')
++
++    def invoke(self, *args):
++        hakios = ModuleType('hakios')
++        hakios.ROOT, hakios.MANIFEST = self.root, self.root / 'config/manifest.json'
++        hakios.read, hakios.sha, hakios.write = self.read, self.sha, self.write
++        hakios.require = self.require
++        hakios.policy = lambda spec: self.stage('policy')
++        hakios.frozen_check = lambda: self.stage('frozen_check')
++        hakios.inputs = lambda spec: deepcopy(self.inputs)
++        pathlib = ModuleType('pathlib')
++        pathlib.Path = self.path_type
++        child = ModuleType('subprocess')
++        child.run, child.Popen = self.command, self.reject_process
++        child.STDOUT, child.CREATE_NO_WINDOW = -2, 0
++        shutil = ModuleType('shutil')
++        shutil.copyfile = self.copyfile
++        # argparse uses shutil's terminal-size helper even though the subject only copies.
++        shutil.get_terminal_size = lambda fallback=(80, 24): SimpleNamespace(columns=fallback[0], lines=fallback[1])
++        namespace = {'__name__': 'isolated_offline_preflight', '__file__': str(SCRIPT)}
++        with ExitStack() as stack:
++            stack.enter_context(patch.dict(sys.modules, hakios=hakios, pathlib=pathlib,
++                                          subprocess=child, shutil=shutil))
++            stack.enter_context(patch.object(sys, 'argv', [str(SCRIPT), *args]))
++            stack.enter_context(patch.object(builtins, 'open', side_effect=self.reject_io))
++            stack.enter_context(patch.object(time, 'sleep', side_effect=self.reject_process))
++            for name in ('run', 'Popen', 'call', 'check_call', 'check_output'):
++                stack.enter_context(patch.object(subprocess, name, side_effect=self.reject_process))
++            stack.enter_context(redirect_stdout(self.stdout))
++            stack.enter_context(redirect_stderr(self.stderr))
++            exec(SUBJECT, namespace)
++            return namespace['main']()
++
++
++class OfflinePreflightTests(unittest.TestCase):
++    def assert_before_target(self, fixture):
++        self.assertNotIn(('read', TARGET), fixture.events)
++        self.assertEqual(fixture.directories, [])
++        self.assertEqual(fixture.writes, [])
++        self.assertEqual(fixture.commands, [])
++        self.assertEqual(fixture.copy_attempts, [])
++
++    def test_offline_returns_after_host_checks_before_target_or_side_effects(self):
++        fixture = Fixture()
++        del fixture.documents[TARGET]
++        del fixture.documents[HOST]
++        self.assertIsNone(fixture.invoke('--offline'))
++        self.assert_before_target(fixture)
++        self.assertEqual(fixture.stdout.getvalue(),
++                         'PASS: offline iOS16 R19 package readiness (host checks only).\n')
++        self.assertEqual(fixture.stderr.getvalue(), '')
++        self.assertEqual(fixture.events, [
++            ('read', 'config/manifest.json'), ('policy',), ('frozen_check',),
++            ('read', 'project.json'), ('read', READY), ('read', CONTRACT),
++            ('sha', 'reports/evidence.json'), ('sha', 'artifacts/boot.img'),
++            ('read', PACKAGE), ('sha', 'scripts/package-hakios-ios16.py'),
++            ('sha', 'scripts/test-hakios-ios16-package.py'),
++            ('exists', str(fixture.root / GUARD)),
++        ])
++
++    def test_modes_are_mutually_exclusive_before_any_validation(self):
++        for args in (('--offline', '--boot'), ('--boot', '--offline')):
++            with self.subTest(args=args):
++                fixture = Fixture()
++                with self.assertRaises(SystemExit) as error:
++                    fixture.invoke(*args)
++                self.assertEqual(error.exception.code, 2)
++                self.assertIn('not allowed with argument', fixture.stderr.getvalue())
++                self.assertEqual(fixture.events, [])
++                self.assert_before_target(fixture)
++
++    def test_host_validation_failures_still_reject_every_mode(self):
++        cases = [
++            ('policy', lambda f: setattr(f, 'fail_stage', 'policy'), 'Fixture policy rejected'),
++            ('frozen source', lambda f: setattr(f, 'fail_stage', 'frozen_check'), 'Fixture frozen_check rejected'),
++            ('phase4', lambda f: f.documents['project.json']['migration'].update(phase4_approved=False), 'Phase4 not authorized'),
++            ('passed', lambda f: f.documents[READY].update(passed=False), 'source/provenance differs'),
++            ('bootable', lambda f: f.documents[READY].update(bootable_package_ready=False), 'source/provenance differs'),
++            ('inputs', lambda f: f.documents[READY].update(inputs={}), 'source/provenance differs'),
++            ('contract', lambda f: f.documents[CONTRACT].update(revision=18), 'Frozen package contract changed'),
++            ('evidence', lambda f: f.hashes.update({'reports/evidence.json': 'stale'}), 'Frozen evidence changed'),
++            ('image', lambda f: f.hashes.update({'artifacts/boot.img': 'stale'}), 'Boot image changed'),
++            ('package passed', lambda f: f.documents[PACKAGE].update(passed=False), 'real-package rejection checks required'),
++            ('package image', lambda f: f.documents[PACKAGE].update(image_sha256='stale'), 'real-package rejection checks required'),
++            ('package script', lambda f: f.hashes.update({'scripts/package-hakios-ios16.py': 'stale'}), 'real-package rejection checks required'),
++            ('package test', lambda f: f.hashes.update({'scripts/test-hakios-ios16-package.py': 'stale'}), 'real-package rejection checks required'),
++        ]
++        for name, corrupt, message in cases:
++            for args in (('--offline',), (), ('--boot',)):
++                with self.subTest(check=name, args=args):
++                    fixture = Fixture()
++                    corrupt(fixture)
++                    with self.assertRaisesRegex(RuntimeError, message):
++                        fixture.invoke(*args)
++                    self.assert_before_target(fixture)
++                    self.assertEqual(fixture.stdout.getvalue(), '')
++
++    def test_consumed_revision_guard_remains_before_target_in_every_mode(self):
++        for args in (('--offline',), (), ('--boot',)):
++            with self.subTest(args=args):
++                fixture = Fixture()
++                fixture.consumed = True
++                with self.assertRaisesRegex(RuntimeError, 'already invoked'):
++                    fixture.invoke(*args)
++                self.assert_before_target(fixture)
++
++    def test_subprocess_tripwire_rejects_accidental_device_path(self):
++        fixture = Fixture()
++        with self.assertRaisesRegex(AssertionError, 'Real subprocess tripwire'):
++            fixture.invoke()
++        self.assertEqual(fixture.commands, [])
++
++    def test_default_retains_all_checks_and_no_boot_gate(self):
++        fixture = Fixture(simulate_device=True)
++        self.assertIsNone(fixture.invoke())
++        self.assertEqual([command[1:] for command in fixture.commands], [
++            ('devices',), ('-s', 'fixture-serial', 'getvar', 'product'),
++            ('-s', 'fixture-serial', 'oem', 'device-info'),
++            ('-s', 'fixture-serial', 'getvar', 'partition-size:userdata'),
++            ('-s', 'fixture-serial', 'getvar', 'battery-soc-ok'),
++            ('-s', 'fixture-serial', 'getvar', 'max-download-size'),
++        ])
++        self.assertEqual(len(fixture.directories), 1)
++        self.assertNotIn(('read', HOST), fixture.events)
++        self.assertEqual(fixture.copy_attempts, [])
++        report = fixture.writes[-1][1]
++        self.assertTrue(report['identity_verified'])
++        self.assertFalse(report['temporary_boot_issued'])
++        self.assertIn('No boot issued.', fixture.stdout.getvalue())
++
++    def test_disconnected_or_wrong_serial_never_reaches_identity_or_boot(self):
++        for devices in ('', 'other-serial fastboot\n', 'fixture-serial adb\n'):
++            for args in ((), ('--boot',)):
++                with self.subTest(devices=devices, args=args):
++                    fixture = Fixture(simulate_device=True)
++                    fixture.responses[('devices',)] = (0, devices, '')
++                    fixture.invoke(*args)
++                    self.assertEqual(len(fixture.commands), 1)
++                    self.assertEqual(fixture.writes[-1][1]['outcome'], 'waiting_fastboot')
++                    self.assertFalse(fixture.writes[-1][1]['temporary_boot_issued'])
++                    self.assertNotIn(('read', HOST), fixture.events)
++                    self.assertEqual(fixture.copy_attempts, [])
++
++    def test_identity_unlock_capacity_battery_and_window_fail_closed(self):
++        cases = [
++            (('getvar', 'product'), (0, '', 'product: other'), 'product differs', 2),
++            (('getvar', 'product'), (1, '', 'product: fixture-product'), 'query failed', 2),
++            (('getvar', 'product'), (0, '', ''), 'query failed', 2),
++            (('oem', 'device-info'), (0, '', 'Device unlocked: false'), 'not unlocked', 3),
++            (('oem', 'device-info'), (1, '', 'Device unlocked: true'), 'not unlocked', 3),
++            (('getvar', 'partition-size:userdata'), (0, '', 'partition-size:userdata: 2000'), 'capacity changed', 4),
++            (('getvar', 'battery-soc-ok'), (0, '', 'battery-soc-ok: no'), 'Battery not ready', 5),
++            (('getvar', 'max-download-size'), (0, '', 'max-download-size: 100'), 'download window', 6),
++        ]
++        for query, response, message, count in cases:
++            for args in ((), ('--boot',)):
++                with self.subTest(query=query, response=response, args=args):
++                    fixture = Fixture(simulate_device=True)
++                    fixture.responses[query] = response
++                    with self.assertRaisesRegex(RuntimeError, message):
++                        fixture.invoke(*args)
++                    self.assertEqual(len(fixture.commands), count)
++                    self.assertNotIn(('read', HOST), fixture.events)
++                    self.assertEqual(fixture.copy_attempts, [])
++                    self.assertFalse(any(path == GUARD for path, value in fixture.writes))
++
++    def test_boot_still_requires_decoder_checks_and_usb_environment(self):
++        for failure in ('decoder passed', 'decoder source', 'USB environment'):
++            with self.subTest(failure=failure):
++                fixture = Fixture(simulate_device=True)
++                if failure == 'decoder passed':
++                    fixture.documents[HOST]['passed'] = False
++                elif failure == 'decoder source':
++                    fixture.hashes['scripts/capture-hakios-usb.py'] = 'stale'
++                message = 'USB host environment missing' if failure == 'USB environment' else 'USB decoder checks required'
++                with self.assertRaisesRegex(RuntimeError, message):
++                    fixture.invoke('--boot')
++                self.assertEqual(len(fixture.commands), 6)
++                self.assertEqual(fixture.copy_attempts, [])
++                self.assertFalse(fixture.writes[-1][1]['temporary_boot_issued'])
++
++    def test_boot_reaches_copy_only_after_all_simulated_guards(self):
++        fixture = Fixture(simulate_device=True)
++        fixture.usb_available = True
++        with self.assertRaises(CopyBoundary):
++            fixture.invoke('--boot')
++        self.assertEqual(len(fixture.commands), 6)
++        self.assertIn(('read', HOST), fixture.events)
++        self.assertEqual(len(fixture.copy_attempts), 1)
++        self.assertFalse(fixture.writes[-1][1]['temporary_boot_issued'])
++        self.assertFalse(any(path == GUARD for path, value in fixture.writes))
++
++
++if __name__ == '__main__':
++    unittest.main(verbosity=2)
+diff --git a/scripts/test-hakios-ios16-r19-contract.py b/scripts/test-hakios-ios16-r19-contract.py
+new file mode 100644
+index 0000000..b166f4c
+--- /dev/null
++++ b/scripts/test-hakios-ios16-r19-contract.py
+@@ -0,0 +1,198 @@
++"""Bounded, host-only tests using synthetic R19 contract inputs."""
++
++import unittest
++
++from hakios_r19 import command_line, validate_delta
++
++
++# Independent expectations: do not derive fixtures from the helper's allowlist.
++ADDITIONS = (
++    "patches/0019-lithium-peripheral-admission.patch",
++    "peripherals/boot-options.h",
++    "peripherals/contract.json",
++    "peripherals/kernel.inc",
++)
++REQUIRED_ARGS = (
++    "bootcpu=1",
++    "cpus=1",
++    "ufs=2",
++    "root_apfs=ufs_userdata",
++    "var_hfs=ufs_darwin_data",
++    "ufs_write=1",
++    "lithiumusb=2",
++    "gl=0",
++    "metal=0",
++    "fbwidth=750",
++    "fbheight=1334",
++    "loader_return_after=10800",
++)
++BASELINE = (
++    "-v serial=3 keepsyms=1 debug=0x14e "
++    + " ".join(REQUIRED_ARGS)
++    + " fsdiag=1 diagnostic_budget=32"
++)
++
++
++class ValidateDeltaTests(unittest.TestCase):
++    def setUp(self):
++        self.prior = {
++            "diagnostics/existing.h": "1" * 64,
++            "patches/0001-existing.patch": "2" * 64,
++        }
++        self.current = dict(self.prior)
++        self.current.update({name: "3" * 64 for name in ADDITIONS})
++
++    def test_accepts_exactly_four_additions_without_mutating_inputs(self):
++        original_prior = dict(self.prior)
++        original_current = dict(self.current)
++        self.assertEqual(validate_delta(self.prior, self.current), sorted(ADDITIONS))
++        self.assertEqual(self.prior, original_prior)
++        self.assertEqual(self.current, original_current)
++
++    def test_rejects_extra_addition(self):
++        self.current["peripherals/unreviewed.inc"] = "4" * 64
++        with self.assertRaises(RuntimeError):
++            validate_delta(self.prior, self.current)
++
++    def test_rejects_altered_existing_source(self):
++        self.current["diagnostics/existing.h"] = "4" * 64
++        with self.assertRaises(RuntimeError):
++            validate_delta(self.prior, self.current)
++
++    def test_rejects_removed_existing_source(self):
++        del self.current["diagnostics/existing.h"]
++        with self.assertRaises(RuntimeError):
++            validate_delta(self.prior, self.current)
++
++    def test_rejects_missing_admission_addition(self):
++        for name in ADDITIONS:
++            with self.subTest(name=name):
++                current = dict(self.current)
++                del current[name]
++                with self.assertRaises(RuntimeError):
++                    validate_delta(self.prior, current)
++
++    def test_rejects_replacing_preexisting_admission_name(self):
++        for name in ADDITIONS:
++            with self.subTest(name=name):
++                prior = dict(self.prior)
++                prior[name] = "4" * 64
++                # The delta still has exactly four names; one is a replacement.
++                with self.assertRaises(RuntimeError):
++                    validate_delta(prior, self.current)
++
++
++class CommandLineTests(unittest.TestCase):
++    def assert_changed_option_rejected(self, original, replacement):
++        self.assertEqual(BASELINE.split().count(original), 1)
++        changed = BASELINE.replace(original, replacement, 1)
++        with self.subTest(baseline="retained"):
++            with self.assertRaises(RuntimeError):
++                command_line(changed, BASELINE)
++        # Matching strings must still satisfy the required option values.
++        with self.subTest(baseline="changed"):
++            with self.assertRaises(RuntimeError):
++                command_line(changed, changed)
++
++    def test_returns_exact_full_retained_baseline(self):
++        self.assertEqual(command_line(BASELINE, BASELINE), BASELINE)
++        spaced = "  " + BASELINE.replace(" ", " \t", 1) + " \n"
++        self.assertEqual(command_line(spaced, spaced), spaced)
++
++    def test_rejects_whitespace_only_changes_relative_to_baseline(self):
++        variants = (
++            " " + BASELINE,
++            BASELINE + " ",
++            BASELINE.replace(" ", "  ", 1),
++            BASELINE.replace(" ", "\t", 1),
++            BASELINE.replace(" ", "\n", 1),
++        )
++        for changed in variants:
++            with self.subTest(changed=changed):
++                self.assertEqual(changed.split(), BASELINE.split())
++                with self.assertRaises(RuntimeError):
++                    command_line(changed, BASELINE)
++
++    def test_rejects_changed_bootcpu_and_cpus(self):
++        for original, replacement in (("bootcpu=1", "bootcpu=2"), ("cpus=1", "cpus=3")):
++            with self.subTest(option=original):
++                self.assert_changed_option_rejected(original, replacement)
++
++    def test_rejects_changed_return_timer(self):
++        self.assert_changed_option_rejected("loader_return_after=10800", "loader_return_after=60")
++
++    def test_rejects_changed_render_options(self):
++        for original, replacement in (
++            ("fbwidth=750", "fbwidth=1080"),
++            ("fbheight=1334", "fbheight=2040"),
++            ("gl=0", "gl=1"),
++            ("metal=0", "metal=1"),
++        ):
++            with self.subTest(option=original):
++                self.assert_changed_option_rejected(original, replacement)
++
++    def test_rejects_changed_ufs_options(self):
++        for original, replacement in (
++            ("ufs=2", "ufs=1"),
++            ("root_apfs=ufs_userdata", "root_apfs=synthetic_root"),
++            ("var_hfs=ufs_darwin_data", "var_hfs=synthetic_data"),
++            ("ufs_write=1", "ufs_write=0"),
++            ("lithiumusb=2", "lithiumusb=0"),
++        ):
++            with self.subTest(option=original):
++                self.assert_changed_option_rejected(original, replacement)
++
++    def test_rejects_duplicated_required_options(self):
++        for token in REQUIRED_ARGS:
++            with self.subTest(token=token):
++                duplicated = BASELINE + " " + token
++                with self.assertRaises(RuntimeError):
++                    command_line(duplicated, duplicated)
++
++    def test_rejects_conflicting_duplicate_required_options(self):
++        for token in ("bootcpu=2", "cpus=3"):
++            with self.subTest(token=token):
++                duplicated = BASELINE + " " + token
++                with self.assertRaises(RuntimeError):
++                    command_line(duplicated, duplicated)
++
++    def test_rejects_missing_required_options(self):
++        for token in REQUIRED_ARGS:
++            with self.subTest(token=token):
++                missing = " ".join(word for word in BASELINE.split() if word != token)
++                with self.assertRaises(RuntimeError):
++                    command_line(missing, missing)
++
++    def test_rejects_non_string_inputs(self):
++        for value in (None, False, 19, b"synthetic args", [], {}):
++            with self.subTest(value=value):
++                with self.assertRaises(RuntimeError):
++                    command_line(value, BASELINE)
++                with self.assertRaises(RuntimeError):
++                    command_line(BASELINE, value)
++                with self.assertRaises(RuntimeError):
++                    command_line(value, value)
++
++    def test_rejects_new_touch_and_gpu_options_even_disabled(self):
++        for name in ("touch", "touch_log", "touch_poll", "gpu_probe", "gpu_stage", "gpu_wd"):
++            for value in (0, 1):
++                with self.subTest(option=name, value=value):
++                    added = BASELINE + " " + name + "=" + str(value)
++                    with self.assertRaises(RuntimeError):
++                        command_line(added, BASELINE)
++                    with self.assertRaises(RuntimeError):
++                        command_line(added, added)
++
++    def test_rejects_changes_to_diagnostics_and_order(self):
++        variants = (
++            BASELINE.replace("diagnostic_budget=32", "diagnostic_budget=64"),
++            " ".join(reversed(BASELINE.split())),
++        )
++        for changed in variants:
++            with self.subTest(changed=changed):
++                with self.assertRaises(RuntimeError):
++                    command_line(changed, BASELINE)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/scripts/test-hakios-ios16-r19-package.py b/scripts/test-hakios-ios16-r19-package.py
+new file mode 100644
+index 0000000..8e40b5f
+--- /dev/null
++++ b/scripts/test-hakios-ios16-r19-package.py
+@@ -0,0 +1,270 @@
++"""Read back the frozen R19 image and its live/snapshotted host evidence."""
++import hashlib
++import importlib.util
++from pathlib import Path, PurePosixPath, PureWindowsPath
++import struct
++import subprocess
++import sys
++import zlib
++
++import hakios
++import hakios_r19
++
++
++R18_IMAGE_SHA256 = '8d5aa292bb747f3e5022de7a9fa5adee3bb9422d8fa296f4b6a376ca59a973bd'
++R18_CONTRACT_SHA256 = '2220293e49729357f66971adc5ff15dfb493f686c7a400676c1227b68ed53599'
++DISPLAY_CONTRACT = 'ports/hakios-lithium/diagnostics/r18.json'
++CHECKER = 'scripts/test-hakios-ios16-r19-package.py'
++PAYLOAD_KEYS = {'kernel', 'ramdisk', 'resident', 'cmdline', 'kernel.ver'}
++
++
++def digest(data):
++    return hashlib.sha256(data).hexdigest()
++
++
++def relative_path(name):
++    """Reject both Windows and POSIX escapes, irrespective of the host OS."""
++    hakios.require(isinstance(name, str) and name and '\0' not in name and ':' not in name,
++                   'Unsafe evidence path: ' + repr(name))
++    name = name.replace('\\', '/')
++    windows = PureWindowsPath(name)
++    parts = name.split('/')
++    hakios.require(not windows.drive and not windows.root and
++                   not PurePosixPath(name).is_absolute() and
++                   all(part not in ('', '.', '..') for part in parts),
++                   'Unsafe evidence path: ' + name)
++    return Path(*parts)
++
++
++def contained_file(root, name):
++    root = Path(root).resolve(strict=True)
++    path = (root / relative_path(name)).resolve(strict=True)
++    hakios.require(path.is_relative_to(root) and path.is_file(),
++                   'Evidence path escapes its directory: ' + name)
++    return path
++
++
++def verify_evidence(root, out, ready):
++    root, out = Path(root).resolve(strict=True), Path(out).resolve(strict=True)
++    evidence, snapshots = ready['evidence_sha256'], ready['evidence_snapshots']
++    hakios.require(isinstance(evidence, dict) and evidence and isinstance(snapshots, dict) and
++                   set(evidence) == set(snapshots), 'Incomplete evidence snapshot mapping')
++    hakios.require({CHECKER, DISPLAY_CONTRACT, 'scripts/hakios_r19.py',
++                    'reports/hakios-ios16-boot-userspace-r19.json'} <= set(evidence),
++                   'R19 evidence must include its checker, helper, display and boot volumes')
++    snapshot_root = (out / 'evidence').resolve(strict=True)
++    hakios.require(out.is_relative_to(root) and snapshot_root.is_relative_to(out),
++                   'Evidence snapshot directory escapes the frozen package')
++    seen = set()
++    for name, expected in evidence.items():
++        relative = relative_path(name)
++        hakios.require(relative.parts[0] in {'scripts', 'reports', 'ports', 'config'},
++                       'Unexpected evidence source directory: ' + name)
++        hakios.require(isinstance(expected, str) and len(expected) == 64 and
++                       all(char in '0123456789abcdef' for char in expected),
++                       'Invalid evidence SHA256: ' + name)
++        saved = snapshots[name]
++        hakios.require(isinstance(saved, dict) and set(saved) == {'path', 'sha256'} and
++                       saved['sha256'] == expected, 'Snapshot digest/key mismatch: ' + name)
++        expected_path = out.relative_to(root) / 'evidence' / relative
++        hakios.require(relative_path(saved['path']) == expected_path,
++                       'Snapshot does not correspond to live evidence: ' + name)
++        original = contained_file(root, name)
++        snapshot = contained_file(root, saved['path'])
++        hakios.require(snapshot.is_relative_to(snapshot_root) and original not in seen and
++                       not original.samefile(snapshot), 'Aliased/escaping evidence snapshot: ' + name)
++        seen.add(original)
++        live_bytes, saved_bytes = original.read_bytes(), snapshot.read_bytes()
++        hakios.require(b'\0' not in live_bytes and digest(live_bytes) == expected,
++                       'Package live evidence changed: ' + name)
++        hakios.require(digest(saved_bytes) == expected and saved_bytes == live_bytes,
++                       'Package evidence snapshot changed: ' + name)
++    return len(evidence)
++
++
++def decode_boot(blob):
++    hakios.require(len(blob) >= 4096 and blob[:8] == b'ANDROID!', 'Invalid Android boot header')
++    size, _, ram_size, _, second_size, _, _, page, _, _ = struct.unpack_from('<10I', blob, 8)
++    hakios.require(page == 4096 and size > 0 and ram_size > 0 and second_size == 0,
++                   'Invalid Android boot section sizes')
++    align = lambda value: (value + page - 1) // page * page
++    ram_start = page + align(size)
++    hakios.require(len(blob) == ram_start + align(ram_size), 'Invalid Android boot length')
++    hakios.require(not any(blob[page + size:ram_start]) and
++                   not any(blob[ram_start + ram_size:]), 'Nonzero Android alignment padding')
++    decoder = zlib.decompressobj(31)
++    raw = decoder.decompress(blob[page:page + size]) + decoder.flush()
++    hakios.require(decoder.eof and not decoder.unconsumed_tail, 'Incomplete boot gzip stream')
++    return raw, decoder.unused_data, blob[ram_start:ram_start + ram_size]
++
++
++def payload_readback(raw, payload, symbols):
++    start, end = symbols['xnup'], symbols['xnup_end']
++    padding = (-len(payload)) % 16
++    nop = struct.pack('<I', 0xd503201f)
++    # The integrated assembler fills this code-section boundary with ARM64 NOPs.
++    hakios.require(0 <= start <= end == len(raw) and start % 16 == len(raw) % 16 == 0 and
++                   end - start == len(payload) + padding and padding % len(nop) == 0 and
++                   raw[start:end] == payload + nop * (padding // len(nop)),
++                   'Frozen image XNUP/NOP boundary mismatch')
++    return raw[start:start + len(payload)]
++
++
++def frozen_payload(out, ready, package, stock_header, stock_dtbs):
++    image = out / f'lithium-hakios-ios16-r{ready["revision"]}.img'
++    hakios.require(hakios.sha(image) == ready['image_sha256'], 'Frozen image changed: ' + str(image))
++    blob = image.read_bytes()
++    hakios.require(len(blob) == ready['image_bytes'], 'Frozen image length changed')
++    raw, dtbs, actual_fat = decode_boot(blob)
++    fat = (out / 'loader.fat').read_bytes()
++    hakios.require(raw == (out / 'Image').read_bytes() and dtbs == stock_dtbs and
++                   actual_fat == fat, 'Actual Image/DTB/FAT readback mismatch')
++    package.check_boot(blob, raw, stock_dtbs, fat, stock_header)
++    symbols = {}
++    for line in subprocess.check_output(
++            ['llvm-nm', '--defined-only', '--format=posix', out / 'shim.elf'], text=True).splitlines():
++        fields = line.split()
++        if fields and fields[0] in {'_start', 'fd', 'shim_vectors', 'xnup', 'xnup_end'}:
++            hakios.require(len(fields) >= 3 and fields[0] not in symbols, 'Invalid shim symbols')
++            symbols[fields[0]] = int(fields[2], 16)
++    hakios.require(set(symbols) == {'_start', 'fd', 'shim_vectors', 'xnup', 'xnup_end'} and
++                   symbols['_start'] == 0 and symbols['fd'] == 4096 and
++                   symbols['shim_vectors'] % 2048 == 0 and
++                   symbols['shim_vectors'] + 2048 <= symbols['fd'], 'Invalid frozen shim layout')
++    fd = (out / 'lithium.fd').read_bytes()
++    hakios.require(digest(fd) == ready['fd_sha256'] and
++                   symbols['fd'] + len(fd) <= symbols['xnup'] and
++                   raw[symbols['fd']:symbols['fd'] + len(fd)] == fd, 'Embedded firmware changed')
++    payload = (out / 'payload.bin').read_bytes()
++    actual = payload_readback(raw, payload, symbols)
++    parts = package.payload_entries(actual)
++    hakios.require(set(parts) == PAYLOAD_KEYS and ready['payload_entries'] == {
++        name: dict(bytes=len(data), sha256=digest(data)) for name, data in parts.items()},
++        'XNUP entries differ from frozen size/hash contract')
++    return parts
++
++
++def verify_contract(ready, r15, r18, current):
++    hakios.require(ready['revision'] == 19 and ready['inputs'] == current and
++                   ready['passed'] is True and ready['bootable_package_ready'] is True, 'Wrong R19 source')
++    hakios_r19.validate_delta(r18['inputs']['port_files'], current['port_files'])
++    hakios.require({k: v for k, v in r18['inputs'].items() if k != 'port_files'} ==
++                   {k: v for k, v in current.items() if k != 'port_files'}, 'Non-port baseline changed')
++    hakios.require(ready['bootcpu'] == ready['xnu_cpus'] == 1 and
++                   ready['expected_affinity'] == '0x1', 'Wrong CPU contract')
++    for key in ('observation_policy', 'observation_seconds'):
++        hakios.require(ready[key] == r15[key] == r18[key], 'Timer changed: ' + key)
++    expected = hakios_r19.command_line(r18['cmdline'], r15['cmdline'])
++    hakios.require(ready['cmdline'] == expected and ready['payload_arguments_preserved_from_r15'] is True,
++                   'R19 changed R15/R18 boot arguments')
++    hakios.require(ready['display_profile_contract'] == r18['display_profile_contract'] == DISPLAY_CONTRACT and
++                   ready['render_profile'] == r18['render_profile'] ==
++                   dict(width=750, height=1334, scale=2, subtype=1334, points=[375, 667]),
++                   'R18 display experiment changed')
++    hakios.require(ready['provenance_parent_revision'] == 18 and ready['admission_default_off'] is True and
++                   ready['hardware_backends_implemented'] is False, 'Admission must remain default-off')
++    for key in ('display_acceptance_verified', 'hardware_verified', 'physical_touch_verified',
++                'a530_acceleration_verified', 'ios_boot_issued', 'legacy_7195_used', 'qemu_used'):
++        hakios.require(ready[key] is False, 'Host package must not claim runtime acceptance: ' + key)
++    return expected.encode() + b'\0'
++
++
++def baseline_contracts(root, artifacts):
++    r18_path = artifacts / 'phase4-r18/contract.json'
++    hakios.require(hakios.sha(r18_path) == R18_CONTRACT_SHA256, 'Frozen R18 contract changed')
++    r18 = hakios.read(r18_path)
++    display = contained_file(root, DISPLAY_CONTRACT)
++    hakios.require(hakios.sha(display) == r18['evidence_sha256'][DISPLAY_CONTRACT],
++                   'R18 display source contract changed')
++    backups = hakios.read(display)['backup']['packages']
++    hakios.require(set(backups) == {'15', '16', '17'}, 'Incomplete R15/R16/R17 backup inventory')
++    contracts = {}
++    for rev in (15, 16, 17, 18):
++        out = artifacts / f'phase4-r{rev}'
++        frozen = out / f'lithium-hakios-ios16-r{rev}.img'
++        contract = r18 if rev == 18 else hakios.read(out / 'contract.json')
++        expected = R18_IMAGE_SHA256 if rev == 18 else backups[str(rev)]['sha256']
++        hakios.require(contract['revision'] == rev and contract['image_sha256'] == expected and
++                       relative_path(contract['image_path']) == frozen.relative_to(root) and
++                       hakios.sha(frozen) == expected, 'Baseline image changed: R' + str(rev))
++        if rev != 18:
++            name = backups[str(rev)]['path']
++            if sys.platform == 'linux' and PureWindowsPath(name).drive:
++                windows = PureWindowsPath(name)
++                copy = Path('/mnt') / windows.drive[0].lower() / Path(*windows.parts[1:])
++            else:
++                copy = Path(name)
++            hakios.require(hakios.sha(copy) == expected, 'Baseline backup changed: R' + str(rev))
++        contracts[rev] = contract
++    return contracts
++
++
++def main():
++    spec = hakios.read(hakios.MANIFEST)
++    hakios.resource_check()
++    current = hakios.inputs(spec)
++    root = hakios.ROOT
++    artifacts = root / 'artifacts/hakios/lithium-ios16'
++    out = artifacts / 'phase4-r19'
++    ready = hakios.read(out / 'contract.json')
++    baselines = baseline_contracts(root, artifacts)
++    expected_cmdline = verify_contract(ready, baselines[15], baselines[18], current)
++    hakios.require(relative_path(ready['image_path']) ==
++                   (out / 'lithium-hakios-ios16-r19.img').relative_to(root), 'Wrong R19 image path')
++    evidence_count = verify_evidence(root, out, ready)
++    package_spec = importlib.util.spec_from_file_location('r19_actual_package',
++        root / 'scripts/package-hakios-ios16.py')
++    package = importlib.util.module_from_spec(package_spec)
++    package_spec.loader.exec_module(package)
++    stock = (root / 'artifacts/stock/V9.5.2.0.NAHCNFA/boot/boot.img').read_bytes()
++    size, page = struct.unpack_from('<I', stock, 8)[0], struct.unpack_from('<I', stock, 36)[0]
++    hakios.require(stock[:8] == b'ANDROID!' and page == 4096, 'Invalid supplied stock header')
++    decoder = zlib.decompressobj(31)
++    decoder.decompress(stock[page:page + size])
++    decoder.flush()
++    hakios.require(decoder.eof, 'Incomplete stock gzip stream')
++    parts = frozen_payload(out, ready, package, stock[:page], decoder.unused_data)
++    for rev in (15, 18):
++        prior = frozen_payload(artifacts / f'phase4-r{rev}', baselines[rev], package,
++                               stock[:page], decoder.unused_data)
++        hakios.require(parts['cmdline'] == prior['cmdline'] == expected_cmdline,
++                       'Actual R19 command line differs from frozen R' + str(rev))
++    kernel = (out / 'hakios-kernel').read_bytes()
++    hakios.require(parts['kernel'] == kernel and digest(kernel) == ready['kernel_sha256'],
++                   'Embedded kernel changed')
++    volumes = hakios.read(root / 'reports/hakios-ios16-boot-userspace-r19.json')['boot_volumes']
++    for key, name in [('ramdisk', 'root.apfs'), ('resident', 'flashboot.apfs')]:
++        volume = Path(volumes[name]['private_path']).read_bytes()
++        hakios.require(parts[key] == volume and digest(volume) == volumes[name]['sha256'],
++                       'Boot volume mismatch: ' + name)
++    loader = (out / 'loader-d22ap.efi').read_bytes()
++    # loader.fat has already been compared to the actual Android ramdisk bytes.
++    actual_loader = subprocess.check_output(['mtype', '-i', out / 'loader.fat', '::HAKIOS.EFI'])
++    hakios.require(digest(loader) == ready['loader_sha256'] and actual_loader == loader ==
++                   (out / 'loader-roundtrip.efi').read_bytes(), 'Actual FAT/EFI readback mismatch')
++    # The generic checker follows this pointer; never attribute another revision's tests to R19.
++    hakios.require(hakios.read(root / 'reports/hakios-ios16-boot-ready.json') == ready,
++                   'Generic package tests would inspect a different frozen package')
++    subprocess.run([sys.executable, '-B', root / 'scripts/test-hakios-ios16-package.py'], check=True)
++    generic = hakios.read(root / 'reports/hakios-ios16-package-host-checks.json')
++    hakios.require(generic['passed'] is True and generic['image_sha256'] == ready['image_sha256'] and
++                   generic['package_script_sha256'] == hakios.sha(root / 'scripts/package-hakios-ios16.py') and
++                   generic['test_script_sha256'] == hakios.sha(root / 'scripts/test-hakios-ios16-package.py') and
++                   len(generic['cases']) == 16 and all(case['passed'] is True for case in generic['cases']),
++                   'Generic16 malformed-package checks did not verify R19')
++    # Recheck live guards after the subprocess, before publishing acceptance.
++    verify_evidence(root, out, ready)
++    hakios.write(root / 'reports/hakios-ios16-r19-package-checks.json', dict(
++        passed=True, revision=19, inputs=current, image_sha256=ready['image_sha256'],
++        cmdline=ready['cmdline'], actual_payload_readback=True, actual_fat_efi_readback=True,
++        r15_cmdline_equal=True, r18_cmdline_equal=True, expected_affinity='0x1',
++        frozen_baselines_verified=[15, 16, 17, 18], r18_contract_sha256=R18_CONTRACT_SHA256,
++        evidence_snapshots_verified=True, evidence_snapshot_count=evidence_count, generic16_passed=True,
++        display_profile_contract=DISPLAY_CONTRACT, render_profile=ready['render_profile'],
++        admission_default_off=True, hardware_verified=False, display_acceptance_verified=False,
++        device_operations=False, qemu_used=False))
++    print('PASS: frozen R19 image, exact R15/R18 arguments, evidence snapshots and R15-R18 baselines')
++
++
++if __name__ == '__main__':
++    main()
+diff --git a/scripts/test-hakios-ios16-r19-snapshots.py b/scripts/test-hakios-ios16-r19-snapshots.py
+new file mode 100644
+index 0000000..6377f54
+--- /dev/null
++++ b/scripts/test-hakios-ios16-r19-snapshots.py
+@@ -0,0 +1,230 @@
++"""Host-only snapshot contract tests; all evidence is disposable synthetic data.
++
++Run: python -B scripts/test-hakios-ios16-r19-snapshots.py -v
++"""
++
++import hashlib
++import os
++from pathlib import Path
++import sys
++import tempfile
++import unittest
++
++# Importing the helper must not create shared scripts/__pycache__ files.
++sys.dont_write_bytecode = True
++import hakios_r19 as helper
++
++
++# Independent fixtures: no helper allowlists, hashes, or text normalization.
++TEXT_FILES = {
++    "scripts/nested/example.py": b"# synthetic evidence\r\nprint('fixture')\n# no final newline",
++    "reports/nested/example.md": "Evidence: \u6d4b\u8bd5 \u2713\r\n\tkeep spaces  \n".encode("utf-8"),
++    "ports/synthetic/include/example.h": b"#define FIXTURE 19\r\n\r\n",
++    "config/nested/empty.txt": b"",
++}
++REJECTIONS = (RuntimeError, ValueError)
++
++
++class SnapshotEvidenceTests(unittest.TestCase):
++    def setUp(self):
++        temporary = tempfile.TemporaryDirectory(prefix="hakios-r19-snapshots-")
++        self.addCleanup(temporary.cleanup)
++        self.sandbox = Path(temporary.name).resolve()
++        self.root = self.sandbox / "root"
++        self.root.mkdir()
++        self.output = self.root / "artifacts" / "r19"
++        self.assertTrue(self.output.is_relative_to(self.root))
++
++    def write_source(self, name, data):
++        path = self.root / name
++        path.parent.mkdir(parents=True, exist_ok=True)
++        path.write_bytes(data)
++        return hashlib.sha256(data).hexdigest()
++
++    def populate(self):
++        return {name: self.write_source(name, data) for name, data in TEXT_FILES.items()}
++
++    def tree(self):
++        """Record directories as well as bytes, without following symlinks."""
++        state = {}
++        for directory, directories, files in os.walk(self.sandbox, followlinks=False):
++            for name in directories + files:
++                path = Path(directory) / name
++                key = path.relative_to(self.sandbox).as_posix()
++                if path.is_symlink():
++                    state[key] = ("symlink", os.readlink(path))
++                elif path.is_dir():
++                    state[key] = ("directory",)
++                else:
++                    state[key] = ("file", path.read_bytes())
++        return state
++
++    def assert_rejected_without_writes(self, evidence, output=None):
++        before = self.tree()
++        try:
++            with self.assertRaises(REJECTIONS):
++                helper.snapshot_evidence(
++                    self.root, self.output if output is None else output, evidence
++                )
++        finally:
++            self.assertEqual(self.tree(), before, "Rejected input changed files or directories")
++
++    def make_symlink(self, link, destination, *, directory=False):
++        link.parent.mkdir(parents=True, exist_ok=True)
++        try:
++            link.symlink_to(destination, target_is_directory=directory)
++        except (OSError, NotImplementedError) as error:
++            self.skipTest("Symlinks unavailable on this host: " + str(error))
++
++    def test_preserves_exact_bytes_and_returns_root_relative_mapping(self):
++        evidence = self.populate()
++        original_evidence = dict(evidence)
++        saved = helper.snapshot_evidence(self.root, self.output, evidence)
++        self.assertEqual(set(saved), set(TEXT_FILES))
++        destinations = set()
++        for name, data in TEXT_FILES.items():
++            with self.subTest(source=name):
++                entry = saved[name]
++                self.assertEqual(set(entry), {"path", "sha256"})
++                self.assertIsInstance(entry["path"], str)
++                relative = Path(entry["path"])
++                self.assertFalse(relative.is_absolute())
++                self.assertNotIn("..", relative.parts)
++                target = (self.root / relative).resolve()
++                self.assertTrue(target.is_relative_to(self.output.resolve()))
++                self.assertNotIn(target, destinations)
++                destinations.add(target)
++                self.assertEqual(target.read_bytes(), data)
++                self.assertEqual(entry["sha256"], hashlib.sha256(data).hexdigest())
++                self.assertEqual(hashlib.sha256(target.read_bytes()).hexdigest(), evidence[name])
++                self.assertEqual((self.root / name).read_bytes(), data)
++        self.assertEqual(evidence, original_evidence)
++
++    def test_identical_repeat_is_allowed(self):
++        evidence = self.populate()
++        first = helper.snapshot_evidence(self.root, self.output, evidence)
++        before = self.tree()
++        second = helper.snapshot_evidence(self.root, self.output, evidence)
++        self.assertEqual(second, first)
++        self.assertEqual(self.tree(), before)
++
++    def test_changed_source_cannot_reuse_its_frozen_digest(self):
++        name, original = "reports/changed.txt", b"original evidence\r\n"
++        evidence = {name: self.write_source(name, original)}
++        saved = helper.snapshot_evidence(self.root, self.output, evidence)
++        self.write_source(name, b"changed evidence\r\n")
++        self.assert_rejected_without_writes(evidence)
++        self.assertEqual((self.root / saved[name]["path"]).read_bytes(), original)
++
++    def test_wrong_initial_digest_creates_no_snapshot_directories(self):
++        name = "scripts/wrong-digest.py"
++        actual = self.write_source(name, b"# synthetic evidence\n")
++        wrong = hashlib.sha256(b"different evidence\n").hexdigest()
++        self.assertNotEqual(actual, wrong)
++        self.assert_rejected_without_writes({name: wrong})
++        self.assertFalse(self.output.exists())
++
++    def test_existing_conflicting_target_is_preserved(self):
++        name, data = "reports/conflict.txt", b"current source\n"
++        evidence = {name: self.write_source(name, data)}
++        saved = helper.snapshot_evidence(self.root, self.output, evidence)
++        target = self.root / saved[name]["path"]
++        target.write_bytes(b"existing conflicting snapshot\r\n")
++        self.assert_rejected_without_writes(evidence)
++        self.assertEqual(target.read_bytes(), b"existing conflicting snapshot\r\n")
++
++    def test_rejects_parent_components_in_source_paths(self):
++        data = b"traversal fixture\n"
++        (self.sandbox / "outside.txt").write_bytes(data)
++        digest = self.write_source("config/inside.txt", data)
++        (self.root / "scripts").mkdir()
++        for name in ("../outside.txt", "scripts/../../outside.txt",
++                     "scripts/../config/inside.txt"):
++            with self.subTest(source=name):
++                self.assert_rejected_without_writes({name: digest})
++
++    def test_rejects_absolute_source_even_inside_root(self):
++        name = "reports/absolute.txt"
++        digest = self.write_source(name, b"absolute fixture\n")
++        absolute = str((self.root / name).resolve())
++        self.assertTrue(Path(absolute).is_absolute())
++        self.assert_rejected_without_writes({absolute: digest})
++
++    def test_rejects_source_outside_the_four_evidence_directories(self):
++        for name in ("private/example.txt", "scripts-other/example.txt", "root.txt"):
++            with self.subTest(source=name):
++                digest = self.write_source(name, b"unapproved source\n")
++                self.assert_rejected_without_writes({name: digest})
++
++    def test_outside_output_is_rejected_before_creating_anything(self):
++        evidence = self.populate()
++        # Prefix similarity must not be mistaken for containment.
++        outside = self.sandbox / "root-lookalike" / "r19"
++        self.assertFalse(outside.is_relative_to(self.root))
++        self.assert_rejected_without_writes(evidence, output=outside)
++        self.assertFalse(outside.parent.exists())
++
++    def test_outside_output_is_rejected_even_with_empty_evidence(self):
++        self.assert_rejected_without_writes({}, output=self.sandbox / "outside-empty")
++
++    def test_output_parent_traversal_is_rejected_before_writes(self):
++        evidence = self.populate()
++        outside = self.root / ".." / "escaped-output"
++        self.assertFalse(outside.resolve().is_relative_to(self.root))
++        self.assert_rejected_without_writes(evidence, output=outside)
++
++    def test_rejects_nul_bytes_with_an_otherwise_correct_digest(self):
++        for index, data in enumerate((b"\x00", b"text\x00tail\n", b"MZ\x90\x00\x03\x00")):
++            with self.subTest(data=data):
++                name = "reports/nul-{}.txt".format(index)
++                digest = self.write_source(name, data)
++                self.assert_rejected_without_writes({name: digest})
++
++    def test_rejects_binary_without_nul_even_with_correct_digest(self):
++        data = b"\x89PNG\r\n\x1a\n\xff\xfe"
++        self.assertNotIn(b"\x00", data)
++        name = "reports/binary.txt"
++        digest = self.write_source(name, data)
++        self.assert_rejected_without_writes({name: digest})
++
++    def test_rejects_source_file_symlink_escaping_root(self):
++        data = b"external file evidence\n"
++        outside = self.sandbox / "external.txt"
++        outside.write_bytes(data)
++        name = "scripts/linked.txt"
++        self.make_symlink(self.root / name, outside)
++        self.assert_rejected_without_writes({name: hashlib.sha256(data).hexdigest()})
++
++    def test_rejects_source_directory_symlink_escaping_root(self):
++        data = b"external directory evidence\n"
++        outside = self.sandbox / "external-source"
++        outside.mkdir()
++        (outside / "evidence.txt").write_bytes(data)
++        self.make_symlink(self.root / "scripts" / "linked", outside, directory=True)
++        self.assert_rejected_without_writes(
++            {"scripts/linked/evidence.txt": hashlib.sha256(data).hexdigest()}
++        )
++
++    def test_rejects_target_directory_symlink_escaping_output(self):
++        evidence = self.populate()
++        saved = helper.snapshot_evidence(self.root, self.output, evidence)
++        name = "reports/nested/example.md"
++        target = self.root / saved[name]["path"]
++        target.unlink()
++        target.parent.rmdir()
++        outside = self.sandbox / "external-target"
++        outside.mkdir()
++        self.make_symlink(target.parent, outside, directory=True)
++        self.assert_rejected_without_writes({name: evidence[name]})
++
++    def test_rejects_output_symlink_escaping_root_before_writes(self):
++        evidence = self.populate()
++        outside = self.sandbox / "external-output"
++        outside.mkdir()
++        link = self.root / "linked-output"
++        self.make_symlink(link, outside, directory=True)
++        self.assert_rejected_without_writes(evidence, output=link)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/scripts/test-hakios-ios16-r19.py b/scripts/test-hakios-ios16-r19.py
+new file mode 100644
+index 0000000..e7cc14e
+--- /dev/null
++++ b/scripts/test-hakios-ios16-r19.py
+@@ -0,0 +1,62 @@
++"""Verify R19 source preservation and actual default-off parser on the frozen args."""
++from pathlib import Path
++import subprocess
++import sys
++import tempfile
++import hakios
++import hakios_r19
++
++HARNESS = r'''
++#include <assert.h>
++#include <string.h>
++#include "boot-options.h"
++int main(int argc, char **argv) {
++    assert(argc == 2);
++    struct lithium_peripheral_options options;
++    assert(lithium_peripheral_options_parse(argv[1], strlen(argv[1]), &options));
++    assert(!options.touch && !options.touch_log && !options.touch_poll);
++    assert(!options.gpu_probe && options.gpu_stage == 0 && !options.gpu_wd);
++    return 0;
++}
++'''
++
++
++def main():
++    spec = hakios.read(hakios.MANIFEST)
++    hakios.policy(spec)
++    hakios.resource_check()
++    work = hakios.verify_workspace(spec)
++    current = hakios.inputs(spec)
++    result = hakios_r19.source_checks(hakios.ROOT, work, current)
++    for test in ("test-hakios-ios16-r19-contract.py", "test-hakios-ios16-r19-snapshots.py",
++                 "test-hakios-ios16-offline-preflight.py"):
++        subprocess.run([sys.executable, "-B", str(hakios.ROOT / "scripts" / test)], check=True)
++    prior_checks = hakios.read(hakios.ROOT / "reports/hakios-ios16-r18-checks.json")
++    hakios.require(prior_checks["passed"] and prior_checks["inputs"] == current and
++                   prior_checks["actual_production_functions"], "Fresh actual R18 display regression required")
++    for name, digest in prior_checks["evidence_sha256"].items():
++        hakios.require(hakios.sha(Path(name)) == digest, "R18 display-test evidence changed: " + name)
++    with tempfile.TemporaryDirectory(prefix="r19-default-off-") as folder:
++        source, binary = Path(folder) / "parser.c", Path(folder) / "parser"
++        source.write_text(HARNESS)
++        subprocess.run(["clang", "-std=c11", "-Wall", "-Wextra", "-Werror", "-g", "-O1",
++                        "-fsanitize=address,undefined", "-fno-omit-frame-pointer", "-I",
++                        str(hakios.ROOT / "ports/hakios-lithium/peripherals"), str(source), "-o", str(binary)],
++                       check=True, capture_output=True, timeout=60)
++        subprocess.run([str(binary), result["cmdline"]], check=True, capture_output=True, timeout=20)
++    names = ["scripts/hakios_r19.py", "scripts/prepare-hakios-ios16-r19.py",
++             "scripts/test-hakios-ios16-r19.py", "scripts/test-hakios-ios16-r19-contract.py",
++             "scripts/test-hakios-ios16-r19-snapshots.py", "scripts/boot-hakios-ios16.py",
++             "scripts/test-hakios-ios16-offline-preflight.py",
++             "reports/hakios-ios16-r18-checks.json", "reports/hakios-ios16-r19-prepared-sources.json",
++             "reports/overnight-20261118/accepted-host-tests/passed.json",
++             *("ports/hakios-lithium/" + name for name in sorted(hakios_r19.PORT_DELTA))]
++    result.update(revision=19, inputs=current, actual_production_functions=True,
++                  actual_frozen_command_parser_checked=True, parser_sanitizers=["address", "undefined"],
++                  evidence_sha256={str(hakios.ROOT / name): hakios.sha(hakios.ROOT / name) for name in names})
++    hakios.write(hakios.ROOT / "reports/hakios-ios16-r19-checks.json", result)
++    print("PASS R19 exact source delta, actual baseline parser default-off, preserved R18 display")
++
++
++if __name__ == "__main__":
++    main()

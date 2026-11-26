@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "date": "2026-11-12",
+  "scope": "QEMU reproduction of a newly added post-collector state-snapshot access; hardware causality remains unproven",
+  "failing_image_sha256": "ef1cc01343e497b5c8cdc6e38745dbcb1e41d863bd80a0d99be377e708223351",
+  "failing_source_build_tag": "0xbb37db9a56eff712",
+  "original_sctlr_for_regression": "0x10c00802",
+  "exception": "same-EL data abort: alignment fault",
+  "esr_el1": "0x96000021",
+  "far_el1": "0x4240019c",
+  "elr_el1": "0x42400144",
+  "faulting_instruction": "ldp x12,x13,[x11]",
+  "literal_alignment_mod8": 4,
+  "collector_record_status_at_fault": "complete",
+  "fix": "All state-snapshot literal and FDT accesses use 32-bit loads/stores; original saved CPU registers remain unmodified",
+  "regression_artifacts": "reports/local/20261112-uefi-alignment-regression",
+  "phone_attempt_06": {
+    "visible_cyan_blocks": 4,
+    "red_blocks": 0,
+    "manual_recovery_confirmed": true,
+    "same_boot_record_collected": false
+  },
+  "fixed_validation_report": "reports/uefi-qemu-strict-align.json",
+  "fixed_hardware_validation": "Seventh attempt reached marker 10 (five cyan, no red); new snapshot code completed; Android return still unverified",
+  "fixed_qemu_normal_passed": true,
+  "fixed_qemu_strict_alignment_passed": true,
+  "fixed_hardware_image_sha256": "2ea53d144b7d4dd6d831a55fa2578ccf72c01991997052b704da020272899820",
+  "fixed_source_build_tag": "0xd591471d4316e440"
+}

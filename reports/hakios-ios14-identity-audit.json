@@ -1,0 +1,1867 @@
+{
+  "baseline": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+  "target": "18H17",
+  "original_signatures": {
+    "System/Library/CoreServices/SpringBoard.app/SpringBoard": {
+      "sha256": "262a9325b9a4e88d17167275fa7c494f2228bf3cb0f4cedcff3717ca2a5b9e37",
+      "xml_present": true,
+      "xml_bytes": 26873,
+      "xml_blob_sha256": "78f88a8d9901c4d407e68b1caf24a3928a606199fd47ccd537a36ca9d6ecd55f",
+      "entitlements": {
+        "allow-obliterate-device": true,
+        "application-identifier": "com.apple.springboard",
+        "aps-connection-initiate": true,
+        "backupd-connection-initiate": true,
+        "checklessPersistentURLTranslation": true,
+        "com.apple.BTServer.allowRestrictedServices": true,
+        "com.apple.BTServer.programmaticPairing": true,
+        "com.apple.CallHistory.sync.allow": true,
+        "com.apple.CommCenter.fine-grained": [
+          "spi",
+          "preferences-reset",
+          "voice",
+          "identity",
+          "phone",
+          "carrier-settings"
+        ],
+        "com.apple.CompanionLink": true,
+        "com.apple.Contacts.database-allow": true,
+        "com.apple.CoreRoutine.LocationOfInterest": true,
+        "com.apple.MobileInternetSharing.allow": true,
+        "com.apple.PerformanceTrace.Tracing": true,
+        "com.apple.QuartzCore.cache-asynchronous": true,
+        "com.apple.QuartzCore.displayable-context": true,
+        "com.apple.QuartzCore.global-capture": true,
+        "com.apple.QuartzCore.secure-capture": true,
+        "com.apple.QuartzCore.secure-mode": true,
+        "com.apple.SystemConfiguration.SCDynamicStore-write-access": true,
+        "com.apple.SystemConfiguration.SCPreferences-write-access": [
+          "com.apple.AutoWake.xml",
+          "preferences.plist",
+          "com.apple.radios.plist"
+        ],
+        "com.apple.abm.helper.mobile.allow": true,
+        "com.apple.accounts.appleaccount.fullaccess": true,
+        "com.apple.assistant.client": true,
+        "com.apple.assistant.settings": true,
+        "com.apple.authkit.client.private": true,
+        "com.apple.authkit.writer.internal": true,
+        "com.apple.avfoundation.allow-identifying-output-device-details": true,
+        "com.apple.avfoundation.allow-still-image-capture-shutter-sound-manipulation": true,
+        "com.apple.avfoundation.allow-system-wide-context": true,
+        "com.apple.avfoundation.allows-access-to-device-list": true,
+        "com.apple.avfoundation.allows-set-output-device": true,
+        "com.apple.backboard.client": true,
+        "com.apple.backboard.display.archive": true,
+        "com.apple.backboard.displaybrightness": true,
+        "com.apple.backboardd.cancelsTouchesInHostedContent": true,
+        "com.apple.backboardd.eventAuthenticationVerification": true,
+        "com.apple.backboardd.global-pointer-event-routing": true,
+        "com.apple.backboardd.hostCanRequireTouchesFromHostedContent": true,
+        "com.apple.backboardd.lastUserEventTime": true,
+        "com.apple.backboardd.launchapplications": true,
+        "com.apple.backboardd.pointerAutomation": true,
+        "com.apple.backboardd.pointerRepositioning": true,
+        "com.apple.backboardd.touchDeliveryObservation": true,
+        "com.apple.backboardd.virtualDisplay": true,
+        "com.apple.bannerkit.post": true,
+        "com.apple.bluetooth.system": true,
+        "com.apple.bulletinboard": true,
+        "com.apple.bulletinboard.dataprovider": true,
+        "com.apple.bulletinboard.observer": true,
+        "com.apple.bulletinboard.serverconduit": true,
+        "com.apple.bulletinboard.settings": true,
+        "com.apple.bulletinboard.systemstate": true,
+        "com.apple.bulletinboard.utilities": true,
+        "com.apple.cards.all-access": true,
+        "com.apple.chronod.toolservices": true,
+        "com.apple.chronoservices": true,
+        "com.apple.coreaudio.CanRecordPastData": true,
+        "com.apple.coreaudio.allow-amr-decode": true,
+        "com.apple.coreaudio.allow-opus-codec": true,
+        "com.apple.coreaudio.allow-speex-codec": true,
+        "com.apple.coreduetd.allow": true,
+        "com.apple.coreduetd.batterysaver.allow": true,
+        "com.apple.coreduetd.context": true,
+        "com.apple.coremedia.allow-pre-wiring-pixel-buffers": true,
+        "com.apple.coremedia.allow-protected-content-playback": true,
+        "com.apple.coremedia.virtualdisplaysession": true,
+        "com.apple.developer.extension-host.widget-extension": true,
+        "com.apple.developer.homekit": true,
+        "com.apple.developer.ubiquity-kvstore-identifier": "com.apple.springboard",
+        "com.apple.duet.activityscheduler.allow": true,
+        "com.apple.duet.expertcenter.consumer": true,
+        "com.apple.fileprovider.acl-write": true,
+        "com.apple.fileprovider.enumerate": true,
+        "com.apple.fileprovider.fetch-url": true,
+        "com.apple.frontboard.app-badge-value-access": true,
+        "com.apple.frontboard.launchapplications": true,
+        "com.apple.frontboard.shutdown": true,
+        "com.apple.frontboardservices.display-layout-monitor": true,
+        "com.apple.geoservices.navigation_info": true,
+        "com.apple.homekit.private-spi-access": true,
+        "com.apple.iapd.accessibility": true,
+        "com.apple.icloud.findmydeviced.access": true,
+        "com.apple.icloud.findmydeviced.findmydevice-user-agent.access": true,
+        "com.apple.icloud.fmfd.access": true,
+        "com.apple.idle-timer-services": true,
+        "com.apple.imagent": true,
+        "com.apple.imagent.av": true,
+        "com.apple.imagent.chat": true,
+        "com.apple.intents.extension.discovery": true,
+        "com.apple.intents.uiextension.discovery": true,
+        "com.apple.internal.seserviced.all.endpoints.and.cas": true,
+        "com.apple.internal.seserviced.ptattestation": true,
+        "com.apple.itunesstored.private": true,
+        "com.apple.keystore.device": true,
+        "com.apple.keystore.lockassertion": true,
+        "com.apple.keystore.stash.access": true,
+        "com.apple.launchservices.clearadvertisingid": true,
+        "com.apple.localizationswitcher": true,
+        "com.apple.locationd.activity": true,
+        "com.apple.locationd.authorizeapplications": true,
+        "com.apple.locationd.effective_bundle": true,
+        "com.apple.locationd.motion_alarms": true,
+        "com.apple.locationd.place_inference": true,
+        "com.apple.locationd.prompt_behavior": true,
+        "com.apple.locationd.region_proxy_service": true,
+        "com.apple.locationd.status": true,
+        "com.apple.locationd.usage_oracle": true,
+        "com.apple.locationd.vehicle_data": true,
+        "com.apple.logind.client.entitlement": true,
+        "com.apple.lsapplicationproxy.deviceidentifierforvendor": true,
+        "com.apple.managedconfiguration.mdmd-access": true,
+        "com.apple.managedconfiguration.profiled-access": true,
+        "com.apple.mediastream.mstreamd-access": true,
+        "com.apple.messages.composeclient": true,
+        "com.apple.mkb.usersession.info": true,
+        "com.apple.mkb.usersession.loginwindow": true,
+        "com.apple.mobile.deleted.AllowFreeSpace": true,
+        "com.apple.mobile.keybagd.UserManager.logoutcritical": true,
+        "com.apple.mobilemail.mailservices": true,
+        "com.apple.multitasking.systemappassertions": true,
+        "com.apple.multitasking.termination": true,
+        "com.apple.nfcd.hwmanager": true,
+        "com.apple.nfcd.radio.powertoggle": true,
+        "com.apple.nfcd.seshat": true,
+        "com.apple.nfcd.session.ecommerce": true,
+        "com.apple.nfcd.session.fieldOperations": true,
+        "com.apple.nfcd.session.peerpayment": true,
+        "com.apple.nfcd.session.reader.internal": true,
+        "com.apple.nfcd.session.se": true,
+        "com.apple.nfcd.session.trust": true,
+        "com.apple.nfcd.singleUser": true,
+        "com.apple.notificationcenter.widgetcontrollerhascontent": true,
+        "com.apple.osanalytics.otatasking-service-access": true,
+        "com.apple.payment.configuration": true,
+        "com.apple.payment.presentation": true,
+        "com.apple.photos.bourgeoisie": true,
+        "com.apple.pointerui.persistentlyHidePointer": true,
+        "com.apple.pointerui.service-keep-alive-assertion": true,
+        "com.apple.pointerui.set-system-cursor-interaction-context": true,
+        "com.apple.private.CallHistory.read": true,
+        "com.apple.private.ClipServices": true,
+        "com.apple.private.CoreAuthentication.SPI": true,
+        "com.apple.private.InstallCoordination.allowed": true,
+        "com.apple.private.MobileContainerManager.otherIdLookup": true,
+        "com.apple.private.MobileGestalt.AllowedProtectedKeys": [
+          "InverseDeviceID"
+        ],
+        "com.apple.private.SafariServices.PasswordPicker.setRemoteAppProperties": true,
+        "com.apple.private.WebClips.read-write": true,
+        "com.apple.private.accessories.showallconnections": true,
+        "com.apple.private.accounts.allaccounts": true,
+        "com.apple.private.airdrop.settings": true,
+        "com.apple.private.appleaccount.app-hidden-from-icloud-settings": true,
+        "com.apple.private.applecredentialmanager.allow": true,
+        "com.apple.private.appstored": [
+          "Repair",
+          "TestFlightFeedback"
+        ],
+        "com.apple.private.attentionawareness": true,
+        "com.apple.private.attentionawareness.poll": true,
+        "com.apple.private.barcodesupport.allowNotifications": true,
+        "com.apple.private.bmk.allow": true,
+        "com.apple.private.calendar.allow-suggestions": true,
+        "com.apple.private.canGetAppLinkInfo": true,
+        "com.apple.private.canModifyAppLinkPermissions": true,
+        "com.apple.private.carkit": true,
+        "com.apple.private.carkit.app": true,
+        "com.apple.private.carkit.dnd": true,
+        "com.apple.private.clouddocs.can-grant-access-to-document": true,
+        "com.apple.private.contactsui": true,
+        "com.apple.private.coordination.alarms": true,
+        "com.apple.private.coordination.timers": true,
+        "com.apple.private.corerecents": true,
+        "com.apple.private.coreservices.canopenactivity": true,
+        "com.apple.private.coreservices.lsuseractivityd.bestappsuggestion": true,
+        "com.apple.private.corespotlight.internal": true,
+        "com.apple.private.corespotlight.search.internal": true,
+        "com.apple.private.corewifi.internal": true,
+        "com.apple.private.dmd.policy": true,
+        "com.apple.private.donotdisturb.behavior.resolution.client-identifiers": [
+          "com.apple.springboard.SBNCSoundController",
+          "com.apple.springboard.SBNCScreenController",
+          "com.apple.springboard.SBNotificationBannerDestination",
+          "com.apple.springboard.SBNotificationLegacyCarDestination",
+          "com.apple.springboard.SBDashBoardCombinedListViewController",
+          "com.apple.springboard.SBBulletinSpokenObserverGateway"
+        ],
+        "com.apple.private.donotdisturb.mode.assertion.client-identifiers": [
+          "com.apple.donotdisturb.control-center.module",
+          "com.apple.springboard.donotdisturb.notifications",
+          "com.apple.springboard.donotdisturb.hid"
+        ],
+        "com.apple.private.donotdisturb.mode.assertion.user-requested.client-identifiers": [
+          "com.apple.donotdisturb.control-center.module",
+          "com.apple.springboard.donotdisturb.notifications",
+          "com.apple.springboard.donotdisturb.hid"
+        ],
+        "com.apple.private.donotdisturb.settings.request.client-identifiers": [
+          "com.apple.springboard.donotdisturb.notifications"
+        ],
+        "com.apple.private.donotdisturb.settings.updates.client-identifiers": [
+          "com.apple.springboard.donotdisturb.notifications"
+        ],
+        "com.apple.private.donotdisturb.state.request.client-identifiers": [
+          "com.apple.springboard.SBStatusBarStateAggregator",
+          "com.apple.springboard.SBDashBoardCombinedListViewController",
+          "com.apple.donotdisturb.control-center.module",
+          "com.apple.springboard.donotdisturb.notifications",
+          "com.apple.springboard.donotdisturb.awdmetrics",
+          "com.apple.springboard.dashboard.bedtime",
+          "com.apple.accessibility.visual.alerts",
+          "com.apple.springboard.donotdisturb.hid",
+          "com.apple.springboard.SBDoNotDisturbMetric"
+        ],
+        "com.apple.private.donotdisturb.state.updates.client-identifiers": [
+          "com.apple.springboard.SBStatusBarStateAggregator",
+          "com.apple.springboard.SBDashBoardCombinedListViewController",
+          "com.apple.donotdisturb.control-center.module",
+          "com.apple.springboard.donotdisturb.notifications",
+          "com.apple.springboard.donotdisturb.awdmetrics",
+          "com.apple.springboard.dashboard.bedtime",
+          "com.apple.accessibility.visual.alerts",
+          "com.apple.springboard.donotdisturb.hid",
+          "com.apple.springboard.SBDoNotDisturbMetric"
+        ],
+        "com.apple.private.externalaccessory.showallaccessories": true,
+        "com.apple.private.game-center": [
+          "Account",
+          "Games"
+        ],
+        "com.apple.private.game-center.bypass-authentication": true,
+        "com.apple.private.healthkit": true,
+        "com.apple.private.healthkit.feature-availability.read": [
+          "SleepCoaching"
+        ],
+        "com.apple.private.healthkit.read_authorization_override": [
+          "HKCategoryTypeIdentifierSleepAnalysis"
+        ],
+        "com.apple.private.healthkit.source_override": "com.apple.mobiletimer",
+        "com.apple.private.healthkit.write_authorization_override": [
+          "HKCategoryTypeIdentifierSleepAnalysis"
+        ],
+        "com.apple.private.hid.client.event-dispatch": true,
+        "com.apple.private.hid.client.service-protected": true,
+        "com.apple.private.hid.manager.client": true,
+        "com.apple.private.homekit": true,
+        "com.apple.private.homekit.allow-secure-access": true,
+        "com.apple.private.icfcallserver": true,
+        "com.apple.private.ids.idsquery": true,
+        "com.apple.private.ids.messaging": [
+          "com.apple.private.alloy.bulletinboard",
+          "com.apple.private.alloy.donotdisturb",
+          "com.apple.madrid",
+          "com.apple.private.alloy.siri.phrasespotter"
+        ],
+        "com.apple.private.ids.messaging.urgent-priority": [
+          "com.apple.private.alloy.bulletinboard",
+          "com.apple.private.alloy.donotdisturb",
+          "com.apple.private.alloy.siri.phrasespotter"
+        ],
+        "com.apple.private.ids.registration-reset": true,
+        "com.apple.private.imavcore.imavagent": true,
+        "com.apple.private.imcore.imdpersistence.database-access": true,
+        "com.apple.private.imcore.imremoteurlconnection": true,
+        "com.apple.private.imcore.spi.database-access": true,
+        "com.apple.private.in-app-payments": true,
+        "com.apple.private.iokit.powersource-control": true,
+        "com.apple.private.kernel.darkboot": true,
+        "com.apple.private.kernel.jetsam": true,
+        "com.apple.private.librarian.can-get-application-info": true,
+        "com.apple.private.lockdown.finegrained-get": [
+          "NULL/ActivationState",
+          "NULL/BrickState",
+          "NULL/SBLockdownEverRegisteredKey",
+          "com.apple.xcode.developerdomain/DeveloperStatus",
+          "NULL/BuildExpireTime"
+        ],
+        "com.apple.private.lockdown.finegrained-remove": [
+          "com.apple.mobile.iTunes.store/AppleID",
+          "com.apple.mobile.data_sync/Contacts",
+          "com.apple.mobile.data_sync/Calendars",
+          "com.apple.mobile.data_sync/Bookmarks",
+          "com.apple.mobile.data_sync/Mail Accounts"
+        ],
+        "com.apple.private.mediasafetynet.exception.notificationappex": true,
+        "com.apple.private.mis.online_auth_agent": true,
+        "com.apple.private.mobileinstall.allowedSPI": [
+          "UninstallForLaunchServices",
+          "SetCapabilities",
+          "Lookup"
+        ],
+        "com.apple.private.mobilesafari.searchengine": true,
+        "com.apple.private.mobilestoredemo.enabledemo": [
+          "Manage"
+        ],
+        "com.apple.private.mobiletimerd": true,
+        "com.apple.private.nearbyinteraction.system-shutdown": true,
+        "com.apple.private.network.socket-delegate": true,
+        "com.apple.private.networkextension.configuration": true,
+        "com.apple.private.persona.read": true,
+        "com.apple.private.photos.service.demo": true,
+        "com.apple.private.photos.service.multilibrary": true,
+        "com.apple.private.ppm.superclient": true,
+        "com.apple.private.replay-kit": true,
+        "com.apple.private.rtcreportingd": true,
+        "com.apple.private.screen-time": true,
+        "com.apple.private.security.container-manager": true,
+        "com.apple.private.security.storage.AppDataContainers": true,
+        "com.apple.private.security.storage.Calendar": true,
+        "com.apple.private.security.storage.Photos": true,
+        "com.apple.private.security.storage.triald": true,
+        "com.apple.private.sharing.unlock-manager": true,
+        "com.apple.private.shazamkit.allow-external-audio-recording": true,
+        "com.apple.private.shazamkit.allow-internal-audio-recording": true,
+        "com.apple.private.shazamkit.allow-remote-recognition": true,
+        "com.apple.private.shazamkit.allow-signature-generation": true,
+        "com.apple.private.sleepd": true,
+        "com.apple.private.suggestions.contacts": true,
+        "com.apple.private.suggestions.events": true,
+        "com.apple.private.system-keychain": true,
+        "com.apple.private.tcc.allow": [
+          "kTCCServiceAddressBook",
+          "kTCCServiceCalendar",
+          "kTCCServiceReminders",
+          "kTCCServicePhotos",
+          "kTCCServicePhotosAdd",
+          "kTCCServiceMediaLibrary",
+          "kTCCServiceMicrophone",
+          "kTCCServiceCamera",
+          "kTCCServiceWillow",
+          "kTCCServiceFaceID"
+        ],
+        "com.apple.private.tcc.manager": true,
+        "com.apple.private.tty.settings": true,
+        "com.apple.private.ubiquity-kvstore-access": [
+          "com.apple.weather",
+          "com.apple.stocks",
+          "com.apple.backboardd",
+          "com.apple.Accessibility",
+          "com.apple.Accessibility.SwitchControl",
+          "com.apple.Accessibility.TouchAccommodations",
+          "com.apple.AssistiveTouch",
+          "com.apple.HearingAids",
+          "com.apple.SpeakSelection",
+          "com.apple.VoiceOverTouch",
+          "com.apple.ZoomTouch"
+        ],
+        "com.apple.private.usernotifications.bundle-identifiers": [
+          "com.apple.donotdisturb",
+          "com.apple.mobiletimer",
+          "com.apple.usernotifications.example"
+        ],
+        "com.apple.private.vfs.open-by-id": true,
+        "com.apple.private.wallpaperkit.service.migration": true,
+        "com.apple.private.xpc.launchd.app-server": true,
+        "com.apple.proactive.ActionPrediction.predictions": true,
+        "com.apple.proactive.AppPrediction.predictions": true,
+        "com.apple.proactive.ProactiveSuggestionClientModel.xpc": true,
+        "com.apple.proactive.appDirectory": true,
+        "com.apple.proactive.eventtracker": true,
+        "com.apple.proactive.hero.AppPrediction.predictions": true,
+        "com.apple.proactive.infoSuggestion.xpc": true,
+        "com.apple.purplebuddy.budd.access": true,
+        "com.apple.remotenotification.access": true,
+        "com.apple.remotenotification.preferences": true,
+        "com.apple.rootless.storage.coreduet_knowledge_store": true,
+        "com.apple.rootless.storage.proactivepredictions": true,
+        "com.apple.runningboard.hereditarygrantoriginator": true,
+        "com.apple.runningboard.primitiveattribute": true,
+        "com.apple.runningboard.process-state": true,
+        "com.apple.runningboard.request.identity": true,
+        "com.apple.runningboard.terminatemanagedprocesses": true,
+        "com.apple.runningboard.underlyingassertion": true,
+        "com.apple.securebackupd.access": true,
+        "com.apple.security.application-groups": [
+          "group.com.apple.weather",
+          "group.com.apple.stocks",
+          "com.apple.Home.group"
+        ],
+        "com.apple.security.enterprise-volume-access": true,
+        "com.apple.security.exception.files.absolute-path.read-only": [
+          "/private/var/mobile/Library/Trial/NamespaceDescriptors/",
+          "/private/var/mobile/Library/Trial/Treatments/180/"
+        ],
+        "com.apple.security.exception.mach-lookup.global-name": [
+          "com.apple.Photos.MultiLibrary",
+          "com.apple.abm.helper.mobile",
+          "com.apple.siri.activation.service",
+          "com.apple.springboard.SBRendererService",
+          "com.apple.appstored.xpc",
+          "com.apple.appstored.xpc.request",
+          "com.apple.PointerUI.pointeruid.service-launching",
+          "com.apple.proactive.appDirectory",
+          "com.apple.CarPlayApp.service",
+          "com.apple.sleepd.sleepserver",
+          "com.apple.coordination.alarms",
+          "com.apple.coordination.timers"
+        ],
+        "com.apple.security.iokit-user-client-class": [
+          "AGXCommandQueue",
+          "AGXDevice",
+          "AGXDeviceUserClient",
+          "AGXSharedUserClient",
+          "AppleCredentialManagerUserClient",
+          "AppleJPEGDriverUserClient",
+          "ApplePPMUserClient",
+          "AppleSPUHIDDeviceUserClient",
+          "AppleSPUHIDDriverUserClient",
+          "IOAccelContext",
+          "IOAccelContext2",
+          "IOAccelDevice",
+          "IOAccelDevice2",
+          "IOAccelSharedUserClient",
+          "IOAccelSharedUserClient2",
+          "IOAccelSubmitter2",
+          "IOHIDEventServiceFastPathUserClient",
+          "IOHIDLibUserClient",
+          "IOMobileFramebufferUserClient",
+          "IOReportUserClient",
+          "IOSurfaceAcceleratorClient",
+          "IOSurfaceRootUserClient",
+          "RootDomainUserClient"
+        ],
+        "com.apple.security.system-container": true,
+        "com.apple.security.system-groups": [
+          "systemgroup.com.apple.sharedpclogging",
+          "systemgroup.com.apple.regulatory_images"
+        ],
+        "com.apple.seld.tsmamnager": true,
+        "com.apple.seserviced.key": true,
+        "com.apple.seserviced.kmlXpcService": true,
+        "com.apple.sharing.Client": true,
+        "com.apple.sharing.CoordinatedAlerts": true,
+        "com.apple.sharing.Diagnostics": true,
+        "com.apple.sharing.Session": true,
+        "com.apple.siri.VoiceShortcuts.xpc": true,
+        "com.apple.siri.activation.service": true,
+        "com.apple.siri.client_lite": true,
+        "com.apple.siri.external_request": true,
+        "com.apple.sos.trigger": true,
+        "com.apple.springboard-ui.client": true,
+        "com.apple.springboard.activateRemoteAlert": true,
+        "com.apple.springboard.activateawayviewplugins": true,
+        "com.apple.springboard.allowallcallurls": true,
+        "com.apple.springboard.application-removability.proxy": true,
+        "com.apple.springboard.lockScreenContentAssertion": true,
+        "com.apple.springboard.multiwindow.triggerShowAllWindows": true,
+        "com.apple.springboard.opensensitiveurl": true,
+        "com.apple.springboard.openurlswhenlocked": true,
+        "com.apple.springboard.setbadgestring": true,
+        "com.apple.springboard.shortcutitems.fullaccess": true,
+        "com.apple.springboard.statusbarstyleoverrides": true,
+        "com.apple.springboard.statusbarstyleoverrides.coordinator": [
+          "UIStatusBarStyleOverrideAutoAirPlayReady",
+          "UIStatusBarStyleOverrideAutoAirPlayPlaying"
+        ],
+        "com.apple.symptom_analytics.query": true,
+        "com.apple.symptom_analytics.refresh": true,
+        "com.apple.symptoms.NetworkOfInterest": true,
+        "com.apple.telephonyutilities.callservicesd": [
+          "access-calls",
+          "modify-calls",
+          "access-call-providers",
+          "access-moments"
+        ],
+        "com.apple.timed": true,
+        "com.apple.tzlink.allow": true,
+        "com.apple.ui-services-discovery": true,
+        "com.apple.videoconference.allow-conferencing": true,
+        "com.apple.visualvoicemail.client": true,
+        "com.apple.voiceservices.tts.customvoice": true,
+        "com.apple.voicetrigger.voicetriggerservice": true,
+        "com.apple.watchlist.private": true,
+        "com.apple.wifi.manager-access": true,
+        "com.apple.wipedevice": true,
+        "fairplay-client": "1172857363",
+        "keychain-access-groups": [
+          "apple",
+          "com.apple.preferences"
+        ],
+        "vm-pressure-level": true
+      },
+      "code_directories": [
+        {
+          "code_directory_slot": 0,
+          "hash_type": 2,
+          "hash_size": 32,
+          "xml_special_slot_verified": true
+        }
+      ],
+      "root_manifest_hash_available": true
+    },
+    "sbin/launchd": {
+      "sha256": "cb34041d66dfbeee006ac0f69e4f217b223ad2a7df6046c9f28f317786cf951d",
+      "xml_present": true,
+      "xml_bytes": 732,
+      "xml_blob_sha256": "862edbad7659b81464c8e5eb44073c1f2684f94a6e1379d9966f81ca7d1bbde0",
+      "entitlements": {
+        "com.apple.apfs.get-dev-by-role": true,
+        "com.apple.private.amfi.can-allow-non-platform": true,
+        "com.apple.private.kernel.system-override": true,
+        "com.apple.private.persona-mgmt": true,
+        "com.apple.private.security.system-mount-authority": true,
+        "com.apple.private.set-atm-diagnostic-flag": true,
+        "com.apple.private.spawn-subsystem-root": true,
+        "com.apple.private.vfs.pivot-root": true,
+        "com.apple.security.network.server": true
+      },
+      "code_directories": [
+        {
+          "code_directory_slot": 0,
+          "hash_type": 2,
+          "hash_size": 32,
+          "xml_special_slot_verified": true
+        }
+      ],
+      "root_manifest_hash_available": true
+    },
+    "usr/libexec/backboardd": {
+      "sha256": "c4badef4ba5c9052c10bb1c5f4425111829b7cb3b9a18e800b444fc3da9feff2",
+      "xml_present": true,
+      "xml_bytes": 4949,
+      "xml_blob_sha256": "e1fd15d1126a0bbc2a2614d6f0e6b5f5383df2a6e5c7bbd6b760cd015f1ee12c",
+      "entitlements": {
+        "com.apple.CommCenter.fine-grained": [
+          "spi"
+        ],
+        "com.apple.QuartzCore.displayable-context": true,
+        "com.apple.QuartzCore.global-capture": true,
+        "com.apple.QuartzCore.secure-mode": true,
+        "com.apple.RootedSimulatorPath": true,
+        "com.apple.afk.user": true,
+        "com.apple.backboard.client": true,
+        "com.apple.backboardd": true,
+        "com.apple.backboardd.replacesystemapp": true,
+        "com.apple.bluetooth.system": true,
+        "com.apple.coreduetd.allow": true,
+        "com.apple.coreduetd.context": true,
+        "com.apple.developer.ubiquity-kvstore-identifier": "com.apple.backboardd",
+        "com.apple.frontboard.launchapplications": true,
+        "com.apple.frontboardservices.display-layout-monitor": true,
+        "com.apple.gasgauge.user-access-device": true,
+        "com.apple.hid.manager.user-access-custom-queue-size": true,
+        "com.apple.hid.manager.user-access-device": true,
+        "com.apple.hid.manager.user-access-keyboard": true,
+        "com.apple.hid.multitouch.user-access": true,
+        "com.apple.hid.system.user-access-service": true,
+        "com.apple.hid.transport.user-access": true,
+        "com.apple.idle-timer-services": true,
+        "com.apple.iohideventsystem.server": true,
+        "com.apple.keystore.fdr-access": true,
+        "com.apple.keystore.sik.access": true,
+        "com.apple.locationd.activity": true,
+        "com.apple.private.IOSurface.protected-access": true,
+        "com.apple.private.MobileGestalt.AllowedProtectedKeys": [
+          "CoverglassSerialNumber",
+          "AmbientLightSensorSerialNumber",
+          "BootManifestHash",
+          "UniqueChipID",
+          "SysCfgDict",
+          "WirelessBoardSnum",
+          "BatterySerialNumber",
+          "RoswellChipID"
+        ],
+        "com.apple.private.accessories.showallconnections": true,
+        "com.apple.private.aea.haptics.user-access": true,
+        "com.apple.private.allow-explicit-graphics-priority": true,
+        "com.apple.private.applepearl.allow": true,
+        "com.apple.private.bmk.allow": true,
+        "com.apple.private.cecd.control": true,
+        "com.apple.private.cecd.observer": true,
+        "com.apple.private.graphics-restart-no-kill": true,
+        "com.apple.private.hid.client.event-dispatch": true,
+        "com.apple.private.hid.client.event-filter": true,
+        "com.apple.private.hid.client.event-monitor": true,
+        "com.apple.private.hid.manager.client": true,
+        "com.apple.private.iokit.rootdomain-set-property": true,
+        "com.apple.private.kernel.work-interval": true,
+        "com.apple.private.mobile_storage.allowedSPI": [
+          "CopyDevices"
+        ],
+        "com.apple.private.ppm.client": true,
+        "com.apple.private.tcc.manager": true,
+        "com.apple.private.ubiquity-kvstore-access": [
+          "com.apple.springboard",
+          "com.apple.Accessibility",
+          "com.apple.Accessibility.SwitchControl",
+          "com.apple.Accessibility.TouchAccommodations",
+          "com.apple.AssistiveTouch",
+          "com.apple.HearingAids",
+          "com.apple.SpeakSelection",
+          "com.apple.VoiceOverTouch",
+          "com.apple.ZoomTouch"
+        ],
+        "com.apple.private.xpc.launchd.app-server": true,
+        "com.apple.runningboard.primitiveattribute": true,
+        "com.apple.runningboard.terminatemanagedprocesses": true,
+        "com.apple.runningboard.terminateprocess": true,
+        "com.apple.security.exception.mach-lookup.global-name": [
+          "com.apple.frontboard.systemappservices",
+          "com.apple.backlightd",
+          "com.apple.accessories.transport-server",
+          "com.apple.accessories.connection-info-server"
+        ],
+        "com.apple.security.system-container": true,
+        "com.apple.sensorkit.writer.allow": [
+          "com.apple.private.SensorKit.PPG",
+          "com.apple.private.SensorKit.ECG",
+          "com.apple.SensorKit.onWristState"
+        ],
+        "com.apple.springboard.opensensitiveurl": true,
+        "com.apple.symptom_diagnostics.report": true,
+        "com.apple.tailspin.dump-output": true,
+        "keychain-access-groups": [
+          "com.apple.springboard"
+        ],
+        "seatbelt-profiles": [
+          "backboardd"
+        ]
+      },
+      "code_directories": [
+        {
+          "code_directory_slot": 0,
+          "hash_type": 2,
+          "hash_size": 32,
+          "xml_special_slot_verified": true
+        }
+      ],
+      "root_manifest_hash_available": false
+    },
+    "usr/libexec/securityd": {
+      "sha256": "f73ee182bfbb47a480d22404b0d769688e6eba871f51a7ec1f044c2aa70e1435",
+      "xml_present": true,
+      "xml_bytes": 3119,
+      "xml_blob_sha256": "87e08ba1fbc19e357331b7a4fbc8df772a3931e002f1fb28630a957ed57acdad",
+      "entitlements": {
+        "application-identifier": "com.apple.securityd",
+        "aps-connection-initiate": true,
+        "aps-environment": "serverPreferred",
+        "com.apple.CloudKeychainProxy.client": true,
+        "com.apple.accounts.appleaccount.fullaccess": true,
+        "com.apple.application-identifier": "com.apple.securityd",
+        "com.apple.aps-environment": "serverPreferred",
+        "com.apple.authkit.client.private": true,
+        "com.apple.developer.aps-environment": "serverPreferred",
+        "com.apple.developer.icloud-container-environment": "Production",
+        "com.apple.developer.icloud-container-identifiers": [
+          "iCloud.com.apple.security.keychain"
+        ],
+        "com.apple.developer.icloud-services": [
+          "CloudKit"
+        ],
+        "com.apple.keystore.access-keychain-keys": true,
+        "com.apple.keystore.lockassertion": true,
+        "com.apple.mkb.usersession.info": true,
+        "com.apple.private.MobileGestalt.AllowedProtectedKeys": [
+          "SerialNumber"
+        ],
+        "com.apple.private.accounts.allaccounts": true,
+        "com.apple.private.appleaccount.app-hidden-from-icloud-settings": true,
+        "com.apple.private.applecredentialmanager.allow": true,
+        "com.apple.private.aps-connection-initiate": true,
+        "com.apple.private.associated-domains": true,
+        "com.apple.private.cloudkit.allowUnverifiedAccount": true,
+        "com.apple.private.cloudkit.buddyAccess": true,
+        "com.apple.private.cloudkit.notifyOnAccountWarmup": true,
+        "com.apple.private.cloudkit.setEnvironment": true,
+        "com.apple.private.cloudkit.spi": true,
+        "com.apple.private.cloudkit.supportservice": true,
+        "com.apple.private.cloudkit.systemService": true,
+        "com.apple.private.dark-wake-push": true,
+        "com.apple.private.ids.remoteurlconnection": true,
+        "com.apple.private.imcore.imagent": true,
+        "com.apple.private.imcore.imremoteurlconnection": true,
+        "com.apple.private.imcore.remoteurlconnection": true,
+        "com.apple.private.necp.match": true,
+        "com.apple.private.network.socket-delegate": true,
+        "com.apple.private.security.storage.Keychains": true,
+        "com.apple.private.sqlite.sqlite-encryption": true,
+        "com.apple.private.tcc.allow": [
+          "kTCCServiceLiverpool"
+        ],
+        "com.apple.private.trustedpeershelper.client": true,
+        "com.apple.securebackupd.access": true,
+        "com.apple.security.network.client": true,
+        "com.apple.symptom_diagnostics.report": true,
+        "seatbelt-profiles": [
+          "securityd"
+        ]
+      },
+      "code_directories": [
+        {
+          "code_directory_slot": 0,
+          "hash_type": 2,
+          "hash_size": 32,
+          "xml_special_slot_verified": true
+        }
+      ],
+      "root_manifest_hash_available": false
+    }
+  },
+  "disassemblies": {
+    "_BSSecTaskHasEntitlement": {
+      "address": "0x1846c685c",
+      "bytes": 208,
+      "path": "reports/local/r31-identity-audit/BSSecTaskHasEntitlement.txt",
+      "sha256": "7caba27d35136b30a74e1b0f11607e66e10256b056d99eafe74aacda6a4a1a23",
+      "calls": [
+        {
+          "operand": "0x1846f2dc0",
+          "resolved": "0x1846f2dc0",
+          "image": "/System/Library/PrivateFrameworks/BaseBoard.framework/BaseBoard",
+          "symbols": [
+            "_BSSecTaskCopyEntitlementValue"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x18084da94",
+          "resolved": "0x18084da94",
+          "image": "/System/Library/Frameworks/CoreServices.framework/CoreServices",
+          "symbols": [
+            "<redacted>",
+            "__ZN8IdentityD0Ev"
+          ],
+          "offset": "0x19f0"
+        },
+        {
+          "operand": "0x1803f02b8",
+          "resolved": "0x1803f02b8",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFGetTypeID"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1803d1608",
+          "resolved": "0x1803d1608",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFBooleanGetTypeID"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1800b3e68",
+          "resolved": "0x1800b3e68",
+          "image": "/usr/lib/system/libdispatch.dylib",
+          "symbols": [
+            "-[OS_dispatch_data debugDescription].cold.1",
+            "<redacted>"
+          ],
+          "offset": "0x12d4"
+        },
+        {
+          "operand": "0x1846c68b8",
+          "resolved": "0x1846c68b8",
+          "image": "/System/Library/PrivateFrameworks/BaseBoard.framework/BaseBoard",
+          "symbols": [
+            "_BSSecTaskHasEntitlement"
+          ],
+          "offset": "0x5c"
+        },
+        {
+          "operand": "0x1800b3e8c",
+          "resolved": "0x1800b3e8c",
+          "image": "/usr/lib/system/libdispatch.dylib",
+          "symbols": [
+            "-[OS_dispatch_data debugDescription].cold.1",
+            "<redacted>"
+          ],
+          "offset": "0x12f8"
+        },
+        {
+          "operand": "0x1846c68ec",
+          "resolved": "0x1846c68ec",
+          "image": "/System/Library/PrivateFrameworks/BaseBoard.framework/BaseBoard",
+          "symbols": [
+            "_BSSecTaskHasEntitlement"
+          ],
+          "offset": "0x90"
+        },
+        {
+          "operand": "0x1846ca16c",
+          "resolved": "0x1846ca16c",
+          "image": "/System/Library/PrivateFrameworks/BaseBoard.framework/BaseBoard",
+          "symbols": [
+            "_BSLogCommon"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x18084da94",
+          "resolved": "0x18084da94",
+          "image": "/System/Library/Frameworks/CoreServices.framework/CoreServices",
+          "symbols": [
+            "<redacted>",
+            "__ZN8IdentityD0Ev"
+          ],
+          "offset": "0x19f0"
+        },
+        {
+          "operand": "0x1802ed694",
+          "resolved": "0x1802ed694",
+          "image": "/usr/lib/libicucore.A.dylib",
+          "symbols": [],
+          "offset": null
+        },
+        {
+          "operand": "0x1800b3e8c",
+          "resolved": "0x1800b3e8c",
+          "image": "/usr/lib/system/libdispatch.dylib",
+          "symbols": [
+            "-[OS_dispatch_data debugDescription].cold.1",
+            "<redacted>"
+          ],
+          "offset": "0x12f8"
+        },
+        {
+          "operand": "0x1804e7db4",
+          "resolved": "0x1804e7db4",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "<redacted>",
+            "___88-[CFPrefsPlistSource handleReply:toRequestNewDataMessage:onConnection:retryCount:error:]_block_invoke.80.cold.1"
+          ],
+          "offset": "0x354"
+        },
+        {
+          "operand": "0x1846c68e0",
+          "resolved": "0x1846c68e0",
+          "image": "/System/Library/PrivateFrameworks/BaseBoard.framework/BaseBoard",
+          "symbols": [
+            "_BSSecTaskHasEntitlement"
+          ],
+          "offset": "0x84"
+        }
+      ]
+    },
+    "_BSSecTaskCopyEntitlementValue": {
+      "address": "0x1846f2dc0",
+      "bytes": 300,
+      "path": "reports/local/r31-identity-audit/BSSecTaskCopyEntitlementValue.txt",
+      "sha256": "3ade06e40cda9533af5a1d514418c205fd767d3b69a114677f91171d508f4321",
+      "calls": [
+        {
+          "operand": "0x187465010",
+          "resolved": "0x187465010",
+          "image": "/System/Library/Frameworks/Security.framework/Security",
+          "symbols": [
+            "_SecTaskCopyValueForEntitlement"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1846ca16c",
+          "resolved": "0x1846ca16c",
+          "image": "/System/Library/PrivateFrameworks/BaseBoard.framework/BaseBoard",
+          "symbols": [
+            "_BSLogCommon"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x18084da94",
+          "resolved": "0x18084da94",
+          "image": "/System/Library/Frameworks/CoreServices.framework/CoreServices",
+          "symbols": [
+            "<redacted>",
+            "__ZN8IdentityD0Ev"
+          ],
+          "offset": "0x19f0"
+        },
+        {
+          "operand": "0x1802ed694",
+          "resolved": "0x1802ed694",
+          "image": "/usr/lib/libicucore.A.dylib",
+          "symbols": [],
+          "offset": null
+        },
+        {
+          "operand": "0x1800b3e8c",
+          "resolved": "0x1800b3e8c",
+          "image": "/usr/lib/system/libdispatch.dylib",
+          "symbols": [
+            "-[OS_dispatch_data debugDescription].cold.1",
+            "<redacted>"
+          ],
+          "offset": "0x12f8"
+        },
+        {
+          "operand": "0x1803560e0",
+          "resolved": "0x1803560e0",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFRelease"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1846f2e54",
+          "resolved": "0x1846f2e54",
+          "image": "/System/Library/PrivateFrameworks/BaseBoard.framework/BaseBoard",
+          "symbols": [
+            "_BSSecTaskCopyEntitlementValue"
+          ],
+          "offset": "0x94"
+        },
+        {
+          "operand": "0x1846ca16c",
+          "resolved": "0x1846ca16c",
+          "image": "/System/Library/PrivateFrameworks/BaseBoard.framework/BaseBoard",
+          "symbols": [
+            "_BSLogCommon"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x18084da94",
+          "resolved": "0x18084da94",
+          "image": "/System/Library/Frameworks/CoreServices.framework/CoreServices",
+          "symbols": [
+            "<redacted>",
+            "__ZN8IdentityD0Ev"
+          ],
+          "offset": "0x19f0"
+        },
+        {
+          "operand": "0x1802ed694",
+          "resolved": "0x1802ed694",
+          "image": "/usr/lib/libicucore.A.dylib",
+          "symbols": [],
+          "offset": null
+        },
+        {
+          "operand": "0x1800b3e8c",
+          "resolved": "0x1800b3e8c",
+          "image": "/usr/lib/system/libdispatch.dylib",
+          "symbols": [
+            "-[OS_dispatch_data debugDescription].cold.1",
+            "<redacted>"
+          ],
+          "offset": "0x12f8"
+        },
+        {
+          "operand": "0x18084d95c",
+          "resolved": "0x18084d95c",
+          "image": "/System/Library/Frameworks/CoreServices.framework/CoreServices",
+          "symbols": [
+            "<redacted>",
+            "__ZN8IdentityD0Ev"
+          ],
+          "offset": "0x18b8"
+        },
+        {
+          "operand": "0x1804e7db4",
+          "resolved": "0x1804e7db4",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "<redacted>",
+            "___88-[CFPrefsPlistSource handleReply:toRequestNewDataMessage:onConnection:retryCount:error:]_block_invoke.80.cold.1"
+          ],
+          "offset": "0x354"
+        },
+        {
+          "operand": "0x1846f2e18",
+          "resolved": "0x1846f2e18",
+          "image": "/System/Library/PrivateFrameworks/BaseBoard.framework/BaseBoard",
+          "symbols": [
+            "_BSSecTaskCopyEntitlementValue"
+          ],
+          "offset": "0x58"
+        },
+        {
+          "operand": "0x1804e7db4",
+          "resolved": "0x1804e7db4",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "<redacted>",
+            "___88-[CFPrefsPlistSource handleReply:toRequestNewDataMessage:onConnection:retryCount:error:]_block_invoke.80.cold.1"
+          ],
+          "offset": "0x354"
+        },
+        {
+          "operand": "0x1846f2e48",
+          "resolved": "0x1846f2e48",
+          "image": "/System/Library/PrivateFrameworks/BaseBoard.framework/BaseBoard",
+          "symbols": [
+            "_BSSecTaskCopyEntitlementValue"
+          ],
+          "offset": "0x88"
+        },
+        {
+          "operand": "0x18908887c",
+          "resolved": "0x18908887c",
+          "image": "/usr/lib/system/libsystem_c.dylib",
+          "symbols": [
+            "___stack_chk_fail"
+          ],
+          "offset": "0x0"
+        }
+      ]
+    },
+    "_BSSelfTaskHasEntitlement": {
+      "address": "0x1846f303c",
+      "bytes": 104,
+      "path": "reports/local/r31-identity-audit/BSSelfTaskHasEntitlement.txt",
+      "sha256": "dab427a3d8983347926e2e3f062ffe2f55a095066988ed80395c946bcdf39c7a",
+      "calls": [
+        {
+          "operand": "0x1800b3e98",
+          "resolved": "0x1800b3e98",
+          "image": "/usr/lib/system/libdispatch.dylib",
+          "symbols": [
+            "-[OS_dispatch_data debugDescription].cold.1",
+            "<redacted>"
+          ],
+          "offset": "0x1304"
+        },
+        {
+          "operand": "0x1846c685c",
+          "resolved": "0x1846c685c",
+          "image": "/System/Library/PrivateFrameworks/BaseBoard.framework/BaseBoard",
+          "symbols": [
+            "_BSSecTaskHasEntitlement"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1800b3e8c",
+          "resolved": "0x1800b3e8c",
+          "image": "/usr/lib/system/libdispatch.dylib",
+          "symbols": [
+            "-[OS_dispatch_data debugDescription].cold.1",
+            "<redacted>"
+          ],
+          "offset": "0x12f8"
+        },
+        {
+          "operand": "0x184728784",
+          "resolved": "0x1800b3844",
+          "image": "/usr/lib/system/libdispatch.dylib",
+          "symbols": [
+            "-[OS_dispatch_data debugDescription].cold.1",
+            "<redacted>"
+          ],
+          "offset": "0xcb0"
+        },
+        {
+          "operand": "0x1846f3060",
+          "resolved": "0x1846f3060",
+          "image": "/System/Library/PrivateFrameworks/BaseBoard.framework/BaseBoard",
+          "symbols": [
+            "_BSSelfTaskHasEntitlement"
+          ],
+          "offset": "0x24"
+        }
+      ]
+    },
+    "-[BSAuditToken _accessSecTask:]": {
+      "address": "0x18471e5f4",
+      "bytes": 244,
+      "path": "reports/local/r31-identity-audit/-[BSAuditToken _accessSecTask:].txt",
+      "sha256": "da795557e3b4914d8f15cf173cd003be2d05cfe16d8716d8d81c40f9be2b1db5",
+      "calls": [
+        {
+          "operand": "0x1800b3e98",
+          "resolved": "0x1800b3e98",
+          "image": "/usr/lib/system/libdispatch.dylib",
+          "symbols": [
+            "-[OS_dispatch_data debugDescription].cold.1",
+            "<redacted>"
+          ],
+          "offset": "0x1304"
+        },
+        {
+          "operand": "0x1804e8ad4",
+          "resolved": "0x1804e8ad4",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "<redacted>",
+            "___88-[CFPrefsPlistSource handleReply:toRequestNewDataMessage:onConnection:retryCount:error:]_block_invoke.80.cold.1"
+          ],
+          "offset": "0x1074"
+        },
+        {
+          "operand": "0x187464d20",
+          "resolved": "0x187464d20",
+          "image": "/System/Library/Frameworks/Security.framework/Security",
+          "symbols": [
+            "_SecTaskCreateWithAuditToken"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1800b3f7c",
+          "resolved": "0x1800b3f7c",
+          "image": "/usr/lib/system/libdispatch.dylib",
+          "symbols": [
+            "-[OS_dispatch_data debugDescription].cold.1",
+            "<redacted>"
+          ],
+          "offset": "0x13e8"
+        },
+        {
+          "operand": "0x1800b3e8c",
+          "resolved": "0x1800b3e8c",
+          "image": "/usr/lib/system/libdispatch.dylib",
+          "symbols": [
+            "-[OS_dispatch_data debugDescription].cold.1",
+            "<redacted>"
+          ],
+          "offset": "0x12f8"
+        },
+        {
+          "operand": "0x1800b3e68",
+          "resolved": "0x1800b3e68",
+          "image": "/usr/lib/system/libdispatch.dylib",
+          "symbols": [
+            "-[OS_dispatch_data debugDescription].cold.1",
+            "<redacted>"
+          ],
+          "offset": "0x12d4"
+        },
+        {
+          "operand": "0x18084da94",
+          "resolved": "0x18084da94",
+          "image": "/System/Library/Frameworks/CoreServices.framework/CoreServices",
+          "symbols": [
+            "<redacted>",
+            "__ZN8IdentityD0Ev"
+          ],
+          "offset": "0x19f0"
+        },
+        {
+          "operand": "0x1800b3e68",
+          "resolved": "0x1800b3e68",
+          "image": "/usr/lib/system/libdispatch.dylib",
+          "symbols": [
+            "-[OS_dispatch_data debugDescription].cold.1",
+            "<redacted>"
+          ],
+          "offset": "0x12d4"
+        },
+        {
+          "operand": "0x1800b3e8c",
+          "resolved": "0x1800b3e8c",
+          "image": "/usr/lib/system/libdispatch.dylib",
+          "symbols": [
+            "-[OS_dispatch_data debugDescription].cold.1",
+            "<redacted>"
+          ],
+          "offset": "0x12f8"
+        },
+        {
+          "operand": "0x18471e620",
+          "resolved": "0x18471e620",
+          "image": "/System/Library/PrivateFrameworks/BaseBoard.framework/BaseBoard",
+          "symbols": [
+            "-[BSAuditToken _accessSecTask:]",
+            "<redacted>"
+          ],
+          "offset": "0x2c"
+        }
+      ]
+    },
+    "___block_descriptor_48_e8_32s40r_e20_v16\u0001?0^{__SecTask=}8l": {
+      "address": "0x1dabcf0f8",
+      "bytes": 48,
+      "path": "reports/local/r31-identity-audit/block_descriptor_48_e8_32s40r_e20_v16\u0001?0^{__SecTask=}8l.txt",
+      "sha256": "609e8de84cba0a923892600cecfd7038011f259ddd36298cfcd07a84683cb7c0",
+      "calls": []
+    },
+    "_SecTaskCopyValueForEntitlement": {
+      "address": "0x187465010",
+      "bytes": 136,
+      "path": "reports/local/r31-identity-audit/SecTaskCopyValueForEntitlement.txt",
+      "sha256": "9aa6277a62ddaa5cacdfe8d215b4adf184b3be150b8b8a349ee93f144902f17e",
+      "calls": [
+        {
+          "operand": "0x187464a78",
+          "resolved": "0x187464a78",
+          "image": "/System/Library/Frameworks/Security.framework/Security",
+          "symbols": [
+            "_SecTaskGetTypeID"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1803f02b8",
+          "resolved": "0x1803f02b8",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFGetTypeID"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x187465098",
+          "resolved": "0x187465098",
+          "image": "/System/Library/Frameworks/Security.framework/Security",
+          "symbols": [
+            "<redacted>",
+            "_SecTaskLoadEntitlements"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1803b9af0",
+          "resolved": "0x1803b9af0",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFDictionaryGetValue"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x18035654c",
+          "resolved": "0x18035654c",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFRetain"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x187465084",
+          "resolved": "0x187465084",
+          "image": "/System/Library/Frameworks/Security.framework/Security",
+          "symbols": [
+            "_SecTaskCopyValueForEntitlement"
+          ],
+          "offset": "0x74"
+        }
+      ]
+    },
+    "_SecTaskLoadEntitlements": {
+      "address": "0x187465098",
+      "bytes": 744,
+      "path": "reports/local/r31-identity-audit/SecTaskLoadEntitlements.txt",
+      "sha256": "d13026516617da43323e29d907ec8d89d5108a34ca6787a654078d3464861ab9",
+      "calls": [
+        {
+          "operand": "0x187464f14",
+          "resolved": "0x187464f14",
+          "image": "/System/Library/Frameworks/Security.framework/Security",
+          "symbols": [
+            "<redacted>",
+            "_csops_task"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1803560e0",
+          "resolved": "0x1803560e0",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFRelease"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1874813fc",
+          "resolved": "0x18efda28c",
+          "image": "/usr/lib/system/libsystem_malloc.dylib",
+          "symbols": [
+            "_free"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1803bc3d8",
+          "resolved": "0x1803bc3d8",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFErrorCreate"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1800f3d44",
+          "resolved": "0x1800f3d44",
+          "image": "/usr/lib/system/libdyld.dylib",
+          "symbols": [
+            "<redacted>",
+            "__ZN5dyld37closure11ImageWriter13setDofOffsetsERKNS_5ArrayIjEE.cold.1"
+          ],
+          "offset": "0x7c"
+        },
+        {
+          "operand": "0x18746510c",
+          "resolved": "0x18746510c",
+          "image": "/System/Library/Frameworks/Security.framework/Security",
+          "symbols": [
+            "<redacted>",
+            "_SecTaskLoadEntitlements"
+          ],
+          "offset": "0x74"
+        },
+        {
+          "operand": "0x1800f3d44",
+          "resolved": "0x1800f3d44",
+          "image": "/usr/lib/system/libdyld.dylib",
+          "symbols": [
+            "<redacted>",
+            "__ZN5dyld37closure11ImageWriter13setDofOffsetsERKNS_5ArrayIjEE.cold.1"
+          ],
+          "offset": "0x7c"
+        },
+        {
+          "operand": "0x187464f14",
+          "resolved": "0x187464f14",
+          "image": "/System/Library/Frameworks/Security.framework/Security",
+          "symbols": [
+            "<redacted>",
+            "_csops_task"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1800f3d44",
+          "resolved": "0x1800f3d44",
+          "image": "/usr/lib/system/libdyld.dylib",
+          "symbols": [
+            "<redacted>",
+            "__ZN5dyld37closure11ImageWriter13setDofOffsetsERKNS_5ArrayIjEE.cold.1"
+          ],
+          "offset": "0x7c"
+        },
+        {
+          "operand": "0x18084de24",
+          "resolved": "0x18084de24",
+          "image": "/System/Library/Frameworks/CoreServices.framework/CoreServices",
+          "symbols": [
+            "<redacted>",
+            "__ZN8IdentityD0Ev"
+          ],
+          "offset": "0x1d80"
+        },
+        {
+          "operand": "0x18084d32c",
+          "resolved": "0x18084d32c",
+          "image": "/System/Library/Frameworks/CoreServices.framework/CoreServices",
+          "symbols": [
+            "<redacted>",
+            "__ZN8IdentityD0Ev"
+          ],
+          "offset": "0x1288"
+        },
+        {
+          "operand": "0x18084de24",
+          "resolved": "0x18084de24",
+          "image": "/System/Library/Frameworks/CoreServices.framework/CoreServices",
+          "symbols": [
+            "<redacted>",
+            "__ZN8IdentityD0Ev"
+          ],
+          "offset": "0x1d80"
+        },
+        {
+          "operand": "0x187464b3c",
+          "resolved": "0x187464b3c",
+          "image": "/System/Library/Frameworks/Security.framework/Security",
+          "symbols": [
+            "<redacted>",
+            "_SecTaskCopyDebugDescription"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x180414730",
+          "resolved": "0x180414730",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFStringGetLength"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1874814ec",
+          "resolved": "0x18efda4e4",
+          "image": "/usr/lib/system/libsystem_malloc.dylib",
+          "symbols": [
+            "_malloc"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x18041576c",
+          "resolved": "0x18041576c",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFStringGetCString"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x18084de24",
+          "resolved": "0x18084de24",
+          "image": "/System/Library/Frameworks/CoreServices.framework/CoreServices",
+          "symbols": [
+            "<redacted>",
+            "__ZN8IdentityD0Ev"
+          ],
+          "offset": "0x1d80"
+        },
+        {
+          "operand": "0x1803560e0",
+          "resolved": "0x1803560e0",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFRelease"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1874813fc",
+          "resolved": "0x18efda28c",
+          "image": "/usr/lib/system/libsystem_malloc.dylib",
+          "symbols": [
+            "_free"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x187465144",
+          "resolved": "0x187465144",
+          "image": "/System/Library/Frameworks/Security.framework/Security",
+          "symbols": [
+            "<redacted>",
+            "_SecTaskLoadEntitlements"
+          ],
+          "offset": "0xac"
+        },
+        {
+          "operand": "0x1874814ec",
+          "resolved": "0x18efda4e4",
+          "image": "/usr/lib/system/libsystem_malloc.dylib",
+          "symbols": [
+            "_malloc"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x187464f14",
+          "resolved": "0x187464f14",
+          "image": "/System/Library/Frameworks/Security.framework/Security",
+          "symbols": [
+            "<redacted>",
+            "_csops_task"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1800f3d44",
+          "resolved": "0x1800f3d44",
+          "image": "/usr/lib/system/libdyld.dylib",
+          "symbols": [
+            "<redacted>",
+            "__ZN5dyld37closure11ImageWriter13setDofOffsetsERKNS_5ArrayIjEE.cold.1"
+          ],
+          "offset": "0x7c"
+        },
+        {
+          "operand": "0x187465104",
+          "resolved": "0x187465104",
+          "image": "/System/Library/Frameworks/Security.framework/Security",
+          "symbols": [
+            "<redacted>",
+            "_SecTaskLoadEntitlements"
+          ],
+          "offset": "0x6c"
+        },
+        {
+          "operand": "0x18746510c",
+          "resolved": "0x18746510c",
+          "image": "/System/Library/Frameworks/Security.framework/Security",
+          "symbols": [
+            "<redacted>",
+            "_SecTaskLoadEntitlements"
+          ],
+          "offset": "0x74"
+        },
+        {
+          "operand": "0x1803afa0c",
+          "resolved": "0x1803afa0c",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFDataCreateWithBytesNoCopy"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1803584d4",
+          "resolved": "0x1803584d4",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFPropertyListCreateWithData"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1803560e0",
+          "resolved": "0x1803560e0",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFRelease"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1803f02b8",
+          "resolved": "0x1803f02b8",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFGetTypeID"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1803b9224",
+          "resolved": "0x1803b9224",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFDictionaryGetTypeID"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x18035654c",
+          "resolved": "0x18035654c",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFRetain"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1874650e8",
+          "resolved": "0x1874650e8",
+          "image": "/System/Library/Frameworks/Security.framework/Security",
+          "symbols": [
+            "<redacted>",
+            "_SecTaskLoadEntitlements"
+          ],
+          "offset": "0x50"
+        },
+        {
+          "operand": "0x187465100",
+          "resolved": "0x187465100",
+          "image": "/System/Library/Frameworks/Security.framework/Security",
+          "symbols": [
+            "<redacted>",
+            "_SecTaskLoadEntitlements"
+          ],
+          "offset": "0x68"
+        }
+      ]
+    },
+    "_SecTaskCopyValuesForEntitlements": {
+      "address": "0x187465380",
+      "bytes": 248,
+      "path": "reports/local/r31-identity-audit/SecTaskCopyValuesForEntitlements.txt",
+      "sha256": "d18f54e157b45f360d8b365be7162a685fc158a541d3671b1679ca55302482d5",
+      "calls": [
+        {
+          "operand": "0x187464a78",
+          "resolved": "0x187464a78",
+          "image": "/System/Library/Frameworks/Security.framework/Security",
+          "symbols": [
+            "_SecTaskGetTypeID"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1803f02b8",
+          "resolved": "0x1803f02b8",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFGetTypeID"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x187465098",
+          "resolved": "0x187465098",
+          "image": "/System/Library/Frameworks/Security.framework/Security",
+          "symbols": [
+            "<redacted>",
+            "_SecTaskLoadEntitlements"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x18038618c",
+          "resolved": "0x18038618c",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFArrayGetCount"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1803f1b04",
+          "resolved": "0x1803f1b04",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFGetAllocator"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1803b9558",
+          "resolved": "0x1803b9558",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFDictionaryCreateMutable"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1803861d8",
+          "resolved": "0x1803861d8",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFArrayGetValueAtIndex"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1803b9af0",
+          "resolved": "0x1803b9af0",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFDictionaryGetValue"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1803ba3d4",
+          "resolved": "0x1803ba3d4",
+          "image": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+          "symbols": [
+            "_CFDictionarySetValue"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x187465460",
+          "resolved": "0x187465460",
+          "image": "/System/Library/Frameworks/Security.framework/Security",
+          "symbols": [
+            "_SecTaskCopyValuesForEntitlements"
+          ],
+          "offset": "0xe0"
+        }
+      ]
+    },
+    "_kpersona_alloc": {
+      "address": "0x1ac2c4f04",
+      "bytes": 60,
+      "path": "reports/local/r31-identity-audit/kpersona_alloc.txt",
+      "sha256": "9958a804ce1076c5e4449067b899925ae98e3f372fd2273eac4775b49f686857",
+      "calls": [
+        {
+          "operand": "0x1ac2de33c",
+          "resolved": "0x1ac2de33c",
+          "image": "/usr/lib/system/libsystem_kernel.dylib",
+          "symbols": [
+            "___persona"
+          ],
+          "offset": "0x0"
+        }
+      ]
+    },
+    "_kpersona_palloc": {
+      "address": "0x1ac2c4f40",
+      "bytes": 60,
+      "path": "reports/local/r31-identity-audit/kpersona_palloc.txt",
+      "sha256": "9006d03518e1b8557ce0ffa4140b53212f1c1ab5d90146cde10163cdbbc20510",
+      "calls": [
+        {
+          "operand": "0x1ac2de33c",
+          "resolved": "0x1ac2de33c",
+          "image": "/usr/lib/system/libsystem_kernel.dylib",
+          "symbols": [
+            "___persona"
+          ],
+          "offset": "0x0"
+        }
+      ]
+    },
+    "_kpersona_dealloc": {
+      "address": "0x1ac2c4f7c",
+      "bytes": 64,
+      "path": "reports/local/r31-identity-audit/kpersona_dealloc.txt",
+      "sha256": "591dd845ecbaea8cd881960e7db31550288f1d72e344eb59f1412707831048a3",
+      "calls": [
+        {
+          "operand": "0x1ac2de33c",
+          "resolved": "0x1ac2de33c",
+          "image": "/usr/lib/system/libsystem_kernel.dylib",
+          "symbols": [
+            "___persona"
+          ],
+          "offset": "0x0"
+        }
+      ]
+    },
+    "_kpersona_get": {
+      "address": "0x1ac2c4fbc",
+      "bytes": 60,
+      "path": "reports/local/r31-identity-audit/kpersona_get.txt",
+      "sha256": "bfa63aedfda717fe2b11672b4f0b444c1026539d5dd8a4e48cf37215feb3f5fd",
+      "calls": [
+        {
+          "operand": "0x1ac2de33c",
+          "resolved": "0x1ac2de33c",
+          "image": "/usr/lib/system/libsystem_kernel.dylib",
+          "symbols": [
+            "___persona"
+          ],
+          "offset": "0x0"
+        }
+      ]
+    },
+    "_kpersona_getpath": {
+      "address": "0x1ac2c4ff8",
+      "bytes": 64,
+      "path": "reports/local/r31-identity-audit/kpersona_getpath.txt",
+      "sha256": "67c4416b3da355090858afc2a73778fc30ed29b7c2f7fa7809cdf109a2401a81",
+      "calls": [
+        {
+          "operand": "0x1ac2de33c",
+          "resolved": "0x1ac2de33c",
+          "image": "/usr/lib/system/libsystem_kernel.dylib",
+          "symbols": [
+            "___persona"
+          ],
+          "offset": "0x0"
+        }
+      ]
+    },
+    "_kpersona_info": {
+      "address": "0x1ac2c5038",
+      "bytes": 64,
+      "path": "reports/local/r31-identity-audit/kpersona_info.txt",
+      "sha256": "fb07e38052234d4ffdcd95e7a13a9325e933d78470afb9e7da5b00788aee0efc",
+      "calls": [
+        {
+          "operand": "0x1ac2de33c",
+          "resolved": "0x1ac2de33c",
+          "image": "/usr/lib/system/libsystem_kernel.dylib",
+          "symbols": [
+            "___persona"
+          ],
+          "offset": "0x0"
+        }
+      ]
+    },
+    "_kpersona_pidinfo": {
+      "address": "0x1ac2c5078",
+      "bytes": 64,
+      "path": "reports/local/r31-identity-audit/kpersona_pidinfo.txt",
+      "sha256": "25260ca9deb4bf89cdf2b7240851b2398c30495c3d0a40775710c373756cd75f",
+      "calls": [
+        {
+          "operand": "0x1ac2de33c",
+          "resolved": "0x1ac2de33c",
+          "image": "/usr/lib/system/libsystem_kernel.dylib",
+          "symbols": [
+            "___persona"
+          ],
+          "offset": "0x0"
+        }
+      ]
+    },
+    "_kpersona_find": {
+      "address": "0x1ac2c50b8",
+      "bytes": 128,
+      "path": "reports/local/r31-identity-audit/kpersona_find.txt",
+      "sha256": "512da7cb84e97dd387e60f9a4c893282be9ca9f5a97fb9b0c66f18d807c74d76",
+      "calls": [
+        {
+          "operand": "0x1ac2b78c4",
+          "resolved": "0x1ac2b78c4",
+          "image": "/usr/lib/system/libsystem_kernel.dylib",
+          "symbols": [
+            "<redacted>",
+            "_strlcpy"
+          ],
+          "offset": "0x0"
+        },
+        {
+          "operand": "0x1ac2de33c",
+          "resolved": "0x1ac2de33c",
+          "image": "/usr/lib/system/libsystem_kernel.dylib",
+          "symbols": [
+            "___persona"
+          ],
+          "offset": "0x0"
+        }
+      ]
+    },
+    "_kpersona_find_by_type": {
+      "address": "0x1ac2c5138",
+      "bytes": 96,
+      "path": "reports/local/r31-identity-audit/kpersona_find_by_type.txt",
+      "sha256": "913aeca4fd1658bb63d75dfe66322a167e30dc568542e8fe38c48b6308355cef",
+      "calls": [
+        {
+          "operand": "0x1ac2de33c",
+          "resolved": "0x1ac2de33c",
+          "image": "/usr/lib/system/libsystem_kernel.dylib",
+          "symbols": [
+            "___persona"
+          ],
+          "offset": "0x0"
+        }
+      ]
+    },
+    "___persona": {
+      "address": "0x1ac2de33c",
+      "bytes": 40,
+      "path": "reports/local/r31-identity-audit/persona.txt",
+      "sha256": "f50458e5b4be4e16b349ab16780a2e333af5a2ece24c1efd4a22799084417996",
+      "calls": [
+        {
+          "operand": "0x1ac2bb1fc",
+          "resolved": "0x1ac2bb1fc",
+          "image": "/usr/lib/system/libsystem_kernel.dylib",
+          "symbols": [
+            "_cerror_nocancel"
+          ],
+          "offset": "0x0"
+        }
+      ]
+    }
+  },
+  "CONFIG_PERSONAS_enabled": true,
+  "original_cache_sha256": "9399e59e7ecd8501154b2b371375a3104734bfc1b5c78188d11bd56b9c0db2ea",
+  "original_files_modified": false,
+  "hardware_verified": false
+}

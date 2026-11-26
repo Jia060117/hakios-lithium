@@ -1,0 +1,12 @@
+Subject: arm64: include the CPU signal interface for Group 1 IRQs
+
+--- a/osfmk/arm64/sleh.c
++++ b/osfmk/arm64/sleh.c
+@@ -32,6 +32,7 @@
+ #include <arm/misc_protos.h>
+ #include <arm/thread.h>
+ #include <arm/rtclock.h>
++#include <arm/machine_cpu.h>
+ #include <arm/trap.h> /* for IS_ARM_GDB_TRAP() et al */
+ #include <arm64/proc_reg.h>
+ #include <arm64/machine_machdep.h>

@@ -1,0 +1,206 @@
+#!/usr/bin/env python3
+"""Validate actual policy/router C, linked registration, and firmware dyld ABI."""
+import argparse
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import re
+import struct
+import subprocess
+
+ROOT = Path(__file__).resolve().parents[1]
+WORK = Path.home() / 'ios-mix1-build/xnu7195-lithium'
+
+
+def sha(path): return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def function(text, name):
+    start = text.index('\n'+name+'(')
+    start = text.rfind('\n', 0, start-1)+1
+    return text[start:text.index('\n}', start)+3]
+
+
+def disasm(binary, symbol, section='__TEXT,__text'):
+    return subprocess.check_output(['llvm-objdump', '--macho', '--disassemble',
+        '--no-show-raw-insn', '--section='+section, '--dis-symname', symbol, binary], text=True)
+
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('kernel', type=Path)
+    args = p.parse_args()
+    tree = WORK / 'src'
+    adapter = tree / 'bsd/kern/lithium_amfi.c'
+    port = ROOT / 'ports/lithium/native/lithium_amfi.c'
+    assert adapter.read_bytes() == port.read_bytes()
+    build = json.loads((ROOT / 'reports/ios14-xnu-lithium-kernel.json').read_text())
+    assert build['exit_code'] == 0 and any(k['sha256'] == sha(args.kernel) for k in build['kernel_binaries'])
+    out = WORK / 'amfi-validation'
+    out.mkdir(exist_ok=True)
+    router = tree / 'security/mac_base.c'
+    text = router.read_text()
+    start = text.index('\nint\n__mac_syscall(') + 1
+    actual_router = text[start:text.index('\n}', start)+3]
+    template = ROOT / 'ports/lithium/host/amfi-policy-test.c'
+    actual_adapter = re.sub(r'^#include[^\n]*\n', '', adapter.read_text(), flags=re.M)
+    source = out / 'test.c'
+    trust_stub = ROOT / 'ports/lithium/host/amfi-trust-stub.h'
+    source.write_text(template.read_text().replace('@@ADAPTER@@', actual_adapter).replace('@@ROUTER@@', actual_router).replace('@@TRUST_STUB@@',trust_stub.read_text()))
+    command = ['clang', '-std=gnu11', '-O1', '-g', '-fsanitize=address,undefined',
+        '-Wall', '-Wextra', '-Werror', source, '-o', out / 'test']
+    r = subprocess.run(command, capture_output=True, text=True)
+    (out / 'compile.log').write_text(r.stdout+r.stderr)
+    assert r.returncode == 0, r.stderr
+    r = subprocess.run([out / 'test'], capture_output=True, text=True)
+    (out / 'test.log').write_text(r.stdout+r.stderr)
+    assert r.returncode == 0, r.stdout+r.stderr
+    cases = re.findall(r'^PASS (.+)', r.stdout, re.M)
+    assert len(cases) == 26
+    # Exercise real XNU registration and its actual initmach wrapper; the
+    # earlier test used a registration shim and missed the RO-late lifecycle.
+    registration_template = ROOT / 'ports/lithium/host/amfi-registration-test.c'
+    header = tree / 'security/mac_policy.h'
+    h = header.read_text()
+    internal = tree / 'security/mac_internal.h'
+    internal_text = internal.read_text()
+    conf_start = h.index('struct mac_policy_conf {')
+    conf = h[conf_start:h.index('\n};',conf_start)+3].replace('mpc_t ', 'void * ')
+    list_start = internal_text.index('struct mac_policy_list_element {')
+    lists = internal_text[list_start:internal_text.index('typedef struct mac_policy_list',list_start)]
+    values = dict(CONF=conf, LIST=lists, ADAPTER=actual_adapter,
+        REGISTER=function(text,'mac_policy_register'), INIT=function(text,'mac_policy_init'),
+        INITMACH=function(text,'mac_policy_initmach'), ROUTER=actual_router, TRUST_STUB=trust_stub.read_text())
+    registration = registration_template.read_text()
+    for name,value in values.items(): registration=registration.replace('@@'+name+'@@',value)
+    reg_source=out/'registration.c';reg_source.write_text(registration)
+    reg_command=['clang','-std=gnu11','-O1','-g','-fsanitize=address,undefined',
+        '-Wall','-Wextra','-Werror',reg_source,'-o',out/'registration']
+    r=subprocess.run(reg_command,capture_output=True,text=True)
+    (out/'registration-compile.log').write_text(r.stdout+r.stderr)
+    assert r.returncode==0,r.stderr
+    r=subprocess.run([out/'registration'],capture_output=True,text=True)
+    (out/'registration-test.log').write_text(r.stdout+r.stderr)
+    assert r.returncode==0,r.stdout+r.stderr
+    registration_cases=re.findall(r'^PASS (.+)',r.stdout,re.M)
+    assert len(registration_cases)==11
+    # Both board and MACF gates compile to an empty object when disabled.
+    for name, defines in (('other-board', []), ('no-macf', ['-DARM64_BOARD_CONFIG_LITHIUM=1', '-DCONFIG_MACF=0'])):
+        obj = out / (name+'.o')
+        subprocess.run(['clang', '-Werror', *defines, '-c', adapter, '-o', obj], check=True)
+        assert 'lithium_amfi' not in subprocess.check_output(['nm', obj], text=True)
+    # Parse the real kernel's policy structure to verify every linked hook.
+    fields = h[h.index('struct mac_policy_ops {'):]
+    fields = fields[:fields.index('\n};')]
+    members = re.findall(r'\bmpo_\w+_t\s*\*\s*(mpo_\w+)\s*;', fields)
+    assert len(members) > 200 and members.count('mpo_policy_syscall') == 1
+    symbols = {parts[-1]: int(parts[0], 16) for line in
+        subprocess.check_output(['llvm-nm', '-n', args.kernel], text=True).splitlines()
+        if len(parts := line.split()) >= 3 and len(parts[0]) == 16}
+    spec = importlib.util.spec_from_file_location('inspect_kernel', ROOT / 'scripts/inspect-native-xnu.py')
+    inspect = importlib.util.module_from_spec(spec);spec.loader.exec_module(inspect)
+    info = inspect.inspect(args.kernel)
+    data = args.kernel.read_bytes()
+    def va_bytes(va, count):
+        seg = next(s for s in info['segments'] if int(s['vmaddr'],16) <= va and
+            va + count <= int(s['vmaddr'],16) + s['filesize'])
+        off = seg['fileoff'] + va - int(seg['vmaddr'],16)
+        return data[off:off+count]
+    ops = struct.unpack('<'+'Q'*len(members), va_bytes(symbols['_lithium_amfi_ops'], len(members)*8))
+    callback_slot = members.index('mpo_policy_syscall')
+    assert ops[callback_slot] == symbols['_lithium_amfi_syscall']
+    assert ops[members.index('mpo_vnode_check_signature')] == symbols['_lithium_firmware_check_signature']
+    assert sum(v != 0 for v in ops) == 2
+    conf = struct.unpack('<5Q', va_bytes(symbols['_lithium_amfi_conf'],40))
+    assert va_bytes(conf[0],5) == b'AMFI\0' and conf[4] == symbols['_lithium_amfi_ops']
+    assert conf[2] == conf[3] == 0
+    load_flags=struct.unpack('<I',va_bytes(symbols['_lithium_amfi_conf']+40,4))[0]
+    assert load_flags==1  # MPC_LOADTIME_FLAG_NOTLATE; cannot register after freeze.
+    emitted = {name:disasm(args.kernel, '_'+name, '__TEXT_EXEC,__text') for name in
+        ('lithium_amfi_syscall', 'lithium_amfi_register', 'bsd_init',
+         'mac_policy_initmach', 'kernel_bootstrap_thread', 'machine_lockdown', 'arm_vm_prot_finalize')}
+    assert not re.search(r'\bb(?:l)?\s+_lithium_amfi_register\b',emitted['bsd_init'])
+    assert re.search(r'\bbl\s+_lithium_amfi_register\b',emitted['mac_policy_initmach'])
+    def call_position(body,name):
+        match=re.search(r'\bbl\s+_'+name+r'\b',body)
+        assert match,name
+        return match.start()
+    bootstrap=emitted['kernel_bootstrap_thread']
+    assert call_position(bootstrap,'mac_policy_initmach') < call_position(bootstrap,'machine_lockdown') < call_position(bootstrap,'bsd_init')
+    assert re.search(r'\bbl\s+_arm_vm_prot_finalize\b',emitted['machine_lockdown'])
+    initmach=function(text,'mac_policy_initmach')
+    assert initmach.index('load_security_extensions_function();') < initmach.index('lithium_amfi_register();') < initmach.index('mac_late = 1;')
+    assert 'lithium_amfi_register' not in (tree/'bsd/kern/bsd_init.c').read_text()
+    # Keep XNU's policy tables in __DATA_CONST and preserve the actual
+    # read-only finalization, instead of moving tables or relaxing mappings.
+    for symbol in ('_mac_policy_list','_mac_policy_static_entries'):
+        va=symbols[symbol]
+        seg=next(s for s in info['segments'] if int(s['vmaddr'],16)<=va<int(s['vmaddr'],16)+s['vmsize'])
+        assert seg['name']=='__DATA_CONST',seg
+    vm_source=tree/'osfmk/arm64/arm_vm_init.c'
+    finalizer=function(vm_source.read_text(),'arm_vm_prot_finalize')
+    assert 'arm_vm_page_granular_RNX(segDATACONSTB, segSizeDATACONST, ARM64_GRANULE_ALLOW_BLOCK);' in finalizer
+    assert 'SECURITY_READ_ONLY_LATE(mac_policy_list_t) mac_policy_list;' in text
+    # Freeze the diagnosis against the photographed old binary as a negative
+    # control for the previous late call and exact faulting write instruction.
+    old=ROOT/'reports/local/20261114-160802-831700-native-xnu/inputs/mach.development.lithium.unstripped'
+    assert sha(old)=='b78c4e043e78f92d48cebc0ee780bce5aa9d72a49b8637b05889fea9f5ea0c9b'
+    old_register=disasm(old,'_mac_policy_register','__TEXT_EXEC,__text')
+    assert re.search(r'fffffff0077e5dbc:\s+str\s+w8, \[x9, #0xec\]',old_register)
+    assert re.search(r'\bbl\s+_lithium_amfi_register\b',disasm(old,'_bsd_init','__TEXT_EXEC,__text'))
+    assert re.search(r'\bbl\s+_mac_policy_register\b', emitted['lithium_amfi_register'])
+    for call in ('copyin', 'copyout', 'proc_is64bit_data'):
+        assert re.search(r'\bbl\s+_'+call+r'\b', emitted['lithium_amfi_syscall']), call
+    for pattern in (r'str\s+xzr, \[sp, #0x8\]', r'add\s+x0, sp, #0x8',
+                    r'mov\s+w2, #0x8', r'mov\s+w2, #0x10'):
+        assert re.search(pattern, emitted['lithium_amfi_syscall']), pattern
+    (out / 'native-functions.txt').write_text('\n'.join(emitted.values()))
+    # Read-only extraction rechecks the firmware file hash before inspection.
+    subprocess.run(['python3', ROOT / 'scripts/inspect-ios14-dyld.py'], check=True)
+    dyld = WORK.parent / 'dyld-inspection/dyld'
+    assert sha(dyld) == '54fd7d7f710554dc976dddcdb0902fe7a779d37634c0ffc343b6febca61e6c2b'
+    firmware = disasm(dyld, '_amfi_check_dyld_policy_self')
+    syscall = disasm(dyld, '___mac_syscall')
+    # Verified firmware ABI: request at sp+16 with in_flags at +0 and a
+    # user output pointer at +8; the actual output lives separately at sp+8.
+    for pattern in (r'stp\s+x8, x0, \[sp, #0x8\]', r'add\s+x8, sp, #0x8',
+                    r'str\s+x8, \[sp, #0x18\]', r'add\s+x2, sp, #0x10',
+                    r'mov\s+w1, #0x5a', r'bl\s+___mac_syscall',
+                    r'ldr\s+x8, \[sp, #0x8\]', r'str\s+x8, \[x19\]'):
+        assert re.search(pattern, firmware), pattern
+    assert '"AMFI"' in firmware and 'dyld-851.31' in dyld.read_bytes().decode('latin1')
+    assert re.search(r'mov\s+x16, #0x17d', syscall) and re.search(r'svc\s+#0x80',syscall)
+    lines = (dyld.parent / 'disassembly.txt').read_text().splitlines()
+    index = next(i for i,l in enumerate(lines) if 'bl\t_amfi_check_dyld_policy_self' in l)
+    caller = '\n'.join(lines[index-3:index+21])
+    assert 'cbnz\tw0, 0x7ff0' in caller
+    # Bit0 and bits1..6 map to seven permission booleans in this real binary.
+    assert 'and\tw9, w8, #0x1' in caller
+    for bit in range(1,7):
+        assert re.search(r'ubfx\s+w\d+, w8, #'+str(bit)+r', #1', caller), bit
+    evidence = out / 'firmware-abi.txt'
+    evidence.write_text(firmware+'\n'+syscall+'\n'+caller+'\n')
+    inputs = [adapter, port, router, header, internal, vm_source, trust_stub, tree/'osfmk/kern/startup.c',
+        tree/'osfmk/arm64/machine_routines.c',tree/'bsd/kern/bsd_init.c', template, registration_template, Path(__file__),
+        ROOT/'scripts/inspect-ios14-dyld.py', ROOT/'scripts/inspect-native-xnu.py',
+        ROOT/'scripts/prepare-ios14-native-amfi.py',
+        ROOT/'ports/lithium/patches/xnu-7195/0024-lithium-dyld-policy.patch', dyld]
+    record = dict(all_passed=True, host_cases=cases, registration_cases=registration_cases,sanitizer='ASan + UBSan',
+        kernel_sha256=sha(args.kernel), firmware_dyld_sha256=sha(dyld), firmware_version='dyld-851.31',
+        query=dict(policy='AMFI', operation='0x5a', request_bytes=16, output_bytes=8, output_flags=0),
+        native_policy_syscall_slot=callback_slot, native_nonzero_policy_hooks=2,
+        native_registration_call_verified=True, non_lithium_and_no_macf_excluded=True,
+        registration_before_machine_lockdown=True, old_late_registration_rejected=True,
+        readonly_policy_tables_preserved=True, registration_load_flags=load_flags,
+        input_sha256={str(p):sha(p) for p in inputs},
+        log=str(out/'test.log'), firmware_abi_evidence=str(evidence),
+        scope='Actual callback, XNU syscall router, initmach and mobile registration with dependency shims; real host mprotect boundary and native startup order inspected',
+        device_operations=False, qemu_used=False)
+    (ROOT / 'reports/ios14-native-amfi-validation.json').write_text(json.dumps(record,indent=2)+'\n')
+    print(json.dumps(dict(all_passed=True, host_cases=len(cases), registration_cases=len(registration_cases),kernel_sha256=record['kernel_sha256'],
+        output_flags=0, native_nonzero_policy_hooks=2)))
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,120 @@
+{
+  "recorded_at": "2026-11-17T04:11:45.503530+08:00",
+  "revision": 7,
+  "source_sha256": {
+    "/home/jia/ios-mix1-build/hakios-lithium-ios16/xnu-src/xnu-8796.121.2/osfmk/console/serial_general.c": "106264ee7ce6885a4773daf90689c6f5394681c75d231a8a526668116cf6bb19",
+    "/home/jia/ios-mix1-build/hakios-lithium-ios16/xnu-src/xnu-8796.121.2/osfmk/console/serial_protos.h": "874bad4cf079bfea6276358c4f49989985e324bc2e613deb39475f35824ce073",
+    "/home/jia/ios-mix1-build/hakios-lithium-ios16/xnu-src/xnu-8796.121.2/bsd/kern/kern_proc.c": "a202868fdd945367b1d100e4846c010d9e3826338bfb237fec949ae6e553891d",
+    "/home/jia/ios-mix1-build/hakios-lithium-ios16/xnu-src/xnu-8796.121.2/bsd/sys/param.h": "054975412e6c24bd225c9ae7b3f5599bbed98a06b36e6be3c350ab00b0c9d412",
+    "/home/jia/ios-mix1-build/hakios-lithium-ios16/xnu-src/xnu-8796.121.2/osfmk/arm64/user_exception_trace.c": "b27ccd62b12e72f5f6985401b5dd856206e9cbd3ae6d3decbe01d5d0c51ad1ae",
+    "/home/jia/ios-mix1-build/hakios-lithium-ios16/xnuloader/loader.c": "4dbc866f82ff9c5129e54ee1bd59a642157aa7b5a55ef4632043636a998d310c"
+  },
+  "snapshot": "reports/local/20261117-032135-817008-ios16-r7/snapshot-041121-767177",
+  "confirmed_diagnostic_gaps": {
+    "boot_arguments": {
+      "runtime_bytes": 607,
+      "requested_bytes": 631,
+      "loader_capacity": 608,
+      "exact_truncated_prefix": true,
+      "omitted_suffix": "ks_tname=* ustacks_top=1",
+      "ustacks_top_enabled": false,
+      "finite_count_and_related_processes_present": true,
+      "consequence": "ustacks_top and tname omitted; finite multi-process snapshots still enabled"
+    },
+    "console_record": {
+      "default_buffer_bytes": 256,
+      "max_text_bytes": 255,
+      "raw_255_byte_records": 82,
+      "total_thread_records": 178,
+      "consequences": "long printf drops tail and newline before USB framing; adjacent records need offset-based parsing",
+      "upstream_opt_in": "drain_uart_sync=1",
+      "opt_in_present": false
+    },
+    "process_selection": {
+      "getter": "proc_name_address -> p_comm",
+      "max_command_name": 16,
+      "requested_name": "containermanagerd",
+      "requested_length": 17,
+      "observed_short_name": "containermanager",
+      "exact_match_misses_long_name": true,
+      "consequence": "missing selected container-manager snapshot does not prove absent service"
+    }
+  },
+  "host_parser": {
+    "check_report": "reports/hakios-ios16-ustacks-parser-checks.json",
+    "source": "scripts/hakios_ustacks_log.py",
+    "adjacent_records_separated": true,
+    "partial_last_frame_excluded": true,
+    "owner_attribution_not_borrowed_across_records": true
+  },
+  "candidate_owner_pairs": [
+    {
+      "sequence": 2,
+      "process": "runningboardd",
+      "pid": 7,
+      "waiter_tid": "0xfe",
+      "owner_tid": "0xff",
+      "matches": "1",
+      "lookup": "0",
+      "owner_stack_found": true
+    },
+    {
+      "sequence": 4,
+      "process": "SpringBoard",
+      "pid": 8,
+      "waiter_tid": "0xbd",
+      "owner_tid": "0xeb",
+      "matches": "1",
+      "lookup": "0",
+      "owner_stack_found": true
+    },
+    {
+      "sequence": 5,
+      "process": "SpringBoard",
+      "pid": 8,
+      "waiter_tid": "0xbd",
+      "owner_tid": "0xeb",
+      "matches": "1",
+      "lookup": "0",
+      "owner_stack_found": true
+    },
+    {
+      "sequence": 6,
+      "process": "SpringBoard",
+      "pid": 8,
+      "waiter_tid": "0xbd",
+      "owner_tid": "0xeb",
+      "matches": "1",
+      "lookup": "0",
+      "owner_stack_found": true
+    },
+    {
+      "sequence": 7,
+      "process": "SpringBoard",
+      "pid": 8,
+      "waiter_tid": "0xbd",
+      "owner_tid": "0xeb",
+      "matches": "1",
+      "lookup": "0",
+      "owner_stack_found": true
+    },
+    {
+      "sequence": 8,
+      "process": "SpringBoard",
+      "pid": 8,
+      "waiter_tid": "0xbd",
+      "owner_tid": "0xeb",
+      "matches": "1",
+      "lookup": "0",
+      "owner_stack_found": true
+    }
+  ],
+  "lock_owner_deadlock_root_cause_verified": false,
+  "desktop_verified": false,
+  "recommended_next_revision": [
+    "preflight full loader-prefixed boot arguments and reject truncation",
+    "use short diagnostic records or reviewed upstream synchronous-drain option within argument budget",
+    "match full process names via existing upstream longname getter or exact reviewed short alias",
+    "keep UFS installation and current run; use repeated snapshots to distinguish transient contention"
+  ]
+}

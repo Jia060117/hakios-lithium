@@ -1,0 +1,324 @@
+{
+  "schema": 1,
+  "revision": 11,
+  "recorded_at": "2026-11-17T22:02:20.677316+08:00",
+  "snapshot": "reports/local/20261117-211346-406347-ios16-r11/snapshot-214543-479712",
+  "terminal": "normal_timer_return_confirmed_by_usb_and_user_photo",
+  "transport": {
+    "raw_bytes": 1333195,
+    "console_bytes": 1136171,
+    "frames": 6157,
+    "raw_sha256": "f89625d58f9813c6d50f53a2b3696ccb4e29c8234769d8d4965072ad09590b06",
+    "console_sha256": "f8c0987eaacbf142f74e3669449c0602fc13cd8dafe032bcfdcfda2891d82864",
+    "first_offset": 0,
+    "final_offset": 1136171,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "incomplete_frame_bytes": 0,
+    "device_lost_max": 0,
+    "frames_reporting_device_loss": 0,
+    "independent_parser_agrees_with_frozen_receiver": true,
+    "frozen_redecode_equals_complete_console": true,
+    "transport_verified": true,
+    "kernel_banner_offset": 0,
+    "timer_offset": 1135968,
+    "normal_return_offset": 1136053,
+    "drain_success": true,
+    "drain_records": [
+      {
+        "offset": 1136120,
+        "drained": 1,
+        "target": 1136120
+      }
+    ],
+    "emitted_kernel_stream_through_timer_verified": true,
+    "all_firmware_daemon_and_original_printf_logs_complete": false,
+    "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
+  },
+  "source_writer_dropped_bytes": 1766,
+  "source_logs_complete": false,
+  "photo": {
+    "path": "reports/local/20261117-211346-406347-ios16-r11/terminal-user-photo.jpg",
+    "sha256": "cf3d4143ca25b9f18f86af32c0d4898f199b6c075fceb6056181a870e56d1d0b",
+    "text": [
+      "LITHIUM IOS16 RETURN",
+      "TIMER DEADLINE REACHED",
+      "NO PANIC TEXT IN RETAINED LOG",
+      "RAW BYTES 1267366",
+      "writer contention dropped bytes 1766",
+      "timer boundary drain 1 target 1136120"
+    ],
+    "scope": "User photo confirms UEFI terminal summary; no SpringBoard desktop observed."
+  },
+  "operations": {
+    "14": {
+      "writeData": {
+        "pid": 14,
+        "op": 4,
+        "name": "writeData",
+        "begin": 609,
+        "end": 609,
+        "fail": 0,
+        "distinct": 458,
+        "repeat": 151,
+        "total_us": 139703441,
+        "max_us": 2222757,
+        "line": 10196
+      },
+      "metadata": {
+        "pid": 14,
+        "op": 5,
+        "name": "metadata",
+        "begin": 608,
+        "end": 608,
+        "fail": 0,
+        "distinct": 0,
+        "repeat": 0,
+        "total_us": 149846721,
+        "max_us": 2264335,
+        "line": 10205
+      },
+      "protection": {
+        "pid": 14,
+        "op": 6,
+        "name": "protection",
+        "begin": 151,
+        "end": 151,
+        "fail": 0,
+        "distinct": 0,
+        "repeat": 0,
+        "total_us": 44493943,
+        "max_us": 2327574,
+        "line": 10210
+      },
+      "replace": {
+        "pid": 14,
+        "op": 7,
+        "name": "replace",
+        "begin": 151,
+        "end": 151,
+        "fail": 0,
+        "distinct": 0,
+        "repeat": 0,
+        "total_us": 118097448,
+        "max_us": 22923753,
+        "line": 10215
+      }
+    },
+    "8": {
+      "SBRecord": {
+        "pid": 8,
+        "op": 8,
+        "name": "SBRecord",
+        "begin": 1,
+        "end": 0,
+        "fail": 0,
+        "distinct": 1,
+        "repeat": 0,
+        "total_us": 0,
+        "max_us": 0,
+        "line": 10225
+      }
+    },
+    "28": {
+      "bundle": {
+        "pid": 28,
+        "op": 0,
+        "name": "bundle",
+        "begin": 382,
+        "end": 382,
+        "fail": 3,
+        "distinct": 382,
+        "repeat": 0,
+        "total_us": 198239071,
+        "max_us": 1208816,
+        "line": 10234
+      },
+      "container": {
+        "pid": 28,
+        "op": 1,
+        "name": "container",
+        "begin": 953,
+        "end": 953,
+        "fail": 310,
+        "distinct": 953,
+        "repeat": 0,
+        "total_us": 135289526,
+        "max_us": 12105443,
+        "line": 10244
+      },
+      "scan": {
+        "pid": 28,
+        "op": 2,
+        "name": "scan",
+        "begin": 4,
+        "end": 4,
+        "fail": 0,
+        "distinct": 4,
+        "repeat": 0,
+        "total_us": 841614200,
+        "max_us": 680710225,
+        "line": 10257
+      },
+      "gather": {
+        "pid": 28,
+        "op": 3,
+        "name": "gather",
+        "begin": 1,
+        "end": 0,
+        "fail": 0,
+        "distinct": 0,
+        "repeat": 0,
+        "total_us": 0,
+        "max_us": 0,
+        "line": 10264
+      },
+      "enumerate": {
+        "pid": 28,
+        "op": 9,
+        "name": "enumerate",
+        "begin": 1,
+        "end": 0,
+        "fail": 0,
+        "distinct": 0,
+        "repeat": 0,
+        "total_us": 0,
+        "max_us": 0,
+        "line": 10265
+      }
+    }
+  },
+  "last_progress_snapshot": 61,
+  "progress_snapshot_counts": {
+    "14": 61,
+    "8": 61,
+    "28": 61
+  },
+  "last_groups": [
+    {
+      "line": 10270,
+      "text": "LITHIUM PROGRESS pid=28 group=0x0 call=0 kind=observer-hooks-installed count=1 value=11 tid=0x122 last_us=5948026523"
+    },
+    {
+      "line": 10271,
+      "text": "LITHIUM PROGRESS pid=28 group=0x0 call=0 kind=builder-init-return count=1 value=1 tid=0x122 last_us=5948347420"
+    },
+    {
+      "line": 10272,
+      "text": "LITHIUM PROGRESS pid=28 group=0x0 call=0 kind=database-seed-enter count=1 value=0 tid=0x122 last_us=5948347425"
+    },
+    {
+      "line": 10273,
+      "text": "LITHIUM PROGRESS pid=28 group=0x0 call=0 kind=database-seed-return count=1 value=1 tid=0x122 last_us=5959069587"
+    },
+    {
+      "line": 10274,
+      "text": "LITHIUM PROGRESS pid=28 group=0x0 call=0 kind=blocking-fetch-enter count=1 value=0 tid=0x132 last_us=5959292403"
+    },
+    {
+      "line": 10275,
+      "text": "LITHIUM PROGRESS pid=28 group=0x0 call=0 kind=journal-recovery-enter count=1 value=0 tid=0x122 last_us=5959404671"
+    },
+    {
+      "line": 10276,
+      "text": "LITHIUM PROGRESS pid=28 group=0x0 call=0 kind=inactive-installs-enter count=1 value=0 tid=0x180 last_us=5959430292"
+    },
+    {
+      "line": 10277,
+      "text": "LITHIUM PROGRESS pid=28 group=0x100bf5700 call=0x181c8b0b4 kind=group-enter count=1 value=0 tid=0x122 last_us=5959069203"
+    },
+    {
+      "line": 10278,
+      "text": "LITHIUM PROGRESS pid=28 group=0x100bf5700 call=0x181cc498c kind=group-wait-enter count=1 value=-1 tid=0x132 last_us=5959292418"
+    },
+    {
+      "line": 10279,
+      "text": "LITHIUM PROGRESS pid=28 group=0x100bf5700 call=0x181d07bf8 kind=group-wait-enter count=1 value=-1 tid=0x180 last_us=5959430309"
+    },
+    {
+      "line": 10280,
+      "text": "LITHIUM PROGRESS pid=28 group=0x100bf5700 call=0x181c5879c kind=group-enter count=707 value=0 tid=0x149 last_us=7746353723"
+    },
+    {
+      "line": 10281,
+      "text": "LITHIUM PROGRESS pid=28 group=0x100bf5700 call=0x181c589e4 kind=group-leave count=707 value=0 tid=0x149 last_us=7746387466"
+    }
+  ],
+  "ready_observed": false,
+  "springboard": {
+    "identifier": "com.apple.mobilenotes",
+    "invocation_id": 1,
+    "tid": "0xc5",
+    "active_us": 1784633686,
+    "main_queue": false,
+    "runloop": false,
+    "commits": 0,
+    "sample_owner_tid": "0x160",
+    "owner_association_rounds": [
+      2,
+      3,
+      4,
+      5
+    ],
+    "owner_association_span_seconds": 1080.269436,
+    "note": "Single observed LSApplicationRecord call; not proof one IPC stays in flight throughout."
+  },
+  "slow_path": {
+    "pid": 14,
+    "tid": "0x6e5",
+    "replacement_invocation": 926,
+    "replacement_us": 22923753,
+    "replacement_start_us": 7462632936,
+    "replacement_end_us": 7485556689,
+    "rename_syscall": 128,
+    "rename_us": 20549070,
+    "rename_error": 0,
+    "rename_start_us": 7464941272.96875,
+    "rename_end_us": 7485490343.854167,
+    "observed_elapsed_fraction": 0.8964095015331913,
+    "path": "/private/var/mobile/Containers/Temp/Data/PluginKitPlugin/1BCAC84E-A435-4488-876D-FEB29175D01E",
+    "evidence": "Same PID/TID and nested measured interval. Wall time includes blocking and scheduling; no lower-layer cause established."
+  },
+  "fs_loss_summary": "LITHIUM FS snapshot dropped=47 full=0 stats_full=0 end_lost=8 replaced=0 ticks=144389319293",
+  "fs_scope": "Selected calls; 47 trylock omissions, 8 lost completions. Five snapshots, last before terminal. Not exhaustive I/O profiling.",
+  "stack_rounds": 5,
+  "first_stack_round_reported_processes": 6,
+  "first_stack_round_parsed_processes": 5,
+  "symbols": {
+    "path": "reports/local/20261117-211346-406347-ios16-r11/snapshot-214543-479712/stack-symbols.json",
+    "slide": "0x4bcb0000",
+    "supplied_cache_uuid": "e5420db330d033aa8b7e05b5038bb46d",
+    "producer_stages": [
+      "Info.plist loading/filtering",
+      "code-signature digest computation",
+      "Info.plist formatting/loading",
+      "container_set_code_signing_info_for_identifier",
+      "container_set_info_value"
+    ]
+  },
+  "observations": [
+    "Distinct object completion continues to the last snapshot; no observed same-key retry loop.",
+    "Four directory scan calls returned successfully; enclosing gather/enumerate not returned by final snapshot.",
+    "Observed per-object ready-group enter/leave counts both 707; initial seed enter recorded once without matching known leave.",
+    "Group callsite filter is not the internal group balance; no forced readiness or deadlock claim.",
+    "Some create=0 error21 requests followed by create=1 successful return for identical identifiers.",
+    "Three CPUs online; first base layer 60808ms; final free943MB, available2460MB."
+  ],
+  "conclusions": {
+    "immediate_dependency": "SpringBoard waiting for LaunchServices database readiness",
+    "slow_build_supported": true,
+    "circular_deadlock_proven": false,
+    "ufs_driver_root_cause_proven": false,
+    "longer_runtime_guarantees_desktop": false,
+    "root_cause_fixed": false,
+    "desktop_passed": false
+  },
+  "next_steps": [
+    "Compare bounded system/plugin scan scope and signature path to pinned upstream and supplied image.",
+    "Trace the measured slow rename and close through HFS/journal, flush, UFS bridge and firmware worker timing.",
+    "Preserve original ready semantics; if subsequently extending observation, require measurable progress and a finite cap.",
+    "Repair source log contention and retain critical summaries; do not repeat R11 or reflash userdata."
+  ],
+  "device_commands_issued_this_review": false,
+  "runtime_code_changed": false
+}

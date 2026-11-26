@@ -1,0 +1,70 @@
+#!/usr/bin/env python3
+"""Check real allocation call arguments against the pinned 7195 API gate."""
+import argparse
+import hashlib
+import json
+from pathlib import Path
+import re
+import subprocess
+
+ROOT=Path(__file__).resolve().parents[1]
+
+def disasm(kernel,symbol):
+    return subprocess.check_output(['llvm-objdump','--macho','--disassemble','--no-show-raw-insn',
+        '--section=__TEXT_EXEC,__text','--dis-symname',symbol,str(kernel)],text=True)
+
+def instructions(text):
+    return [(int(m[1],16),m[2]) for line in text.splitlines()
+            if (m:=re.match(r'^([0-9a-f]+):\s+(.+?)\s*$',line))]
+
+def constant(ins,call,reg):
+    value=None
+    start=max([i+1 for i,(_,op) in enumerate(ins[:call]) if op.startswith('bl\t')]+[0])
+    for _,op in ins[start:call]:
+        m=re.fullmatch(r'mov\s+[wx]'+str(reg)+r',\s*#(0x[0-9a-f]+|\d+)',op)
+        k=re.fullmatch(r'movk\s+[wx]'+str(reg)+r',\s*#(0x[0-9a-f]+|\d+),\s*lsl #(\d+)',op)
+        if m:value=int(m[1],0)
+        elif k and value is not None:
+            shift=int(k[2]);value=(value&~(0xffff<<shift))|(int(k[1],0)<<shift)
+        elif re.match(r'\w+\s+[wx]'+str(reg)+r',',op):value=None
+    if value is None:raise ValueError(f'argument x{reg} not a known immediate')
+    return value
+
+def check(text,mask):
+    ins=instructions(text)
+    calls=[i for i,(_,op) in enumerate(ins) if re.fullmatch(r'bl\s+_kmem_alloc_contig',op)]
+    if len(calls)!=1:raise ValueError('expected one allocation call')
+    idx=calls[0];flags=constant(ins,idx,6)
+    if flags&~mask:raise ValueError(f'7195 rejects flags {flags:#x}; allowed mask {mask:#x}')
+    zero=next(i for i,(_,op) in enumerate(ins) if re.fullmatch(r'bl\s+_bzero',op))
+    if zero<=idx or constant(ins,zero,1)!=0x104000:raise ValueError('full DMA zeroing missing')
+    if not any(re.match(r'cbz\s+w\d+,',op) for _,op in ins[idx:zero]):raise ValueError('allocation result branch missing')
+    if not any(re.fullmatch(r'bl\s+_pmap_find_phys',op) for _,op in ins[zero:]):raise ValueError('physical address validation missing')
+    return dict(flags=flags,allowed_flags_mask=mask,allocation_call=hex(ins[idx][0]),zero_call=hex(ins[zero][0]),zero_bytes=0x104000)
+
+def main():
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('kernel',type=Path);a=p.parse_args()
+    allocator=ROOT/'upstream/research/xnu-7195.141.2/osfmk/vm/vm_kern.c'
+    header=ROOT/'upstream/research/xnu-7195.141.2/osfmk/vm/vm_kern.h'
+    gate=re.search(r'flags & ~\((KMA_\w+(?: \| KMA_\w+)*)\)',allocator.read_text()).group(1)
+    values={k:int(v,16) for k,v in re.findall(r'(KMA_\w+)\s*=\s*(0x[0-9a-fA-F]+)',header.read_text())}
+    mask=0
+    for name in gate.split(' | '):mask|=values[name]
+    current=disasm(a.kernel,'_ufs_alloc_dma');result=check(current,mask)
+    old=ROOT/'reports/local/20261113-144858-642552-native-xnu/inputs/mach.development.lithium.unstripped'
+    assert hashlib.sha256(old.read_bytes()).hexdigest()=='a092ee4ebf1c6625de2d6d01ec20300583beaf5b74b828c6df9acdfffe1cf1e3'
+    old_dis=disasm(old,'_lithium_ufs_rootdev')
+    try:check(old_dis,mask)
+    except ValueError as exc:
+        assert '7195 rejects flags 0x1040' in str(exc)
+        rejected=str(exc)
+    else:raise AssertionError('real round7 regression not rejected')
+    record=dict(passed=True,kernel_sha256=hashlib.sha256(a.kernel.read_bytes()).hexdigest(),
+        allocator_source_sha256=hashlib.sha256(allocator.read_bytes()).hexdigest(),
+        flags_header_sha256=hashlib.sha256(header.read_bytes()).hexdigest(),
+        accepted_flag_names=gate,compiled_call=result,round7_rejected=rejected,
+        disassembly=current,hardware_allocation_verified=False,qemu_used=False)
+    (ROOT/'reports/ios14-native-ufs-dma-validation.json').write_text(json.dumps(record,indent=2)+'\n')
+    print(json.dumps({k:v for k,v in record.items() if k!='disassembly'}))
+
+if __name__=='__main__':main()

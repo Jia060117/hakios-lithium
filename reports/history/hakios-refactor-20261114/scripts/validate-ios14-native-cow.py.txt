@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+"""Run native host tests of the shipped overlay/adapter/strategy and bind kernel evidence."""
+import argparse
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import re
+import subprocess
+
+ROOT = Path(__file__).resolve().parents[1]
+TREE = Path.home() / 'ios-mix1-build/xnu7195-lithium/src'
+OUT = ROOT / 'out/mount-phase1/cow-validation'
+
+
+def sha(p):
+    return hashlib.sha256(p.read_bytes()).hexdigest()
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('kernel', type=Path)
+    args = parser.parse_args()
+    OUT.mkdir(exist_ok=True)
+    driver_path = TREE / 'bsd/dev/lithium_ufs.c'
+    driver = driver_path.read_text()
+    canonical = ROOT / 'ports/lithium/native/ufs_cow.h'
+    assert canonical.read_bytes() == (TREE / 'bsd/dev/lithium_ufs_cow.h').read_bytes()
+    adapter = ROOT / 'ports/lithium/native/ufs_cow_adapter.inc'
+    assert adapter.read_text() in driver
+    spec = importlib.util.spec_from_file_location('baseline_cow', ROOT / 'scripts/prepare-ios14-native-alias-probe.py')
+    helper = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(helper)
+    patch = ROOT / 'ports/lithium/patches/xnu-7195/0026-lithium-volatile-root.patch'
+    old = helper.baseline('bsd/dev/lithium_ufs.c', patch)
+    def function(text, name):
+        start = text.index('\n'+name+'(')
+        end = text.index('\n}', start) + 2
+        return text[start:end]
+    # Transport, direction, allowlist, DMA and GPT checks remain byte-identical.
+    for name in ('ufs_scsi','ufs_read_blocks','ufs_find_partition','ufs_capacity','ufs_take_over_host','ufs_alloc_dma'):
+        assert function(driver, name) == function(old, name), name
+    assert '(cdb[0] != 0x00 && cdb[0] != 0x25 && cdb[0] != 0x28)' in driver
+    start = driver.index('static void\nlithium_ufs_strategy(')
+    end = driver.index('\nstatic int\nlithium_ufs_ioctl(', start)
+    (OUT / 'driver-strategy.inc').write_text(driver[start:end])
+    logs = []
+    for name in ('ufs-cow-test', 'ufs-cow-adapter-test'):
+        src = ROOT / ('ports/lithium/host/'+name+'.c')
+        exe = OUT / name
+        command = ['clang', '-std=c11', '-O1', '-g', '-fsanitize=address,undefined', '-fno-omit-frame-pointer',
+            '-Wall', '-Wextra', '-Werror', '-Wno-unused-function', '-I'+str(OUT)]
+        if name.endswith('adapter-test'): command += ['-DTEST_DRIVER_GLUE=1']
+        subprocess.run([*command, src, '-o', exe], check=True)
+        p = subprocess.run([exe], capture_output=True, text=True)
+        log = OUT / (name+'.log')
+        log.write_text(p.stdout+p.stderr)
+        assert p.returncode == 0, (name, p.returncode, p.stdout, p.stderr)
+        logs.append(dict(path=str(log.relative_to(ROOT)),sha256=sha(log),passed_groups=p.stdout.count('PASS:')))
+    disassembly = {}
+    for symbol in ('_lithium_ufs_strategy','_ufs_cow_init','_ufs_cow_alloc','_lc_read','_lc_write','_vfs_mountroot','_lithium_ufs_write','_lithium_ufs_ioctl'):
+        text = subprocess.check_output(['llvm-objdump','--macho','--disassemble','--no-show-raw-insn',
+            '--section=__TEXT_EXEC,__text','--dis-symname',symbol,args.kernel],text=True)
+        assert re.search(r'^[0-9a-f]+:', text, re.M), symbol
+        path = OUT / (symbol[1:]+'.asm')
+        path.write_text(text)
+        disassembly[symbol] = text
+    for name in ('_lc_read','_lc_write'):
+        assert re.search(r'bl\s+'+name+r'\b', disassembly['_lithium_ufs_strategy'])
+    assert re.search(r'bl\s+_lc_write\b', disassembly['_ufs_cow_init'])
+    assert re.search(r'bl\s+_lithium_ufs_root_is_writable\b', disassembly['_vfs_mountroot'])
+    assert re.search(r'b[l]?\s+_physio\b', disassembly['_lithium_ufs_write'])
+    zalloc = TREE / 'osfmk/kern/zalloc.h'
+    assert re.search(r'Z_NOPAGEWAIT\s*=\s*0x0002', zalloc.read_text())
+    assert re.search(r'mov\s+w2, #0x2\b', disassembly['_ufs_cow_alloc'])
+    seed_report = ROOT / 'reports/ios14-preboot-seed.json'
+    seed = json.loads(seed_report.read_text())
+    assert seed['all_passed'] and seed['fsck_passed'] and seed['original_files_and_metadata_verified']
+    assert sha(ROOT / seed['seed_path']) == seed['seed_sha256']
+    for name, expected in seed['source_sha256'].items(): assert sha(ROOT / name) == expected
+    for log in seed['logs'].values(): assert sha(ROOT / log['path']) == log['sha256']
+    inputs = [canonical, adapter, patch, Path(__file__), driver_path, TREE / 'bsd/vfs/vfs_subr.c',
+        ROOT / 'ports/lithium/host/ufs-cow-test.c', ROOT / 'ports/lithium/host/ufs-cow-adapter-test.c',
+        ROOT / 'ports/lithium/host/hfs-image-compare.inc',zalloc,seed_report,ROOT / seed['seed_path']]
+    result = dict(all_passed=True,qemu_used=False,hardware_verified=False,
+        kernel_sha256=sha(args.kernel),root_bytes=16<<30,volatile_limit_bytes=64<<20,
+        lower_scsi_readonly_unchanged=True,exact_driver_strategy_tested=True,
+        seed_init_rollback_tested=True,native_calls_verified=True,allocator_nopagewait_verified=True,
+        seeded_root_fsck_and_full_comparison=True,seed_sha256=seed['seed_sha256'],
+        seed_report_sha256=sha(seed_report),host_logs=logs,
+        input_sha256={str(p):sha(p) for p in inputs},
+        evidence_sha256={str(p.relative_to(ROOT)):sha(p) for p in OUT.iterdir() if p.suffix in ('.asm','.log','.inc')})
+    (ROOT / 'reports/ios14-native-cow-validation.json').write_text(json.dumps(result,indent=2)+'\n')
+    print(json.dumps({k:result[k] for k in ('all_passed','kernel_sha256','exact_driver_strategy_tested','lower_scsi_readonly_unchanged','native_calls_verified')},indent=2))
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,170 @@
+"""Temporarily boot the validated enlarged-ramdisk load probe on lithium.
+
+--check-only checks local inputs without contacting a phone. --boot verifies
+the authorized stock phone, runs fastboot boot, reads the same-boot journal,
+and checks an ordinary stock reboot. No flash/erase/root commands.
+"""
+import argparse
+from datetime import datetime
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import re
+import shutil
+import struct
+import subprocess
+import time
+
+ROOT=Path(__file__).resolve().parents[1]
+OUT=ROOT/'out/handoff-probe'
+
+def read(path): return json.loads(path.read_text(encoding='utf-8'))
+def write(path,value): path.write_text(json.dumps(value,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+def sha(path): return hashlib.sha256(path.read_bytes()).hexdigest()
+
+def check_inputs():
+    package=read(OUT/'package.json'); validation=read(ROOT/'reports/handoff-probe-qemu.json')
+    assert package['kind']=='stock-chained-expanded-ramdisk-load-probe' and package['phone_boot_allowed']
+    assert package['static_occupancy_check_passed'] and package['android_sha1_roundtrip_valid']
+    assert not package['uefi_entered'] and not package['kernel_restore_performed']
+    assert validation['all_passed'] and validation['validated_cases']==14
+    assert all(case['passed'] for case in validation['cases'])
+    for key in ('image_sha256','probe_sha256','build_tag','sources'): assert package[key]==validation[key],key
+    for name,digest in package['sources'].items(): assert sha(ROOT/name)==digest,name
+    assert sha(ROOT/'scripts/validate-handoff-probe.py')==validation['validator_source_sha256']
+    image=ROOT/package['image_path']
+    assert sha(image)==package['image_sha256'] and image.stat().st_size==package['image_bytes']<64*1024**2
+    assert sha(OUT/'Image')==package['kernel_image_sha256']
+    assert sha(OUT/'handoff-ramdisk.bin')==package['ramdisk_sha256']
+    collector=read(ROOT/'reports/journal-probe-build.json')
+    assert sha(ROOT/'out/journal-probe/Image.probe')==package['collector_image_sha256']
+    assert collector['probe_sha256']==package['collector_probe_sha256']
+    return package,collector,image
+
+def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    group=parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('--check-only',action='store_true'); group.add_argument('--boot',action='store_true')
+    args=parser.parse_args()
+    package,collector,image=check_inputs()
+    if args.check_only:
+        print(json.dumps(dict(local_inputs_verified=True,qemu_cases=14,phone_contacted=False,
+            image_sha256=package['image_sha256']),indent=2)); return
+    adb=Path('C:/platform-tools/adb.exe'); fastboot=Path('C:/platform-tools/fastboot.exe')
+    assert adb.exists() and fastboot.exists(),'Use the Windows Python with C:/platform-tools'
+    local=ROOT/'reports/local'/(datetime.now().strftime('%Y%m%d-%H%M%S-%f')+'-handoff-load')
+    local.mkdir(parents=True)
+    events=[]
+    def command(argv,timeout=20):
+        try:
+            result=subprocess.run(list(map(str,argv)),capture_output=True,timeout=timeout)
+            events.append(dict(command=list(map(str,argv)),returncode=result.returncode,
+                stdout=result.stdout.decode(errors='replace'),stderr=result.stderr.decode(errors='replace')))
+            return result
+        except subprocess.TimeoutExpired:
+            events.append(dict(command=list(map(str,argv)),returncode=None,error='timeout'))
+            raise
+        finally: write(local/'commands.json',events)
+    def devices(executable,state):
+        result=command([executable,'devices'])
+        return [parts[0] for line in result.stdout.decode().splitlines()
+                if len(parts:=line.split())>=2 and parts[1]==state]
+    serials=devices(adb,'device')
+    assert len(serials)==1,'Exactly one authorized ADB phone required'
+    serial=serials[0]
+    def prop(key):
+        result=command([adb,'-s',serial,'shell','getprop',key]); assert result.returncode==0
+        return result.stdout.decode().strip()
+    def verify_android():
+        assert prop('ro.product.device')=='lithium'
+        assert prop('ro.build.version.incremental')=='V9.5.2.0.NAHCNFA'
+        assert prop('sys.boot_completed')=='1'
+    def wait_android(seconds):
+        deadline=time.monotonic()+seconds; next_notice=time.monotonic()+20
+        while time.monotonic()<deadline:
+            if serial in devices(adb,'device'):
+                if prop('sys.boot_completed')=='1': verify_android(); return True
+            if time.monotonic()>=next_notice:
+                print('Waiting for stock Android USB...',flush=True); next_notice=time.monotonic()+20
+            time.sleep(2)
+        return False
+    def raw(path):
+        result=command([adb,'-s',serial,'exec-out','cat',path])
+        assert result.returncode==0,path
+        return result.stdout
+    verify_android()
+    frozen=local/'inputs'; frozen.mkdir()
+    for src in (image,OUT/'package.json',OUT/'handoff-config.h',ROOT/'reports/handoff-probe-qemu.json',Path(__file__)):
+        shutil.copy2(src,frozen/src.name)
+    for name in package['sources']:
+        dst=frozen/name; dst.parent.mkdir(parents=True,exist_ok=True); shutil.copy2(ROOT/name,dst)
+    report=dict(schema=1,started_at=datetime.now().astimezone().isoformat(),image_sha256=package['image_sha256'],
+        build_tag=package['build_tag'],local_log_path=local.relative_to(ROOT).as_posix(),
+        partition_writes_performed=False,root_operations_performed=False,data_wipe_operations_performed=False,
+        uefi_entered=False,kernel_restore_performed=False,load_and_relocation_verified=False,
+        final_stock_boot_verified=False,status='entering fastboot')
+    public=ROOT/'reports/handoff-probe-device.json'; write(public,report)
+    print('Entering fastboot for the stock-chained load diagnostic...',flush=True)
+    assert command([adb,'-s',serial,'reboot','bootloader']).returncode==0
+    deadline=time.monotonic()+40
+    while time.monotonic()<deadline:
+        if serial in devices(fastboot,'fastboot'): break
+        time.sleep(1)
+    else: raise RuntimeError('Fastboot did not enumerate')
+    product=command([fastboot,'-s',serial,'getvar','product'])
+    assert re.search(rb'product:\s*MSM8996_A8(?:\s|$)',product.stdout+product.stderr)
+    unlocked=command([fastboot,'-s',serial,'oem','device-info'])
+    assert re.search(rb'Device unlocked:\s*true',unlocked.stdout+unlocked.stderr,re.I)
+    started=time.monotonic()
+    result=command([fastboot,'-s',serial,'boot',image],timeout=50)
+    report.update(fastboot_boot_accepted=result.returncode==0,status='waiting for diagnostic Android')
+    write(public,report)
+    if result.returncode:
+        command([fastboot,'-s',serial,'reboot']); raise RuntimeError('Temporary boot rejected; stock reboot requested')
+    if not wait_android(140):
+        report['status']='Android USB not observed; physical reset required'
+        write(public,report); raise SystemExit(2)
+    report.update(stock_android_return_verified=True,seconds_to_android_return=round(time.monotonic()-started,2))
+    property_path='/sys/firmware/devicetree/base/chosen/'+package['property']
+    failure=None
+    try:
+        record=raw(property_path); (local/'handoff-record.bin').write_bytes(record)
+        spec=importlib.util.spec_from_file_location('probe',ROOT/'scripts/boot-entry-probe.py')
+        probe=importlib.util.module_from_spec(spec); spec.loader.exec_module(probe)
+        decoded=probe.decode(record,collector['fields'],package['record_bytes'],package['record_marker'].encode())
+        journal=record[512:4608]; (local/'handoff-journal.bin').write_bytes(journal)
+        assert journal[:16]==package['journal_marker'].encode()
+        assert struct.unpack_from('<4I',journal,16)==(1,4096,4,0)
+        assert struct.unpack_from('<Q',journal,112)[0]==int(package['build_tag'],16)
+        assert struct.unpack_from('<QQ',journal,56)==(int(package['slot_fnv64'],16),int(package['stock_initrd_fnv64'],16))
+        assert decoded['exceptions']==0
+        start=raw('/sys/firmware/devicetree/base/chosen/linux,initrd-start')
+        end=raw('/sys/firmware/devicetree/base/chosen/linux,initrd-end')
+        assert len(start) in (4,8) and len(end) in (4,8)
+        assert int.from_bytes(start,'big')==0x44a00000 and int.from_bytes(end,'big')==0x44a00000+package['stock_initrd_bytes']
+        report.update(load_and_relocation_verified=True,handoff_entry=decoded,journal_sha256=hashlib.sha256(journal).hexdigest(),
+            original_ramdisk_start=hex(struct.unpack_from('<Q',journal,40)[0]),
+            original_ramdisk_end=hex(struct.unpack_from('<Q',journal,48)[0]),status='same-boot load and initrd relocation verified')
+    except Exception as error:
+        failure=error; report.update(status='Android returned; load diagnostic verification failed',verification_error=str(error))
+    finally:
+        write(public,report)
+        before=raw('/proc/sys/kernel/random/boot_id')
+        print('Checking an ordinary stock reboot...',flush=True)
+        assert command([adb,'-s',serial,'reboot']).returncode==0
+        time.sleep(4)
+        assert wait_android(180),'Ordinary stock reboot did not return'
+        after=raw('/proc/sys/kernel/random/boot_id')
+        # Android 7's legacy exec channel can return exit code zero and put
+        # cat's error text on stdout. Use a positive shell marker for absence.
+        absent=command([adb,'-s',serial,'shell',
+            'if test -d /sys/firmware/devicetree/base/chosen && test ! -e '+property_path+
+            '; then echo MIX1_PROBE_ABSENT; fi'])
+        assert before!=after and absent.stdout.strip()==b'MIX1_PROBE_ABSENT'
+        report.update(final_stock_boot_verified=True,final_stock_probe_property_absent=True)
+        write(public,report); write(local/'result.json',report)
+    if failure is not None: raise failure
+    print('PASS: enlarged ramdisk load, relocated stock initrd and ordinary stock reboot verified.',flush=True)
+
+if __name__=='__main__': main()

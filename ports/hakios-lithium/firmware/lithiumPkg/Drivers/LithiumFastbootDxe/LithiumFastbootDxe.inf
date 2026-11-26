@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: MIT
+[Defines]
+  INF_VERSION = 0x00010005
+  BASE_NAME = LithiumFastbootDxe
+  FILE_GUID = DC229FA1-8A73-4F05-AC63-BBD7CD6E8369
+  MODULE_TYPE = DXE_DRIVER
+  VERSION_STRING = 0.1
+  ENTRY_POINT = LithiumFastbootEntry
+[Sources]
+  LithiumFastbootDxe.c
+[Packages]
+  MdePkg/MdePkg.dec
+  ArmPkg/ArmPkg.dec
+  lithiumPkg/lithiumPkg.dec
+[LibraryClasses]
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  BaseMemoryLib
+  BaseLib
+  ArmLib
+  IoLib
+  ArmSmcLib
+[Depex]
+  TRUE

@@ -1,0 +1,3180 @@
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -1,3 +1,5 @@
++2026-11-23 GPU G0主机包冻结：用户选614.4MHz配置模型为基线，结束频率搜索；A530内核/MSM语义→Freedreno Gallium，Metal延后。G0 exact9 GCC/GPUCC字段双遍18读/0写，不读GPU/SMMU，完整VM页可释放映射/绑定logical0affinity1，缺开关不访问。实际完整内核14635e6d/隔离RAM镜像61bc8b82构建读回、最终嵌套FV无物理UFS且FastbootDXE精确，180秒/自动返回10秒；主机核心2696case470478check/适配器14case795check/打包22+FV6通过。本地匹配stock8固件64504字节仅忽略区，stock最低活跃133MHz、GFX CPR3/PMI8994S2区别于MX PM8994RPM，PAS13/供电/池所有权均未验；fb2只变一字节90186317未上机。Bacon/Kepler/Pasteur/Kant并行，main实际构建及来源/哈希复核；本阶段设备0、96/65/原索引/614/R20/low01旧冻结保持。按用户GPU计划§0等待一次G0 RAM上机批准，不沿用CPU阶段授权；见reports/hakios-ios16-gpu-g0-prepared.md/json。
++
+ 2026-11-23 R40 691.2MHz上机结案：02:01:35单次80681f0c/03同kernel/loader/Mu/root/Boot只变目标档，96/65。真实三核/E7/R20桌面，用户反馈较614小幅流畅；一组134事件/idle30s通过，第二组event_late_over_100ms于147queued/147copy/146dispatch瞬时值+1cleanup受控退出，非三组全通过或CPU运算失败。9560原始USB帧/2090909字节独立连续，0gap/dup/残帧/lost，source0，正常600timer/四stop/drain1 target2090858；非强制Data unmount0/seal0 request40980/finalready1，02:12:46唯一devices/product核实同机Fastboot。启动核峰79.4/perf76.5,77.8，初温比614高4.2C，不全归因频率；绘制band1各6样本中位17.004→15.146ms非物理FPS。保留614基线，甜点未定，不继续升档；无改压/刷分区/重试，原索引及旧冻结保持。见reports/hakios-ios16-device-r40-r40-ui-691-03.md/json及691-comparison/final-69103-021210。
+ 
+ 2026-11-23 R40 691.2MHz单档对照已启动：02:01:35接受80681f0c/03一次UFS，五项预检通过，96/65。与已验614第二轮同kernel252e58da/loader/Mu/root/Boot，仅cpu_perf_hz改691200000，真实E7/R20显示、600会话/自动返回、15秒操作30秒空闲三组。当前只采集同次USB，温度/实际UI/退出终态待证，不以参数当MHz实测。不刷分区/不写电压/不重试，原索引旧冻结保持。
+--- a/project.json
++++ b/project.json
+@@ -58,7 +58,7 @@
+     "latest_diagnostic_kernel_hardware_sha256": "eb5b407451e41be6b2b14ff4c6b7d24d034b1ba30470e396de0d989c35a83a4a"
+   },
+   "schema": 2,
+-  "stage": "R40: 691.2 MHz UFS desktop/touch/automatic return observed; full three-cycle test incomplete",
++  "stage": "A530 GPU G0 host preparation; user-fixed CPU baseline 614.4 MHz",
+   "project_instructions_path": "AGENTS.md",
+   "plan_path": "PLAN.md",
+   "operations_path": "OPERATIONS.md",
+@@ -3818,7 +3818,8 @@
+     "current_user_accepted_desktop_model_hz": 614400000,
+     "next_candidate_hz": 691200000,
+     "next_candidate_booted": true,
+-    "next_required": "Resolve or characterize automatic-input scheduling deadline and compare thermal conditions before raising daily profile"
++    "next_required": "Frequency search ended by user choice; progress GPU G0 at 614.4 MHz configuration model",
++    "status": "user_selected_614_baseline_gpu_next"
+   },
+   "r40_ufs_auto_return": {
+     "observed": true,
+@@ -3832,5 +3833,28 @@
+     "fastboot_same_serial_product": true,
+     "firmware_internal_trace_captured": false,
+     "report": "reports/hakios-ios16-device-r40-r40-ui-614-02.md"
++  },
++  "gpu_bringup": {
++    "cpu_baseline_model_hz": 614400000,
++    "cpu_choice": "user_accepted_2026-11-23",
++    "route": "A530 MSM-style kernel ABI then Freedreno Gallium/GLES; fill/blit first; Metal later",
++    "phase": "G0_host_ready_awaiting_device_approval",
++    "default_off": true,
++    "device_operations_this_phase": 0,
++    "next_device_approval_required": true,
++    "hardware_stage_passed": null,
++    "report": "reports/hakios-ios16-gpu-g0-prepared.md",
++    "g0_image": "evidence\\gpu-g0-20261123\\package\\g0-01\\lithium-hakios-ios16-gpu-g0-01.img",
++    "g0_image_sha256": "61bc8b8220f54e8a2b0772a694690901b89e48a65b2d52463c8f962ab02c7933",
++    "g0_kernel_sha256": "14635e6dcd3db6ab26226afbdf53f27a6a266d8931e335e91fc229d2b26ea1ff",
++    "g0_register_count": 9,
++    "g0_read_cap": 18,
++    "g0_gpu_writes": 0,
++    "firmware_files_available": 8,
++    "lowest_stock_gpu_opp_hz": 133000000,
++    "g1_power_runtime_verified": false,
++    "g2_pas_runtime_verified": false,
++    "fb2_image": "artifacts/hakios/lithium-ios16/phase4-gpu-off-fb2-614/lithium-hakios-ios16-gpu-off-fb2-614.img",
++    "fb2_runtime_verified": false
+   }
+ }
+--- a/ports/hakios-lithium/peripherals/kernel.inc
++++ b/ports/hakios-lithium/peripherals/kernel.inc
+@@ -55,12 +55,27 @@
+ 
+ #if !defined(LITHIUM_PERIPHERAL_HOST_TEST)
+ #include "touch-live.inc"
++#define LG0_READ_BARRIER() __asm__ volatile("dmb oshld" ::: "memory")
++#define LG0_MMIO_LOAD(address) (*(volatile uint32_t *)(address))
++#include "../gpu/g0-adapter.inc"
++#undef LG0_MMIO_LOAD
++#undef LG0_READ_BARRIER
+ #endif
+ 
+ static void
+ lithium_peripheral_worker(__unused thread_call_param_t p0, __unused thread_call_param_t p1)
+ {
+ #if !defined(LITHIUM_PERIPHERAL_HOST_TEST)
++    if (lithium_peripheral_requested.gpu_probe &&
++        lithium_peripheral_requested.gpu_stage == 0) {
++        if (lithium_peripheral_requested.touch ||
++            lithium_peripheral_requested.touch_stage_requested) {
++            printf("LITHIUM GPU stage=0 status=blocked reason=mixed_touch_probe mmio=0 gpu_writes=0\n");
++            return;
++        }
++        lithium_gpu_g0_probe();
++        return;
++    }
+     if (lithium_peripheral_requested.touch &&
+         lithium_peripheral_requested.touch_smp) {
+         struct lithium_touch_cpu_scope scope;
+--- a/ports/hakios-lithium/peripherals/contract.json
++++ b/ports/hakios-lithium/peripherals/contract.json
+@@ -1,202 +1,221 @@
+-{
+-  "scope": "R20 default-off; all old Stage1/ID/snapshot/R29/R30/PID1 bytes preserved; separate R31 exact transition-poll evidence and reviewed phase status",
+-  "baseline_sha256": "ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55",
+-  "before_sha256": {
+-    "drivers/input/hakios.input.c": "a8a427f1fb7c9c78cd69c531bdde87ee38d80ea1ed2a2f93dd58b0c0313c09dc"
+-  },
+-  "after_sha256": {
+-    "drivers/input/hakios.input.c": "c6527478edf7aa45f36069ce9638e35ffcd5936e07ccc8c6bf7a884d159411c7"
+-  },
+-  "default_off": true,
+-  "touch_stage0_static_report": true,
+-  "touch_stages_1_to_3_blocked": false,
+-  "mmio_access": true,
+-  "phone_operations": false,
+-  "touch_driver_implemented": false,
+-  "gpu_driver_implemented": false,
+-  "parser_sha256": "b4ca8b72eaabc085fc4496207b314752074f5ae8a003b1b9b52de8f414bd3f2c",
+-  "header_sha256": "35bd016da82f27741d74f9177ed774298fe3105ac95bdab78d09a4a87cbceec0",
+-  "touch_stage1_probe": true,
+-  "touch_stages_2_to_3_blocked": true,
+-  "mmio_default_off": true,
+-  "hardware_verified": false,
+-  "default_unchanged_when_stage_absent": true,
+-  "probe_budget_us": 300000,
+-  "probe_access_cap": 2048,
+-  "probe_poll_cap": 500,
+-  "uncontained_faults": [
+-    "synchronous external abort",
+-    "SError",
+-    "XPU fault",
+-    "never-completing MMIO",
+-    "ml_io_map allocation stall"
+-  ],
+-  "stage1_sha256": "04f47fb8949ebc0487e900ecdf65f524e19e6e92bc9ef90ee5837830283d5269",
+-  "touch_clock_init_default_off": true,
+-  "clock_init_arg": "touch_clock_init=1",
+-  "clock_cfg_writes": false,
+-  "clock_cmd_writes": false,
+-  "clock_hid_equivalence": "0 and 1 recognized only by explicit clock-init path; no actual Hz measurement",
+-  "clock_runtime_hardware_verified": false,
+-  "diagnostic_init_default_off": true,
+-  "diagnostic_init_arg": "touch_diag=1",
+-  "clock_cfg_stability_required": true,
+-  "touch_id_probe_default_off": true,
+-  "touch_id_probe_arg": "touch_id_probe=1",
+-  "touch_id_ram_only": true,
+-  "touch_id_target_address": "0x38",
+-  "touch_id_register": "0xa3",
+-  "touch_id_bytes": 1,
+-  "touch_id_attempts": 1,
+-  "touch_id_nominal_scl_hz": 100000,
+-  "touch_id_frequency_measured": false,
+-  "touch_id_max_us": 20000,
+-  "software_reset_writes": true,
+-  "external_touch_reset_writes": false,
+-  "regulator_writes": false,
+-  "physical_irq_attached": false,
+-  "physical_hid_events": false,
+-  "physical_owner_verified": false,
+-  "gic_writes": false,
+-  "gic_spi_intid": 138,
+-  "gic_observation_is_not_ownership": true,
+-  "ordinary_state_reset_only_after_clean_stop": false,
+-  "id_core_sha256": "e7e823932e456986dd389a1d050fb1defa0110c57eaf946c28a8eddd1aba5085",
+-  "id_adapter_sha256": "09c9700fd95dae41630f31d0942a9f3066ae4262b204d1f136e28f8a4b654b90",
+-  "touch_snapshot_default_off": true,
+-  "touch_snapshot_arg": "touch_snapshot=1",
+-  "snapshot_read_only": true,
+-  "snapshot_has_write_callback": false,
+-  "snapshot_reads_fifo_data": false,
+-  "snapshot_register_count": 17,
+-  "snapshot_passes": 2,
+-  "snapshot_per_register_validity": true,
+-  "snapshot_stable_is_atomic_or_ownership_proof": false,
+-  "snapshot_runtime_hardware_verified": false,
+-  "snapshot_register_read_side_effects_proven": false,
+-  "snapshot_max_us": 20000,
+-  "snapshot_no_transaction": true,
+-  "snapshot_core_sha256": "8f8e37552b2c05989a748827bda456a6b242398b4db797961099584bd6125b4f",
+-  "snapshot_adapter_sha256": "585ba0806fc542402a126c612ff7dfc0fe50ccae3b4c0225454a32e91008294b",
+-  "touch_qup_init_default_off": true,
+-  "touch_qup_init_arg": "touch_qup_init=1",
+-  "qup_init_ram_only": true,
+-  "qup_init_sw_reset_max": 1,
+-  "qup_init_id_call_max": 1,
+-  "qup_init_max_us": 100000,
+-  "qup_init_access_cap": 4096,
+-  "qup_init_poll_cap": 256,
+-  "qup_init_poll_delay_us": 10,
+-  "conditional_id_only": true,
+-  "strict_id_guard_unchanged": true,
+-  "id_ordinary_state_reset_only_after_clean_stop": true,
+-  "qup_init_core_sha256": "0573ad9f28a3b9fe8b6f87887d23b6a54a080b7d7305ffcd15ca3d0ccb2f9cfd",
+-  "qup_init_adapter_sha256": "ef5290df73f737a6ccfbe5bc6db9da31c0d53fa5145855cc295f93738206cf76",
+-  "qup_init_runtime_hardware_verified": false,
+-  "qup_init_source_fingerprint": "exact R28 inherited two-pass 17-register sample only; not ownership proof",
+-  "qup_init_interrupt_policy": "Literal stock ERROR_FLAGS_EN=0x3c temporarily enables QUP error sources; per-write GIC available-view enable/pending/active checks, no global exclusion guarantee",
+-  "qup_init_clock_policy": "No base CLK_CTL write; unchanged ID sets nominal vendor100kHz divider after RESET-to-RUN; actual Hz unmeasured",
+-  "touch_qup_state_default_off": true,
+-  "touch_qup_state_arg": "touch_qup_state=1",
+-  "qup_state_ram_only": true,
+-  "qup_state_pre_fifo_only": true,
+-  "qup_state_has_fifo_io": false,
+-  "qup_state_has_id_call": false,
+-  "qup_state_sw_reset_max": 1,
+-  "qup_state_snapshot_phases": 8,
+-  "qup_state_snapshot_passes": 2,
+-  "qup_state_registers_per_pass": 17,
+-  "qup_state_runtime_hardware_verified": false,
+-  "qup_state_adapter_max_us": 100000,
+-  "qup_state_adapter_max_accesses": 4096,
+-  "first_run_bus_activity_unverified": true,
+-  "first_run_may_resume_retained_activity": true,
+-  "first_run_traffic_absence_guaranteed": false,
+-  "qup_state_new_fifo_tags_requested": false,
+-  "qup_state_core_sha256": "72792553f4429910c05d124453d8e2f094bad6470f60ccbea60b893b7b7c3a66",
+-  "qup_state_adapter_sha256": "eabc05c5dddf5572f396741a7b2b436d4bc46bdf7100b5c4335fc1f41221df7e",
+-  "qup_state_external_callbacks_after_adapter_poison": false,
+-  "qup_state_terminal_gic_read": false,
+-  "qup_state_terminal_gic_log": "unread; only entry and pre-write available-view checks",
+-  "touch_qup_phase_default_off": true,
+-  "touch_qup_phase_arg": "touch_qup_phase=1",
+-  "qup_phase_ram_only": true,
+-  "qup_phase_pre_fifo_only": true,
+-  "qup_phase_has_fifo_io": false,
+-  "qup_phase_has_id_call": false,
+-  "qup_phase_sw_reset_max": 1,
+-  "qup_phase_snapshot_phases": 8,
+-  "qup_phase_snapshot_passes": 2,
+-  "qup_phase_registers_per_pass": 17,
+-  "qup_phase_poll_slots_max": 4,
+-  "qup_phase_poll_fields": 5,
+-  "qup_phase_poll_per_field_validity": true,
+-  "qup_phase_failed_poll_retained": true,
+-  "qup_phase_poll_logging_extra_mmio": false,
+-  "qup_phase_poll_logging_extra_time_callback": false,
+-  "qup_phase_status_policy": "experimental_exact_observed_pair_by_phase",
+-  "qup_phase_runtime_hardware_verified": false,
+-  "qup_phase_adapter_max_us": 100000,
+-  "qup_phase_adapter_max_accesses": 4096,
+-  "qup_phase_terminal_gic_read": false,
+-  "qup_phase_terminal_gic_log": "unread; entry/pre-write available-view only",
+-  "qup_phase_external_callbacks_after_adapter_poison": false,
+-  "qup_phase_core_sha256": "6ff510c6deb801115929d70b3a6d1284e6640f63e2b1af02972ec9c723824fc9",
+-  "qup_phase_adapter_sha256": "837e69e78c94bee9985d4016c44387cc1cb2c8c1e2155ce3071ee70455d83b57",
+-  "qup_phase_status_reset_words": [
+-    201326592
+-  ],
+-  "qup_phase_status_post_reset_words": [
+-    201326592,
+-    202440704
+-  ],
+-  "qup_phase_status_policy_architecturally_verified": false,
+-  "qup_phase_status_policy_numeric_fsm_semantics_verified": false,
+-  "qup_phase_status_field_source": "evidence/touch-r31-20261120/protocol/i2c-msm-prof-dbg.c",
+-  "qup_phase_status_field_source_sha256": "53723fb856115c4ed1dd6e1ca66c0b1695523ecd1947d65acccb1c181cc94eba",
+-  "qup_phase_status_field_commit": "1492c8e4373b7428bb0accc4f4881e97b36508b9",
+-  "qup_phase_rejects_broad_fsm_masks": true,
+-  "touch_qup_transfer_default_off": true,
+-  "touch_qup_transfer_arg": "touch_qup_transfer=1",
+-  "qup_transfer_ram_only": true,
+-  "qup_transfer_attempts_max": 1,
+-  "qup_transfer_sw_reset_max": 1,
+-  "qup_transfer_run_writes_max": 2,
+-  "qup_transfer_tx_bytes": 9,
+-  "qup_transfer_rx_bytes": 3,
+-  "qup_transfer_fifo_write_words": [
+-    25325697,
+-    2272362915,
+-    1
+-  ],
+-  "qup_transfer_fifo_read_words_max": 1,
+-  "qup_transfer_address": 56,
+-  "qup_transfer_register": 163,
+-  "qup_transfer_reuses_unchanged_r31_initializer": true,
+-  "qup_transfer_recovery_reset": false,
+-  "qup_transfer_error_ack": false,
+-  "qup_transfer_service_ack": false,
+-  "qup_transfer_terminal_reset": false,
+-  "qup_transfer_quarantined_after_attempt": true,
+-  "qup_transfer_ack_waveform_verified": false,
+-  "qup_transfer_stop_waveform_verified": false,
+-  "qup_transfer_numeric_fsm_semantics_verified": false,
+-  "qup_transfer_runtime_hardware_verified": false,
+-  "qup_transfer_adapter_max_us": 100000,
+-  "qup_transfer_adapter_max_accesses": 4096,
+-  "qup_transfer_transaction_max_us": 20000,
+-  "qup_transfer_transaction_poll_cap": 256,
+-  "qup_transfer_external_callbacks_after_adapter_poison": false,
+-  "qup_transfer_terminal_gic_read": false,
+-  "qup_transfer_fifo_occupancy_units_verified": false,
+-  "qup_transfer_id_byte_is_identity_match": false,
+-  "qup_transfer_source_release_predicate": "BUS_ACTIVE clear",
+-  "qup_transfer_stricter_local_release_predicate": "BUS_ACTIVE and BUS_MASTER clear, sampled SDA/SCL high, no residual FIFO indicators",
+-  "qup_transfer_active_status_known_field_mask": 264241149,
+-  "qup_transfer_active_status_errors": 58720508,
+-  "qup_transfer_core_sha256": "204c640687190f5c16d1437ddfb85281cbbf91e0927c41c623357e35d90ff53d",
+-  "qup_transfer_adapter_sha256": "6cdaa767f9cc3588080be71450d3f581780e40cc7ee9d0e394ca50d00f0d29b9",
+-  "qup_transfer_retained_result_static": true,
+-  "qup_transfer_production_destination_api": true,
+-  "qup_transfer_worker_final_call": true
+-}
++{
++  "scope": "R20 default-off; all old Stage1/ID/snapshot/R29/R30/PID1 bytes preserved; separate R31 exact transition-poll evidence and reviewed phase status",
++  "baseline_sha256": "ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55",
++  "before_sha256": {
++    "drivers/input/hakios.input.c": "a8a427f1fb7c9c78cd69c531bdde87ee38d80ea1ed2a2f93dd58b0c0313c09dc"
++  },
++  "after_sha256": {
++    "drivers/input/hakios.input.c": "c6527478edf7aa45f36069ce9638e35ffcd5936e07ccc8c6bf7a884d159411c7"
++  },
++  "default_off": true,
++  "touch_stage0_static_report": true,
++  "touch_stages_1_to_3_blocked": false,
++  "mmio_access": true,
++  "phone_operations": false,
++  "touch_driver_implemented": false,
++  "gpu_driver_implemented": false,
++  "parser_sha256": "b4ca8b72eaabc085fc4496207b314752074f5ae8a003b1b9b52de8f414bd3f2c",
++  "header_sha256": "35bd016da82f27741d74f9177ed774298fe3105ac95bdab78d09a4a87cbceec0",
++  "touch_stage1_probe": true,
++  "touch_stages_2_to_3_blocked": true,
++  "mmio_default_off": true,
++  "hardware_verified": false,
++  "default_unchanged_when_stage_absent": true,
++  "probe_budget_us": 300000,
++  "probe_access_cap": 2048,
++  "probe_poll_cap": 500,
++  "uncontained_faults": [
++    "synchronous external abort",
++    "SError",
++    "XPU fault",
++    "never-completing MMIO",
++    "ml_io_map allocation stall"
++  ],
++  "stage1_sha256": "04f47fb8949ebc0487e900ecdf65f524e19e6e92bc9ef90ee5837830283d5269",
++  "touch_clock_init_default_off": true,
++  "clock_init_arg": "touch_clock_init=1",
++  "clock_cfg_writes": false,
++  "clock_cmd_writes": false,
++  "clock_hid_equivalence": "0 and 1 recognized only by explicit clock-init path; no actual Hz measurement",
++  "clock_runtime_hardware_verified": false,
++  "diagnostic_init_default_off": true,
++  "diagnostic_init_arg": "touch_diag=1",
++  "clock_cfg_stability_required": true,
++  "touch_id_probe_default_off": true,
++  "touch_id_probe_arg": "touch_id_probe=1",
++  "touch_id_ram_only": true,
++  "touch_id_target_address": "0x38",
++  "touch_id_register": "0xa3",
++  "touch_id_bytes": 1,
++  "touch_id_attempts": 1,
++  "touch_id_nominal_scl_hz": 100000,
++  "touch_id_frequency_measured": false,
++  "touch_id_max_us": 20000,
++  "software_reset_writes": true,
++  "external_touch_reset_writes": false,
++  "regulator_writes": false,
++  "physical_irq_attached": false,
++  "physical_hid_events": false,
++  "physical_owner_verified": false,
++  "gic_writes": false,
++  "gic_spi_intid": 138,
++  "gic_observation_is_not_ownership": true,
++  "ordinary_state_reset_only_after_clean_stop": false,
++  "id_core_sha256": "e7e823932e456986dd389a1d050fb1defa0110c57eaf946c28a8eddd1aba5085",
++  "id_adapter_sha256": "09c9700fd95dae41630f31d0942a9f3066ae4262b204d1f136e28f8a4b654b90",
++  "touch_snapshot_default_off": true,
++  "touch_snapshot_arg": "touch_snapshot=1",
++  "snapshot_read_only": true,
++  "snapshot_has_write_callback": false,
++  "snapshot_reads_fifo_data": false,
++  "snapshot_register_count": 17,
++  "snapshot_passes": 2,
++  "snapshot_per_register_validity": true,
++  "snapshot_stable_is_atomic_or_ownership_proof": false,
++  "snapshot_runtime_hardware_verified": false,
++  "snapshot_register_read_side_effects_proven": false,
++  "snapshot_max_us": 20000,
++  "snapshot_no_transaction": true,
++  "snapshot_core_sha256": "8f8e37552b2c05989a748827bda456a6b242398b4db797961099584bd6125b4f",
++  "snapshot_adapter_sha256": "585ba0806fc542402a126c612ff7dfc0fe50ccae3b4c0225454a32e91008294b",
++  "touch_qup_init_default_off": true,
++  "touch_qup_init_arg": "touch_qup_init=1",
++  "qup_init_ram_only": true,
++  "qup_init_sw_reset_max": 1,
++  "qup_init_id_call_max": 1,
++  "qup_init_max_us": 100000,
++  "qup_init_access_cap": 4096,
++  "qup_init_poll_cap": 256,
++  "qup_init_poll_delay_us": 10,
++  "conditional_id_only": true,
++  "strict_id_guard_unchanged": true,
++  "id_ordinary_state_reset_only_after_clean_stop": true,
++  "qup_init_core_sha256": "0573ad9f28a3b9fe8b6f87887d23b6a54a080b7d7305ffcd15ca3d0ccb2f9cfd",
++  "qup_init_adapter_sha256": "ef5290df73f737a6ccfbe5bc6db9da31c0d53fa5145855cc295f93738206cf76",
++  "qup_init_runtime_hardware_verified": false,
++  "qup_init_source_fingerprint": "exact R28 inherited two-pass 17-register sample only; not ownership proof",
++  "qup_init_interrupt_policy": "Literal stock ERROR_FLAGS_EN=0x3c temporarily enables QUP error sources; per-write GIC available-view enable/pending/active checks, no global exclusion guarantee",
++  "qup_init_clock_policy": "No base CLK_CTL write; unchanged ID sets nominal vendor100kHz divider after RESET-to-RUN; actual Hz unmeasured",
++  "touch_qup_state_default_off": true,
++  "touch_qup_state_arg": "touch_qup_state=1",
++  "qup_state_ram_only": true,
++  "qup_state_pre_fifo_only": true,
++  "qup_state_has_fifo_io": false,
++  "qup_state_has_id_call": false,
++  "qup_state_sw_reset_max": 1,
++  "qup_state_snapshot_phases": 8,
++  "qup_state_snapshot_passes": 2,
++  "qup_state_registers_per_pass": 17,
++  "qup_state_runtime_hardware_verified": false,
++  "qup_state_adapter_max_us": 100000,
++  "qup_state_adapter_max_accesses": 4096,
++  "first_run_bus_activity_unverified": true,
++  "first_run_may_resume_retained_activity": true,
++  "first_run_traffic_absence_guaranteed": false,
++  "qup_state_new_fifo_tags_requested": false,
++  "qup_state_core_sha256": "72792553f4429910c05d124453d8e2f094bad6470f60ccbea60b893b7b7c3a66",
++  "qup_state_adapter_sha256": "eabc05c5dddf5572f396741a7b2b436d4bc46bdf7100b5c4335fc1f41221df7e",
++  "qup_state_external_callbacks_after_adapter_poison": false,
++  "qup_state_terminal_gic_read": false,
++  "qup_state_terminal_gic_log": "unread; only entry and pre-write available-view checks",
++  "touch_qup_phase_default_off": true,
++  "touch_qup_phase_arg": "touch_qup_phase=1",
++  "qup_phase_ram_only": true,
++  "qup_phase_pre_fifo_only": true,
++  "qup_phase_has_fifo_io": false,
++  "qup_phase_has_id_call": false,
++  "qup_phase_sw_reset_max": 1,
++  "qup_phase_snapshot_phases": 8,
++  "qup_phase_snapshot_passes": 2,
++  "qup_phase_registers_per_pass": 17,
++  "qup_phase_poll_slots_max": 4,
++  "qup_phase_poll_fields": 5,
++  "qup_phase_poll_per_field_validity": true,
++  "qup_phase_failed_poll_retained": true,
++  "qup_phase_poll_logging_extra_mmio": false,
++  "qup_phase_poll_logging_extra_time_callback": false,
++  "qup_phase_status_policy": "experimental_exact_observed_pair_by_phase",
++  "qup_phase_runtime_hardware_verified": false,
++  "qup_phase_adapter_max_us": 100000,
++  "qup_phase_adapter_max_accesses": 4096,
++  "qup_phase_terminal_gic_read": false,
++  "qup_phase_terminal_gic_log": "unread; entry/pre-write available-view only",
++  "qup_phase_external_callbacks_after_adapter_poison": false,
++  "qup_phase_core_sha256": "6ff510c6deb801115929d70b3a6d1284e6640f63e2b1af02972ec9c723824fc9",
++  "qup_phase_adapter_sha256": "837e69e78c94bee9985d4016c44387cc1cb2c8c1e2155ce3071ee70455d83b57",
++  "qup_phase_status_reset_words": [
++    201326592
++  ],
++  "qup_phase_status_post_reset_words": [
++    201326592,
++    202440704
++  ],
++  "qup_phase_status_policy_architecturally_verified": false,
++  "qup_phase_status_policy_numeric_fsm_semantics_verified": false,
++  "qup_phase_status_field_source": "evidence/touch-r31-20261120/protocol/i2c-msm-prof-dbg.c",
++  "qup_phase_status_field_source_sha256": "53723fb856115c4ed1dd6e1ca66c0b1695523ecd1947d65acccb1c181cc94eba",
++  "qup_phase_status_field_commit": "1492c8e4373b7428bb0accc4f4881e97b36508b9",
++  "qup_phase_rejects_broad_fsm_masks": true,
++  "touch_qup_transfer_default_off": true,
++  "touch_qup_transfer_arg": "touch_qup_transfer=1",
++  "qup_transfer_ram_only": true,
++  "qup_transfer_attempts_max": 1,
++  "qup_transfer_sw_reset_max": 1,
++  "qup_transfer_run_writes_max": 2,
++  "qup_transfer_tx_bytes": 9,
++  "qup_transfer_rx_bytes": 3,
++  "qup_transfer_fifo_write_words": [
++    25325697,
++    2272362915,
++    1
++  ],
++  "qup_transfer_fifo_read_words_max": 1,
++  "qup_transfer_address": 56,
++  "qup_transfer_register": 163,
++  "qup_transfer_reuses_unchanged_r31_initializer": true,
++  "qup_transfer_recovery_reset": false,
++  "qup_transfer_error_ack": false,
++  "qup_transfer_service_ack": false,
++  "qup_transfer_terminal_reset": false,
++  "qup_transfer_quarantined_after_attempt": true,
++  "qup_transfer_ack_waveform_verified": false,
++  "qup_transfer_stop_waveform_verified": false,
++  "qup_transfer_numeric_fsm_semantics_verified": false,
++  "qup_transfer_runtime_hardware_verified": false,
++  "qup_transfer_adapter_max_us": 100000,
++  "qup_transfer_adapter_max_accesses": 4096,
++  "qup_transfer_transaction_max_us": 20000,
++  "qup_transfer_transaction_poll_cap": 256,
++  "qup_transfer_external_callbacks_after_adapter_poison": false,
++  "qup_transfer_terminal_gic_read": false,
++  "qup_transfer_fifo_occupancy_units_verified": false,
++  "qup_transfer_id_byte_is_identity_match": false,
++  "qup_transfer_source_release_predicate": "BUS_ACTIVE clear",
++  "qup_transfer_stricter_local_release_predicate": "BUS_ACTIVE and BUS_MASTER clear, sampled SDA/SCL high, no residual FIFO indicators",
++  "qup_transfer_active_status_known_field_mask": 264241149,
++  "qup_transfer_active_status_errors": 58720508,
++  "qup_transfer_core_sha256": "204c640687190f5c16d1437ddfb85281cbbf91e0927c41c623357e35d90ff53d",
++  "qup_transfer_adapter_sha256": "6cdaa767f9cc3588080be71450d3f581780e40cc7ee9d0e394ca50d00f0d29b9",
++  "qup_transfer_retained_result_static": true,
++  "qup_transfer_production_destination_api": true,
++  "qup_transfer_worker_final_call": true,
++  "gpu_g0": {
++    "default_off": true,
++    "arguments": "gpu_stage=0 gpu_probe=1",
++    "ram_only": true,
++    "cpu_model_hz": 614400000,
++    "logical_cpu": 0,
++    "expected_affinity": 1,
++    "register_count": 9,
++    "passes": 2,
++    "read_cap": 18,
++    "returning_read_deadline_us": 50000,
++    "gpu_aperture_access": false,
++    "smmu_access": false,
++    "gpu_writes": 0,
++    "irq_attach": false,
++    "hardware_verified": false,
++    "core_sha256": "3c3a74a96e548b0dbb74656b084262f96454bd510e329dc8ba033d4ca65012fb",
++    "adapter_sha256": "8f21e1f958e4436334feed330da772fc0686817d0df4bcf4f362ae1d99baed59"
++  }
++}
+--- /dev/null
++++ b/ports/hakios-lithium/gpu/g0-core.h
+@@ -0,0 +1,169 @@
++/* Pure read-only MSM8996 Pro GCC/GPUCC snapshot. No GPU/SMMU access.
++ * Source pins/anchors: evidence/gpu-g0-20261123/core/sources.json.
++ * Register order and interface are fixed for the parallel XNU adapter.
++ */
++#ifndef LITHIUM_GPU_G0_CORE_H
++#define LITHIUM_GPU_G0_CORE_H
++
++#include <stdbool.h>
++#include <stdint.h>
++
++#define LG0_PASSES       2u
++#define LG0_REG_COUNT    9u
++#define LG0_COUNT        LG0_REG_COUNT
++#define LG0_READ_CAP     (LG0_PASSES * LG0_REG_COUNT)
++#define LG0_DEADLINE_US  UINT64_C(50000)
++#define LG0_ALL_VALID    ((UINT32_C(1) << LG0_REG_COUNT) - UINT32_C(1))
++
++enum lg0_reg_id {
++    LG0_CX_GDSCR, LG0_GX_GDSCR, LG0_GPU_AHB_CBCR,
++    LG0_GPU_AON_ISENSE_CBCR, LG0_GPU_GX_GFX3D_CBCR,
++    LG0_GPU_GX_RBBMTIMER_CBCR, LG0_GFX3D_CMD_RCGR,
++    LG0_GCC_MMSS_BIMC_GFX_CBCR, LG0_GCC_BIMC_GFX_CBCR
++};
++
++struct lg0_reg { const char *name; uint32_t address; };
++
++/* DTS: GPUCC base 0x8c0000, GCC base 0x300000. Clock offsets:
++ * MiCode 1492c8e4373b7428bb0accc4f4881e97b36508b9,
++ * include/dt-bindings/clock/msm-clocks-hwio-8996.h:208-212,250,484-485.
++ * GDSCR addresses: archived lithium-stock.dts:2737-2752.
++ * This is an exact allowlist, not permission to read either whole aperture.
++ */
++static const struct lg0_reg lg0_regs[LG0_REG_COUNT] = {
++    { "CX_GDSCR",                 UINT32_C(0x008c4034) },
++    { "GX_GDSCR",                 UINT32_C(0x008c4024) },
++    { "GPU_AHB_CBCR",             UINT32_C(0x008c403c) },
++    { "GPU_AON_ISENSE_CBCR",       UINT32_C(0x008c4044) },
++    { "GPU_GX_GFX3D_CBCR",         UINT32_C(0x008c4028) },
++    { "GPU_GX_RBBMTIMER_CBCR",     UINT32_C(0x008c40b0) },
++    { "GFX3D_CMD_RCGR",           UINT32_C(0x008c4000) },
++    { "GCC_MMSS_BIMC_GFX_CBCR",    UINT32_C(0x00309010) },
++    { "GCC_BIMC_GFX_CBCR",         UINT32_C(0x00346018) }
++};
++
++/* Decode only these documented GDSCR fields. No voltage/frequency claim. */
++#define LG0_GDSCR_PWR_ON       (UINT32_C(1) << 31)
++#define LG0_GDSCR_SW_OVERRIDE  (UINT32_C(1) << 2)
++#define LG0_GDSCR_HW_CONTROL   (UINT32_C(1) << 1)
++#define LG0_GDSCR_SW_COLLAPSE  UINT32_C(1)
++
++enum lg0_error {
++    LG0_ERR_NONE = 0,
++    LG0_ERR_ARGUMENT = 1u << 0,
++    LG0_ERR_CLOCK_ROLLBACK = 1u << 1,
++    LG0_ERR_DEADLINE = 1u << 2,
++    LG0_ERR_READ = 1u << 3,
++    LG0_ERR_UNSTABLE = 1u << 4,
++    LG0_ERR_READ_CAP = 1u << 5
++};
++
++struct lg0_io {
++    void *ctx;
++    bool (*read32)(void *, uint32_t, uint32_t *);
++    uint64_t (*now_us)(void *);
++};
++
++struct lg0_result {
++    uint32_t raw[LG0_PASSES][LG0_REG_COUNT];
++    uint32_t valid[LG0_PASSES];
++    uint32_t stable_mask, unstable_mask;
++    uint32_t stable_count, reads, read_failures, passes_completed;
++    uint32_t errors; /* OR of enum lg0_error. */
++    uint64_t started_us, ended_us;
++};
++
++/* Callbacks must return; a software deadline cannot interrupt a stalled MMIO
++ * load. Adapter owns mapping, barriers, thread affinity and clock conversion.
++ * Failed reads leave raw=0/valid=0, never retry; successful runs read each
++ * address once per pass. Deadline/rollback stop with explicit partial masks.
++ * The deadline is exclusive: elapsed >= 50000us stops before another read.
++ * Check time before and after every read, including a failed or final read.
++ * ended_us is the last observed clock (also on rollback), not a fresh sample.
++ * passes_completed counts passes whose nine read callbacks returned, even if
++ * some failed or the final post-read time check failed. Stability compares
++ * only pairs with both valid bits set, including pairs in a partial pass.
++ * Return true only for two complete, valid, identical passes within deadline.
++ */
++static inline bool lg0_run(const struct lg0_io *io, struct lg0_result *result)
++{
++    uint32_t pass, reg;
++
++    if (!result)
++        return false;
++    *result = (struct lg0_result){0};
++    if (!io || !io->read32 || !io->now_us) {
++        result->errors = LG0_ERR_ARGUMENT;
++        return false;
++    }
++
++    result->started_us = io->now_us(io->ctx);
++    result->ended_us = result->started_us;
++    for (pass = 0; pass < LG0_PASSES; ++pass) {
++        for (reg = 0; reg < LG0_REG_COUNT; ++reg) {
++            uint64_t previous = result->ended_us;
++            uint64_t now = io->now_us(io->ctx);
++            uint32_t value = 0;
++
++            result->ended_us = now;
++            if (now < previous) {
++                result->errors |= LG0_ERR_CLOCK_ROLLBACK;
++                goto finished;
++            }
++            /* Subtraction after the monotonic check avoids overflow near
++             * UINT64_MAX; never form started_us + LG0_DEADLINE_US. */
++            if (now - result->started_us >= LG0_DEADLINE_US) {
++                result->errors |= LG0_ERR_DEADLINE;
++                goto finished;
++            }
++            if (result->reads >= LG0_READ_CAP) {
++                result->errors |= LG0_ERR_READ_CAP;
++                goto finished;
++            }
++
++            ++result->reads; /* A failed read consumes its slot and budget. */
++            if (io->read32(io->ctx, lg0_regs[reg].address, &value)) {
++                result->raw[pass][reg] = value;
++                result->valid[pass] |= UINT32_C(1) << reg;
++            } else {
++                ++result->read_failures;
++                result->errors |= LG0_ERR_READ;
++            }
++            if (reg + 1u == LG0_REG_COUNT)
++                ++result->passes_completed;
++
++            previous = result->ended_us;
++            now = io->now_us(io->ctx);
++            result->ended_us = now;
++            if (now < previous) {
++                result->errors |= LG0_ERR_CLOCK_ROLLBACK;
++                goto finished;
++            }
++            if (now - result->started_us >= LG0_DEADLINE_US) {
++                result->errors |= LG0_ERR_DEADLINE;
++                goto finished;
++            }
++        }
++    }
++
++finished:
++    for (reg = 0; reg < LG0_REG_COUNT; ++reg) {
++        uint32_t bit = UINT32_C(1) << reg;
++        if (!(result->valid[0] & result->valid[1] & bit))
++            continue;
++        if (result->raw[0][reg] == result->raw[1][reg]) {
++            result->stable_mask |= bit;
++            ++result->stable_count;
++        } else {
++            result->unstable_mask |= bit;
++            result->errors |= LG0_ERR_UNSTABLE;
++        }
++    }
++    return result->errors == LG0_ERR_NONE &&
++           result->passes_completed == LG0_PASSES &&
++           result->valid[0] == LG0_ALL_VALID &&
++           result->valid[1] == LG0_ALL_VALID &&
++           result->stable_mask == LG0_ALL_VALID;
++}
++
++#endif /* LITHIUM_GPU_G0_CORE_H */
+--- /dev/null
++++ b/ports/hakios-lithium/gpu/g0-adapter.inc
+@@ -0,0 +1,143 @@
++/* SPDX-License-Identifier: MIT
++ * Opt-in G0 only: exact GCC/GPUCC loads in an ordinary bound worker.
++ * No GPU aperture, SMMU, IRQ, clock or regulator writes. A deadline bounds
++ * returning callbacks, not an external abort or a never-completing MMIO load.
++ */
++#ifndef LITHIUM_GPU_G0_ADAPTER_INC
++#define LITHIUM_GPU_G0_ADAPTER_INC
++#ifndef LITHIUM_GPU_G0_HOST_TEST
++#include <arm/memory_types.h>
++#include <kern/clock.h>
++#include <mach/mach_time.h>
++#include <mach/vm_param.h>
++#include <machine/machine_routines.h>
++#include <vm/memory_types.h>
++/* The BSD public machine header hides these behind MACH_KERNEL_PRIVATE.
++ * Match the pinned osfmk/arm/machine_routines.h declarations without changing
++ * the translation unit's visibility or the mapping API pairing. */
++extern vm_offset_t ml_io_map_unmappable(vm_offset_t, vm_size_t, uint32_t);
++extern void ml_io_unmap(vm_offset_t, vm_size_t);
++#endif
++#include "g0-core.h"
++#include "../diagnostics/cpu-mmio-window-r38.h"
++#include "../return-fastboot/ram-smp-profile.h"
++
++/* GCC registers lie in two distinct VM pages. GPUCC lives in a third.
++ * The mapping extent grants no extra register access: read32 checks the
++ * exact nine-address allowlist before dereferencing any mapped pointer. */
++static const uint64_t lg0_mapping_addresses[] = {
++    UINT64_C(0x008c4000), UINT64_C(0x00309000), UINT64_C(0x00346000)
++};
++static struct {
++    struct r38_mmio_window windows[3];
++    vm_offset_t allocation[3];
++    unsigned loads;
++    struct lg0_result result;
++} lg0_adapter;
++
++static bool
++lg0_adapter_read32(void *opaque, uint32_t pa, uint32_t *out)
++{
++    (void)opaque;
++    if (!out || lg0_adapter.loads >= LG0_READ_CAP) return false;
++    bool allowed = false;
++    for (unsigned i = 0; i < LG0_REG_COUNT; ++i)
++        if (lg0_regs[i].address == pa) allowed = true;
++    if (!allowed) return false;
++    for (unsigned i = 0; i < 3; ++i) {
++        const struct r38_mmio_window *w = &lg0_adapter.windows[i];
++        if (!lg0_adapter.allocation[i] || pa < w->physical_base ||
++            (uint64_t)pa - w->physical_base > w->mapped_bytes - sizeof(*out))
++            continue;
++        ++lg0_adapter.loads;
++        LG0_READ_BARRIER();
++        *out = LG0_MMIO_LOAD(lg0_adapter.allocation[i] +
++            ((uint64_t)pa - w->physical_base));
++        LG0_READ_BARRIER();
++        return true;
++    }
++    return false;
++}
++
++static uint64_t
++lg0_adapter_now_us(void *opaque)
++{
++    (void)opaque;
++    uint64_t nanoseconds = 0;
++    absolutetime_to_nanoseconds(mach_absolute_time(), &nanoseconds);
++    return nanoseconds / 1000;
++}
++
++static bool
++lg0_adapter_admit(void)
++{
++    const char *args = PE_boot_args();
++    const size_t length = args ? strnlen(args, 4096) : 0;
++    unsigned timer = 0;
++    PE_parse_boot_argn("loader_return_after", &timer, sizeof(timer));
++    return args && length < 4096 && timer == 180 &&
++        rfbt_ram_smp_profile(args, length, 1);
++}
++
++static __attribute__((noinline)) void
++lithium_gpu_g0_probe(void)
++{
++    /* One bounded worker dispatch per boot. The static sample avoids adding
++     * another diagnostic record to the legacy touch worker's large frame. */
++    if (!lg0_adapter_admit()) {
++        printf("LITHIUM GPU stage=0 status=blocked reason=requires_isolated_ram_smp_180 mmio=0 gpu_writes=0\n");
++        return;
++    }
++    struct lithium_touch_cpu_scope scope;
++    if (!lithium_touch_cpu_enter(&scope)) {
++        printf("LITHIUM GPU stage=0 status=blocked reason=cpu_bind mmio=0 gpu_writes=0\n");
++        return;
++    }
++    printf("LITHIUM GPU stage=0 begin logical=%d affinity=0x%llx max_logical=%d register_count=%u passes=%u read_cap=%u deadline_us=%llu gpu_aperture=unread smmu=unread gpu_writes=0 irq_attached=0\n",
++        cpu_number(), (unsigned long long)LITHIUM_PERIPHERAL_AFFINITY(),
++        ml_get_max_cpu_number(), LG0_REG_COUNT, LG0_PASSES, LG0_READ_CAP,
++        (unsigned long long)LG0_DEADLINE_US);
++    for (unsigned i = 0; i < 3; ++i) {
++        if (!r38_mmio_window_init(lg0_mapping_addresses[i], 0x1000,
++                PAGE_SIZE, &lg0_adapter.windows[i])) continue;
++        const struct r38_mmio_window *w = &lg0_adapter.windows[i];
++        lg0_adapter.allocation[i] = ml_io_map_unmappable(w->physical_base,
++            w->mapped_bytes, VM_WIMG_IO);
++        printf("LITHIUM GPU stage=0 map index=%u physical=0x%llx bytes=%llu allocation=0x%lx valid=%u\n",
++            i, (unsigned long long)w->physical_base,
++            (unsigned long long)w->mapped_bytes,
++            (unsigned long)lg0_adapter.allocation[i],
++            (unsigned)(lg0_adapter.allocation[i] != 0));
++    }
++    const struct lg0_io io = {NULL, lg0_adapter_read32, lg0_adapter_now_us};
++    const bool ok = lg0_run(&io, &lg0_adapter.result);
++    const struct lg0_result *r = &lg0_adapter.result;
++    for (unsigned pass = 0; pass < LG0_PASSES; ++pass)
++        for (unsigned i = 0; i < LG0_REG_COUNT; ++i) {
++            const unsigned valid = (r->valid[pass] >> i) & 1;
++            if (valid)
++                printf("LITHIUM GPU stage=0 pass=%u reg=%s pa=0x%08x valid=1 raw=0x%08x stable=%u\n",
++                    pass, lg0_regs[i].name, lg0_regs[i].address, r->raw[pass][i],
++                    (r->stable_mask >> i) & 1);
++            else
++                printf("LITHIUM GPU stage=0 pass=%u reg=%s pa=0x%08x valid=0 raw=UNREAD stable=0\n",
++                    pass, lg0_regs[i].name, lg0_regs[i].address);
++        }
++    for (unsigned i = 0; i < 3; ++i) {
++        if (!lg0_adapter.allocation[i]) continue;
++        printf("LITHIUM GPU stage=0 unmap index=%u allocation=0x%lx bytes=%llu\n",
++            i, (unsigned long)lg0_adapter.allocation[i],
++            (unsigned long long)lg0_adapter.windows[i].mapped_bytes);
++        ml_io_unmap(lg0_adapter.allocation[i],
++            lg0_adapter.windows[i].mapped_bytes);
++        lg0_adapter.allocation[i] = 0;
++    }
++    printf("LITHIUM GPU stage=0 end status=%s valid0=0x%x valid1=0x%x stable_mask=0x%x unstable_mask=0x%x reads=%u loads=%u read_failures=%u completed_passes=%u errors=0x%x elapsed_us=%llu gpu_writes=0 power_verified=0 chip_id=UNREAD\n",
++        ok ? "snapshot_complete" : "snapshot_incomplete", r->valid[0],
++        r->valid[1], r->stable_mask, r->unstable_mask, r->reads,
++        lg0_adapter.loads, r->read_failures, r->passes_completed, r->errors,
++        (unsigned long long)(r->ended_us >= r->started_us ?
++            r->ended_us - r->started_us : 0));
++    lithium_touch_cpu_leave(&scope);
++}
++#endif
+--- /dev/null
++++ b/scripts/build-hakios-gpu-g0.py
+@@ -0,0 +1,89 @@
++#!/usr/bin/env python3
++"""Incrementally link complete HakiOS with default-off GPU G0; host only."""
++import importlib.util
++import json
++import os
++from pathlib import Path
++import shutil
++import subprocess
++import sys
++from datetime import datetime, timezone
++
++sys.dont_write_bytecode = True
++ROOT = Path(__file__).resolve().parents[1]
++sys.path.insert(0, str(ROOT / "scripts"))
++import hakios
++
++spec = importlib.util.spec_from_file_location("r40_build_helpers",
++    ROOT / "scripts/build-hakios-cpu-r40.py")
++r40 = importlib.util.module_from_spec(spec)
++spec.loader.exec_module(r40)
++OUT = ROOT / "evidence/gpu-g0-20261123/main"
++WORK = r40.WORK
++TREE = r40.TREE
++
++def main():
++    frozen = WORK / "hakios-kernel.gpu-g0-01"
++    hakios.require(not frozen.exists(), "frozen G0 kernel already exists")
++    config = hakios.read(hakios.MANIFEST)
++    hakios.resource_check()
++    hakios.prepare(config, hakios.policy(config))
++    hakios.verify_workspace(config)
++    r40.OUT = OUT
++    r40.sync_framebuffer_overlay()
++    patches = sorted((r40.PORT / "kernel-patches-r40").glob("*.patch"))
++    hakios.require(len(patches) >= 3, "preserve complete R40 expanded patch set")
++    for patch in patches:
++        r40.patch_once(patch, TREE)
++    driver = WORK / "drivers/storage/hakios.ufs.c"
++    hakios.require(b"hakios_ufs_seal_for_return" in driver.read_bytes(),
++        "preserve authoritative UFS seal implementation")
++    env = dict(os.environ, HAKIOS_SOC="msm8996", JOBS="12", MAKEFLAGS="-j12",
++        MAKEJOBS="--jobs=12", THEOS=hakios.read(
++            ROOT / "reports/hakios-ios16-dependencies.json")["theos_linux_path"])
++    env["PATH"] = "/home/jia/ios-mix1-build/venv/bin:" + env["PATH"]
++    OUT.mkdir(parents=True, exist_ok=True)
++    log = OUT / "kernel-g0-01.log"
++    n = 1
++    while log.exists():
++        n += 1
++        log = OUT / f"kernel-g0-01-attempt{n}.log"
++    with log.open("x", encoding="utf-8") as stream:
++        result = subprocess.run(["make", "kernel", "SHELL=/bin/bash",
++            "MAKEJOBS=--jobs=12", "DEVICE=lithium", "JOBS=12"], cwd=WORK,
++            env=env, stdout=stream, stderr=subprocess.STDOUT)
++    if result.returncode:
++        print(log.read_text(errors="replace")[-7000:])
++        raise RuntimeError("GPU G0 compile/link failed; sources/log preserved")
++    kernel = WORK / "hakios-kernel"
++    image = kernel.read_bytes()
++    for marker in (b"LITHIUM GPU stage=0 begin", b"gpu_aperture=unread",
++                   b"LITHIUM GPU stage=0 end", b"LITHIUM UFS RETURN phase=seal",
++                   b"LITHIUM TOUCH live ready", b"8796.121.2"):
++        hakios.require(marker in image, "missing linked marker: " + repr(marker))
++    disasm = subprocess.check_output(["llvm-objdump",
++        "--disassemble-symbols=_lithium_gpu_g0_probe,_lg0_adapter_read32",
++        str(kernel)], text=True)
++    hakios.require("<_lithium_gpu_g0_probe>:" in disasm,
++        "no real linked G0 probe")
++    timer = subprocess.check_output(["llvm-objdump",
++        "--disassemble-symbols=_loader_return_timer", str(kernel)], text=True)
++    hakios.require("_lithium_ui_cycle_stop" in timer and
++                   "_lithium_cpu_thermal_stop" in timer,
++        "preserve normal timer cleanup")
++    shutil.copyfile(kernel, frozen)
++    report = dict(passed=True, revision="gpu-g0-01", kernel=str(frozen),
++        sha256=hakios.sha(frozen), bytes=len(image),
++        created_at=datetime.now(timezone.utc).isoformat(),
++        inputs=hakios.inputs(config),
++        kernel_source=hakios.kernel_source_fingerprint(WORK),
++        extra_patches={str(p.relative_to(ROOT)):hakios.sha(p) for p in patches},
++        command_log=str(log), device_operations=0, runtime_verified=False,
++        gpu_writes=0, gpu_aperture_access=False, smmu_access=False)
++    hakios.write(OUT / "kernel-result-g0-01.json", report)
++    (OUT / "g0-linked-disassembly.txt").write_text(disasm)
++    (OUT / "g0-timer-disassembly.txt").write_text(timer)
++    print(json.dumps({k:report[k] for k in ("passed","kernel","sha256","bytes")}))
++
++if __name__ == "__main__":
++    main()
+--- /dev/null
++++ b/scripts/package-hakios-gpu-g0.py
+@@ -0,0 +1,421 @@
++#!/usr/bin/env python3
++"""Package main's frozen G0 kernel with verified RAM support; never build or boot.
++
++All outputs, including temporary FAT files, stay under the G0 package evidence
++directory. Existing outputs are preserved. --check-inputs and --verify-package
++are read-only. Runtime GPU results, MHz and automatic return remain unverified.
++"""
++from __future__ import annotations
++
++import argparse
++import hashlib
++import importlib.util
++import json
++import lzma
++from pathlib import Path
++import re
++import struct
++import sys
++import tempfile
++import uuid
++
++sys.dont_write_bytecode = True
++ROOT = Path(__file__).resolve().parents[1]
++sys.path.insert(0, str(ROOT / "scripts"))
++PACKAGE_ROOT = ROOT / "evidence/gpu-g0-20261123/package"
++KERNEL_REPORT = ROOT / "evidence/gpu-g0-20261123/main/kernel-result-g0-01.json"
++FROZEN_KERNEL = Path("/home/jia/ios-mix1-build/hakios-lithium-ios16/hakios-kernel.gpu-g0-01")
++SUPPORT_REPORT = ROOT / "evidence/cpu-r39-20261121/support04/ram-support.json"
++ROOT_REPORT = ROOT / "evidence/cpu-r37-20261120/return-fix/ram-root.json"
++SUPPORT_REPORT_SHA = "4052e2cb7cc4079e98dfa9456af15d379022f9f28ea71e6a4f77769cdb474416"
++ROOT_REPORT_SHA = "2bab884af86b886bce0760bda0170eca6a8ee8427364b1de5a7088f8895ac6d8"
++LOADER_SHA = "2e6bb090b1bbadf150b3cd7ae09b535ffa411a01396b156f17526c80af7e8bdb"
++FD_SHA = "dc4a1a2570b0d09e7d4b53d39fd06bee486a6de662ed1d0ebabea17ed666b9bc"
++FASTBOOT_SHA = "603646a6acd835c4daed365b4d69f1146c479f764cbb4a0a6c128a0931c6f55c"
++RAM_ROOT_SHA = "133d35b30af8f59c667b64aafe618b29f95355b84e7fde7e723863045ff332b8"
++R34_IMAGE = ROOT / ("artifacts/hakios/lithium-ios16/phase4-r34-touch-live-ram-final/"
++                    "lithium-hakios-ios16-r34-touch-live-ram.img")
++R34_SHA = "d1bbc6bf94defeacacf3ffbbae32bd3e227b70ef74bb1ceda2fb5539f8ad0d3b"
++SCHEMA = "hakios-gpu-g0-ram-package-v1"
++FASTBOOT_GUID = "DC229FA1-8A73-4F05-AC63-BBD7CD6E8369"
++FD_AT, XNUP_AT = 0x1000, 0x301000
++IMAGE_LIMIT, PAYLOAD_LIMIT = 0x2433000, 0x3F00000
++ENTRY_NAMES = {"kernel", "ramdisk", "resident", "cmdline", "kernel.ver"}
++NOP = struct.pack("<I", 0xD503201F)
++BOOT_ARGS = (
++    "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 "
++    "lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 "
++    "fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 "
++    "epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 "
++    "cpu_sanity=1 cpu_perf_fixed=1 cpu_perf_hz=614400000 cpu_thermal_diag=1 "
++    "cpu_inherited_supply_r39=1 gpu_stage=0 gpu_probe=1 gpu_wd=1 lithium_log_retry=1"
++)
++KERNEL_MARKERS = (
++    b"gpu_stage", b"gpu_probe", b"gpu_wd", b"LITHIUM GPU stage=0 begin",
++    b"LITHIUM GPU stage=0 end",
++    b"cpu_sanity", b"cpu_thermal_diag", b"LITHIUM CPU TEMP", b"lithium_log_retry",
++)
++
++
++def load(name, path):
++    spec = importlib.util.spec_from_file_location(name, path)
++    value = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(value)
++    return value
++
++
++LIVE = load("_g0_live_codec", ROOT / "scripts/package-hakios-touch-live.py")
++CODEC, BOOT = LIVE.bootstrap()
++FV = load("_g0_fv_codec", ROOT / "scripts/build-hakios-r38-ufs-support.py")
++require = LIVE.require
++
++
++def sha(data):
++    return hashlib.sha256(data).hexdigest()
++
++
++def meta(data):
++    return {"bytes": len(data), "sha256": sha(data)}
++
++
++def read_json(path):
++    return json.loads(path.read_text(encoding="utf-8"))
++
++
++def pinned(path, digest):
++    require(path.is_file(), f"missing input: {path}")
++    data = path.read_bytes()
++    require(sha(data) == digest, f"input hash differs: {path}")
++    return data
++
++
++def package_path(attempt):
++    require(re.fullmatch(r"[0-9]{2}", attempt) is not None, "attempt must be two digits")
++    path = PACKAGE_ROOT / f"g0-{attempt}"
++    require(path.resolve().parent == PACKAGE_ROOT.resolve() and not path.is_symlink(),
++            "package output escaped its owned directory")
++    return path
++
++
++def validate_args(args):
++    require(isinstance(args, str) and args == BOOT_ARGS, "G0 requires the exact RAM/no-soak profile")
++    tokens = args.split()
++    require(len(tokens) == len({t.split("=", 1)[0] for t in tokens}), "duplicate G0 boot argument")
++    require(not any(t.startswith(("cpu_rate_soak", "cpu_freq_", "touch", "ufs_",
++                                 "root", "var_", "applog", "persistent")) for t in tokens),
++            "G0 excludes soak, PMU, touch and physical-storage arguments")
++
++
++def verify_fd(fd, fastboot):
++    """Check finalized FFS/checksums, LZMA, nested FV and exact Fastboot PE bytes."""
++    require(len(fd) == 0x300000 and sha(fd) == FD_SHA, "support04 final FD differs")
++    require(sha(fastboot) == FASTBOOT_SHA, "support04 Fastboot DXE differs")
++    outer = FV.fv_files(fd)
++    require(not any(x["guid"] == FV.UFS_GUID for x in outer), "physical UFS in outer FV")
++    nested = FV.unique_file(outer, FV.NESTED_FV_GUID, 0x0b)
++    guided = FV.sections(nested["body"])
++    require(len(guided) == 1 and guided[0]["type"] == 2, "unexpected nested FV sections")
++    section = guided[0]["data"]
++    require(len(section) >= 24 and
++            str(uuid.UUID(bytes_le=section[4:20])).upper() == FV.LZMA_GUID,
++            "unexpected LZMA GUID")
++    offset, attributes = struct.unpack_from("<HH", section, 20)
++    require(24 <= offset < len(section) and attributes == 1, "invalid LZMA metadata")
++    decoder = lzma.LZMADecompressor(format=lzma.FORMAT_ALONE, memlimit=128 * 1024**2)
++    decoded = decoder.decompress(section[offset:], max_length=16 * 1024**2 + 1)
++    require(len(decoded) <= 16 * 1024**2 and decoder.eof and not decoder.unused_data,
++            "incomplete, trailing or oversized compressed FV")
++    sections = FV.sections(decoded)
++    volumes = [s["body"] for s in sections if s["type"] == 0x17]
++    require(len(volumes) == 1 and all(s["type"] == 0x17 or
++            (s["type"] == 0x19 and not s["body"]) for s in sections),
++            "unexpected decoded FV structure")
++    files = FV.fv_files(volumes[0])
++    require(not any(x["guid"] == FV.UFS_GUID for x in files), "physical UFS in nested FV")
++    component = FV.unique_file(files, FASTBOOT_GUID, 7)
++    pe = [s["body"] for s in FV.sections(component["body"]) if s["type"] == 0x10]
++    require(len(pe) == 1 and pe[0] == fastboot, "embedded Fastboot DXE is not exact")
++    return {"method": "parse_final_fd_lzma_nested_fv_exact_ffs_and_pe32",
++            "physical_ufs_provider_absent": True, "fastboot_dxe_exact": True,
++            "fd_sha256": sha(fd), "fastboot_dxe_sha256": sha(pe[0]),
++            "nested_ffs_fd_offset": nested["offset"], "decoded_bytes": len(decoded),
++            "decoded_fv_sha256": sha(volumes[0]), "module_count": len(files)}
++
++
++def read_r34():
++    blob = pinned(R34_IMAGE, R34_SHA)
++    raw, dtbs, fat, header = CODEC.decode_android(blob)
++    BOOT.check_boot(blob, raw, dtbs, fat, header)
++    require(raw[XNUP_AT:XNUP_AT + 4] == b"XNUP", "R34 XNUP offset differs")
++    size = struct.unpack_from("<I", raw, XNUP_AT + 4)[0] + 8
++    require(XNUP_AT + size <= len(raw), "R34 payload extent differs")
++    entries = CODEC.parse_payload(raw[XNUP_AT:XNUP_AT + size])
++    require(set(entries) == ENTRY_NAMES, "R34 XNUP entries differ")
++    for key in ("ramdisk", "resident"):
++        require(len(entries[key]) == 0x400000, "R34 APFS size differs")
++        LIVE.verify_root(entries[key])
++    LIVE.text_entry(entries["kernel.ver"])
++    return raw, dtbs, header, entries, size
++
++
++def reused_inputs():
++    support_data = pinned(SUPPORT_REPORT, SUPPORT_REPORT_SHA)
++    root_data = pinned(ROOT_REPORT, ROOT_REPORT_SHA)
++    support, root_report = json.loads(support_data), json.loads(root_data)
++    require(support.get("passed") is True and support.get("support_revision") == "r39-rate04" and
++            support.get("physical_ufs_provider_absent") is True, "support04 report rejected")
++    require(root_report.get("passed") is True and root_report["sha256"] == RAM_ROOT_SHA,
++            "verified RAM-root report rejected")
++    loader = pinned(Path(support["loader"]), LOADER_SHA)
++    fd = pinned(Path(support["ram_fd"]), FD_SHA)
++    fastboot = pinned(Path(support["fastboot_dxe"]), FASTBOOT_SHA)
++    require(support["loader_sha256"] == LOADER_SHA and support["ram_fd_sha256"] == FD_SHA and
++            support["fastboot_dxe_sha256"] == FASTBOOT_SHA, "support04 component pins differ")
++    require(b"LITHIUM FASTBOOT status=smp_return_verified" in loader and
++            b"cpu_perf_fixed" in loader and b"cpu_inherited_supply_r39" in loader,
++            "RAM loader lacks owner return or inherited-supply support")
++    FV.loader_metadata(Path(support["loader"]))
++    root = pinned(Path(root_report["root"]), RAM_ROOT_SHA)
++    require(len(root) == 0x400000, "verified RAM-root size differs")
++    root_extent = LIVE.verify_root(root)
++    r34 = read_r34()
++    validate_args(BOOT_ARGS)
++    budget = LIVE.command_budget(BOOT_ARGS, LIVE.text_entry(r34[3]["kernel.ver"]), "ram")
++    return {"support": support, "root_report": root_report, "loader": loader,
++            "fd": fd, "fastboot": fastboot, "root": root, "r34": r34,
++            "fv_proof": verify_fd(fd, fastboot), "root_extent": root_extent,
++            "command_budget": budget}
++
++
++def kernel_input(report_path):
++    require(report_path.is_file(), f"main kernel report pending: {report_path}")
++    data = report_path.read_bytes()
++    report = json.loads(data)
++    require(report.get("passed") is True and
++            re.fullmatch(r"[0-9a-f]{64}", report.get("sha256", "")) is not None,
++            "main G0 kernel build report rejected")
++    require(report.get("kernel") == FROZEN_KERNEL.as_posix(), "main must provide the frozen G0-01 kernel")
++    kernel = pinned(FROZEN_KERNEL, report["sha256"])
++    require(type(report.get("bytes")) is int and report["bytes"] == len(kernel),
++            "main G0 kernel byte count differs")
++    require(report.get("device_operations") == 0, "kernel report contains device operations")
++    LIVE.verify_kernel(kernel, "ram")
++    for marker in KERNEL_MARKERS:
++        require(marker in kernel, "main G0 kernel missing " + repr(marker))
++    return kernel, report, data
++
++
++def verify_layers(image, components, r34=None):
++    """Read the actual Android bytes, not the manifest's claimed readback flags."""
++    raw, dtbs, fat, header = CODEC.decode_android(image)
++    r34 = read_r34() if r34 is None else r34
++    old_raw, old_dtbs, old_header, old_entries, old_size = r34
++    BOOT.check_boot(image, components["Image"], old_dtbs, components["loader.fat"], old_header)
++    require(raw == components["Image"] and dtbs == old_dtbs and fat == components["loader.fat"],
++            "Android/FAT/DTB exact readback differs")
++    require(fat == components["loader.fat"] and LIVE.fat_loader(fat) == components["loader.efi"],
++            "final Android FAT loader readback differs")
++    require(sha(components["loader.efi"]) == LOADER_SHA, "final loader differs from support04")
++    require(raw[FD_AT:XNUP_AT] == components["lithium.fd"], "final FD extent differs")
++    proof = verify_fd(raw[FD_AT:XNUP_AT], components["fastboot-dxe.efi"])
++    require(raw[XNUP_AT:XNUP_AT + 4] == b"XNUP", "final XNUP offset differs")
++    size = struct.unpack_from("<I", raw, XNUP_AT + 4)[0] + 8
++    require(32 <= size < PAYLOAD_LIMIT and XNUP_AT + size <= len(raw), "final XNUP extent differs")
++    payload = raw[XNUP_AT:XNUP_AT + size]
++    require(payload == components["payload.bin"], "final payload bytes differ")
++    entries = CODEC.parse_payload(payload)
++    expected = {"kernel": components["hakios-kernel"], "ramdisk": components["root.apfs"],
++                "resident": components["flashboot.apfs"],
++                "cmdline": BOOT_ARGS.encode("ascii") + b"\0",
++                "kernel.ver": old_entries["kernel.ver"]}
++    require(entries == expected and set(entries) == ENTRY_NAMES, "exact XNUP entries differ")
++    validate_args(LIVE.text_entry(entries["cmdline"]))
++    require(sha(entries["ramdisk"]) == RAM_ROOT_SHA and
++            entries["resident"] == old_entries["resident"], "APFS root or R34 Boot differs")
++    for key in ("ramdisk", "resident"):
++        require(len(entries[key]) == 0x400000, "final APFS size differs")
++        LIVE.verify_root(entries[key])
++    budget = LIVE.command_budget(BOOT_ARGS, LIVE.text_entry(entries["kernel.ver"]), "ram")
++    shim, literal = LIVE.replace_copy_length(old_raw[:FD_AT], old_size, size)
++    require(raw[:FD_AT] == shim, "BootShim changed beyond its copy-length literal")
++    copy_bytes = struct.unpack_from("<Q", raw, literal)[0]
++    require(copy_bytes == (size + 15) & ~15 and
++            CODEC.parse_payload(raw[XNUP_AT:XNUP_AT + copy_bytes][:size]) == expected,
++            "BootShim relocation differs")
++    require(raw[XNUP_AT + size:] == NOP * (((-size) % 16) // 4) and
++            len(raw) <= IMAGE_LIMIT and len(raw) % 16 == 0, "Image padding or extent differs")
++    require(components["boot-args.txt"] == (BOOT_ARGS + "\n").encode("ascii"), "boot args file differs")
++    return {"final_fv": proof, "command_budget": budget,
++            "shim_copy_length": {"literal_offset": literal, "bytes": copy_bytes, "payload_bytes": size}}
++
++
++def assemble(attempt="01", kernel_report=KERNEL_REPORT):
++    out = package_path(attempt)
++    require(not out.exists(), f"preserve existing package/partial files: {out}")
++    inputs = reused_inputs()
++    kernel, build, build_data = kernel_input(kernel_report)
++    raw_old, dtbs, header, previous, old_size = inputs["r34"]
++    payload = CODEC.encode_payload([
++        ("kernel", kernel), ("ramdisk", inputs["root"]), ("resident", previous["resident"]),
++        ("cmdline", BOOT_ARGS.encode("ascii") + b"\0"), ("kernel.ver", previous["kernel.ver"])])
++    require(len(payload) < PAYLOAD_LIMIT, "payload exceeds reviewed bound")
++    shim, _ = LIVE.replace_copy_length(raw_old[:FD_AT], old_size, len(payload))
++    raw = shim + inputs["fd"] + payload + NOP * (((-len(payload)) % 16) // 4)
++    require(len(raw) <= IMAGE_LIMIT and len(raw) % 16 == 0, "Image exceeds reviewed bound")
++    PACKAGE_ROOT.mkdir(parents=True, exist_ok=True)
++    with tempfile.TemporaryDirectory(prefix="fat-g0-", dir=PACKAGE_ROOT) as temporary:
++        fat_path = Path(temporary) / "loader.fat"
++        # Unlike make_fat(), keep its readback temporary directory inside our scope.
++        fat_path.write_bytes(bytes(0x100000))
++        import subprocess
++        subprocess.run(["mformat", "-i", str(fat_path), "-T", "2048", "-h", "4", "-s", "16",
++                        "-v", "HAKIOS", "::"], check=True)
++        subprocess.run(["mcopy", "-i", str(fat_path), inputs["support"]["loader"], "::HAKIOS.EFI"], check=True)
++        returned = Path(temporary) / "HAKIOS.EFI"
++        subprocess.run(["mcopy", "-i", str(fat_path), "::HAKIOS.EFI", str(returned)], check=True)
++        require(returned.read_bytes() == inputs["loader"], "mtools FAT loader readback differs")
++        fat = fat_path.read_bytes()
++    image_name = f"lithium-hakios-ios16-gpu-g0-{attempt}.img"
++    image = LIVE.make_android(raw, dtbs, fat, header)
++    components = {"hakios-kernel": kernel, "root.apfs": inputs["root"],
++                  "flashboot.apfs": previous["resident"], "loader.efi": inputs["loader"],
++                  "fastboot-dxe.efi": inputs["fastboot"], "lithium.fd": inputs["fd"],
++                  "loader.fat": fat, "payload.bin": payload, "Image": raw,
++                  "boot-args.txt": (BOOT_ARGS + "\n").encode("ascii"),
++                  "kernel-result.json": build_data,
++                  "ram-support.json": SUPPORT_REPORT.read_bytes(),
++                  "ram-root.json": ROOT_REPORT.read_bytes(), image_name: image}
++    readback = verify_layers(image, components, inputs["r34"])
++    contract = {
++        "schema": SCHEMA, "candidate": f"GPU-G0-{attempt}", "profile": "gpu-g0-ram",
++        "passed": True, "package_host_ready": True, "cmdline": BOOT_ARGS, "boot_args": BOOT_ARGS,
++        "ram_smp_return": True, "return_fastboot": True, "return_fastboot_delay": 10,
++        "loader_return_after": 180, "cpu_sanity": True, "perf_fixed_requested": True,
++        "perf_fixed_target_hz": 614400000, "cpu_inherited_supply_r39": True,
++        "cpu_thermal_diag": True, "source_log_retry": True,
++        "gpu_stage": 0, "gpu_probe": True, "gpu_wd": True,
++        "stress_requested": False, "regulator_writes": 0, "TSENS_writes": 0,
++        "max_cpu_clock_register_writes": 11, "gpu_hardware_verified": False,
++        "frequency_hardware_verified": False, "measured_cpu_mhz": None,
++        "automatic_return_hardware_verified": False, "runtime_verified": False,
++        "normal_boot_may_write_userdata": False, "partition_operations": False,
++        "physical_ufs_provider_absent": True, "ufs_bridge_disabled": True,
++        "root_data_storage_arguments_absent": True, "persistent_log_disabled": True,
++        "device_operations": 0, "kernel_builds": 0, "qemu_used": False,
++        "inputs": {"kernel": FROZEN_KERNEL.as_posix(), "kernel_report": str(kernel_report),
++                   "kernel_sha256": build["sha256"], "loader_sha256": LOADER_SHA,
++                   "ram_fd_sha256": FD_SHA, "fastboot_dxe_sha256": FASTBOOT_SHA,
++                   "ram_root_sha256": RAM_ROOT_SHA, "frozen_r34_ram_sha256": R34_SHA},
++        "image": {"path": image_name, **meta(image)},
++        "components": {name: meta(data) for name, data in components.items()},
++        "readback": {"android_header_and_sha1": True, "xnup_exact_entries": True,
++                     "fat_loader": True, "apfs_exact": True, "mu_fd": True,
++                     "physical_ufs_absent_nested_fv": True, "fastboot_dxe_exact": True,
++                     "resident_ram_volume_unchanged": True, "smp_pid1_hold": True,
++                     "seeded_uefi_owner": True, "shim_copy_length": True,
++                     "modeled_relocation_exact": True}, **readback}
++    out.mkdir(exist_ok=False)
++    for name, data in components.items():
++        with (out / name).open("xb") as stream:
++            stream.write(data)
++    with (out / "contract.json").open("x", encoding="utf-8", newline="\n") as stream:
++        stream.write(json.dumps(contract, indent=2) + "\n")
++    # Verify saved bytes again. A failure preserves all files for inspection.
++    return verify_package(out, attempt)
++
++
++def verify_package(package, attempt="01"):
++    require(package.name == f"g0-{attempt}" and package.resolve() == package_path(attempt).resolve(),
++            "G0 package must stay in the assigned package evidence directory")
++    contract = read_json(package / "contract.json")
++    require(contract.get("schema") == SCHEMA and contract.get("passed") is True and
++            contract.get("package_host_ready") is True and contract.get("profile") == "gpu-g0-ram" and
++            contract.get("candidate") == f"GPU-G0-{attempt}", "G0 contract rejected")
++    validate_args(contract.get("cmdline"))
++    require(contract.get("boot_args") == BOOT_ARGS, "G0 boot_args differs")
++    for name in ("physical_ufs_provider_absent", "ufs_bridge_disabled", "ram_smp_return",
++                 "return_fastboot", "root_data_storage_arguments_absent", "persistent_log_disabled",
++                 "cpu_sanity", "perf_fixed_requested", "cpu_inherited_supply_r39",
++                 "cpu_thermal_diag", "source_log_retry", "gpu_probe", "gpu_wd"):
++        require(contract.get(name) is True, "G0 no-UFS/return proof missing: " + name)
++    for name in ("normal_boot_may_write_userdata", "partition_operations", "stress_requested",
++                 "runtime_verified", "gpu_hardware_verified", "frequency_hardware_verified",
++                 "automatic_return_hardware_verified", "qemu_used"):
++        require(contract.get(name) is False, "G0 pending/disabled flag differs: " + name)
++    for name, expected in (("loader_return_after", 180), ("return_fastboot_delay", 10),
++                           ("perf_fixed_target_hz", 614400000), ("gpu_stage", 0),
++                           ("regulator_writes", 0), ("TSENS_writes", 0), ("device_operations", 0),
++                           ("kernel_builds", 0)):
++        require(type(contract.get(name)) is int and contract[name] == expected,
++                "G0 manifest field differs: " + name)
++    require(contract.get("measured_cpu_mhz") is None, "G0 package has no measured MHz")
++    checks = ("android_header_and_sha1", "xnup_exact_entries", "fat_loader", "apfs_exact",
++              "mu_fd", "physical_ufs_absent_nested_fv", "fastboot_dxe_exact",
++              "resident_ram_volume_unchanged", "smp_pid1_hold", "seeded_uefi_owner",
++              "shim_copy_length", "modeled_relocation_exact")
++    require(contract.get("readback") == dict.fromkeys(checks, True), "G0 readback flags incomplete")
++    image_name = f"lithium-hakios-ios16-gpu-g0-{attempt}.img"
++    required = {"hakios-kernel", "root.apfs", "flashboot.apfs", "loader.efi", "fastboot-dxe.efi",
++                "lithium.fd", "loader.fat", "payload.bin", "Image", "boot-args.txt",
++                "kernel-result.json", "ram-support.json", "ram-root.json", image_name}
++    records = contract.get("components")
++    require(isinstance(records, dict) and set(records) == required, "G0 component set differs")
++    components = {}
++    for name, record in records.items():
++        path = package / name
++        require(path.is_file() and not path.is_symlink() and path.resolve().parent == package.resolve(),
++                "component is missing or linked: " + name)
++        data = path.read_bytes()
++        require(isinstance(record, dict) and record == meta(data), "component size/hash differs: " + name)
++        components[name] = data
++    require(contract.get("image") == {"path": image_name, **meta(components[image_name])},
++            "G0 image metadata differs")
++    require(sha(components["ram-support.json"]) == SUPPORT_REPORT_SHA and
++            sha(components["ram-root.json"]) == ROOT_REPORT_SHA, "frozen input report differs")
++    build = json.loads(components["kernel-result.json"])
++    require(build.get("passed") is True and build.get("kernel") == FROZEN_KERNEL.as_posix() and
++            build.get("sha256") == sha(components["hakios-kernel"]) and
++            build.get("bytes") == len(components["hakios-kernel"]) and build.get("device_operations") == 0,
++            "saved main kernel report does not bind final kernel bytes")
++    require(contract.get("inputs", {}).get("kernel_sha256") == build["sha256"], "kernel manifest pin differs")
++    LIVE.verify_kernel(components["hakios-kernel"], "ram")
++    for marker in KERNEL_MARKERS:
++        require(marker in components["hakios-kernel"], "saved kernel marker missing: " + repr(marker))
++    actual = verify_layers(components[image_name], components)
++    for key in ("final_fv", "command_budget", "shim_copy_length"):
++        require(contract.get(key) == actual[key], "saved readback differs: " + key)
++    return {"passed": True, "package": str(package), "image": str(package / image_name),
++            "image_sha256": sha(components[image_name]), "image_bytes": len(components[image_name]),
++            "cmdline": BOOT_ARGS, "component_count": len(components),
++            "final_fv": actual["final_fv"], "device_operations": 0, "runtime_verified": False}
++
++
++def main(argv=None):
++    parser = argparse.ArgumentParser(description=__doc__)
++    actions = parser.add_mutually_exclusive_group()
++    actions.add_argument("--check-inputs", action="store_true")
++    actions.add_argument("--verify-package", action="store_true")
++    parser.add_argument("--attempt", default="01")
++    parser.add_argument("--kernel-report", type=Path, default=KERNEL_REPORT)
++    args = parser.parse_args(argv)
++    try:
++        package_path(args.attempt)
++        if args.verify_package:
++            result = verify_package(package_path(args.attempt), args.attempt)
++        elif args.check_inputs:
++            inputs = reused_inputs()
++            kernel, report, _ = kernel_input(args.kernel_report)
++            result = {"passed": True, "kernel_sha256": sha(kernel), "kernel_bytes": len(kernel),
++                      "reused_inputs_verified": True, "final_fv": inputs["fv_proof"],
++                      "command_budget": inputs["command_budget"], "device_operations": 0}
++        else:
++            result = assemble(args.attempt, args.kernel_report)
++        print(json.dumps(result, indent=2))
++        return 0
++    except Exception as error:
++        print(f"STOPPED; existing files preserved: {error}", file=sys.stderr)
++        return 1
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+--- /dev/null
++++ b/scripts/package-hakios-fb2-614.py
+@@ -0,0 +1,540 @@
++#!/usr/bin/env python3
++"""Freeze the bounded R40 614.4 MHz fb_threads=2 candidate on the host.
++
++Use the existing WSL Python/zlib; its encoder must reproduce the accepted input
++byte for byte. No compiler, subprocess, device, FAT formatter, or source sync is
++invoked. Writes use exclusive creation below the two fixed owned directories.
++--dry-run writes nothing; --verify-only reopens and verifies the frozen output.
++"""
++from __future__ import annotations
++
++import argparse
++from datetime import datetime, timezone
++import difflib
++import gzip
++import hashlib
++import importlib.util
++import json
++import lzma
++from pathlib import Path
++import struct
++import sys
++import uuid
++import zlib
++
++sys.dont_write_bytecode = True
++ROOT = Path(__file__).resolve().parents[1]
++OWN = ROOT / "evidence/gpu-g0-20261123/fb2"
++OUT = ROOT / "artifacts/hakios/lithium-ios16/phase4-gpu-off-fb2-614"
++BASE = ROOT / "artifacts/hakios/lithium-ios16/phase4-r40-ui-614400000-02"
++BASE_IMAGE = "lithium-hakios-ios16-r40-ui-614400000-02.img"
++IMAGE = "lithium-hakios-ios16-gpu-off-fb2-614.img"
++BASE_SHA = "0927c9d86fb1093fc394cb0c6666a38f281f7c62582458117a34242bda941dd1"
++CONTRACT_SHA = "4fe932107e260d666a3d994e67aca1fe99b825821de37e2863a4de739df54426"
++KERNEL_SHA = "252e58da2f63fb38da5e0b0fe5bc9c681c838f8f3311a9685f59ec64c1963afb"
++ENTRY_FILES = {"kernel": "hakios-kernel", "ramdisk": "root.apfs",
++               "resident": "flashboot.apfs"}
++LAYER_FILES = {"raw": "Image", "payload": "payload.bin", "fd": "lithium.fd",
++               "fat": "loader.fat", "loader": "loader.efi", "shim": "bootshim.bin",
++               "dtbs": "dtbs.bin", "header": "android-header.bin"}
++
++
++def require(ok, message):
++    if not ok:
++        raise RuntimeError(message)
++
++
++def digest(data):
++    return hashlib.sha256(data).hexdigest()
++
++
++def meta(data):
++    return {"bytes": len(data), "sha256": digest(data)}
++
++
++def load(name, filename):
++    spec = importlib.util.spec_from_file_location(name, ROOT / "scripts" / filename)
++    module = importlib.util.module_from_spec(spec)
++    sys.modules[name] = module
++    spec.loader.exec_module(module)
++    return module
++
++
++def write(path, data):
++    resolved = path.resolve()
++    require(any(resolved.is_relative_to(top.resolve()) for top in (OWN, OUT)),
++            "write escaped owned directories")
++    require(not path.is_symlink(), "refusing linked output")
++    resolved.parent.mkdir(parents=True, exist_ok=True)
++    with resolved.open("xb") as stream:
++        stream.write(data)
++    require(resolved.read_bytes() == data, "written bytes differ: " + str(path))
++
++
++def json_bytes(value):
++    return (json.dumps(value, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
++
++
++def one_delta(before, after):
++    require(len(before) == len(after), "delta input sizes differ")
++    at = next((i for i, pair in enumerate(zip(before, after)) if pair[0] != pair[1]), None)
++    require(at is not None and before[at + 1:] == after[at + 1:],
++            "expected exactly one changed byte")
++    require(before[at] == 0x31 and after[at] == 0x32, "expected ASCII 1 to 2")
++    return at
++
++
++def parse_dtbs(data):
++    result, at = [], 0
++    while at < len(data):
++        require(at + 40 <= len(data), "truncated DTB header")
++        fields = struct.unpack_from(">10I", data, at)
++        magic, size, structure, strings, reserve, version, compatible, cpu, ss, st = fields
++        require(magic == 0xD00DFEED and 40 <= size <= len(data) - at and
++                version == 17 and compatible <= version and
++                40 <= structure <= size and st <= size - structure and
++                40 <= strings <= size and ss <= size - strings and
++                40 <= reserve < size and reserve % 8 == 0,
++                "invalid stock DTB extent/header")
++        result.append(dict(index=len(result), offset=at, version=version,
++                           boot_cpuid_phys=cpu, **meta(data[at:at + size])))
++        at += size
++    require(len(result) == 20 and at == len(data), "expected exact twenty-DTB table")
++    return result
++
++
++def fd_readback(verifier, fd, support):
++    """Parse actual final FD/LZMA/FV/FFS/PE32 against the frozen support receipt."""
++    proof = support["ufs_inclusion_proof"]
++    require(len(fd) == 0x300000 and digest(fd) == support["fd_sha256"] and
++            proof.get("passed") is True and
++            proof.get("method") == "parse_final_fd_lzma_nested_fv_exact_ffs_and_pe32",
++            "final Mu FD proof differs")
++    nested = verifier.unique_file(verifier.fv_files(fd), verifier.NESTED_FV_GUID, 0x0B)
++    require(nested["offset"] == proof["nested_ffs_fd_offset"], "nested FV offset differs")
++    guided = verifier.sections(nested["body"])
++    require(len(guided) == 1 and guided[0]["type"] == 2, "invalid guided FV section")
++    section = guided[0]["data"]
++    require(len(section) >= 24 and
++            str(uuid.UUID(bytes_le=section[4:20])).upper() == verifier.LZMA_GUID,
++            "unexpected LZMA GUID")
++    offset, attrs = struct.unpack_from("<HH", section, 20)
++    require(24 <= offset < len(section) and attrs == 1, "invalid LZMA metadata")
++    decoder = lzma.LZMADecompressor(format=lzma.FORMAT_ALONE, memlimit=128 * 1024**2)
++    decoded = decoder.decompress(section[offset:], max_length=16 * 1024**2 + 1)
++    require(len(decoded) == proof["decoded_bytes"] and len(decoded) <= 16 * 1024**2 and
++            decoder.eof and not decoder.unused_data, "invalid nested FV decode")
++    sections = verifier.sections(decoded)
++    volumes = [s["body"] for s in sections if s["type"] == 0x17]
++    require(len(volumes) == 1 and all(s["type"] == 0x17 or
++            (s["type"] == 0x19 and not s["body"]) for s in sections) and
++            digest(volumes[0]) == proof["decoded_fv_sha256"], "nested FV bytes differ")
++    files, modules = verifier.fv_files(volumes[0]), {}
++    for name, guid in (("LithiumUfsDxe", verifier.UFS_GUID),
++                       ("LithiumFastbootDxe", "DC229FA1-8A73-4F05-AC63-BBD7CD6E8369")):
++        recorded = proof["modules"][name]
++        component = verifier.unique_file(files, guid, 7)
++        pe = [s["body"] for s in verifier.sections(component["body"]) if s["type"] == 0x10]
++        require(recorded["guid"] == guid and recorded["pe32_payload_exact"] is True and
++                component["offset"] == recorded["fv_offset"] and len(pe) == 1 and
++                digest(pe[0]) == recorded["efi_sha256"], "embedded DXE differs: " + name)
++        require(pe[0][:2] == b"MZ", "DXE PE32 signature differs")
++        modules[name] = dict(guid=guid, fv_offset=component["offset"], **meta(pe[0]),
++                             matches_frozen_support=True)
++    return dict(passed=True, nested_ffs_fd_offset=nested["offset"],
++                decoded_bytes=len(decoded), decoded_fv_sha256=digest(volumes[0]),
++                nested_fv_files=len(files), modules=modules)
++
++
++def layers(codec, boot, live, blob, reference_header=None):
++    raw, dtbs, fat, header = codec.decode_android(blob)
++    boot.check_boot(blob, raw, dtbs, fat, header if reference_header is None else reference_header)
++    require(len(raw) <= live.IMAGE_LIMIT and raw[live.XNUP_AT:live.XNUP_AT + 4] == b"XNUP",
++            "Image size or XNUP offset differs")
++    size = struct.unpack_from("<I", raw, live.XNUP_AT + 4)[0] + 8
++    require(0 < size < live.PAYLOAD_LIMIT and live.XNUP_AT + size <= len(raw),
++            "XNUP extent out of bounds")
++    payload = raw[live.XNUP_AT:live.XNUP_AT + size]
++    entries = codec.parse_payload(payload)
++    require(set(entries) == live.ENTRY_NAMES and boot.payload_entries(payload) == entries and
++            codec.encode_payload(list(entries.items())) == payload,
++            "XNUP parser/encoder disagreement")
++    padding = raw[live.XNUP_AT + size:]
++    require(padding == live.NOP * ((-size) % 16 // 4), "Image alignment padding differs")
++    shim = raw[:live.FD_AT]
++    unchanged_shim, literal = live.replace_copy_length(shim, size, size)
++    require(unchanged_shim == shim, "same-sized payload changed BootShim")
++    ks, rs = struct.unpack_from("<I", header, 8)[0], struct.unpack_from("<I", header, 16)[0]
++    fat_at = 4096 + ((ks + 4095) & ~4095)
++    require(not any(blob[4096 + ks:fat_at]) and not any(blob[fat_at + rs:]),
++            "nonzero Android alignment padding")
++    packed = blob[4096:4096 + ks]
++    compressed = packed[:-len(dtbs)] if dtbs else packed
++    return dict(raw=raw, dtbs=dtbs, fat=fat, header=header, payload=payload, entries=entries,
++                shim=shim, fd=raw[live.FD_AT:live.XNUP_AT], padding=padding,
++                gzip=compressed, loader=live.fat_loader(fat), shim_literal=literal)
++
++
++def baseline(codec, boot, live, verifier):
++    contract_bytes = (BASE / "contract.json").read_bytes()
++    require(digest(contract_bytes) == CONTRACT_SHA, "accepted R40 contract changed")
++    contract = json.loads(contract_bytes)
++    require(contract["passed"] and contract["package_host_ready"] and
++            contract["target_hz"] == 614400000 and contract["image"]["sha256"] == BASE_SHA,
++            "wrong accepted reference")
++    files = {}
++    for name, expected in contract["components"].items():
++        require(Path(name).name == name, "baseline component path escaped")
++        data = (BASE / name).read_bytes()
++        require(meta(data) == expected, "baseline component changed: " + name)
++        files[name] = data
++    blob = files[BASE_IMAGE]
++    require(digest(blob) == BASE_SHA, "reference image differs from user pin")
++    old = layers(codec, boot, live, blob)
++    for entry, filename in ENTRY_FILES.items():
++        require(old["entries"][entry] == files[filename], "baseline embedded entry differs")
++    for key, filename in LAYER_FILES.items():
++        if filename in files:
++            require(old[key] == files[filename], "baseline embedded layer differs: " + key)
++    args = live.text_entry(old["entries"]["cmdline"])
++    require(args == contract["cmdline"] and files["boot-args.txt"] == (args + "\n").encode(),
++            "baseline cmdline differs")
++    tokens = args.split()
++    required = {"bootcpu=1", "cpus=3", "ufs=2", "root_apfs=ufs_userdata",
++                "var_hfs=ufs_darwin_data", "ufs_write=1", "lithiumusb=2", "gl=0", "metal=0",
++                "fbwidth=1080", "fbheight=2040", "fb_threads=1", "fb_filter=0",
++                "cpu_perf_fixed=1", "cpu_perf_ufs=1", "cpu_perf_hz=614400000",
++                "cpu_thermal_diag=1", "cpu_inherited_supply_r39=1", "touch=1", "touch_smp=1",
++                "loader_return_after=600", "ufs_return=1", "return_fastboot=1",
++                "return_fastboot_delay=10", "ui_cycle=1", "ui_cycle_ready=1"}
++    require(required.issubset(tokens) and len(tokens) == len({t.split("=", 1)[0] for t in tokens})
++            and tokens.count("fb_threads=1") == 1, "reference arguments differ")
++    require(digest(old["entries"]["kernel"]) == KERNEL_SHA, "reference kernel pin differs")
++    kernel = live.verify_kernel(old["entries"]["kernel"], "ufs")
++    apfs = {k: live.verify_root(old["entries"][k]) for k in ("ramdisk", "resident")}
++    support = json.loads(files["support.json"])
++    fd = fd_readback(verifier, old["fd"], support)
++    require(verifier.loader_metadata(BASE / "loader.efi") == support["loader_metadata"],
++            "loader PE metadata differs from receipt")
++    budget = live.command_budget(args, live.text_entry(old["entries"]["kernel.ver"]), "ufs")
++    require(budget == contract["command_budget"], "loader command budget differs")
++    require(gzip.compress(old["raw"], compresslevel=9, mtime=0) == old["gzip"],
++            "gzip cannot reproduce baseline; use existing WSL Python/zlib")
++    require(live.make_android(old["raw"], old["dtbs"], old["fat"], old["header"]) == blob,
++            "Android encoder cannot exactly reproduce baseline")
++    proof = dict(passed=True, image=dict(path=BASE_IMAGE, **meta(blob)),
++                 contract_sha256=CONTRACT_SHA, components={k: meta(v) for k, v in files.items()},
++                 kernel=kernel, apfs_headers=apfs, fd=fd, dtbs=parse_dtbs(old["dtbs"]),
++                 command_budget=budget, baseline_gzip_exact_replay=True,
++                 baseline_android_exact_replay=True)
++    return contract, old, files, support, proof
++
++
++def comparison(codec, boot, live, verifier, old, support, blob):
++    new = layers(codec, boot, live, blob, old["header"])
++    before, after = (live.text_entry(x["entries"]["cmdline"]) for x in (old, new))
++    expected = before.replace("fb_threads=1", "fb_threads=2", 1)
++    require(after == expected, "cmdline differs beyond requested worker byte")
++    token_diff = [dict(index=i, before=a, after=b)
++                  for i, (a, b) in enumerate(zip(before.split(), after.split())) if a != b]
++    require(len(before.split()) == len(after.split()) and token_diff == [dict(
++        index=before.split().index("fb_threads=1"), before="fb_threads=1", after="fb_threads=2")],
++        "expected exactly one token change")
++    require(list(old["entries"]) == list(new["entries"]) and
++            [k for k in old["entries"] if old["entries"][k] != new["entries"][k]] == ["cmdline"],
++            "non-command XNUP entry or order changed")
++    payload_at = one_delta(old["payload"], new["payload"])
++    raw_at = one_delta(old["raw"], new["raw"])
++    command_at = one_delta(old["entries"]["cmdline"], new["entries"]["cmdline"])
++    require(raw_at == live.XNUP_AT + payload_at and
++            before.encode()[command_at - len("fb_threads="):command_at + 1] == b"fb_threads=1",
++            "delta is not the requested fb_threads byte")
++    for key in ("shim", "fd", "fat", "loader", "dtbs", "padding"):
++        require(old[key] == new[key], "immutable layer changed: " + key)
++    header_diff = [i for i, pair in enumerate(zip(old["header"], new["header"]))
++                   if pair[0] != pair[1]]
++    require(all(8 <= i < 12 or 576 <= i < 596 for i in header_diff),
++            "unexpected Android header change")
++    require(gzip.compress(new["raw"], compresslevel=9, mtime=0) == new["gzip"] and
++            live.make_android(new["raw"], old["dtbs"], old["fat"], old["header"]) == blob,
++            "candidate compression/Android replay differs")
++    budget = live.command_budget(after, live.text_entry(new["entries"]["kernel.ver"]), "ufs")
++    proof = dict(passed=True, exact_one_token=token_diff,
++                 delta=dict(changed_byte_count=1, raw_Image_offset=raw_at,
++                            raw_Image_offset_hex=hex(raw_at), XNUP_payload_offset=payload_at,
++                            cmdline_offset=command_at, before_hex="31", after_hex="32",
++                            equal_length=True, all_other_decompressed_bytes_identical=True),
++                 payload_entries={k: dict(before=meta(v), after=meta(new["entries"][k]),
++                                         byte_identical=v == new["entries"][k])
++                                  for k, v in old["entries"].items()},
++                 immutable_layers={k: dict(**meta(old[k]), byte_identical=True)
++                                   for k in ("shim", "fd", "fat", "loader", "dtbs", "padding")},
++                 raw_before=meta(old["raw"]), raw_after=meta(new["raw"]),
++                 payload_before=meta(old["payload"]), payload_after=meta(new["payload"]),
++                 gzip_before=meta(old["gzip"]), gzip_after=meta(new["gzip"]),
++                 gzip_headers=dict(before=old["gzip"][:10].hex(), after=new["gzip"][:10].hex()),
++                 android_header_changed_byte_offsets=header_diff,
++                 android_kernel_size_before=struct.unpack_from("<I", old["header"], 8)[0],
++                 android_kernel_size_after=struct.unpack_from("<I", new["header"], 8)[0],
++                 android_id_sha1_before=old["header"][576:596].hex(),
++                 android_id_sha1_after=new["header"][576:596].hex(),
++                 shim_copy_length_literal_offset=new["shim_literal"],
++                 shim_copy_bytes=struct.unpack_from("<Q", new["shim"], new["shim_literal"])[0],
++                 shim_copy_length_changed=False, command_budget=budget,
++                 baseline_gzip_exact_replay=True, baseline_android_exact_replay=True,
++                 candidate_gzip_exact_replay=True, candidate_android_exact_replay=True,
++                 parsers=dict(android="package-hakios-ios16-touch-r21.py:decode_android",
++                              XNUP="package-hakios-ios16-touch-r21.py:parse_payload/encode_payload",
++                              second_XNUP="package-hakios-ios16.py:payload_entries",
++                              android_header_sha1="package-hakios-ios16.py:check_boot",
++                              FAT_loader="package-hakios-touch-live.py:fat_loader"),
++                 kernel=live.verify_kernel(new["entries"]["kernel"], "ufs"),
++                 apfs_headers={k: live.verify_root(new["entries"][k])
++                               for k in ("ramdisk", "resident")},
++                 fd=fd_readback(verifier, new["fd"], support), dtbs=parse_dtbs(new["dtbs"]),
++                 runtime_verified=False, measured_cpu_mhz=None,
++                 performance_verified=False, real_gpu_acceleration_verified=False,
++                 device_operations=0)
++    return new, proof
++
++
++def protected_files():
++    names = [".git/index", str((BASE / "contract.json").relative_to(ROOT))]
++    names.extend(str(p.relative_to(ROOT)) for p in BASE.iterdir() if p.is_file())
++    for directory in ("phase4-r20-display", "phase4-r38-ufs-perf-low01"):
++        top = ROOT / "artifacts/hakios/lithium-ios16" / directory
++        names.extend(str(p.relative_to(ROOT)) for p in top.iterdir()
++                     if p.is_file() and (p.suffix == ".img" or p.name == "contract.json"))
++    return {name.replace("\\", "/"): meta((ROOT / name).read_bytes()) for name in sorted(set(names))}
++
++
++def assert_protected(expected):
++    require(protected_files() == expected, "Git index or protected frozen input changed")
++
++
++def exported_patch():
++    lines = Path(__file__).read_text(encoding="utf-8").splitlines(keepends=True)
++    relative = Path(__file__).relative_to(ROOT).as_posix()
++    return (f"diff --git a/{relative} b/{relative}\nnew file mode 100644\n" +
++            "".join(difflib.unified_diff([], lines, fromfile="/dev/null", tofile="b/" + relative)))
++
++
++def verify_existing(codec, boot, live, verifier, old, support):
++    freeze = json.loads((OWN / "freeze-manifest.json").read_bytes())
++    require(digest(Path(__file__).read_bytes()) == freeze["script_sha256"],
++            "packager changed since freeze")
++    for location, top in (("evidence", OWN), ("artifacts", OUT)):
++        for name, expected in freeze[location].items():
++            path = (top / name).resolve()
++            require(path.is_relative_to(top.resolve()), "freeze manifest path escaped")
++            require(meta(path.read_bytes()) == expected, "frozen output changed: " + name)
++    sources = json.loads((OWN / "source-manifest.json").read_bytes())
++    for name, expected in sources["helpers"].items():
++        require(meta((ROOT / name).read_bytes()) == expected, "executed helper changed: " + name)
++    preserved = json.loads((OWN / "protected-files.json").read_bytes())
++    assert_protected(preserved["before"])
++    contract = json.loads((OUT / "contract.json").read_bytes())
++    blob = (OUT / IMAGE).read_bytes()
++    new, proof = comparison(codec, boot, live, verifier, old, support, blob)
++    require(proof == json.loads((OWN / "readback.json").read_bytes()), "readback proof differs")
++    require(contract["image"] == dict(path=IMAGE, **meta(blob)), "image contract differs")
++    for key, filename in LAYER_FILES.items():
++        require((OUT / filename).read_bytes() == new[key], "saved layer differs: " + key)
++    for entry, filename in ENTRY_FILES.items():
++        require((OUT / filename).read_bytes() == new["entries"][entry], "saved entry differs")
++    require((OUT / "boot-args.txt").read_bytes() ==
++            (live.text_entry(new["entries"]["cmdline"]) + "\n").encode(), "saved arguments differ")
++    require((OWN / "source-only.patch").read_bytes() == exported_patch().encode(),
++            "source-only patch differs")
++    return dict(passed=True, mode="verify-only", image=str(OUT / IMAGE), **meta(blob),
++                delta=proof["delta"], protected_files_unchanged=True, device_operations=0)
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    modes = parser.add_mutually_exclusive_group()
++    modes.add_argument("--dry-run", action="store_true")
++    modes.add_argument("--verify-only", action="store_true")
++    options = parser.parse_args()
++    live = load("fb2_614_live", "package-hakios-touch-live.py")
++    codec, boot = live.bootstrap()
++    verifier = load("fb2_614_fd", "build-hakios-r38-ufs-support.py")
++    contract, old, files, support, baseline_proof = baseline(codec, boot, live, verifier)
++    if options.verify_only:
++        print(json.dumps(verify_existing(codec, boot, live, verifier, old, support), indent=2))
++        return
++    protected = protected_files()
++    prior_index = ROOT / "evidence/gpu-g0-20261123/main/index.before.sha256"
++    require(protected[".git/index"]["sha256"] == prior_index.read_text().strip(),
++            "original G0 index already differs")
++    # Patch only the command-entry byte in the decompressed Android Image.
++    command = old["entries"]["cmdline"]
++    require(old["payload"].count(command) == 1, "cannot identify unique command entry")
++    payload_command_at = old["payload"].index(command)
++    at = live.XNUP_AT + payload_command_at + command.index(b"fb_threads=1") + len(b"fb_threads=")
++    raw = bytearray(old["raw"])
++    require(raw[at] == ord("1"), "requested worker byte differs")
++    raw[at] = ord("2")
++    blob = live.make_android(bytes(raw), old["dtbs"], old["fat"], old["header"])
++    new, proof = comparison(codec, boot, live, verifier, old, support, blob)
++    require(proof["delta"]["raw_Image_offset"] == at and
++            proof["command_budget"] == contract["command_budget"], "delta/budget differs")
++    if options.dry_run:
++        assert_protected(protected)
++        print(json.dumps(dict(passed=True, mode="dry-run", **meta(blob),
++                              delta=proof["delta"], writes=0, device_operations=0), indent=2))
++        return
++    require(not OWN.exists() and not OUT.exists(),
++            "owned output exists; preserve it and use --verify-only")
++    components = {filename: new[key] for key, filename in LAYER_FILES.items()}
++    components.update({filename: new["entries"][entry] for entry, filename in ENTRY_FILES.items()})
++    args = live.text_entry(new["entries"]["cmdline"])
++    components.update({IMAGE: blob, "boot-args.txt": (args + "\n").encode()})
++    # Frozen provenance receipts are copied verbatim, never regenerated.
++    for name in ("kernel-result.json", "support.json", "cpu-perf-fixed-r38.h", "root-result.json"):
++        components[name] = files[name]
++    new_contract = dict(
++        schema="hakios-gpu-off-fb2-614-v1", created_at_utc=datetime.now(timezone.utc).isoformat(),
++        passed=True, package_host_ready=True, hardware_verified=False, runtime_verified=False,
++        performance_verified=False, real_gpu_acceleration_verified=False,
++        measured_cpu_mhz=None, target_hz=614400000, profile=contract["profile"],
++        fb_threads_requested=2, gl=0, metal=0, cmdline=args,
++        kernel_version=contract["kernel_version"], kernel_sha256=KERNEL_SHA,
++        command_budget=proof["command_budget"], layout=contract["layout"],
++        display_baseline="R20-display", normal_boot_may_write_userdata=True,
++        loader_return_after=600, ufs_return_requested=True, return_fastboot_requested=True,
++        return_fastboot_delay=10, ui_cycle_requested=True, automatic_fastboot_verified=False,
++        baseline=dict(path=str(BASE), image_sha256=BASE_SHA, contract_sha256=CONTRACT_SHA),
++        image=dict(path=IMAGE, **meta(blob)),
++        components={name: meta(data) for name, data in components.items()},
++        payload_entries={name: meta(data) for name, data in new["entries"].items()},
++        readback=proof, script_sha256=digest(Path(__file__).read_bytes()),
++        build_invocations=0, subprocess_invocations=0, device_operations=0,
++        partition_operations=0, voltage_write=False, qemu_used=False,
++        export_policy="source-only.patch contains the packager only; all binary outputs are local")
++    for name, data in components.items():
++        write(OUT / name, data)
++    write(OUT / "contract.json", json_bytes(new_contract))
++    write(OUT / "SHA256SUMS.txt", ("".join(
++        f"{digest(data)}  {name}\n" for name, data in sorted(components.items()))).encode())
++    write(OWN / "baseline-verify.json", json_bytes(baseline_proof))
++    write(OWN / "readback.json", json_bytes(proof))
++    helper_paths = {Path(__file__).resolve()}
++    for module in list(sys.modules.values()) + [live, codec, boot, verifier]:
++        filename = getattr(module, "__file__", None)
++        if filename and Path(filename).resolve().parent == ROOT / "scripts":
++            helper_paths.add(Path(filename).resolve())
++    helpers = {path.relative_to(ROOT).as_posix(): meta(path.read_bytes())
++               for path in sorted(helper_paths)}
++    write(OWN / "source-manifest.json", json_bytes(dict(
++        helpers=helpers, runtime=dict(python=sys.version, zlib=zlib.ZLIB_RUNTIME_VERSION),
++        inspected_prior_state=dict(script_existed=False, owned_evidence_existed=False,
++                                   owned_artifacts_existed=False,
++                                   reference_format_script="scripts/package-hakios-r38-fb-workers.py"),
++        build_invocations=0, subprocess_invocations=0, device_operations=0)))
++    write(OWN / "source-only.patch", exported_patch().encode())
++    assert_protected(protected)
++    write(OWN / "protected-files.json", json_bytes(dict(
++        before=protected, after=protected_files(), changed=False,
++        matches_original_g0_index=True, scope="Git index, accepted R40 directory, R20/low01 images and contracts")))
++    delta = proof["delta"]
++    rows = "\n".join(f"| {key} | {value['bytes']} | `{value['sha256']}` |"
++                     for key, value in proof["immutable_layers"].items())
++    report = f"""# Bounded R40 614.4 MHz fb_threads=2 host candidate
++
++Status: host packaging and focused layered readback passed. The prior named
++script and both owned output directories were absent when inspected; the
++existing R38 worker packager supplied a format reference only.
++
++Candidate: `{OUT / IMAGE}`  
++Bytes: {len(blob)}  
++SHA256: `{digest(blob)}`
++
++Accepted reference: `{BASE / BASE_IMAGE}`  
++Reference SHA256: `{BASE_SHA}`  
++Pinned reference contract SHA256: `{CONTRACT_SHA}`
++
++Only command token {proof['exact_one_token'][0]['index']} changes `fb_threads=1`
++to `fb_threads=2`. The decompressed Android Image and XNUP sizes are unchanged.
++There is exactly one changed decompressed byte, ASCII `1` (0x31) to `2` (0x32):
++
++- Image offset: {delta['raw_Image_offset']} ({delta['raw_Image_offset_hex']}).
++- XNUP offset: {delta['XNUP_payload_offset']}.
++- Command-entry offset: {delta['cmdline_offset']}.
++- All remaining decompressed bytes, including spacing and XNUP metadata, match.
++
++```text
++{args}
++```
++
++Every reference component matches its frozen contract. Two existing XNUP
++parsers agree; encoding reproduces the payload. Actual Android header geometry,
++SHA1 and alignment padding passed readback. The existing WSL gzip encoder
++(Python {sys.version.split()[0]}, zlib {zlib.ZLIB_RUNTIME_VERSION}, level 9, mtime 0)
++reproduces the complete reference image exactly before changing the input byte,
++and reproduces the candidate exactly. The outer header changes are limited to
++the gzip-plus-DTB size field and Android SHA1; page padding is regenerated.
++
++| Preserved layer | Bytes | SHA256 |
++| --- | ---: | --- |
++{rows}
++
++Kernel, root APFS, resident Boot APFS and kernel.ver entries are also byte
++identical; their complete before/after hashes are in readback.json. The arm64
++Mach-O load commands were parsed. The loader was extracted through its FAT
++cluster chain and checked against its frozen PE metadata. Mu's actual final FD
++was parsed through LZMA, FV, FFS and the exact UFS/Fastboot PE32 sections. All
++20 concatenated DTB headers and extents were parsed. Both APFS NXSB headers and
++container extents were parsed; no new filesystem traversal or fsck was run.
++The BootShim copy-length literal remains unchanged, and the loader command
++budget remains {proof['command_budget']['reserved_bytes']}/608 bytes.
++
++CPU target remains the accepted 614400000 Hz configuration model; measured MHz
++is unknown for this candidate. gl=0 and metal=0 remain set. Requesting two
++framebuffer threads does not establish two active workers, UI speed, physical
++FPS, thermal stability or real GPU acceleration. This candidate has not run on
++hardware. The inherited 600-second session, touch, UI-cycle and UFS-return
++requests are unchanged; their output behavior has not been retested here.
++
++No compiler, subprocess, device query/boot, USB operation, partition operation,
++voltage write or QEMU invocation occurred. Writes were exclusive creations
++under the two owned output directories plus the authorized packager script.
++The Git index matches the original G0 hash and the protected R40/R20/low01
++inputs remain unchanged. Exported source-only.patch contains only the text
++packager; images, firmware and Apple binaries are excluded from the patch.
++
++Reopen verification (no writes):
++
++```powershell
++wsl.exe --exec python3 -B /mnt/f/IOS-MIX1/scripts/package-hakios-fb2-614.py --verify-only
++```
++
++Evidence: baseline-verify.json, readback.json, source-manifest.json,
++protected-files.json and freeze-manifest.json in `{OWN}`. Artifact component
++hashes are in contract.json and SHA256SUMS.txt in `{OUT}`.
++"""
++    write(OWN / "report.md", report.encode())
++    write(OWN / "report.json", json_bytes(dict(
++        passed=True, scope="focused_host_packaging_only", image=dict(path=str(OUT / IMAGE), **meta(blob)),
++        baseline_sha256=BASE_SHA, delta=delta, readback_path=str(OWN / "readback.json"),
++        report_path=str(OWN / "report.md"), contract_path=str(OUT / "contract.json"),
++        script_sha256=digest(Path(__file__).read_bytes()), protected_files_unchanged=True,
++        device_operations=0, runtime_verified=False, performance_verified=False,
++        real_gpu_acceleration_verified=False, measured_cpu_mhz=None)))
++    freeze = dict(schema="hakios-fb2-614-freeze-v1", script_sha256=digest(Path(__file__).read_bytes()),
++                  evidence={p.relative_to(OWN).as_posix(): meta(p.read_bytes())
++                            for p in sorted(OWN.rglob("*")) if p.is_file()},
++                  artifacts={p.relative_to(OUT).as_posix(): meta(p.read_bytes())
++                             for p in sorted(OUT.rglob("*")) if p.is_file()})
++    write(OWN / "freeze-manifest.json", json_bytes(freeze))
++    assert_protected(protected)
++    print(json.dumps(dict(passed=True, mode="package", image=str(OUT / IMAGE), **meta(blob),
++                          report=str(OWN / "report.md"), delta=delta, device_operations=0), indent=2))
++
++
++if __name__ == "__main__":
++    try:
++        main()
++    except (RuntimeError, OSError, ValueError, struct.error, zlib.error, lzma.LZMAError) as error:
++        print("FAIL: " + str(error), file=sys.stderr)
++        sys.exit(1)
+--- /dev/null
++++ b/scripts/tests/test-gpu-g0-core.c
+@@ -0,0 +1,447 @@
++/* Host-only tests of the actual production header; no mapping or hardware IO.
++ * Run: python -B evidence/gpu-g0-20261123/core/run-tests.py
++ */
++#include <inttypes.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include "../../ports/hakios-lithium/gpu/g0-core.h"
++
++static unsigned cases, checks;
++
++#define CHECK(condition) do { \
++    ++checks; \
++    if (!(condition)) { \
++        fprintf(stderr, "FAIL case=%u line=%d: %s\n", \
++                cases, __LINE__, #condition); \
++        exit(EXIT_FAILURE); \
++    } \
++} while (0)
++
++/* Independent literal oracle: do not obtain expected addresses from lg0_regs. */
++static const uint32_t addresses[9] = {
++    UINT32_C(0x008c4034), UINT32_C(0x008c4024), UINT32_C(0x008c403c),
++    UINT32_C(0x008c4044), UINT32_C(0x008c4028), UINT32_C(0x008c40b0),
++    UINT32_C(0x008c4000), UINT32_C(0x00309010), UINT32_C(0x00346018)
++};
++static const char *const names[9] = {
++    "CX_GDSCR", "GX_GDSCR", "GPU_AHB_CBCR", "GPU_AON_ISENSE_CBCR",
++    "GPU_GX_GFX3D_CBCR", "GPU_GX_RBBMTIMER_CBCR", "GFX3D_CMD_RCGR",
++    "GCC_MMSS_BIMC_GFX_CBCR", "GCC_BIMC_GFX_CBCR"
++};
++
++enum { TIME_SAMPLES = 37, NO_INJECTION = 100 };
++struct mock {
++    uint64_t clock[TIME_SAMPLES];
++    uint32_t values[18];
++    uint32_t failures;
++    unsigned read_calls, time_calls;
++    bool poison_failure;
++    unsigned cap_inject_at;
++    struct lg0_result *cap_target;
++};
++
++static void init_mock(struct mock *m, uint64_t start)
++{
++    unsigned i;
++    memset(m, 0, sizeof(*m));
++    m->cap_inject_at = NO_INJECTION;
++    for (i = 0; i < TIME_SAMPLES; ++i)
++        m->clock[i] = start + i;
++    for (i = 0; i < 18; ++i)
++        m->values[i] = UINT32_C(0x80001000) + (i % 9u);
++}
++
++static uint64_t mock_now(void *ctx)
++{
++    struct mock *m = ctx;
++    CHECK(m != NULL);
++    CHECK(m->time_calls < TIME_SAMPLES);
++    /* Deliberate diagnostic-counter corruption to reach the defensive cap
++     * branch without modifying production constants or inserting test hooks.
++     * Ordinary adapter callbacks must not mutate the result under collection.
++     */
++    if (m->time_calls == m->cap_inject_at) {
++        CHECK(m->cap_target != NULL);
++        m->cap_target->reads = 18;
++    }
++    return m->clock[m->time_calls++];
++}
++
++static bool mock_read(void *ctx, uint32_t address, uint32_t *value)
++{
++    struct mock *m = ctx;
++    unsigned call;
++    CHECK(m != NULL);
++    CHECK(value != NULL);
++    CHECK(m->read_calls < 18); /* A nineteenth read fails the test immediately. */
++    call = m->read_calls++;
++    CHECK(address == addresses[call % 9u]);
++    if (m->failures & (UINT32_C(1) << call)) {
++        if (m->poison_failure)
++            *value = UINT32_C(0xdeadbeef);
++        return false;
++    }
++    *value = m->values[call];
++    return true;
++}
++
++static unsigned popcount(uint32_t value)
++{
++    unsigned count = 0;
++    while (value) {
++        count += value & 1u;
++        value >>= 1;
++    }
++    return count;
++}
++
++/* Oracle derives validity from returned callback slots, independently of the
++ * production result; it also checks unattempted/failed raw cells remain zero.
++ */
++static void verify_result(const struct mock *m, const struct lg0_result *r,
++                          unsigned reads, unsigned clocks, uint32_t stop_error)
++{
++    uint32_t valid[2] = {0, 0}, stable = 0, unstable = 0;
++    uint32_t errors = stop_error;
++    unsigned call, reg, failures = 0;
++
++    CHECK(m->read_calls == reads);
++    CHECK(m->time_calls == clocks);
++    CHECK(r->reads == reads);
++    CHECK(r->reads <= 18);
++    CHECK(r->passes_completed == reads / 9u);
++    CHECK(r->started_us == m->clock[0]);
++    CHECK(r->ended_us == m->clock[clocks - 1u]);
++    for (call = 0; call < 18; ++call) {
++        unsigned pass = call / 9u;
++        reg = call % 9u;
++        if (call < reads && !(m->failures & (UINT32_C(1) << call))) {
++            valid[pass] |= UINT32_C(1) << reg;
++            CHECK(r->raw[pass][reg] == m->values[call]);
++        } else {
++            CHECK(r->raw[pass][reg] == 0);
++            if (call < reads)
++                ++failures;
++        }
++    }
++    for (reg = 0; reg < 9; ++reg) {
++        uint32_t bit = UINT32_C(1) << reg;
++        if ((valid[0] & valid[1] & bit) == 0)
++            continue;
++        if (m->values[reg] == m->values[reg + 9u])
++            stable |= bit;
++        else
++            unstable |= bit;
++    }
++    if (failures)
++        errors |= LG0_ERR_READ;
++    if (unstable)
++        errors |= LG0_ERR_UNSTABLE;
++    CHECK(r->valid[0] == valid[0]);
++    CHECK(r->valid[1] == valid[1]);
++    CHECK((r->valid[0] | r->valid[1]) <= UINT32_C(0x1ff));
++    CHECK(r->read_failures == failures);
++    CHECK(r->stable_mask == stable);
++    CHECK(r->unstable_mask == unstable);
++    CHECK(r->stable_count == popcount(stable));
++    CHECK((r->stable_mask & r->unstable_mask) == 0);
++    CHECK((r->stable_mask | r->unstable_mask) == (valid[0] & valid[1]));
++    CHECK(r->errors == errors);
++}
++
++static void run_case(struct mock *m, unsigned reads, unsigned clocks,
++                     uint32_t stop_error)
++{
++    struct lg0_result r;
++    const struct lg0_io io = {m, mock_read, mock_now};
++    bool ok;
++    ++cases;
++    memset(&r, 0xa5, sizeof(r)); /* Includes preseeded reads/valid/error bits. */
++    ok = lg0_run(&io, &r);
++    verify_result(m, &r, reads, clocks, stop_error);
++    CHECK(ok == (stop_error == 0 && reads == 18 && m->failures == 0 &&
++                 r.unstable_mask == 0));
++}
++
++static void test_interface(void)
++{
++    unsigned i, j;
++    ++cases;
++    CHECK(LG0_PASSES == 2);
++    CHECK(LG0_REG_COUNT == 9);
++    CHECK(LG0_COUNT == 9);
++    CHECK(LG0_READ_CAP == 18);
++    CHECK(LG0_DEADLINE_US == UINT64_C(50000));
++    CHECK(LG0_ALL_VALID == UINT32_C(0x1ff));
++    CHECK(LG0_CX_GDSCR == 0 && LG0_GX_GDSCR == 1);
++    CHECK(LG0_GPU_AHB_CBCR == 2 && LG0_GPU_AON_ISENSE_CBCR == 3);
++    CHECK(LG0_GPU_GX_GFX3D_CBCR == 4 && LG0_GPU_GX_RBBMTIMER_CBCR == 5);
++    CHECK(LG0_GFX3D_CMD_RCGR == 6);
++    CHECK(LG0_GCC_MMSS_BIMC_GFX_CBCR == 7 && LG0_GCC_BIMC_GFX_CBCR == 8);
++    CHECK(LG0_GDSCR_PWR_ON == UINT32_C(0x80000000));
++    CHECK(LG0_GDSCR_SW_OVERRIDE == UINT32_C(4));
++    CHECK(LG0_GDSCR_HW_CONTROL == UINT32_C(2));
++    CHECK(LG0_GDSCR_SW_COLLAPSE == UINT32_C(1));
++    for (i = 0; i < 9; ++i) {
++        CHECK(lg0_regs[i].address == addresses[i]);
++        CHECK(strcmp(lg0_regs[i].name, names[i]) == 0);
++        CHECK((lg0_regs[i].address & 3u) == 0);
++        for (j = 0; j < i; ++j)
++            CHECK(lg0_regs[i].address != lg0_regs[j].address);
++    }
++    puts("PASS fixed API, exact nine-register allowlist and GDSCR masks");
++}
++
++static void verify_argument_result(const struct lg0_result *r)
++{
++    unsigned pass, reg;
++    CHECK(r->errors == LG0_ERR_ARGUMENT);
++    CHECK(r->reads == 0 && r->read_failures == 0 && r->passes_completed == 0);
++    CHECK(r->stable_mask == 0 && r->unstable_mask == 0 && r->stable_count == 0);
++    CHECK(r->started_us == 0 && r->ended_us == 0);
++    for (pass = 0; pass < 2; ++pass) {
++        CHECK(r->valid[pass] == 0);
++        for (reg = 0; reg < 9; ++reg)
++            CHECK(r->raw[pass][reg] == 0);
++    }
++}
++
++static unsigned stateless_reads, stateless_clocks;
++static bool stateless_read(void *ctx, uint32_t address, uint32_t *value)
++{
++    CHECK(ctx == NULL);
++    CHECK(stateless_reads < 18);
++    CHECK(address == addresses[stateless_reads % 9u]);
++    ++stateless_reads;
++    *value = 0;
++    return true;
++}
++static uint64_t stateless_now(void *ctx)
++{
++    CHECK(ctx == NULL);
++    ++stateless_clocks;
++    return 0;
++}
++
++static void test_arguments_and_reuse(void)
++{
++    struct mock m;
++    struct lg0_result r;
++    struct lg0_io io = {&m, mock_read, mock_now};
++    unsigned missing;
++    init_mock(&m, 1000);
++    ++cases;
++    CHECK(!lg0_run(NULL, NULL));
++    CHECK(!lg0_run(&io, NULL));
++    CHECK(m.time_calls == 0 && m.read_calls == 0);
++    memset(&r, 0xff, sizeof(r));
++    CHECK(!lg0_run(NULL, &r));
++    verify_argument_result(&r);
++    for (missing = 0; missing < 3; ++missing) {
++        ++cases;
++        io.read32 = (missing & 1u) ? mock_read : NULL;
++        io.now_us = (missing & 2u) ? mock_now : NULL;
++        memset(&r, 0xff, sizeof(r));
++        CHECK(!lg0_run(&io, &r));
++        verify_argument_result(&r);
++        CHECK(m.time_calls == 0 && m.read_calls == 0);
++    }
++    ++cases;
++    io.ctx = NULL;
++    io.read32 = stateless_read;
++    io.now_us = stateless_now;
++    stateless_reads = stateless_clocks = 0;
++    CHECK(lg0_run(&io, &r));
++    CHECK(stateless_reads == 18 && stateless_clocks == 37);
++    CHECK(r.reads == 18 && r.stable_mask == UINT32_C(0x1ff));
++
++    /* Reuse the same result after an all-failure run, then after success. */
++    io.ctx = &m;
++    io.read32 = mock_read;
++    io.now_us = mock_now;
++    init_mock(&m, 1000);
++    m.failures = UINT32_C(0x3ffff);
++    ++cases;
++    CHECK(!lg0_run(&io, &r));
++    verify_result(&m, &r, 18, 37, 0);
++    init_mock(&m, UINT64_MAX - UINT64_C(100));
++    ++cases;
++    CHECK(lg0_run(&io, &r));
++    verify_result(&m, &r, 18, 37, 0);
++    init_mock(&m, 0);
++    ++cases;
++    CHECK(lg0_run(&io, &r));
++    verify_result(&m, &r, 18, 37, 0);
++    puts("PASS invalid arguments, NULL context and result reuse/reset");
++}
++
++static void test_values_and_stability(void)
++{
++    struct mock m;
++    unsigned pattern, reg, bit, mask;
++    for (pattern = 0; pattern < 4; ++pattern) {
++        init_mock(&m, 0);
++        for (reg = 0; reg < 18; ++reg) {
++            if (pattern == 0)
++                m.values[reg] = 0;
++            else if (pattern == 1)
++                m.values[reg] = UINT32_MAX;
++            else if (pattern == 2)
++                m.values[reg] = (reg % 9u) & 7u; /* Powered-off flags are raw. */
++        }
++        run_case(&m, 18, 37, 0);
++    }
++    /* All subsets of unstable registers, and each raw bit in each register. */
++    for (mask = 0; mask < 512; ++mask) {
++        init_mock(&m, 1000);
++        for (reg = 0; reg < 9; ++reg)
++            if (mask & (1u << reg))
++                m.values[reg + 9u] ^= UINT32_C(0x80000001);
++        run_case(&m, 18, 37, 0);
++    }
++    for (reg = 0; reg < 9; ++reg) {
++        for (bit = 0; bit < 32; ++bit) {
++            init_mock(&m, 1000);
++            m.values[reg + 9u] ^= UINT32_C(1) << bit;
++            run_case(&m, 18, 37, 0);
++        }
++    }
++    puts("PASS zero/all-ones/off-state raw validity and full-word stability");
++}
++
++static void test_failures(void)
++{
++    struct mock m;
++    unsigned poison, call, pass, mask, reg;
++    for (poison = 0; poison < 2; ++poison) {
++        for (call = 0; call < 18; ++call) {
++            init_mock(&m, 1000);
++            m.poison_failure = poison != 0;
++            m.failures = UINT32_C(1) << call;
++            run_case(&m, 18, 37, 0);
++        }
++        init_mock(&m, 1000);
++        m.poison_failure = poison != 0;
++        m.failures = UINT32_C(0x3ffff);
++        run_case(&m, 18, 37, 0);
++    }
++    for (pass = 0; pass < 2; ++pass) {
++        for (mask = 0; mask < 512; ++mask) {
++            init_mock(&m, 1000);
++            m.poison_failure = true;
++            m.failures = (uint32_t)mask << (pass * 9u);
++            for (reg = 0; reg < 9; ++reg)
++                m.values[reg + 9u] ^= UINT32_C(1);
++            run_case(&m, 18, 37, 0);
++        }
++    }
++    /* Complementary invalid masks leave no comparable pairs, rather than
++     * making a zero-valued failed read look stable or unstable. */
++    for (mask = 0; mask < 512; ++mask) {
++        init_mock(&m, 1000);
++        m.failures = (uint32_t)mask | ((UINT32_C(0x1ff) ^ mask) << 9);
++        m.poison_failure = true;
++        run_case(&m, 18, 37, 0);
++    }
++    puts("PASS failed/poisoned reads, no retry, valid-mask intersections");
++}
++
++static void test_time_boundaries(void)
++{
++    struct mock m;
++    unsigned at, i, edge, mix;
++    for (at = 1; at < TIME_SAMPLES; ++at) {
++        unsigned reads = at / 2u;
++        for (edge = 0; edge < 3; ++edge) {
++            init_mock(&m, 1000);
++            /* Monotonic timeline at 49999, 50000 and 50001 microseconds. */
++            for (i = at; i < TIME_SAMPLES; ++i)
++                m.clock[i] = UINT64_C(1000) + UINT64_C(49999) + edge;
++            if (edge == 0)
++                run_case(&m, 18, 37, 0);
++            else
++                run_case(&m, reads, at + 1u, LG0_ERR_DEADLINE);
++        }
++        init_mock(&m, 1000);
++        m.clock[at] = m.clock[at - 1u] - 1u;
++        run_case(&m, reads, at + 1u, LG0_ERR_CLOCK_ROLLBACK);
++    }
++    /* Stopped partial passes still compare only the pairs already captured;
++     * READ, UNSTABLE and timing errors accumulate rather than overwrite. */
++    for (mix = 0; mix < 4; ++mix) {
++        for (at = 1; at < TIME_SAMPLES; ++at) {
++            init_mock(&m, 1000);
++            m.poison_failure = true;
++            if (mix & 1u)
++                m.failures = UINT32_C(0x15555);
++            for (i = 9; i < 18; ++i)
++                m.values[i] ^= UINT32_C(0x80000000);
++            if (mix & 2u) {
++                m.clock[at] = m.clock[at - 1u] - 1u;
++                run_case(&m, at / 2u, at + 1u, LG0_ERR_CLOCK_ROLLBACK);
++            } else {
++                m.clock[at] = UINT64_C(51000);
++                run_case(&m, at / 2u, at + 1u, LG0_ERR_DEADLINE);
++            }
++        }
++    }
++    init_mock(&m, UINT64_MAX - UINT64_C(10));
++    run_case(&m, 5, 12, LG0_ERR_CLOCK_ROLLBACK); /* Real unsigned clock wrap. */
++    init_mock(&m, UINT64_MAX);
++    for (i = 0; i < TIME_SAMPLES; ++i)
++        m.clock[i] = UINT64_MAX;
++    run_case(&m, 18, 37, 0); /* Equality is monotonic; no absolute-deadline add. */
++    puts("PASS every pre/post deadline boundary, rollback, wrap and partial masks");
++}
++
++static void test_read_cap(void)
++{
++    unsigned reads, i;
++    struct mock m;
++    struct lg0_result r;
++    const struct lg0_io io = {&m, mock_read, mock_now};
++    init_mock(&m, 0);
++    for (i = 0; i < TIME_SAMPLES; ++i)
++        m.clock[i] = 0;
++    run_case(&m, 18, 37, 0); /* Frozen time cannot extend the read budget. */
++    for (reads = 0; reads < 18; ++reads) {
++        uint32_t expected_valid0, expected_valid1;
++        init_mock(&m, 1000);
++        m.cap_inject_at = 1u + 2u * reads; /* Before the next read callback. */
++        m.cap_target = &r;
++        ++cases;
++        memset(&r, 0xa5, sizeof(r));
++        CHECK(!lg0_run(&io, &r));
++        CHECK(m.read_calls == reads);
++        CHECK(m.time_calls == 2u + 2u * reads);
++        CHECK(r.reads == 18);
++        CHECK(r.errors == LG0_ERR_READ_CAP);
++        CHECK(r.read_failures == 0);
++        CHECK(r.passes_completed == reads / 9u);
++        CHECK(r.started_us == 1000);
++        CHECK(r.ended_us == m.clock[m.time_calls - 1u]);
++        expected_valid0 = reads >= 9 ? UINT32_C(0x1ff) : (1u << reads) - 1u;
++        expected_valid1 = reads <= 9 ? 0 : (1u << (reads - 9u)) - 1u;
++        CHECK(r.valid[0] == expected_valid0);
++        CHECK(r.valid[1] == expected_valid1);
++        CHECK(r.stable_mask == (expected_valid0 & expected_valid1));
++        CHECK(r.stable_count == popcount(r.stable_mask));
++        CHECK(r.unstable_mask == 0);
++        for (i = 0; i < 18; ++i)
++            CHECK(r.raw[i / 9u][i % 9u] == (i < reads ? m.values[i] : 0));
++    }
++    puts("PASS exact 18-read cap, no nineteenth callback, defensive cap stop");
++}
++
++int main(void)
++{
++    test_interface();
++    test_arguments_and_reuse();
++    test_values_and_stability();
++    test_failures();
++    test_time_boundaries();
++    test_read_cap();
++    printf("SUMMARY cases=%u checks=%u result=PASS\n", cases, checks);
++    return EXIT_SUCCESS;
++}
+--- /dev/null
++++ b/scripts/tests/test-gpu-g0-adapter.c
+@@ -0,0 +1,135 @@
++/* Actual G0 adapter with recording kernel/MMIO seams, never real hardware. */
++#define _POSIX_C_SOURCE 200809L
++#include <assert.h>
++#include <stdbool.h>
++#include <stddef.h>
++#include <stdint.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include "../../ports/hakios-lithium/gpu/g0-core.h"
++
++typedef uintptr_t vm_offset_t;
++static uint64_t PAGE_SIZE;
++#define VM_WIMG_IO 7
++#define LITHIUM_GPU_G0_HOST_TEST 1
++#define LG0_READ_BARRIER() ((void)0)
++#define LITHIUM_PERIPHERAL_AFFINITY() UINT64_C(1)
++static unsigned checks, maps, unmaps, loads, enter_count, leave_count;
++static unsigned failed_map;
++static bool bind_ok;
++static const char *bootargs;
++static uint64_t clock_us, step_us;
++static unsigned printed;
++static vm_offset_t allocations[3];
++static uint64_t physicals[3], extents[3];
++#define CHECK(x) do {++checks; assert(x);} while (0)
++struct lithium_touch_cpu_scope { bool bound; };
++static bool lithium_touch_cpu_enter(struct lithium_touch_cpu_scope *s)
++{ ++enter_count; s->bound=bind_ok; return bind_ok; }
++static void lithium_touch_cpu_leave(struct lithium_touch_cpu_scope *s)
++{ CHECK(s->bound); ++leave_count; s->bound=false; }
++static int cpu_number(void) { return 0; }
++static int ml_get_max_cpu_number(void) { return 2; }
++static const char *PE_boot_args(void) { return bootargs; }
++static void PE_parse_boot_argn(const char *key, void *out, size_t size)
++{
++    CHECK(strcmp(key,"loader_return_after")==0 && size==sizeof(unsigned));
++    const char *p=strstr(bootargs,"loader_return_after=");
++    if (p) *(unsigned *)out=(unsigned)strtoul(p+20,NULL,10);
++}
++static uint64_t mach_absolute_time(void)
++{ uint64_t now=clock_us; clock_us+=step_us; return now; }
++static void absolutetime_to_nanoseconds(uint64_t value, uint64_t *out)
++{ *out=value*1000; }
++static vm_offset_t ml_io_map_unmappable(uint64_t pa,uint64_t bytes,int attr)
++{
++    const unsigned slot=maps++;
++    CHECK(slot<3 && attr==VM_WIMG_IO);
++    CHECK(pa%PAGE_SIZE==0 && bytes%PAGE_SIZE==0);
++    CHECK(pa+bytes<=UINT64_C(0x00b00000));
++    if (failed_map==slot+1) return 0;
++    void *memory=NULL;
++    CHECK(posix_memalign(&memory,(size_t)PAGE_SIZE,(size_t)bytes)==0);
++    memset(memory,0,(size_t)bytes);
++    allocations[slot]=(uintptr_t)memory;
++    physicals[slot]=pa; extents[slot]=bytes;
++    for(unsigned i=0;i<LG0_REG_COUNT;++i)
++        if(lg0_regs[i].address>=pa && lg0_regs[i].address-pa<=bytes-4)
++            *(uint32_t *)((char *)memory+lg0_regs[i].address-pa)=0xabc00000u+i;
++    return (uintptr_t)memory;
++}
++static void ml_io_unmap(vm_offset_t allocation,uint64_t extent)
++{
++    bool found=false;
++    for(unsigned i=0;i<3;++i) if(allocations[i]==allocation) {
++        CHECK(extent==extents[i] && allocation%PAGE_SIZE==0);
++        free((void *)allocation); allocations[i]=0; found=true; break;
++    }
++    CHECK(found); ++unmaps;
++}
++static uint32_t mock_mmio_load(vm_offset_t pointer)
++{
++    bool found=false;
++    for(unsigned i=0;i<3;++i) if(allocations[i] && pointer>=allocations[i] &&
++        pointer-allocations[i]<=extents[i]-4) {
++        uint64_t pa=physicals[i]+pointer-allocations[i];
++        bool allowed=false;
++        for(unsigned n=0;n<LG0_REG_COUNT;++n)
++            if(lg0_regs[n].address==pa) allowed=true;
++        CHECK(allowed); found=true;
++    }
++    CHECK(found); ++loads; CHECK(loads<=LG0_READ_CAP);
++    return *(uint32_t *)pointer;
++}
++#define LG0_MMIO_LOAD(address) mock_mmio_load(address)
++static int quiet_printf(const char *format,...)
++{ CHECK(strstr(format,"LITHIUM GPU")!=NULL); ++printed; return 0; }
++#define printf quiet_printf
++#include "../../ports/hakios-lithium/gpu/g0-adapter.inc"
++#undef printf
++
++static const char good_args[]="bootcpu=1 cpus=3 ufs=0 ram_smp_return=1 "
++    "rd=md0 loader_return_after=180 return_fastboot=1 return_fastboot_delay=10 "
++    "gpu_stage=0 gpu_probe=1 gpu_wd=1";
++static void setup(uint64_t page)
++{
++    for(unsigned i=0;i<3;++i) CHECK(allocations[i]==0);
++    memset(&lg0_adapter,0,sizeof(lg0_adapter));
++    maps=unmaps=loads=enter_count=leave_count=printed=failed_map=0;
++    bind_ok=true; bootargs=good_args; PAGE_SIZE=page; clock_us=0; step_us=1;
++}
++int main(void)
++{
++    unsigned scenarios=0;
++    for(unsigned p=0;p<2;++p) {
++        setup(p?0x4000:0x1000); lithium_gpu_g0_probe(); ++scenarios;
++        CHECK(maps==3 && unmaps==3 && loads==18 && enter_count==1 && leave_count==1);
++        CHECK(lg0_adapter.result.errors==0 && lg0_adapter.result.stable_mask==LG0_ALL_VALID);
++        uint32_t out=0;
++        CHECK(!lg0_adapter_read32(NULL,0x00b00000,&out));
++        CHECK(!lg0_adapter_read32(NULL,0x00b40000,&out));
++        CHECK(!lg0_adapter_read32(NULL,0x008c4030,&out));
++        for(unsigned fail=1;fail<=3;++fail) {
++            setup(p?0x4000:0x1000); failed_map=fail;
++            lithium_gpu_g0_probe(); ++scenarios;
++            CHECK(maps==3 && unmaps==2 && loads<18 && leave_count==1);
++            CHECK(lg0_adapter.result.errors&LG0_ERR_READ);
++        }
++    }
++    const char *rejected[]={"", "ufs=2", "bootcpu=1 cpus=3 ufs=0 ram_smp_return=1 "
++        "rd=md0 return_fastboot=1 loader_return_after=179",
++        "bootcpu=1 cpus=3 ufs=0 ram_smp_return=1 rd=md0 "
++        "return_fastboot=1 loader_return_after=180 var_hfs=ufs_darwin_data"};
++    for(unsigned i=0;i<sizeof(rejected)/sizeof(*rejected);++i) {
++        setup(0x4000); bootargs=rejected[i]; lithium_gpu_g0_probe(); ++scenarios;
++        CHECK(maps==0 && loads==0 && unmaps==0 && enter_count==0);
++    }
++    setup(0x4000); bind_ok=false; lithium_gpu_g0_probe(); ++scenarios;
++    CHECK(maps==0 && loads==0 && leave_count==0);
++    setup(0x4000); step_us=50001; lithium_gpu_g0_probe(); ++scenarios;
++    CHECK(lg0_adapter.result.errors&LG0_ERR_DEADLINE);
++    CHECK(loads<18 && unmaps==3 && leave_count==1);
++    printf("PASS G0 actual adapter scenarios=%u checks=%u hardware_operations=0\n",scenarios,checks);
++    return 0;
++}
+--- /dev/null
++++ b/scripts/tests/test-gpu-g0-package.py
+@@ -0,0 +1,390 @@
++#!/usr/bin/env python3
++"""Focused G0 host packaging/readback and fake-device one-shot runner tests.
++
++Use Ubuntu/WSL for the real frozen support inputs and mtools. Test artifacts
++stay in a disposable directory under the assigned package evidence directory.
++No compiler, actual Fastboot command, USB receiver or kernel build is invoked.
++"""
++from __future__ import annotations
++
++from contextlib import ExitStack
++from datetime import datetime, timedelta
++import importlib.util
++import json
++import lzma
++from pathlib import Path
++import struct
++import subprocess
++import sys
++import tempfile
++import unittest
++from unittest import mock
++import uuid
++
++sys.dont_write_bytecode = True
++ROOT = Path(__file__).resolve().parents[2]
++
++
++def load(name, path):
++    spec = importlib.util.spec_from_file_location(name, path)
++    value = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(value)
++    return value
++
++
++PKG = load("_test_g0_pkg", ROOT / "scripts/package-hakios-gpu-g0.py")
++RUN = load("_test_g0_runner", ROOT / "reports/local/run-gpu-g0.py")
++
++
++def section(kind, body):
++    return (len(body) + 4).to_bytes(3, "little") + bytes([kind]) + body
++
++
++def ffs(guid, kind, body):
++    head = bytearray(24)
++    head[:16] = uuid.UUID(guid).bytes_le
++    head[17], head[18], head[23] = 0xaa, kind, 0xf8
++    head[20:23] = (len(body) + 24).to_bytes(3, "little")
++    head[16] = (-(sum(head) - head[17] - head[23])) & 0xff
++    return bytes(head) + body
++
++
++def volume(files, size):
++    value = bytearray(b"\xff" * size)
++    value[:72] = bytes(72)
++    struct.pack_into("<Q", value, 32, size)
++    value[40:44] = b"_FVH"
++    struct.pack_into("<I", value, 44, 0x800)
++    struct.pack_into("<H", value, 48, 72)
++    struct.pack_into("<H", value, 50, (-sum(struct.unpack("<36H", value[:72]))) & 0xffff)
++    at = 72
++    for item in files:
++        value[at:at + len(item)] = item
++        at = (at + len(item) + 7) & ~7
++    return bytes(value)
++
++
++def firmware_fixture(*, ufs=False, extra_stream=b"", decoded_override=None):
++    fastboot = b"MZ-host-fixture-fastboot"
++    files = [ffs(PKG.FASTBOOT_GUID, 7, section(0x10, fastboot))]
++    if ufs:
++        files.append(ffs(PKG.FV.UFS_GUID, 7, section(0x10, b"MZ-physical-UFS")))
++    decoded = section(0x17, volume(files, 4096)) if decoded_override is None else decoded_override
++    compressed = lzma.compress(decoded, format=lzma.FORMAT_ALONE) + extra_stream
++    guided = section(2, uuid.UUID(PKG.FV.LZMA_GUID).bytes_le +
++                     struct.pack("<HH", 24, 1) + compressed)
++    return volume([ffs(PKG.FV.NESTED_FV_GUID, 0x0b, guided)], 0x300000), fastboot
++
++
++class FirmwareTests(unittest.TestCase):
++    def check(self, fd, fastboot):
++        with mock.patch.object(PKG, "FD_SHA", PKG.sha(fd)), \
++             mock.patch.object(PKG, "FASTBOOT_SHA", PKG.sha(fastboot)):
++            return PKG.verify_fd(fd, fastboot)
++
++    def test_checks_final_compressed_nested_fv(self):
++        fd, fastboot = firmware_fixture()
++        self.assertTrue(self.check(fd, fastboot)["physical_ufs_provider_absent"])
++
++    def test_rejects_physical_ufs_even_with_recomputed_fd_hash(self):
++        fd, fastboot = firmware_fixture(ufs=True)
++        with self.assertRaisesRegex(RuntimeError, "physical UFS in nested"):
++            self.check(fd, fastboot)
++
++    def test_rejects_wrong_embedded_fastboot_even_with_recomputed_dxe_hash(self):
++        fd, fastboot = firmware_fixture()
++        with self.assertRaisesRegex(RuntimeError, "embedded Fastboot"):
++            self.check(fd, fastboot + b"-changed")
++
++    def test_rejects_trailing_compressed_data(self):
++        fd, fastboot = firmware_fixture(extra_stream=b"trailing")
++        with self.assertRaisesRegex(RuntimeError, "trailing"):
++            self.check(fd, fastboot)
++
++    def test_rejects_invalid_ffs_header_checksum(self):
++        fd, fastboot = firmware_fixture()
++        fd = bytearray(fd)
++        fd[72 + 16] ^= 1
++        with self.assertRaisesRegex(RuntimeError, "FFS header checksum"):
++            self.check(bytes(fd), fastboot)
++
++    def test_rejects_unexpected_decoded_section(self):
++        fd, fastboot = firmware_fixture(decoded_override=section(0x19, b"nonempty-raw"))
++        with self.assertRaisesRegex(RuntimeError, "decoded FV structure"):
++            self.check(fd, fastboot)
++
++
++class G0HostTests(unittest.TestCase):
++    @classmethod
++    def setUpClass(cls):
++        PKG.PACKAGE_ROOT.mkdir(parents=True, exist_ok=True)
++        cls.temporary = tempfile.TemporaryDirectory(prefix="host-tests-g0-", dir=PKG.PACKAGE_ROOT)
++        cls.top = Path(cls.temporary.name)
++        cls.stack = ExitStack()
++        cls.addClassCleanup(cls.stack.close)
++        cls.addClassCleanup(cls.temporary.cleanup)
++        # Read and verify the actual support04/root/R34 bytes, without a kernel build.
++        cls.inputs = PKG.reused_inputs()
++        cls.original_index_sha = PKG.sha((ROOT / ".git/index").read_bytes())
++        cls.r34_before = PKG.sha(PKG.R34_IMAGE.read_bytes())
++        cls.fixture_kernel = cls.top / "host-fixture-kernel"
++        base_kernel = cls.inputs["r34"][3]["kernel"]
++        extra = b"\0".join(m for m in PKG.KERNEL_MARKERS if m not in base_kernel)
++        cls.fixture_kernel.write_bytes(base_kernel + b"\0" + extra + b"\0")
++        report = {"passed": True, "kernel": str(cls.fixture_kernel),
++                  **PKG.meta(cls.fixture_kernel.read_bytes()), "device_operations": 0,
++                  "fixture_only": True}
++        cls.report = cls.top / "host-fixture-kernel-result.json"
++        cls.report.write_text(json.dumps(report) + "\n", encoding="utf-8")
++        cls.packages = cls.top / "packages"
++        for value in (PKG, RUN.PKG):
++            cls.stack.enter_context(mock.patch.object(value, "PACKAGE_ROOT", cls.packages))
++            cls.stack.enter_context(mock.patch.object(value, "FROZEN_KERNEL", cls.fixture_kernel))
++        cls.stack.enter_context(mock.patch.object(RUN, "PACKAGE_ROOT", cls.packages))
++        # mformat/mcopy are real host filesystem tools; every other subprocess is forbidden.
++        actual_run = subprocess.run
++
++        def host_tools_only(argv, **kwargs):
++            if Path(str(argv[0])).name not in {"mformat", "mcopy"}:
++                raise AssertionError(f"unexpected host subprocess: {argv}")
++            return actual_run(argv, **kwargs)
++
++        with mock.patch.object(subprocess, "run", host_tools_only):
++            cls.assembled = PKG.assemble("99", cls.report)
++        cls.package = cls.packages / "g0-99"
++
++    def setUp(self):
++        self.scratch = tempfile.TemporaryDirectory(prefix="case-", dir=self.top)
++        self.addCleanup(self.scratch.cleanup)
++        self.work = Path(self.scratch.name)
++
++    def test_real_support04_apfs_and_command_budget(self):
++        self.assertEqual(self.inputs["fv_proof"]["module_count"], 25)
++        self.assertTrue(self.inputs["fv_proof"]["fastboot_dxe_exact"])
++        self.assertEqual(self.inputs["command_budget"]["reserved_bytes"], 467)
++        self.assertEqual(self.inputs["root_extent"]["blocks"] *
++                         self.inputs["root_extent"]["block_bytes"], 0x400000)
++
++    def test_exact_android_fat_xnup_apfs_saved_readback(self):
++        result = PKG.verify_package(self.package, "99")
++        self.assertTrue(result["passed"])
++        self.assertEqual(result["device_operations"], 0)
++        self.assertEqual(RUN.validate_package(self.package, self.package / "contract.json",
++                                             "g0", "gpu-g0-99")["image_sha256"],
++                         result["image_sha256"])
++        contract = PKG.read_json(self.package / "contract.json")
++        self.assertFalse(contract["stress_requested"])
++        self.assertFalse(contract["runtime_verified"])
++        self.assertEqual(contract["perf_fixed_target_hz"], 614400000)
++
++    def test_rejects_soak_storage_wrong_rate_and_duplicates(self):
++        for bad in (PKG.BOOT_ARGS + " cpu_rate_soak=1", PKG.BOOT_ARGS + " ufs_write=1",
++                    PKG.BOOT_ARGS + " cpus=3", PKG.BOOT_ARGS.replace("ufs=0", "ufs=2"),
++                    PKG.BOOT_ARGS.replace("614400000", "691200000"),
++                    PKG.BOOT_ARGS.replace("gpu_stage=0", "gpu_stage=1"),
++                    PKG.BOOT_ARGS.replace("cpu_sanity=1", "cpu_sanity=0")):
++            with self.subTest(args=bad), self.assertRaises(RuntimeError):
++                PKG.validate_args(bad)
++
++    def test_pending_main_kernel_writes_no_package(self):
++        path = PKG.package_path("98")
++        with self.assertRaisesRegex(RuntimeError, "main kernel report pending"):
++            PKG.assemble("98", self.work / "missing-kernel-result.json")
++        self.assertFalse(path.exists())
++
++    def test_preserves_existing_partial_output(self):
++        path = PKG.package_path("97")
++        path.mkdir()
++        sentinel = path / "prior-agent-partial.txt"
++        sentinel.write_bytes(b"retain-this")
++        with self.assertRaisesRegex(RuntimeError, "preserve existing"):
++            PKG.assemble("97", self.report)
++        self.assertEqual(sentinel.read_bytes(), b"retain-this")
++
++    def test_rejects_wrong_kernel_report_path_or_hash(self):
++        report = PKG.read_json(self.report)
++        path = self.work / "bad-kernel.json"
++        for change in ({"kernel": str(self.work / "wrong-kernel")}, {"sha256": "0" * 64},
++                       {"bytes": report["bytes"] + 1}, {"passed": False}):
++            path.write_text(json.dumps(dict(report, **change)), encoding="utf-8")
++            with self.subTest(change=change), self.assertRaises(RuntimeError):
++                PKG.kernel_input(path)
++
++    def test_component_tamper_rejected_even_when_manifest_hash_is_updated(self):
++        target = self.package / "loader.efi"
++        contract_path = self.package / "contract.json"
++        original, original_contract = target.read_bytes(), contract_path.read_bytes()
++        self.addCleanup(target.write_bytes, original)
++        self.addCleanup(contract_path.write_bytes, original_contract)
++        changed = original[:-1] + bytes([original[-1] ^ 1])
++        target.write_bytes(changed)
++        contract = json.loads(original_contract)
++        contract["components"]["loader.efi"] = PKG.meta(changed)
++        contract_path.write_text(json.dumps(contract), encoding="utf-8")
++        with self.assertRaisesRegex(RuntimeError, "FAT loader readback"):
++            PKG.verify_package(self.package, "99")
++
++    def test_readback_is_recomputed_even_when_claims_say_pass(self):
++        contract_path = self.package / "contract.json"
++        original = contract_path.read_bytes()
++        self.addCleanup(contract_path.write_bytes, original)
++        contract = json.loads(original)
++        contract["final_fv"]["module_count"] += 1
++        contract_path.write_text(json.dumps(contract), encoding="utf-8")
++        with self.assertRaisesRegex(RuntimeError, "saved readback"):
++            PKG.verify_package(self.package, "99")
++
++    def test_check_cli_is_readonly_and_cannot_start_device_process(self):
++        before = sorted(p.relative_to(self.packages).as_posix() for p in self.packages.rglob("*"))
++        with mock.patch.object(subprocess, "run", side_effect=AssertionError("no commands")), \
++             mock.patch.object(subprocess, "Popen", side_effect=AssertionError("no process")):
++            self.assertEqual(RUN.main(["--check", "--attempt-id", "gpu-g0-99"]), 0)
++        after = sorted(p.relative_to(self.packages).as_posix() for p in self.packages.rglob("*"))
++        self.assertEqual(before, after)
++
++    def fake_device_setup(self):
++        self.fastboot = self.work / "fastboot.exe"
++        self.fastboot.write_bytes(b"mock-only")
++        self.usb_python = self.work / "python.exe"
++        self.usb_python.write_bytes(b"mock-only")
++        self.receiver = self.work / "mock-receiver.py"
++        self.receiver.write_text("# mock only\n", encoding="ascii")
++        self.target = self.work / "target.json"
++        self.target.write_text(json.dumps({"serial": "mock123", "product": "MSM8996_A8"}),
++                               encoding="utf-8")
++        self.calls, self.events, self.processes = [], [], []
++        self.local = self.work / "run"
++        self.boot_timeout, self.return_empty, self.capacity_fail = False, False, False
++
++        def command(argv, **kwargs):
++            self.calls.append(list(map(str, argv)))
++            self.events.append("boot" if str(argv[-2]) == "boot" else "query")
++            tail = tuple(map(str, argv[1:]))
++            if tail == ("devices",):
++                text = "" if self.return_empty else "mock123\tfastboot\n"
++                return subprocess.CompletedProcess(argv, 0, text, "")
++            if tail[-2:] == ("oem", "device-info"):
++                return subprocess.CompletedProcess(argv, 0, "Device unlocked: true\n", "")
++            if tail[-2] == "getvar":
++                key = tail[-1]
++                if key == "max-download-size" and self.capacity_fail:
++                    raise subprocess.TimeoutExpired(argv, 20)
++                text = {"product": "MSM8996_A8", "battery-soc-ok": "yes",
++                        "max-download-size": "0x4000000"}[key]
++                return subprocess.CompletedProcess(argv, 0, f"{key}: {text}\n", "")
++            if tail[-2] == "boot":
++                if self.boot_timeout:
++                    raise subprocess.TimeoutExpired(argv, 90)
++                return subprocess.CompletedProcess(argv, 0, "", "Booting OKAY\n")
++            raise AssertionError(f"forbidden command {argv}")
++
++        def process(argv, **kwargs):
++            self.events.append("usb")
++            status = Path(argv[argv.index("--status") + 1])
++            status.write_text('{"status":"mock-initialized"}\n', encoding="utf-8")
++            proc = mock.Mock(pid=555)
++            proc.poll.return_value = None
++            self.processes.append(proc)
++            self.assertEqual(kwargs.get("creationflags", 0),
++                             getattr(subprocess, "CREATE_NO_WINDOW", 0))
++            return proc
++
++        self.command, self.process = command, process
++        return {"attempt_id": "gpu-g0-99", "local": self.local, "target_path": self.target,
++                "fastboot": self.fastboot, "usb_python": self.usb_python,
++                "usb_source": self.receiver, "usb_source_sha": PKG.sha(self.receiver.read_bytes()),
++                "command_invoke": command, "popen": process}
++
++    def age_run(self, seconds):
++        path = self.local / "result.json"
++        state = PKG.read_json(path)
++        state["accepted_at"] = (datetime.now().astimezone() - timedelta(seconds=seconds)).isoformat()
++        RUN.BASE.save_json(path, state)
++
++    def return_kwargs(self):
++        return {"attempt_id": "gpu-g0-99", "local": self.local,
++                "target_path": self.target, "fastboot": self.fastboot,
++                "command_invoke": self.command}
++
++    def test_one_shot_five_preflight_usb_first_boot_and_endpoint(self):
++        options = self.fake_device_setup()
++        result = RUN.boot(**options)
++        self.assertTrue(result["command_accepted"])
++        self.assertEqual(self.events, ["query"] * 5 + ["usb", "boot"])
++        self.assertEqual(len(self.calls), 6)
++        with self.assertRaises(RUN.RunnerError):
++            RUN.boot(**options)
++        self.assertEqual(len(self.calls), 6)
++        self.age_run(300)
++        endpoint = RUN.verify_return(**self.return_kwargs())
++        self.assertTrue(endpoint["passed"])
++        self.assertEqual((endpoint["devices_query_count"], endpoint["product_query_count"]), (1, 1))
++        self.assertEqual(len(self.calls), 8)
++        with self.assertRaises(RUN.RunnerError):
++            RUN.verify_return(**self.return_kwargs())
++        self.assertEqual(len(self.calls), 8)
++
++    def test_capacity_timeout_consumes_attempt_and_issues_no_boot(self):
++        options = self.fake_device_setup()
++        self.capacity_fail = True
++        with self.assertRaises(RUN.RunnerError):
++            RUN.boot(**options)
++        self.assertEqual(len(self.calls), 5)
++        self.assertFalse(self.processes)
++        self.assertTrue((self.local / "boot-intent.json").exists())
++        with self.assertRaises(RUN.RunnerError):
++            RUN.boot(**options)
++        self.assertEqual(len(self.calls), 5)
++
++    def test_boot_timeout_keeps_same_receiver_and_consumes_attempt(self):
++        options = self.fake_device_setup()
++        self.boot_timeout = True
++        with self.assertRaises(RUN.RunnerError):
++            RUN.boot(**options)
++        self.assertEqual(len(self.calls), 6)
++        self.processes[0].terminate.assert_not_called()
++        self.assertTrue((self.local / "capture-preserved.json").is_file())
++        self.assertFalse((self.local / "stop-usb").exists())
++        with self.assertRaises(RUN.RunnerError):
++            RUN.boot(**options)
++        self.assertEqual(len(self.calls), 6)
++
++    def test_return_window_and_empty_endpoint_are_guarded(self):
++        RUN.boot(**self.fake_device_setup())
++        for seconds in (230, 901):
++            self.age_run(seconds)
++            with self.assertRaises(RUN.RunnerError):
++                RUN.verify_return(**self.return_kwargs())
++        self.assertEqual(len(self.calls), 6)
++        self.age_run(300)
++        self.return_empty = True
++        result = RUN.verify_return(**self.return_kwargs())
++        self.assertFalse(result["passed"])
++        self.assertEqual((result["devices_query_count"], result["product_query_count"]), (1, 0))
++        self.assertEqual(len(self.calls), 7)
++
++    def test_changed_target_cannot_authorize_return_query(self):
++        RUN.boot(**self.fake_device_setup())
++        self.age_run(300)
++        self.target.write_text(json.dumps({"serial": "other", "product": "MSM8996_A8"}),
++                               encoding="utf-8")
++        with self.assertRaisesRegex(RUN.RunnerError, "target changed"):
++            RUN.verify_return(**self.return_kwargs())
++        self.assertEqual(len(self.calls), 6)
++
++    def test_forbidden_device_commands_rejected(self):
++        for tail in (("-s", "mock123", "flash", "boot"), ("reboot",),
++                     ("-s", "mock123", "erase", "userdata"), ("getvar", "all")):
++            with self.subTest(tail=tail), self.assertRaises(RUN.RunnerError):
++                RUN.BASE.validate_fastboot_command([RUN.BASE.FASTBOOT, *tail])
++        for attempt in ("r37-frequency-99", "gpu-g0-../99", "gpu-g0-999"):
++            with self.assertRaises(RUN.RunnerError):
++                RUN.validate_attempt_id(attempt)
++
++    def test_index_and_frozen_r34_preserved(self):
++        self.assertEqual(PKG.sha((ROOT / ".git/index").read_bytes()), self.original_index_sha)
++        self.assertEqual(PKG.sha(PKG.R34_IMAGE.read_bytes()), self.r34_before)
++
++
++if __name__ == "__main__":
++    unittest.main(verbosity=2)
+--- /dev/null
++++ b/reports/hakios-ios16-gpu-g0-prepared.md
+@@ -0,0 +1,102 @@
++# A530 G0 主机准备与下一步 — 2026-11-23
++
++CPU 按用户选择固定为 **614.4 MHz 配置模型**，结束频率搜索，GPU 路线为 **A530 内核后端 → Freedreno Gallium/GLES**，先争取填充/blit，再接用户态。G0 已实际构建、打包并通过主机检查；**尚无本阶段真机操作或 GPU 阶段验收**。
++
++## 当前交付
++
++| 项目 | 结果 |
++|---|---|
++| G0 只读核心 | 9 个来源明确的 GCC/GPUCC 字段，两遍，共最多 18 次读取；50,000 us 软件预算，无写回调 |
++| 实际 XNU 适配器 | 普通线程绑定 logical 0 / affinity 0x1；完整 VM 页可释放映射，精确地址白名单；保留每项 raw/valid/stable |
++| 完整 HakiOS | XNU 8796.121.2 / iOS 16.5 / arm64，实际编译链接，不删旧功能 |
++| RAM 包 | 最终 Android/FAT/XNUP/APFS/BootShim 读回；解压最终嵌套 FV，确认无物理 UFS 模块且 Fastboot DXE 完全一致 |
++| 固件准备 | 匹配本地 V9.5.2.0.NAHCNFA，8 个文件，共 64,504 字节，仅放忽略区 |
++| 软件绘制候选 | 已冻存 fb_threads=2；相对已验 614.4 桌面仅一字节变更，未上机 |
++| 本阶段设备操作 | 0；启动计数仍为 HakiOS 96 / iOS16 65 |
++
++G0 镜像：[lithium-hakios-ios16-gpu-g0-01.img](/F:/IOS-MIX1/evidence/gpu-g0-20261123/package/g0-01/lithium-hakios-ios16-gpu-g0-01.img)，**16,367,616 字节**。
++
++```text
++image SHA256 61bc8b8220f54e8a2b0772a694690901b89e48a65b2d52463c8f962ab02c7933
++kernel SHA256 14635e6dcd3db6ab26226afbdf53f27a6a266d8931e335e91fc229d2b26ea1ff
++```
++
++## G0 实现与边界
++
++[g0-core.h](/F:/IOS-MIX1/ports/hakios-lithium/gpu/g0-core.h) 定义精确读取表和预算；[g0-adapter.inc](/F:/IOS-MIX1/ports/hakios-lithium/gpu/g0-adapter.inc) 实际连接 MMIO、时钟、映射和 CPU 绑定；[peripherals/kernel.inc](/F:/IOS-MIX1/ports/hakios-lithium/peripherals/kernel.inc) 在旧单核 GPU 占位检查之前接入独立 G0 分支。未启用 gpu_probe 时不分配 G0 映射；更高阶段仍不接入写操作。G0 与触摸诊断混合申请会拒绝。
++
++| 字段 | 物理地址 |
++|---|---|
++| CX_GDSCR | 0x008c4034 |
++| GX_GDSCR | 0x008c4024 |
++| GPU_AHB_CBCR | 0x008c403c |
++| GPU_AON_ISENSE_CBCR | 0x008c4044 |
++| GPU_GX_GFX3D_CBCR | 0x008c4028 |
++| GPU_GX_RBBMTIMER_CBCR | 0x008c40b0 |
++| GFX3D_CMD_RCGR | 0x008c4000 |
++| GCC_MMSS_BIMC_GFX_CBCR | 0x00309010 |
++| GCC_BIMC_GFX_CBCR | 0x00346018 |
++
++**不读取 0x00b00000 GPU 区域，不读取 SMMU，不加载固件，不附加中断，不修改 GPU 电源、时钟或寄存器。** 只读取已返回的 GDSCR/CBCR/RCGR 值；两遍相同不等于供电稳定、总线所有权或实际频率已验证。有效位为 0 时打印 UNREAD，不以默认零充当实测。
++
++映射沿用已修正的 `ml_io_map_unmappable` / `ml_io_unmap` 配对，以真实 PAGE_SIZE 对齐完整 allocation/extent；不释放 4K 子页指针。实际链接 probe 局部帧 224 字节，结果保留在静态记录中。软件预算只限制会返回的读取，不能打断总线永久挂死、SError 或外部 abort。正常 180 秒结束后走既有排空/停核/UEFI 返回；错误或证明不完整保留摘要，不自动重试。
++
++首轮真实编译发现 BSD 翻译单元看不到两个私有映射声明及 VM 属性定义。修复为引用 `vm/memory_types.h` 并声明与固定 `osfmk/arm/machine_routines.h:711/721` 完全相同的函数原型；映射行为、断言与旧功能保持。第二轮完整链接成功。上游 kext symbol-set 检查的已知 exit 2 由原构建脚本分类，成功的实际内核链接独立留证。
++
++## 主机验证
++
++| 工作 | 负责人 | 结果与主代理复核 |
++|---|---|---|
++| G0 核心及来源 | Bacon | 2,696 场景 / 470,478 检查，ASan/UBSan；主代理核对冻结 header/hash、地址/来源并以实际适配器另测 |
++| XNU 适配器/集成/构建 | 主代理 | 实际适配器 14 场景 / 795 检查，覆盖 4K/16K、部分映射失败、受限地址、CPU 拒绝、超时及完整释放；完整内核实际链接 |
++| RAM 包/启动脚本 | Kepler | 22 个专项及 6 个 Windows FV 解析测试；主代理实际生产包生成、再次读回、Windows `--check` 通过 |
++| 本地固件/G1/G2 | Pasteur | 38 个固定提交源文件、48 个来源锚点、8 个固件哈希和 ELF/FW2 结构；主代理独立核对文件哈希、关键 stock OPP/rail/PAS 段落 |
++| fb_threads=2 候选 | Kant | 解压后单一字节 1→2；主代理核对组件/delta，完整参考镜像哈希保持；性能未验证 |
++
++这些测试验证主机逻辑、构建与包内容，**不表示 GPU 已上电、chip ID 已读取、CP/fence 或 GPU 加速通过**。原索引及已验桌面镜像保持；回退使用本报告配套文本补丁，不导出固件/Apple 二进制。
++
++构建与验证入口：
++
++```text
++scripts/build-hakios-gpu-g0.py（WSL 内按 14G / 1200% / JOBS=12 运行）
++clang -std=c11 -O2 -g -fsanitize=address,undefined -Wall -Wextra -Werror scripts/tests/test-gpu-g0-adapter.c
++wsl -d Ubuntu -u jia --exec python3 -B /mnt/f/IOS-MIX1/scripts/package-hakios-gpu-g0.py --attempt 01
++wsl -d Ubuntu -u jia --exec python3 -B /mnt/f/IOS-MIX1/scripts/package-hakios-gpu-g0.py --verify-package --attempt 01
++python -B reports/local/run-gpu-g0.py --check --attempt-id gpu-g0-01
++```
++
++实际日志与 receipt 位于 [main](/F:/IOS-MIX1/evidence/gpu-g0-20261123/main)、[core](/F:/IOS-MIX1/evidence/gpu-g0-20261123/core)、[package](/F:/IOS-MIX1/evidence/gpu-g0-20261123/package)。隔离 RAM 支持与双 4MiB APFS 卷复用旧冻结，不重构未变的固件或用户态。
++
++## 对原计划的来源修正
++
++1. **最低活跃 GPU 档为 133 MHz**，不是约 214 MHz。两组 stock speed-bin 都给 133 MHz、GFX corner 2、MX corner 4；214 MHz 是 stock 初始档。27 MHz 尾档用于退场，不能充当活跃 OPP。
++2. **MX 和 GFX 是两个供电路径。** MX 为 PM8994 S2/S12、RPM smpa/2；GFX 是 CPR3 + 直接 PMI8994 S2，stock 的 RPM smpb/2 禁用。不能把 CPU S11=905mV 证据或 MX corner 当作 GFX 已供电。
++3. stock GFX 使用 CPR3，不是旧 CPR2。corner 2 的 520–670mV 表区间需要本机 fuse/offset/aging 计算，不能选区间中的猜测值。
++4. zap ELF 的实际可加载 code span 为 8KiB，另需 6,684 字节 SCM metadata。43MiB no-map 总池或 Linux 示例子区均不是当前内存可用证明。
++5. Linux 的无 zap 写回退仅在特定 `-ENODEV` 分支；认证失败不会授权该回退。当前 MIX 的 PAS13、签名接受及非安全寄存器权限仍未验证。
++6. 614.4 已验桌面的驱动 band1 六样本中位 **17.004ms**，原计划 26–30ms 来自旧档；它不是屏幕物理 FPS，也不能替代同次温度/CPU/wall 对照。
++
++详证：[G1-G2-readiness.md](/F:/IOS-MIX1/evidence/gpu-g0-20261123/power-zap/G1-G2-readiness.md)、[firmware-manifest.json](/F:/IOS-MIX1/evidence/gpu-g0-20261123/power-zap/firmware-manifest.json)。所有固件仅在 `artifacts/local-firmware/lithium-a530/` 的 Git 忽略区，未装入 G0 包、未进入源码补丁。
++
++## 下一次上机与后续阶段
++
++G0 获批准后只启动冻结镜像一次：
++
++```text
++bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_sanity=1 cpu_perf_fixed=1 cpu_perf_hz=614400000 cpu_thermal_diag=1 cpu_inherited_supply_r39=1 gpu_stage=0 gpu_probe=1 gpu_wd=1 lithium_log_retry=1
++```
++
++`run-gpu-g0.py --boot --attempt-id gpu-g0-01` 执行五项预检、先启动 USB 接收器，再单次临时 boot。正常情况下约三分钟到结束，保留十秒摘要后返回 Fastboot；接受后的 240–900 秒内只执行一次 `--verify-return`，核对同一 serial/product。随后对保存的原始 USB 帧与 console 独立重放，核查 18 项 raw/valid/stable、CPU affinity、四路温度、timer/drain/source drop 和终点。不让用户守屏，不自动重复启动。
++
++| 阶段 | 当前状态 | 下一项实机证据 |
++|---|---|---|
++| G0 | 主机就绪，待批准 | 时钟/GDSC 两遍有效且一致，正常排空/返回 |
++| G1 | 供电/时钟来源准备完成，后端未实施 | 本机 fuse/GFX 数字设定与 settled 状态、MX/RPM/bus 确认后才允许上电、chip ID |
++| G2 | 匹配固件与 PAS 生命周期已整理 | 明确池所有权与 PAS 可用性，然后单独认证/安全切换；不盲目无 zap 写入 |
++| G3/G4 | 尚未实现 | SMMUv2 context、DMA 可见性、CP 和重复 fence、受控 quiesce |
++| G5/G6 | 尚未实现 | 像素一致的 GPU 填充/blit 与收益，再接 Freedreno GLES |
++| G7 | 延后 | GPMU/DCVS 与 Metal 在实际前置通过后评估 |
++
++并行的 fb_threads=2 包已冻存 SHA256 `901863173f494309fb4e813e2a80d6f8fd1a9989625ec391935dcc762138e3a4`，它是独立 UFS 软件绘制对照，正常桌面启动可能写 Data，需单独确认；G0 不混入这次变量。
++
++本次停在设备操作前，依据用户 GPU 计划 §0 的明确要求：**“任何设备操作（boot/查询/重启/分区/刷写）都要事先得到用户批准”**。请求批准的是已冻存的单次 G0 RAM 测试，而非泛化的后续 GPU 写操作。
+--- /dev/null
++++ b/reports/hakios-ios16-gpu-g0-prepared.json
+@@ -0,0 +1,54 @@
++{
++  "schema": "hakios-a530-g0-host-prepared-v1",
++  "prepared": true,
++  "created_at": "2026-11-22T19:50:35.258849+00:00",
++  "cpu_baseline_model_hz": 614400000,
++  "cpu_frequency_search_ended_by_user": true,
++  "route": "A530 MSM semantics / Freedreno Gallium GLES; blit first",
++  "image": "evidence\\gpu-g0-20261123\\package\\g0-01\\lithium-hakios-ios16-gpu-g0-01.img",
++  "image_sha256": "61bc8b8220f54e8a2b0772a694690901b89e48a65b2d52463c8f962ab02c7933",
++  "image_bytes": 16367616,
++  "kernel_sha256": "14635e6dcd3db6ab26226afbdf53f27a6a266d8931e335e91fc229d2b26ea1ff",
++  "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_sanity=1 cpu_perf_fixed=1 cpu_perf_hz=614400000 cpu_thermal_diag=1 cpu_inherited_supply_r39=1 gpu_stage=0 gpu_probe=1 gpu_wd=1 lithium_log_retry=1",
++  "physical_ufs_provider_absent": true,
++  "gpu_read_registers": 9,
++  "gpu_read_cap": 18,
++  "gpu_writes": 0,
++  "gpu_aperture_access": false,
++  "smmu_access": false,
++  "device_operations": 0,
++  "runtime_verified": false,
++  "device_approval_required": true,
++  "accepted_boot_counts": {
++    "hakios": 96,
++    "ios16": 65
++  },
++  "tests": {
++    "core_cases": 2696,
++    "core_checks": 470478,
++    "adapter_cases": 14,
++    "adapter_checks": 795,
++    "package_tests": 22,
++    "windows_fv_tests": 6
++  },
++  "firmware": {
++    "files": 8,
++    "bytes": 64504,
++    "local_matching_stock": true,
++    "loaded": false,
++    "source_only_patch": true
++  },
++  "stock_lowest_active_gpu_hz": 133000000,
++  "power_rails_runtime_verified": false,
++  "pas13_runtime_verified": false,
++  "index_sha256": "fdf775be66b9e456182cd10df6271edadef7f977b6d0b02fa275030f985d1eb2",
++  "accepted_baseline_sha256": "0927c9d86fb1093fc394cb0c6666a38f281f7c62582458117a34242bda941dd1",
++  "low01_sha256": "bb4e8e23e0cc7d9af8198e6974c92cd51cbfdbc2c070b181c59027a608acb5b6",
++  "report": "reports/hakios-ios16-gpu-g0-prepared.md",
++  "evidence": {
++    "build": "evidence/gpu-g0-20261123/main/kernel-result-g0-01.json",
++    "adapter_tests": "evidence/gpu-g0-20261123/main/adapter-tests-final.json",
++    "source_and_fw": "evidence/gpu-g0-20261123/power-zap/verification.json",
++    "independent_integration": "evidence/gpu-g0-20261123/core/main-integration-review.json"
++  }
++}
+--- /dev/null
++++ b/reports/local/run-gpu-g0.py
+@@ -0,0 +1,143 @@
++#!/usr/bin/env python3
++"""G0 RAM one-shot runner. Default/--check is host-only and writes nothing.
++
++Only a future explicit main invocation of --boot or --verify-return authorizes
++device access. Reuse the R37 preflight, USB-before-boot, consumed intent and
++240..900s return window. G0 packages are independently reread before admission.
++"""
++from __future__ import annotations
++
++import argparse
++import importlib.util
++from pathlib import Path
++import re
++import sys
++
++sys.dont_write_bytecode = True
++ROOT = Path(__file__).resolve().parents[2]
++
++
++def load(name, path):
++    spec = importlib.util.spec_from_file_location(name, path)
++    value = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(value)
++    return value
++
++
++BASE = load("_g0_private_r37_runner", ROOT / "reports/local/run-cpu-r37-ram-measure.py")
++PKG = load("_g0_package_admission", ROOT / "scripts/package-hakios-gpu-g0.py")
++RunnerError = BASE.RunnerError
++PACKAGE_ROOT = PKG.PACKAGE_ROOT
++ATTEMPTS_ROOT = PACKAGE_ROOT / "runs"
++DEFAULT_ATTEMPT_ID = "gpu-g0-01"
++
++
++def validate_attempt_id(attempt_id, phase="g0"):
++    BASE.require(phase == "g0" and re.fullmatch(r"gpu-g0-[0-9]{2}", attempt_id) is not None,
++                 "use a new G0 attempt id: gpu-g0-NN")
++
++
++def attempt_suffix(attempt_id, phase="g0"):
++    validate_attempt_id(attempt_id, phase)
++    return attempt_id.rsplit("-", 1)[1]
++
++
++def package_for_attempt(attempt_id, phase="g0", artifacts_root=PACKAGE_ROOT):
++    return artifacts_root / f"g0-{attempt_suffix(attempt_id, phase)}"
++
++
++def resolve_package(phase, attempt_id, package, contract_path, artifacts_root=PACKAGE_ROOT):
++    expected = package_for_attempt(attempt_id, phase, artifacts_root)
++    selected = expected if package is None else Path(package)
++    BASE.require(selected.resolve() == expected.resolve(), "G0 package/attempt mismatch")
++    contract = selected / "contract.json" if contract_path is None else Path(contract_path)
++    BASE.require(contract.resolve() == (selected / "contract.json").resolve(), "G0 contract mismatch")
++    return selected, contract
++
++
++def validate_package(package, contract_path, phase, attempt_id):
++    validate_attempt_id(attempt_id, phase)
++    BASE.require(contract_path == package / "contract.json", "G0 contract must be package-local")
++    result = PKG.verify_package(package, attempt_suffix(attempt_id, phase))
++    contract = BASE.load_json(contract_path)
++    BASE.validate_no_physical_ufs_proof(contract)
++    return {"contract": contract, "image": Path(result["image"]),
++            "image_sha256": result["image_sha256"], "image_bytes": result["image_bytes"],
++            "cmdline": result["cmdline"], "component_count": result["component_count"],
++            "profile": contract["profile"], "candidate": contract["candidate"]}
++
++
++BASE.validate_attempt_id = validate_attempt_id
++BASE.attempt_suffix = attempt_suffix
++BASE.package_for_attempt = package_for_attempt
++BASE.resolve_package = resolve_package
++BASE.validate_package = validate_package
++_base_stop_capture = BASE.stop_capture
++_base_preflight = BASE.preflight
++
++
++def preflight(commands, target, image_bytes):
++    BASE.save_json(commands.path.parent / "target-at-boot.json", target)
++    return _base_preflight(commands, target, image_bytes)
++
++
++def stop_failed_capture(run_dir, process):
++    # A boot timeout/failure can leave a running kernel. Keep the same receiver
++    # for evidence, without reconnecting or issuing another device command.
++    state = BASE.load_json(run_dir / "result.json")
++    if state.get("boot_attempted") is True:
++        BASE.save_json(run_dir / "capture-preserved.json", {
++            "reason": "boot_attempted_outcome_uncertain", "pid": process.pid,
++            "receiver_preserved": True, "retry": False})
++        return
++    _base_stop_capture(run_dir, process)
++
++
++BASE.stop_capture = stop_failed_capture
++BASE.preflight = preflight
++
++
++def boot(*, attempt_id=DEFAULT_ATTEMPT_ID, **kwargs):
++    validate_attempt_id(attempt_id)
++    return BASE.boot(phase="g0", attempt_id=attempt_id, attempts_root=ATTEMPTS_ROOT,
++                     artifacts_root=PACKAGE_ROOT, **kwargs)
++
++
++def verify_return(*, attempt_id=DEFAULT_ATTEMPT_ID, **kwargs):
++    validate_attempt_id(attempt_id)
++    local = kwargs.get("local") or ATTEMPTS_ROOT / attempt_id
++    target_path = kwargs.get("target_path", BASE.TARGET)
++    BASE.require((local / "target-at-boot.json").is_file(), "boot target snapshot missing; no query")
++    BASE.require(BASE.load_json(target_path) == BASE.load_json(local / "target-at-boot.json"),
++                 "configured target changed since boot; no return query")
++    return BASE.verify_return(phase="g0", attempt_id=attempt_id, attempts_root=ATTEMPTS_ROOT,
++                              artifacts_root=PACKAGE_ROOT, **kwargs)
++
++
++def main(argv=None):
++    parser = argparse.ArgumentParser(description=__doc__)
++    actions = parser.add_mutually_exclusive_group()
++    actions.add_argument("--check", action="store_true", help="host-only saved package readback")
++    actions.add_argument("--boot", action="store_true", help="future explicit main invocation only")
++    actions.add_argument("--verify-return", action="store_true", help="future one-shot endpoint check")
++    parser.add_argument("--attempt-id", default=DEFAULT_ATTEMPT_ID)
++    args = parser.parse_args(argv)
++    try:
++        validate_attempt_id(args.attempt_id)
++        if args.boot:
++            boot(attempt_id=args.attempt_id)
++        elif args.verify_return:
++            return 0 if verify_return(attempt_id=args.attempt_id).get("passed") is True else 1
++        else:
++            result = PKG.verify_package(PKG.package_path(attempt_suffix(args.attempt_id)),
++                                        attempt_suffix(args.attempt_id))
++            import json
++            print(json.dumps(result, indent=2))
++        return 0
++    except Exception as error:
++        print(f"STOPPED WITHOUT RETRY: {error}", file=sys.stderr)
++        return 1
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())

@@ -1,0 +1,30 @@
+From: ios14-lithium
+Subject: [build] allow a kernel without a matching kext profiling provider
+
+XNU7195 declares the old six-range compiler-rt API. Current compiler-rt
+uses another API and raw format; linking it by name would be an ABI error.
+The bring-up build explicitly sets XNU_KEXT_PGO=0 and reports ENOTSUP for
+profiling queries. The normal source path remains the default otherwise.
+No dummy profiling output or success return is introduced.
+
+diff --git a/libkern/c++/OSKext.cpp b/libkern/c++/OSKext.cpp
+--- a/libkern/c++/OSKext.cpp
++++ b/libkern/c++/OSKext.cpp
+@@ -10158,6 +10158,9 @@
+     char *pBuffer,
+     uint64_t bufferSize)
+ {
++#if defined(XNU_KEXT_PGO) && !XNU_KEXT_PGO
++	return ENOTSUP;
++#else
+ 	int err = 0;
+ 
+ 	kernel_section_t *sect_prf_data = NULL;
+@@ -10241,6 +10244,7 @@
+ 
+ out:
+ 	return err;
++#endif
+ }
+ 
+ 

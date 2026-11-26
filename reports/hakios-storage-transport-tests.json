@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "checks": [
+    "SCSI WRITE rejected before submission",
+    "unapproved LUN rejected before submission",
+    "CDB/data length mismatch rejected before submission",
+    "oversized DMA transfer rejected before submission",
+    "lost transfer-list ownership stops before doorbell",
+    "READ completion returns DMA data with cache handoff",
+    "timeout permanently retires DMA path; no resubmission"
+  ],
+  "transport_sha256": "640a081b042cd28731dea304c7eb78302a5af116626391e3593b9e790dcfe305",
+  "test_source_sha256": "9dbe78679c07e907556a3d24f2b9bedf6f029a50e4f26239f55b919c2ed925cf",
+  "address_and_undefined_sanitizers": true,
+  "mmio_simulated": true,
+  "hardware_verified": false,
+  "qemu_used": false
+}

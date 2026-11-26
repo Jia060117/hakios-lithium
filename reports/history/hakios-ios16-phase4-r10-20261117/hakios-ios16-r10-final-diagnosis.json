@@ -1,0 +1,655 @@
+{
+  "schema": 1,
+  "revision": 10,
+  "recorded_at": "2026-11-17T19:24:13.159190+08:00",
+  "outcome": "normal_timer_return_desktop_not_reached",
+  "local_evidence": "reports/local/20261117-182055-575912-ios16-r10/final-diagnosis-evidence.json",
+  "terminal_user_photo_verified": true,
+  "runtime_panic_observed": false,
+  "desktop_verified": false,
+  "three_cpu_startup_observed": true,
+  "long_term_smp_stability_verified": false,
+  "xnu_cpu_count": 3,
+  "fourth_cpu_role": "UEFI resident UFS service",
+  "memory_mib": 2880,
+  "first_base_layer_kernel_ms": 66602,
+  "springboard": {
+    "constructor_ready_samples": 60,
+    "first_elapsed_ms": 35063,
+    "last_elapsed_ms": 1805256,
+    "repeated_span_ms": 1770193,
+    "main_thread_cpu_us_unchanged": true,
+    "main_queue_observed": false,
+    "runloop_observed": false,
+    "same_lock_and_sampled_owner_count": 5,
+    "owner_sample_span_seconds": 1440.01603,
+    "owner_wait": "synchronous getServerStoreBlockingWithCompletionHandler through _LSDReadService static call site",
+    "same_continuous_rpc_or_deadlock_proven": false
+  },
+  "launchservices": {
+    "same_database_ready_group": "0x1005f2690",
+    "group_wait_samples": 5,
+    "waiters": [
+      "LSDatabaseBlockingFetchClient",
+      "_LSInstallProgressService restoreInactiveInstalls"
+    ],
+    "producer_tid": "0x134",
+    "producer_stack_changes": true,
+    "method_timeline": [
+      {
+        "sequence": 1,
+        "uptime": "427.923",
+        "lsd_producer_methods": [
+          [
+            "-[MIFileManager realPathForURL:ifChildOfURL:]"
+          ],
+          [
+            "-[MIExecutableBundle _validateWithError:]"
+          ],
+          [
+            "-[MIBundle initWithBundleParentURL:parentSubdirectory:bundleName:error:]"
+          ],
+          [
+            "-[MIBundle initWithBundleURL:error:]"
+          ],
+          [
+            "+[MIBundle bundleForURL:error:]"
+          ],
+          [
+            "-[MIFileManager enumerateURLsForItemsInDirectoryAtURL:ignoreSymlinks:withBlock:]"
+          ],
+          [
+            "-[MIFilesystemScanner _scanAppsDirectory:withError:]"
+          ],
+          [
+            "-[MIFilesystemScanner performScanWithError:]"
+          ],
+          [
+            "-[MILaunchServicesDatabaseGatherer performGatherWithError:]"
+          ],
+          [
+            "-[ICLWorkspace enumerateBuiltInSystemContentWithBlock:error:]"
+          ]
+        ],
+        "container_worker_methods": []
+      },
+      {
+        "sequence": 2,
+        "uptime": "787.927",
+        "lsd_producer_methods": [
+          [
+            "+[MIContainer _copyContainerForIdentifier:parentIdentifier:ofContentClass:forPersona:transient:create:created:error:]"
+          ],
+          [
+            "+[MIContainer containerWithIdentifier:parentIdentifier:ofContentClass:createIfNeeded:created:error:]"
+          ],
+          [
+            "+[MIContainer containerWithIdentifier:ofContentClass:createIfNeeded:created:error:]"
+          ],
+          [
+            "-[MIInstalledInfoGatherer _fixUpForBuiltInAppParallelPlaceholder]"
+          ]
+        ],
+        "container_worker_methods": [
+          [
+            "-[MCMFileManager writeData:toURL:options:mode:error:]"
+          ],
+          [
+            "-[NSDictionary(MobileContainerManagerAdditions) MCM_writeToURL:withOptions:error:]"
+          ],
+          [
+            "-[MCMLibraryRepairForUser fixAndRetryIfPermissionsErrorWithURL:containerPath:containerIdentifier:error:duringBlock:]"
+          ],
+          [
+            "-[MCMMetadata _writeFileURL:dictionary:options:error:]"
+          ],
+          [
+            "-[MCMMetadata writeMetadataToFileURL:options:error:]"
+          ],
+          [
+            "-[MCMMetadata writeMetadataToDiskWithError:]"
+          ],
+          [
+            "-[MCMCommandSetDataProtection execute]"
+          ],
+          [
+            "-[MCMCommandDispatcher dispatchMessage:context:reply:]"
+          ]
+        ]
+      },
+      {
+        "sequence": 3,
+        "uptime": "1147.931",
+        "lsd_producer_methods": [
+          [
+            "+[MIContainer groupContainerURLsForBundleIdentifier:persona:error:]"
+          ],
+          [
+            "-[MIInstalledInfoGatherer _groupContainersDictionary]"
+          ],
+          [
+            "-[MIInstalledInfoGatherer _populateBundleRecordValues:signingInfo:error:]"
+          ],
+          [
+            "-[MIInstalledInfoGatherer _populateBundleRecord:error:]"
+          ]
+        ],
+        "container_worker_methods": []
+      },
+      {
+        "sequence": 4,
+        "uptime": "1507.935",
+        "lsd_producer_methods": [
+          [
+            "-[MIContainer _replaceExistingContainer:replacementReason:waitForDeletion:error:]"
+          ],
+          [
+            "-[MIContainer makeContainerLiveReplacingContainer:reason:waitForDeletion:withError:]"
+          ],
+          [
+            "-[MIExecutableBundle _dataContainerCreatingIfNeeded:makeLive:checkIfNeeded:created:error:]"
+          ],
+          [
+            "+[MILaunchServicesDatabaseGatherer entryForBundle:inContainer:withError:]"
+          ],
+          [
+            "-[MILaunchServicesDatabaseGatherer scanExecutableBundle:inContainer:withError:]"
+          ]
+        ],
+        "container_worker_methods": [
+          [
+            "-[MCMFileManager writeData:toURL:options:mode:error:]"
+          ],
+          [
+            "-[NSDictionary(MobileContainerManagerAdditions) MCM_writeToURL:withOptions:error:]"
+          ],
+          [
+            "-[MCMLibraryRepairForUser fixAndRetryIfPermissionsErrorWithURL:containerPath:containerIdentifier:error:duringBlock:]"
+          ],
+          [
+            "-[MCMMetadata _writeFileURL:dictionary:options:error:]"
+          ],
+          [
+            "-[MCMMetadata writeMetadataToFileURL:options:error:]"
+          ],
+          [
+            "-[MCMMetadata writeMetadataToDiskWithError:]"
+          ],
+          [
+            "-[MCMCommandReplaceContainer execute]"
+          ],
+          [
+            "-[MCMCommandDispatcher dispatchMessage:context:reply:]"
+          ]
+        ]
+      },
+      {
+        "sequence": 5,
+        "uptime": "1867.939",
+        "lsd_producer_methods": [
+          [
+            "+[MIContainer _copyContainerForIdentifier:parentIdentifier:ofContentClass:forPersona:transient:create:created:error:]"
+          ],
+          [
+            "+[MIContainer containerWithIdentifier:parentIdentifier:ofContentClass:createIfNeeded:created:error:]"
+          ],
+          [
+            "+[MIDataContainer dataContainerForExecutableBundle:createIfNeeded:temporary:created:error:]"
+          ],
+          [
+            "-[MIExecutableBundle _dataContainerCreatingIfNeeded:makeLive:checkIfNeeded:created:error:]"
+          ]
+        ],
+        "container_worker_methods": [
+          [
+            "-[MCMFileManager writeData:toURL:options:mode:error:]"
+          ],
+          [
+            "-[NSDictionary(MobileContainerManagerAdditions) MCM_writeToURL:withOptions:error:]"
+          ],
+          [
+            "-[MCMLibraryRepairForUser fixAndRetryIfPermissionsErrorWithURL:containerPath:containerIdentifier:error:duringBlock:]"
+          ],
+          [
+            "-[MCMMetadata _writeFileURL:dictionary:options:error:]"
+          ],
+          [
+            "-[MCMMetadata writeMetadataToFileURL:options:error:]"
+          ],
+          [
+            "-[MCMMetadata writeMetadataToDiskWithError:]"
+          ],
+          [
+            "-[MCMCommandSetDataProtection execute]"
+          ],
+          [
+            "-[MCMCommandDispatcher dispatchMessage:context:reply:]"
+          ]
+        ]
+      }
+    ],
+    "event_budget": 256,
+    "event_budget_exhausted": true,
+    "recorded_event_counts": {
+      "builder-init-return": 1,
+      "database-seed-enter": 1,
+      "group-enter": 125,
+      "database-seed-return": 1,
+      "blocking-fetch-enter": 1,
+      "group-wait-enter": 2,
+      "journal-recovery-enter": 1,
+      "inactive-installs-enter": 1,
+      "group-leave": 123
+    },
+    "final_ready_event_absence_proves_no_completion": false,
+    "exact_bundle_container_path_and_error_unrecorded": true,
+    "ipc_sender28_tid0x134_receiver13_attempt_observed_sequences": [
+      3,
+      4,
+      5
+    ],
+    "ipc_delivery_or_whole_history_proven": false
+  },
+  "performance": {
+    "first_top_excluded": true,
+    "top_units": "one CPU = 100%; aggregate not normalized by three CPUs",
+    "valid_intervals": [
+      {
+        "elapsed_ms": 360004,
+        "aggregate_one_cpu_percent": 144,
+        "tasks": [
+          {
+            "process": "lsd",
+            "pid": 28,
+            "percent": 49.8
+          },
+          {
+            "process": "containermanagerd",
+            "pid": 13,
+            "percent": 48.7
+          },
+          {
+            "process": "analyticsd",
+            "pid": 24,
+            "percent": 18.1
+          },
+          {
+            "process": "aggregated",
+            "pid": 51,
+            "percent": 9.1
+          },
+          {
+            "process": "launchd",
+            "pid": 1,
+            "percent": 6.1
+          },
+          {
+            "process": "kernel_task",
+            "pid": 0,
+            "percent": 3.6
+          },
+          {
+            "process": "usermanagerd",
+            "pid": 16,
+            "percent": 3.2
+          },
+          {
+            "process": "spindump",
+            "pid": 86,
+            "percent": 1.1
+          },
+          {
+            "process": "fseventsd",
+            "pid": 18,
+            "percent": 0.6
+          },
+          {
+            "process": "logd",
+            "pid": 19,
+            "percent": 0.5
+          },
+          {
+            "process": "symptomsd",
+            "pid": 85,
+            "percent": 0.4
+          },
+          {
+            "process": "iconservicesagent",
+            "pid": 30,
+            "percent": 0.3
+          }
+        ]
+      },
+      {
+        "elapsed_ms": 360004,
+        "aggregate_one_cpu_percent": 113,
+        "tasks": [
+          {
+            "process": "lsd",
+            "pid": 28,
+            "percent": 62.7
+          },
+          {
+            "process": "containermanagerd",
+            "pid": 13,
+            "percent": 38.2
+          },
+          {
+            "process": "launchd",
+            "pid": 1,
+            "percent": 3.6
+          },
+          {
+            "process": "usermanagerd",
+            "pid": 16,
+            "percent": 2.9
+          },
+          {
+            "process": "kernel_task",
+            "pid": 0,
+            "percent": 2.8
+          },
+          {
+            "process": "logd",
+            "pid": 19,
+            "percent": 0.5
+          },
+          {
+            "process": "fseventsd",
+            "pid": 18,
+            "percent": 0.4
+          },
+          {
+            "process": "iconservicesagent",
+            "pid": 30,
+            "percent": 0.4
+          },
+          {
+            "process": "spindump",
+            "pid": 86,
+            "percent": 0.3
+          },
+          {
+            "process": "mobileactivationd",
+            "pid": 47,
+            "percent": 0.2
+          },
+          {
+            "process": "notifyd",
+            "pid": 22,
+            "percent": 0.1
+          },
+          {
+            "process": "mediaserverd",
+            "pid": 36,
+            "percent": 0.1
+          }
+        ]
+      },
+      {
+        "elapsed_ms": 360003,
+        "aggregate_one_cpu_percent": 119,
+        "tasks": [
+          {
+            "process": "lsd",
+            "pid": 28,
+            "percent": 58.0
+          },
+          {
+            "process": "containermanagerd",
+            "pid": 13,
+            "percent": 47.9
+          },
+          {
+            "process": "AccessibilityUIServer",
+            "pid": 90,
+            "percent": 4.1
+          },
+          {
+            "process": "kernel_task",
+            "pid": 0,
+            "percent": 2.7
+          },
+          {
+            "process": "launchd",
+            "pid": 1,
+            "percent": 1.2
+          },
+          {
+            "process": "usermanagerd",
+            "pid": 16,
+            "percent": 0.7
+          },
+          {
+            "process": "backboardd",
+            "pid": 12,
+            "percent": 0.5
+          },
+          {
+            "process": "callservicesd",
+            "pid": 91,
+            "percent": 0.5
+          },
+          {
+            "process": "fseventsd",
+            "pid": 18,
+            "percent": 0.5
+          },
+          {
+            "process": "logd",
+            "pid": 19,
+            "percent": 0.4
+          },
+          {
+            "process": "iconservicesagent",
+            "pid": 30,
+            "percent": 0.3
+          },
+          {
+            "process": "notifyd",
+            "pid": 22,
+            "percent": 0.2
+          }
+        ]
+      },
+      {
+        "elapsed_ms": 360004,
+        "aggregate_one_cpu_percent": 111,
+        "tasks": [
+          {
+            "process": "lsd",
+            "pid": 28,
+            "percent": 68.5
+          },
+          {
+            "process": "containermanagerd",
+            "pid": 13,
+            "percent": 35.1
+          },
+          {
+            "process": "kernel_task",
+            "pid": 0,
+            "percent": 2.1
+          },
+          {
+            "process": "usermanagerd",
+            "pid": 16,
+            "percent": 1.4
+          },
+          {
+            "process": "launchd",
+            "pid": 1,
+            "percent": 1.2
+          },
+          {
+            "process": "spindump",
+            "pid": 86,
+            "percent": 0.7
+          },
+          {
+            "process": "AccessibilityUIServer",
+            "pid": 90,
+            "percent": 0.5
+          },
+          {
+            "process": "iconservicesagent",
+            "pid": 30,
+            "percent": 0.3
+          },
+          {
+            "process": "logd",
+            "pid": 19,
+            "percent": 0.2
+          },
+          {
+            "process": "fseventsd",
+            "pid": 18,
+            "percent": 0.2
+          },
+          {
+            "process": "aggregated",
+            "pid": 51,
+            "percent": 0.1
+          },
+          {
+            "process": "backboardd",
+            "pid": 12,
+            "percent": 0.1
+          }
+        ]
+      }
+    ],
+    "final_memory_line": "memory: free 919, files 1542, programs 191, wired 220 (3 surfaces 11, ramfs 0), compressor 0 (holding 0) MB; available 2461, kills below 274 (the idle) and 137 (anybody)",
+    "accepted_draw_totals": [
+      {
+        "swap": 2,
+        "band": 1,
+        "y0": 0,
+        "y1": 2040,
+        "wall_us": 674914,
+        "cpu_us": 674329,
+        "noncpu_us": 585,
+        "monotonic": 1,
+        "cpu_le_wall": 1,
+        "stream_start": 222872,
+        "line": 2146,
+        "cpu_exceeds_wall_us": 0,
+        "arithmetic_consistent": true,
+        "accepted": true,
+        "cpu_fraction": 0.9991332228995101
+      },
+      {
+        "swap": 3,
+        "band": 1,
+        "y0": 0,
+        "y1": 2040,
+        "wall_us": 15359,
+        "cpu_us": 15359,
+        "noncpu_us": 0,
+        "monotonic": 1,
+        "cpu_le_wall": 1,
+        "stream_start": 229035,
+        "line": 2204,
+        "cpu_exceeds_wall_us": 0,
+        "arithmetic_consistent": true,
+        "accepted": true,
+        "cpu_fraction": 1.0
+      },
+      {
+        "swap": 4,
+        "band": 1,
+        "y0": 0,
+        "y1": 2040,
+        "wall_us": 671892,
+        "cpu_us": 670988,
+        "noncpu_us": 903,
+        "monotonic": 1,
+        "cpu_le_wall": 1,
+        "stream_start": 257983,
+        "line": 2442,
+        "cpu_exceeds_wall_us": 0,
+        "arithmetic_consistent": true,
+        "accepted": true,
+        "cpu_fraction": 0.9986545456710305
+      }
+    ],
+    "rejected_timing_spans": 5,
+    "clock_frequency_measured": false
+  },
+  "cpu_monitor": {
+    "lsd_denial_lines": 524,
+    "kernel_source": "osfmk/kern/task_policy.c:2845-2876; osfmk/kern/thread.c:2579-2692",
+    "observed_message": "requested monitor limits exceed global caps without entitlement; limits capped and monitor enabled",
+    "not_proof_of_dead_cpu_or_endpoint_denial": true,
+    "root_cause_proven": false
+  },
+  "logging": {
+    "transport": {
+      "raw_bytes": 752729,
+      "console_bytes": 664633,
+      "frames": 2753,
+      "raw_sha256": "109886ad1dea756161c79803f5d8577ca880b0b73f4435fe46c6623f7dd37345",
+      "console_sha256": "13bc15ea425bdd7309c5751b08035814b47b52a5ee98c264939931148bd10c9e",
+      "first_offset": 0,
+      "final_offset": 664633,
+      "missing_bytes": 0,
+      "duplicate_bytes": 0,
+      "incomplete_frame_bytes": 0,
+      "device_lost_max": 0,
+      "frames_reporting_device_loss": 0,
+      "independent_parser_agrees_with_frozen_receiver": true,
+      "frozen_redecode_equals_complete_console": true,
+      "transport_verified": true,
+      "kernel_banner_offset": 0,
+      "timer_offset": 664430,
+      "normal_return_offset": 664516,
+      "drain_success": true,
+      "drain_records": [
+        {
+          "offset": 664583,
+          "drained": 1,
+          "target": 664583
+        }
+      ],
+      "emitted_kernel_stream_through_timer_verified": true,
+      "all_firmware_daemon_and_original_printf_logs_complete": false,
+      "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
+    },
+    "writer_contention_dropped_bytes": 10343,
+    "incomplete_samples": [
+      {
+        "sequence": 3,
+        "reported_processes": 6,
+        "parsed_processes": 4,
+        "mismatched_threads": [
+          {
+            "process": "containermanagerd",
+            "reported": 4,
+            "parsed": 1
+          }
+        ]
+      }
+    ],
+    "kernel_usb_byte_stream_complete": true,
+    "all_generated_kernel_daemon_firmware_text_complete": false,
+    "pipe_error_after_successful_timer_and_drain": true,
+    "firmware_raw_bytes_shown": 795828,
+    "firmware_raw_counter_not_interchangeable_with_usb_console_length": true
+  },
+  "hfs_relocation_error_reobserved": false,
+  "no_reobserved_error_scope": "Saved stream only; source loss and disabled categories prohibit proof of total absence.",
+  "diagnosis": "SpringBoard waits on LS readiness while database scan/registration and container metadata operations remain active; exact repeated item/errno and completion failure remain unproven.",
+  "next_steps": [
+    "Keep complete pinned HakiOS, three XNU CPUs, UFS and the installed Data volume; no unchanged retry or userdata rewrite.",
+    "Trace database seeding producer progress by distinct bundle/container identity and completion; distinguish new work from retrying one item.",
+    "Time the container query/replacement/data-protection and metadata-write requests; record exact errno and path, check close/fsync and permissions only with evidence.",
+    "Reserve LS completion records independently of high-frequency group events and provide bounded per-CPU diagnostic retention without blocking IRQ-disabled contexts.",
+    "Audit lsd CPU-monitor entitlement and limit behavior against original firmware/upstream before considering a scoped compatibility correction; do not globally bypass monitors.",
+    "Validate SpringBoard main-queue/runloop and actual screen ownership in the next integrated revision; time extension alone is not a correction."
+  ],
+  "runtime_code_changed": false,
+  "device_commands_sent": false,
+  "userdata_reflashed": false,
+  "backup_branch": "archive/ios16-r10-20261117",
+  "backup_commit": "5f17bf1"
+}

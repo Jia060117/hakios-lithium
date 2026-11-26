@@ -1,0 +1,49 @@
+{
+  "scope": "Host-only saved-console checker; not hardware acceptance",
+  "recorded_at_utc": "2026-11-18T12:18:03.653117+00:00",
+  "suite_command": [
+    "/usr/bin/python3",
+    "-B",
+    "/mnt/f/IOS-MIX1/scripts/test-hakios-ios16-display-log.py"
+  ],
+  "suite_exit_code": 0,
+  "tests_run": 22,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "suite_wall_seconds": 1.1775291580000005,
+  "suite_stdout": "",
+  "suite_stderr": "test_cli_exit_codes_json_and_new_output (__main__.DisplayLogCliTests.test_cli_exit_codes_json_and_new_output) ... ok\ntest_cli_refuses_existing_output_and_input_aliases (__main__.DisplayLogCliTests.test_cli_refuses_existing_output_and_input_aliases) ... ok\ntest_banner_consistency_does_not_invent_capture_provenance (__main__.DisplayLogTests.test_banner_consistency_does_not_invent_capture_provenance) ... ok\ntest_cgfloat_rounding_and_one_based_line_evidence (__main__.DisplayLogTests.test_cgfloat_rounding_and_one_based_line_evidence) ... ok\ntest_complete_synthetic_profile_and_optional_evidence (__main__.DisplayLogTests.test_complete_synthetic_profile_and_optional_evidence) ... ok\ntest_contradictory_samples_fail_in_either_order (__main__.DisplayLogTests.test_contradictory_samples_fail_in_either_order) ... ok\ntest_cpu_match_flag_does_not_override_numeric_identity (__main__.DisplayLogTests.test_cpu_match_flag_does_not_override_numeric_identity) ... ok\ntest_duplicate_and_mixed_cpu_records_fail (__main__.DisplayLogTests.test_duplicate_and_mixed_cpu_records_fail) ... ok\ntest_explicit_failure_takes_precedence_over_missing_evidence (__main__.DisplayLogTests.test_explicit_failure_takes_precedence_over_missing_evidence) ... ok\ntest_home_class_and_frame_bounds_must_be_actual_measurements (__main__.DisplayLogTests.test_home_class_and_frame_bounds_must_be_actual_measurements) ... ok\ntest_malformed_truncated_and_incomplete_fields_are_unverified (__main__.DisplayLogTests.test_malformed_truncated_and_incomplete_fields_are_unverified) ... ok\ntest_missing_mandatory_categories_are_unverified (__main__.DisplayLogTests.test_missing_mandatory_categories_are_unverified) ... ok\ntest_mobilegestalt_unavailable_never_infers_required_value (__main__.DisplayLogTests.test_mobilegestalt_unavailable_never_infers_required_value) ... ok\ntest_no_optional_loader_markers_or_banner_still_passes (__main__.DisplayLogTests.test_no_optional_loader_markers_or_banner_still_passes) ... ok\ntest_nonfinite_measurements_fail (__main__.DisplayLogTests.test_nonfinite_measurements_fail) ... ok\ntest_optional_contradictions_and_spoofed_profile_match_fail (__main__.DisplayLogTests.test_optional_contradictions_and_spoofed_profile_match_fail) ... ok\ntest_physical_bgr24_is_not_a_four_byte_panel (__main__.DisplayLogTests.test_physical_bgr24_is_not_a_four_byte_panel) ... ok\ntest_saved_real_r16_is_not_a_profile_or_visual_pass (__main__.DisplayLogTests.test_saved_real_r16_is_not_a_profile_or_visual_pass) ... ok\ntest_scale_2_001_is_not_rounding_tolerance (__main__.DisplayLogTests.test_scale_2_001_is_not_rounding_tolerance) ... ok\ntest_surface_row_alignment_format_and_unrelated_small_surfaces (__main__.DisplayLogTests.test_surface_row_alignment_format_and_unrelated_small_surfaces) ... ok\ntest_unavailable_selectors_and_dt_properties_are_unverified (__main__.DisplayLogTests.test_unavailable_selectors_and_dt_properties_are_unverified) ... ok\ntest_unknown_samples_cannot_complete_required_three (__main__.DisplayLogTests.test_unknown_samples_cannot_complete_required_three) ... ok\n\n----------------------------------------------------------------------\nRan 22 tests in 1.016s\n\nOK\n",
+  "source_sha256": {
+    "scripts/analyze-hakios-ios16-display-log.py": "0299cfbf39b79baca8d969db8b058cfe9884772bcf9186c6cd38ed98c23c478d",
+    "scripts/test-hakios-ios16-display-log.py": "f0c2d5f82b25d008fb68caee424e98bef4730ad18965355f24739e0d8dbc7052"
+  },
+  "saved_log_sha256": "ca8555361421ec1d1111d45064fd51a7c2db7c759e386816f44902fcb3b08212",
+  "saved_log_analysis_sha256": "8de6ab3ae1fe6bab74e361364f2a85ed2f311b0a8319ed76512f030b8c165fa4",
+  "saved_log_cli_exit_code": 1,
+  "saved_log_statuses": {
+    "capture_boundary": "unverified",
+    "cpu": "pass",
+    "kernel_dt": "fail",
+    "geometry": "pass",
+    "backboardd": "fail",
+    "mobilegestalt": "fail",
+    "uiscreen": "fail",
+    "surface": "pass",
+    "home_window_geometry": "fail",
+    "loader": "unverified",
+    "profile_markers": "unverified"
+  },
+  "test_author": "Godel; main corrected the banner-assumption regression using real saved lines1/183",
+  "main_review": "Read complete test file; fixed missing-value classification; independently ran final22 tests with zero skips and the realR16 fixture",
+  "preserved_before_banner_fix_files": {
+    "reports/overnight-20261118/display-r16-log-analysis-before-banner-fix.json": "cb11f44f19036bd00e2cca45706263828beb9b6354b27ded7e9c2fe76861ca89",
+    "reports/overnight-20261118/display-log-checks-before-banner-fix.json": "b3b7256b4a5907f1ab07f31ce9d7179bf26b46ae0b52c08b83bce91d356f4887"
+  },
+  "device_operations": false,
+  "runtime_source_changed": false,
+  "boot_image_produced": false,
+  "qemu_used": false,
+  "visual_acceptance": "unverified",
+  "goal_complete": false
+}

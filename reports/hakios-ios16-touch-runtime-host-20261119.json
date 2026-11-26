@@ -1,0 +1,59 @@
+{
+  "date": "2026-11-19",
+  "scope": "host source/runtime composition and exact HakiOS queue integration; no physical MMIO provider",
+  "sole_display_baseline": "R20-display",
+  "r19_disposition": "tested wrong resolution; archived, no retry",
+  "regression": {
+    "date": "2026-11-19",
+    "passed": true,
+    "existing_suites": 14,
+    "followup_suites": 12,
+    "total_suites": 26,
+    "command_records": 24,
+    "source_hash_count": 61,
+    "evidence": "reports/touch-runtime-host-20261119-r1/passed.json",
+    "evidence_sha256": "14e9b517164bb3353d5c940781984db65b8416927ff3ce4d05a0b69a4151f34e",
+    "physical_touch_verified": false,
+    "touch_package_ready": false
+  },
+  "frozen_before": {
+    "r20_image_sha256": "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82",
+    "r20_display_acceptance": true,
+    "r15_image_sha256": "ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55",
+    "frozen_baselines_unchanged": true
+  },
+  "frozen_after": {
+    "r20_image_sha256": "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82",
+    "r20_display_acceptance": true,
+    "r15_image_sha256": "ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55",
+    "frozen_baselines_unchanged": true
+  },
+  "production_kernel_rebuilt": false,
+  "production_kernel_sha256": "3e130b765b47ec06ac5e5392d5f94301d22ed43fa37b937827b65ab220180c93",
+  "production_source_changed": false,
+  "physical_touch_backend_integrated": false,
+  "new_touch_image_ready": false,
+  "device_operations": false,
+  "qemu_used": false,
+  "source_changes_sha256": {
+    "maintenance/hakios-lithium/peripherals-next/touch-runtime.h": "fd0258ca13db6d3f60fca8f90bc765926c09caf879d352b6811c3f312e5d49b8",
+    "maintenance/hakios-lithium/peripherals-next/touch-runtime-test.c": "d7f5ab5c9000da69e5e176b3015dee1a896f19ad5ca8c98f86194a6842a3e6f7",
+    "maintenance/hakios-lithium/peripherals-next/touch-hakios-sink.h": "7c720147897a158ef8fc1cd88d93e6f0156fa6f620afc97f06d4b2bfaf7ea320",
+    "maintenance/hakios-lithium/peripherals-next/test-touch-batch-patch.py": "cb5f7999728395abe5c9f051ee149c75f15cd55003e16a3769e10d8c6c2616f9",
+    "maintenance/hakios-lithium/peripherals-next/touch-static.h": "1b34df264f512226561a2daf25688996abc8de6d5bb5b9e3062be6fd52c71c4e",
+    "maintenance/hakios-lithium/peripherals-next/touch-static-test.c": "df0b398cf5b4fc10051d8b718d7cab2814f773d50daca3432f48422aef08f89c",
+    "scripts/test-hakios-lithium-peripherals-next.py": "aa8f8dc4c81ea444d9798bcd65aae28ca975d0bb02e2533f7f1519cb673ad360"
+  },
+  "source_owner_audit": "reports/hakios-ios16-touch-owner-source-audit-20261119.json",
+  "report": "reports/hakios-ios16-touch-runtime-host-20261119.md",
+  "checkpoint": "reports/hakios-ios16-touch-runtime-host-20261119.patch",
+  "unverified": [
+    "MMIO access/fault behavior",
+    "inherited clocks, reset, mux and rails",
+    "secure-world access/ownership",
+    "actual controller ID and report firmware",
+    "split-frame coherence and GPIO105/125 behavior",
+    "blocking queue mutex duration",
+    "full runtime-to-real-queue-to-HID path and consumer fence"
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "schema": 1,
+  "attempt": "HakiOS lithium R4",
+  "started_at": "2026-11-14T20:43:29.275422+08:00",
+  "recorded_at": "2026-11-14T20:51:09.965613+08:00",
+  "baseline": {
+    "project": "HakiOS",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2"
+  },
+  "package": {
+    "image_sha256": "a4d31ced18b0e308eee0abac44c16e3ee55fd19ba913646c36e057795e97fb09",
+    "image_bytes": 15683584,
+    "kernel_sha256": "02357c2cdb8b6d3cf700071adf3a77d2987667bc2a238bfc5383bdb907cd6698",
+    "loader_sha256": "012561a05b55b13248a4c73ebbc649e2958ac52299d95506153397295a333499",
+    "fd_sha256": "be81c5cbcf0ab3e76f8a67d8db5723550fa6d24e89744bb4af2362c5a43c1a69",
+    "hello_sha256": "c6ce7932427b0980316497bbdf62f10cd6f19057f1309a34d3cff25fd6522bbe",
+    "payload_sha256": "967d668435f473bd389df665a180f1926654814938049e281bc8a0b7974eeb98",
+    "cmdline": "cores=1 serial=3 -v hello_wait=600",
+    "stock_dtb_table_sha256": "ab929abf55ad4822ae83489a58d6b550b7b24ea8398ce8ead1de7b1d2caed6aa"
+  },
+  "frozen_artifacts_path": "artifacts/hakios/device-tests/20261114-204329",
+  "identity_verified": true,
+  "bootloader_unlocked": true,
+  "userdata_bytes": 250710192128,
+  "temporary_boot_issued": true,
+  "fastboot_returncode": 0,
+  "command_accepted": true,
+  "fastboot_boot_output": "Sending 'boot.img' (15316 KB)                      OKAY [  0.370s]\nBooting                                            OKAY [  0.739s]\nFinished. Total time: 1.114s\n",
+  "user_screen_observation": {
+    "source": "user_photo",
+    "observation_pending": false,
+    "uefi_error_screen_observed": true,
+    "return_to_fastboot_confirmed_by_user": true,
+    "return_to_fastboot_user_text": "已进入",
+    "automatic_return_to_fastboot_verified": false
+  },
+  "latest_usb": {
+    "checked_at": "2026-11-14T20:44:27.822731+08:00",
+    "authorized_device_in_fastboot": false,
+    "adb_present": false,
+    "local_log_path": "reports/local/20261114-204329-251459-hakios-preflight/post-boot-usb.json"
+  },
+  "verified_stages": {
+    "fastboot_command": true,
+    "uefi": true,
+    "mmu_hobs": true,
+    "bds": true,
+    "gop": true,
+    "efi_file_hash": true,
+    "loader": false,
+    "kernel": false,
+    "hello": false
+  },
+  "outcome": "uefi_verified_LoadImage_failed_EFI_OUT_OF_RESOURCES",
+  "exact_failure_stage": "LoadImage_memory_allocation_before_StartImage",
+  "loader_pe": {
+    "preferred_base": "0x40400000",
+    "size_of_image": 9875456,
+    "mapped_window": [
+      "0x40400000",
+      "0x41000000"
+    ],
+    "fits_mapped_window": true,
+    "relocations_present": true
+  },
+  "hardware_verified": false,
+  "ios14_compatibility_verified": false,
+  "partition_writes_performed": false,
+  "qemu_used": false,
+  "screen_evidence": {
+    "source": "user_photo",
+    "path": "reports/local/20261114-204329-251459-hakios-preflight/screen.jpg",
+    "sha256": "68fd3b55166d98eb516cf02ed953c1d017862996f16b237fbe33a345ac4e21ab",
+    "visible_lines": [
+      "MMU AND HOBS OK",
+      "HAKIOS BDS",
+      "DXE GOP OK",
+      "HAKIOS EFI VERIFIED",
+      "HAKIOS LOADER FAILED",
+      "LOADIMAGE CODE 8000000000000009",
+      "MIX EFI PE BASE 40400000 SIZE 96B000",
+      "MIX FREE LARGEST 709000",
+      "CONVERTPAGES RANGE 40400000 40D6AFFF COVERS MULTIPLE ENTRIES",
+      "MIX LOADIMAGE STATUS OUT OF RESOURCES"
+    ]
+  },
+  "efi_status": {
+    "api": "LoadImage",
+    "code": "0x8000000000000009",
+    "name": "EFI_OUT_OF_RESOURCES"
+  },
+  "memory_observation": {
+    "loader_image_bytes": 9875456,
+    "largest_free_block_bytes": 7376896,
+    "largest_free_block_smaller_than_image": true,
+    "preferred_range_covers_multiple_entries": true
+  }
+}

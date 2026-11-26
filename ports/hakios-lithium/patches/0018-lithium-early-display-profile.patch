@@ -1,0 +1,54 @@
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -634,10 +634,17 @@
+  */
+ static int gamut_p3;    /* boot-arg gamut=p3 (a test): the iPhone's own "P3" left in place */
+ 
++#if defined(HAKIOS_LITHIUM)
++#include "../devices/lithium/diagnostics/display-loader.inc"
++#endif
++
+ static void
+ dt_identity(struct dt_writer *w, const struct identity_prop *props, uint32_t count, const unsigned char *data)
+ {
+ 	for (uint32_t i = 0; i < count; i++) {
++#if defined(HAKIOS_LITHIUM)
++		if (lithium_display_loader_identity(w, props, &props[i])) continue;
++#endif
+ 		if (str_eq(props[i].name, "artwork-display-gamut") && !gamut_p3) {
+ 			dt_prop(w, props[i].name, "sRGB", 5);
+ 			continue;
+@@ -3431,6 +3438,10 @@
+ 	}
+ 	print("cmdline: %d of %d characters\n", (uint64_t)n, (uint64_t)(BOOT_LINE_LENGTH - 1));
+ 
++#if defined(HAKIOS_LITHIUM)
++	lithium_display_loader_configure(pi.cmdline);
++#endif
++
+ 	/* --- device tree ---------------------------------------------------- */
+ 	const struct platform *plat = PLAT;
+ 	struct dt_writer w = { .base = (uint8_t *)dt_pa, .cur = (uint8_t *)dt_pa, .end = (uint8_t *)(dt_pa + dt_max), .depth = 0 };
+@@ -3466,7 +3477,11 @@
+ 	dt_prop_u64(&w, "dram-size", win_size);
+ 	dt_prop_u32(&w, "debug-enabled", 1);
+ 	/* what MobileGestalt answers "main screen scale" from: 3 device pixels per point */
++#if defined(HAKIOS_LITHIUM)
++	dt_prop_u32(&w, "display-scale", lithium_loader_display.automatic ? lithium_loader_display.scale : 3);
++#else
+ 	dt_prop_u32(&w, "display-scale", 3);
++#endif
+ 	dt_prop_u32(&w, "display-rotation", 0);
+ 	/* how the kernel is to ask the firmware for more cores (PSCI) */
+ 	dt_prop_str(&w, "psci-method", plat->psci_hvc ? "hvc" : "smc");
+--- a/userland/src/inject_sb.c
++++ b/userland/src/inject_sb.c
+@@ -1031,7 +1031,7 @@
+  * next boot, and the lock screen shows the same picture.
+  */
+ typedef struct { double x, y, width, height; } hk_rect;
+-#include "../../devices/lithium/diagnostics/display-userspace-r17.inc"
++#include "../../devices/lithium/diagnostics/display-userspace-r18.inc"
+ 
+ static bool wallpaper_hide_only;        /* wallpaper_freeze=2: no picture, the wallpaper hidden (what it costs, measured) */
+ static const void *wallpaper_frozen_key = &wallpaper_frozen_key;

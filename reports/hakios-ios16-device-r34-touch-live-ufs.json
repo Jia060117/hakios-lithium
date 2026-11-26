@@ -1,0 +1,136 @@
+{
+  "schema": 1,
+  "revision": "R34-touch-live-ufs",
+  "authorization": "User: 测试呀，手机已经连接了; follows the disclosed UFS desktop scope and normal Data writes",
+  "scope": "One temporary frozen UFS desktop boot, existing R20 root/Data and display configuration, GPIO89 reset and QUP6 reports into HakiOS/backboardd, USB capture; normal filesystem writes allowed",
+  "image_sha256": "47740664f56fcf021096493444cc96934223f49ce0dfc099920bfb73cfc426ed",
+  "payload_boot_args": "bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1",
+  "temporary_boot_issued": true,
+  "partition_commands": 0,
+  "firmware_downloads": 0,
+  "adb_commands": 0,
+  "qemu": false,
+  "automatic_retry": false,
+  "normal_boot_may_write_userdata": true,
+  "automatic_fastboot_enabled": false,
+  "kernel_timer_seconds": 10800,
+  "usb_wait_seconds": 180,
+  "usb_capture_seconds": 12600,
+  "started_at": "2026-11-20T17:17:30.023726+08:00",
+  "preflight_passed": true,
+  "preflight_finished_at": "2026-11-20T17:17:30.208888+08:00",
+  "outcome": "application_touch_position_swipe_longpress_confirmed_springboard_slow",
+  "command_accepted": true,
+  "accepted_at": "2026-11-20T17:17:31.703118+08:00",
+  "boot_totals": {
+    "hakios": 60,
+    "ios16": 29
+  },
+  "report": "reports/hakios-ios16-device-r34-touch-live-ufs.json",
+  "recorded_at": "2026-11-20T17:18:29.084122+08:00",
+  "log_observation": {
+    "started_at": "2026-11-20T17:17:30.397691+08:00",
+    "enumerated": true,
+    "frames": 8624,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "status": "capturing",
+    "output": "F:\\IOS-MIX1\\reports\\local\\20261120-r34-touch-live-ufs-approved\\console.log",
+    "device_commands_sent": false,
+    "candidate_seen": true,
+    "identity_verified": true,
+    "descriptor_errors": 0,
+    "descriptor_error_samples": [],
+    "configuration_verified": true,
+    "console_bytes": 1918510
+  },
+  "desktop_hardware_verified": false,
+  "visible_touch_response_verified": "limited_user_report_severe_delay_not_functional_acceptance",
+  "hardware_id_in_this_boot_verified": true,
+  "previous_ram_report": "reports/hakios-ios16-device-r34-touch-live.json",
+  "observation_scope": "Same UFS boot running; no post-boot device query, reboot, flash or retry.",
+  "local_evidence": "reports/local/20261120-r34-touch-live-ufs-approved",
+  "last_observed_at": "2026-11-20T17:23:53.559161+08:00",
+  "observation": {
+    "snapshot_at": "2026-11-20T17:21:04.627782+08:00",
+    "successful_reports_lower_bound": 7800,
+    "queue_posted_lower_bound": 54,
+    "observed_finger_ids": [
+      0
+    ],
+    "observed_event_types": [
+      1,
+      2,
+      3
+    ],
+    "main_queue_enter_ms": 75370,
+    "read_error_lines": 0,
+    "report_error_lines": 0,
+    "id_read_verified": true,
+    "backboardd_touch_service_observed": true,
+    "visible_response_user_confirmed": false,
+    "usb_prefix_verified": true,
+    "snapshot_frames": 5176,
+    "snapshot_console_bytes": 1177842,
+    "consumer_checked_at": "2026-11-20T17:22:44.350475+08:00",
+    "backboardd_complete_record_read_verified": true,
+    "backboardd_sample_lines": [
+      {
+        "line": 6639,
+        "text": "hakios: input: sample type 1 finger 0 at 41930 47898"
+      },
+      {
+        "line": 9816,
+        "text": "hakios: input: sample type 3 finger 0 at 41930 47898"
+      },
+      {
+        "line": 9884,
+        "text": "hakios: input: sample type 1 finger 0 at 54006 47802"
+      },
+      {
+        "line": 11131,
+        "text": "hakios: input: sample type 2 finger 0 at 51093 47609"
+      }
+    ]
+  },
+  "receiver_current_status": "capturing",
+  "attempt_closed": false,
+  "visible_ui_response_verified": false,
+  "postboot_device_commands": 0,
+  "backboardd_queue_read_verified": true,
+  "main_queue_enter_verified": true,
+  "usb_snapshot_audit": "reports/local/20261120-r34-touch-live-ufs-approved/usb-audit-snapshot.json",
+  "subagent": {
+    "name": "Einstein",
+    "note": "evidence/touch-live-20261120/events/r34-ufs-consumer-note.txt",
+    "main_review": "Actual patched inject.c lines959-963,985,827-832,856 independently read; full-record read logging verified, dispatch return unchecked"
+  },
+  "next": "Keep same boot and USB; user reports icon opening, page swipe, touch/display position agreement. No reboot or additional device command.",
+  "user_feedback": {
+    "recorded_at": "2026-11-20T17:30:42.667287+08:00",
+    "user_report": "Tens-of-seconds response; short press appears as long press; performance currently prevents further UI testing",
+    "some_visible_response_reported": true,
+    "usable_touch_performance_accepted": false,
+    "icons_and_page_swipe_correctness_not_separately_confirmed": true
+  },
+  "latency_evidence": "evidence/touch-live-20261120/latency-main/runtime-facts.json",
+  "usable_ui_performance_verified": false,
+  "latest_user_feedback": {
+    "recorded_at": "2026-11-20T17:57:00.525531+08:00",
+    "user_report": "Now usable for testing in applications; touch position, swipe and long press normal; SpringBoard home and app-switcher severely laggy",
+    "application_touch_usable_reported": true,
+    "coordinate_position_correct_reported": true,
+    "swipe_correct_reported": true,
+    "long_press_correct_reported": true,
+    "springboard_home_switcher_performance_accepted": false,
+    "physical_multitouch_not_reported": true
+  },
+  "touch_coordinates_swipe_longpress_user_confirmed": true,
+  "application_interaction_user_reported_usable": true,
+  "host_capture_latest_audit": {
+    "audit": "reports/local/20261120-r34-touch-live-ufs-approved/usb-audit-host-stopped.json",
+    "host_process_absent": true,
+    "phone_terminal_unqueried": true,
+    "timer_or_final_drain_captured": false
+  }
+}

@@ -1,0 +1,48 @@
+"""Record the exact local upstream revisions without fetching or updating them."""
+
+import datetime as dt
+import json
+from pathlib import Path
+import subprocess
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def git(repo, *args):
+    return subprocess.check_output(["git", "-C", str(repo), *args], text=True).strip()
+
+
+def main():
+    records = []
+    for name in ("hakios-xnu-kernel", "UniXNU"):
+        repo = ROOT / "upstream" / name
+        if git(repo, "status", "--porcelain"):
+            raise SystemExit("Upstream contains local changes: " + name)
+        submodules = []
+        # Keep the leading status character, which git() would otherwise trim.
+        status = subprocess.check_output(
+            ["git", "-C", str(repo), "submodule", "status", "--recursive"], text=True)
+        for line in status.splitlines():
+            if line[0] != " ":
+                raise SystemExit("Submodule is not at its pinned revision: " + line)
+            fields = line[1:].split()
+            submodules.append({"path": fields[1], "commit": fields[0]})
+        records.append({
+            "name": name,
+            "path": repo.relative_to(ROOT).as_posix(),
+            "url": git(repo, "remote", "get-url", "origin"),
+            "commit": git(repo, "rev-parse", "HEAD"),
+            "shallow": git(repo, "rev-parse", "--is-shallow-repository") == "true",
+            "submodules": submodules,
+        })
+    lock = {"schema": 1, "recorded_at": dt.datetime.now().astimezone().isoformat(), "repositories": records}
+    output = ROOT / "upstreams.lock.json"
+    output.write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8")
+    print(output)
+    for record in records:
+        print(record["name"], record["commit"], "submodules=" + str(len(record["submodules"])))
+
+
+if __name__ == "__main__":
+    main()

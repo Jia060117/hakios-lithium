@@ -1,0 +1,172 @@
+{
+  "schema": 1,
+  "attempt": "HakiOS lithium R25",
+  "started_at": "2026-11-16T00:48:15.935800+08:00",
+  "recorded_at": "2026-11-16T00:48:17.447117+08:00",
+  "baseline": {
+    "project": "HakiOS",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2"
+  },
+  "package": {
+    "image_sha256": "3e58cf6cef7c28ea952d273a12bc3e961a6600a06d78c5535dcf1cd8737c6c72",
+    "image_bytes": 15769600,
+    "kernel_sha256": "648320e505088c834eff8c8c0cb17b4ee29ba6d96a4c7da8aba1554fbe063748",
+    "loader_sha256": "a7c0df38092ee09bdf6e23103da9a3cc0a98932d6254ed410718c3692fc4a042",
+    "fd_sha256": "b5db42917889f43481f1524fa90224d057549088447b6f6428480fd172f6c375",
+    "payload_sha256": "945d4570dee44b57ff718e579fcc863f39a965e00de51b4975a91c0e5f40ba2f",
+    "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=2 lithium_storage_test=1 systrace=2 systrace_name=launchd loader_return_after=120 lithium_ios14_test=1 lithium_launchd_test=1",
+    "stock_dtb_table_sha256": "ab929abf55ad4822ae83489a58d6b550b7b24ea8398ce8ead1de7b1d2caed6aa",
+    "test_profile": "p2-ios14-launchd",
+    "ramdisk_sha256": "554158097be333bd3feb2be480dee2ee9efe28b62a8ec7c524541d608e413aca",
+    "dynamic_init_sha256": "fef05ccb825e6ab0e19f2ea29a6d710557d989cf4aa20b33a9cec6dbed78f32b",
+    "loader_identity": {
+      "target": "iPhone10,1 / D20AP",
+      "source_sha256": "1827dfc68e87b822c43e86781872caa6a5d490efc5145a2a60feba0e2bd54b93",
+      "generator_sha256": "ae6cebdcfa22994661211e0bc35fd14770484173f951ceef6a65e9b84ad3ff99",
+      "header_sha256": "71874512c290ec24d799173f2aa10131c6f61573d598c0e281252e373c5b6630",
+      "placeholder": false
+    }
+  },
+  "frozen_artifacts_path": "artifacts/hakios/p2-ios14-launchd-ready",
+  "frozen_boot_image": "reports/local/20261116-004815-910194-hakios-preflight/lithium-hakios-test.img",
+  "local_log_path": "reports/local/20261116-004815-910194-hakios-preflight",
+  "test_contract_path": "reports/local/20261116-004815-910194-hakios-preflight/test-contract.json",
+  "filesystem_input": {
+    "report": "reports/hakios-hfs-journal-repair.json",
+    "frozen_contract_path": "reports/local/20261116-004815-910194-hakios-preflight/filesystem-input.json",
+    "original_volume_plus_verified_journal_delta": true,
+    "prior_maintenance_written_bytes": 8192,
+    "first8192_unchanged": true,
+    "full_volume_after_hash_measured": false
+  },
+  "identity_verified": true,
+  "bootloader_unlocked": true,
+  "userdata_bytes": 250710192128,
+  "temporary_boot_issued": true,
+  "fastboot_returncode": 0,
+  "command_accepted": true,
+  "fastboot_boot_output": "Sending 'boot.img' (15400 KB)                      OKAY [  0.378s]\nBooting                                            OKAY [  0.786s]\nFinished. Total time: 1.170s\n",
+  "latest_usb": {
+    "checked_at": "2026-11-16T00:48:17.447117+08:00",
+    "authorized_device_in_fastboot": false,
+    "adb_present": false,
+    "local_log_path": "reports/local/20261116-004815-910194-hakios-preflight/post-boot-usb.json"
+  },
+  "battery_preflight": {
+    "battery_soc_ok": "yes",
+    "local_log_path": "reports/local/20261116-004815-910194-hakios-preflight/battery-query.json"
+  },
+  "user_screen_observation": {
+    "source": "user_photo",
+    "observation_pending": false,
+    "current_screen": "Retained panic summary; original launchd root/init succeeded, PID1 SIGABRT",
+    "automatic_reboot_observed": false
+  },
+  "verified_stages": {
+    "fastboot_command": true,
+    "uefi": true,
+    "loader": true,
+    "kernel": true,
+    "hello": false,
+    "full_init": true,
+    "hfs_root_switch": true,
+    "original_launchd_pid1": false,
+    "original_selected_jobs": false,
+    "original_launchd_file_identity": true,
+    "upstream_ramfs_data_initialization": true,
+    "original_launchd_exec_path_entered": true,
+    "original_dyld_shared_region_call": true,
+    "ios14_legacy_mach_entry": true
+  },
+  "outcome": "original_launchd_PID1_sigabrt_panic_after_root_and_shared_cache",
+  "exact_failure_stage": "PID1_SIGABRT_after_original_dyld_mapping_underlying_abort_cause_unknown",
+  "runtime_acceptance": {
+    "launchd_test_passed": false,
+    "final_summary_pending": false,
+    "orderly_return_observed": false,
+    "panic_return_observed": true,
+    "final_summary_retained": true,
+    "root_readonly_verified": true,
+    "data_ramfs_initialization_verified": true,
+    "original_launchd_pid1_stable": false,
+    "selected_jobs_verified": false,
+    "P2_overall_passed": false
+  },
+  "hardware_verified": true,
+  "ios14_compatibility_verified": false,
+  "partition_writes_performed": false,
+  "qemu_used": false,
+  "observation_recorded_at": "2026-11-16T00:55:07.681686+08:00",
+  "kernel_execution_verified": true,
+  "screen_evidence": {
+    "photos": [
+      {
+        "path": "reports/local/20261116-004815-910194-hakios-preflight/r25-launchd-sigabrt-panic.jpg",
+        "sha256": "58f0b8738493cb31ea49ec099cf36b54335331f8ffe2bdda78d6a50de3e75393"
+      }
+    ],
+    "transcription_path": "reports/local/20261116-004815-910194-hakios-preflight/r25-screen-transcription.txt",
+    "transcription_sha256": "503ed7f9aea4430b716630e3250d0118efc610e13c9b2fb520cb0815f79a154e",
+    "raw_kernel_log_captured": false,
+    "launchd_job_marker_visible": false,
+    "original_service_snapshots_visible": false,
+    "transcription_scope": "Visible screen text normalized for punctuation/wrapping; omitted logs not inferred"
+  },
+  "measurements": {
+    "loader_return_log_bytes": 93984,
+    "root_switch_rc": 0,
+    "root_readonly": true,
+    "selected_jobs": 3,
+    "launchd_bytes": 403488,
+    "launchd_match": true,
+    "ramfs_var": true,
+    "upstream_mount_checks": 2,
+    "upstream_mount_failures": 0,
+    "handoff_pid": 1,
+    "handoff_before_exec_observed": true,
+    "shared_region_mapping_count": 3,
+    "shared_region_slide": 695192384,
+    "shared_region_rc": 0,
+    "legacy_mach_platform": 2,
+    "legacy_mach_sdk": "0x000e0800",
+    "legacy_mach_message_id": 200,
+    "legacy_mach_allowed": true,
+    "clock_ticks_start": 1456735899,
+    "clock_ticks_end": 2808321172,
+    "frequency_hz": 19200000,
+    "hardware_elapsed_ms": 70395,
+    "clock_valid": true,
+    "ppi27_start": 0,
+    "ppi27_end": 9355,
+    "irq_delta": 9355,
+    "samples": 1,
+    "stalled": 0,
+    "min_step": 7195,
+    "last_timer_ppi27": 7195,
+    "last_timer_heartbeat": 6,
+    "last_timer_elapsed_ms": 50069
+  },
+  "failure": {
+    "signal": 6,
+    "signal_name": "SIGABRT",
+    "panic_caller": "0xfffffff00778c650",
+    "exit_reason_available": false,
+    "underlying_abort_cause_identified": false,
+    "boot_task_failure_possible_not_verified": true,
+    "filesystem_or_UFS_failure_not_established": true,
+    "exitstatus_screen_text": "78",
+    "exitstatus_decimal": 78,
+    "exitstatus_hex": "0x4e",
+    "decoded_against_active_kern_exit": true,
+    "decode_report": "reports/hakios-launchd-stdio-preparation.json",
+    "nonterminal_stdout_contract_suspected": true
+  },
+  "observation_archival": {
+    "frozen_evidence_hashes_checked": 165,
+    "device_queries_performed": false,
+    "temporary_boot_issued": false,
+    "partition_writes_performed": false,
+    "new_kernel_compiled": false
+  }
+}

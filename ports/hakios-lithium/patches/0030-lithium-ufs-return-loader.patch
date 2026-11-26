@@ -1,0 +1,361 @@
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -1817,6 +1817,9 @@
+ static int block_probe_requested;       /* ufs_probe=1: block_io2_probe() at block_start() */
+ static efi_block_io *block_bios[BLOCK_MAX_PARTS];
+ static int block_enabled;
++#if defined(HAKIOS_LITHIUM_UFS_PERF)
++static efi_handle block_write_handle, block_write_parent;
++#endif
+ static int block_write_requested;       /* ufs_write=1 on the command line */
+ static int block_write_part = -1;       /* the only partition a write may reach; -1: none, writes refused */
+ static uint64_t block_writes, block_writes_refused, block_write_bytes;
+@@ -2120,6 +2123,9 @@
+ 	static const efi_guid dp_guid = EFI_DEVICE_PATH_GUID;
+ 	static struct {
+ 		efi_block_io *bio;
++#if defined(HAKIOS_LITHIUM_UFS_PERF)
++		efi_handle handle;
++#endif
+ 		const efi_device_path *path;
+ 		uint64_t path_bytes;
+ 		uint8_t lun;
+@@ -2140,6 +2146,9 @@
+ 				continue;
+ 			}
+ 			units[nunits].bio = bio;
++#if defined(HAKIOS_LITHIUM_UFS_PERF)
++			units[nunits].handle = handles[i];
++#endif
+ 			units[nunits].path = dp;
+ 			units[nunits].path_bytes = device_path_bytes(dp);
+ 			units[nunits].lun = device_path_print(nunits, dp);
+@@ -2183,6 +2192,11 @@
+ 		}
+ 		if (block_write_requested && block_is_darwin(info, bio, bp)) {
+ 			block_write_part = (int)block_shared.parts;
++#if defined(HAKIOS_LITHIUM_UFS_PERF)
++			block_write_handle = handles[i];
++			/* block_is_darwin() already required unit 0. */
++			block_write_parent = units[bp->unit].handle;
++#endif
+ 		}
+ 		block_bios[block_shared.parts++] = bio;
+ 		if (block_probe_requested && bp->name[0] == 'd' && bp->name[1] == 'a' && bp->name[2] == 'r' &&
+@@ -3055,6 +3069,24 @@
+ static int starts_with(const char *s, const char *prefix);
+ 
+ #if defined(HAKIOS_LITHIUM)
++#if defined(HAKIOS_LITHIUM_UFS_PERF)
++#include "ufs-return-proof.inc"
++#include "warm-ufs-owner-loader.inc"
++
++/* The explicit UFS return seed binds its cookie after block_start(). */
++static inline int
++r39_bind_current_warm_owner(uint64_t cookie, struct r39_warm_ufs_owner *owner)
++{
++	*owner = (struct r39_warm_ufs_owner){0};
++	if (!block_enabled || !block_write_requested || block_rawbench || hc_requested ||
++	    block_write_part < 0 || block_write_part >= BLOCK_MAX_PARTS ||
++	    (uint32_t)block_write_part >= block_shared.parts) {
++		return 0;
++	}
++	return r39_warm_owner_bind(BS, cookie, block_write_handle, block_write_parent,
++	    block_bios[block_write_part], owner);
++}
++#endif
+ #include "../devices/lithium/return-fastboot/loader.inc"
+ #endif
+ 
+@@ -3241,6 +3273,9 @@
+ 	 * loader asked for (the loader stays resident across runs) */
+ 	block_write_requested = 0;
+ 	block_write_part = -1;
++#if defined(HAKIOS_LITHIUM_UFS_PERF)
++	block_write_handle = block_write_parent = NULL;
++#endif
+ 	/*
+ 	 * the same for the other storage requests (they are only ever OR-ed in below): without this a run
+ 	 * that did not ask for ufs=2 is still offered a stale page and given its ufs_shared_pa
+@@ -3798,6 +3833,14 @@
+ 
+ 			screen_quiet = screen_quiet_before_run;
+ 			wdt_set_ms(WDT_BITE_MS);
++#if defined(HAKIOS_LITHIUM_UFS_PERF)
++			if (status != 0 && lithium_fastboot_return_ufs) {
++				print("LITHIUM FASTBOOT status=retained mode=ufs reason=kernel_start_or_hang status=%x\n",
++				    (uint64_t)status);
++				lithium_fastboot_ufs_retain((const char *)loader_ctx[CTX_LOG_PA],
++				    loader_ctx[CTX_LOG_LEN]);
++			}
++#endif
+ 			if (status != 0) {
+ 				/* a kernel that hung may have left its own transfer list in the controller */
+ 				hc_take_back(status == OTHER_CPU_HUNG ? "the kernel hung" : "the kernel did not start");
+@@ -3834,6 +3877,16 @@
+ 	/* --- the kernel came back ------------------------------------------- */
+ 	screen_quiet = screen_quiet_before_run;
+ 	wdt_set_ms(WDT_BITE_MS);
++#if defined(HAKIOS_LITHIUM_UFS_PERF)
++	if (lithium_fastboot_return_ufs) {
++		const char *ufs_klog = (const char *)loader_ctx[CTX_LOG_PA];
++		uint64_t ufs_klog_len = loader_ctx[CTX_LOG_LEN];
++		/* Deliberately before ALL hc_take_back/write_logs and storage work. */
++		compose_logs(ufs_klog, ufs_klog_len);
++		lithium_fastboot_after_return(loader_ctx[CTX_REASON], loader_ctx[CTX_ESR]);
++		lithium_fastboot_ufs_retain(ufs_klog, ufs_klog_len);
++	}
++#endif
+ 	hc_take_back("the kernel came back");   /* before anything here touches the storage */
+ 	if (hc_known) {
+ 		flush_dcache((uint64_t)(uintptr_t)&block_shared.kernel_native,
+--- /dev/null
++++ b/xnuloader/warm-ufs-owner-protocol.h
+@@ -0,0 +1,30 @@
++#ifndef R39_WARM_UFS_OWNER_PROTOCOL_H
++#define R39_WARM_UFS_OWNER_PROTOCOL_H
++
++/* Native AArch64 UEFI ABI shared by the loader and LithiumUfsDxe. */
++#define R39_WARM_OWNER_GUID \
++	{ 0x128bd2f8, 0x363b, 0x46d4, { 0xae, 0x02, 0x27, 0xfb, 0xcb, 0x2f, 0x1f, 0xc1 } }
++#define R39_WARM_OWNER_REVISION 1u
++
++#if defined(R39_WARM_OWNER_MU)
++typedef EFI_STATUS r39_warm_owner_status;
++#else
++typedef efi_status r39_warm_owner_status;
++#endif
++
++struct r39_warm_owner_snapshot {
++	uint64_t hc_pa;
++	uint64_t utrl_pa;
++	const void *block_io;
++};
++
++struct r39_warm_owner_protocol {
++	uint32_t revision;
++	uint32_t size;
++	r39_warm_owner_status (EFIAPI *snapshot)(const struct r39_warm_owner_protocol *self,
++	    struct r39_warm_owner_snapshot *result);
++};
++
++_Static_assert(sizeof(struct r39_warm_owner_snapshot) == 24, "warm owner receipt ABI");
++_Static_assert(sizeof(struct r39_warm_owner_protocol) == 16, "warm owner protocol ABI");
++#endif
+--- /dev/null
++++ b/xnuloader/warm-ufs-owner-loader.inc
+@@ -0,0 +1,87 @@
++/* Include after ufs-return-proof.inc. Seed before launching XNU. */
++#include "warm-ufs-owner-protocol.h"
++
++#define R39_OPEN_BY_CHILD_CONTROLLER 0x08u
++#define R39_OPEN_BY_DRIVER 0x10u
++
++struct r39_open_protocol_entry {
++	efi_handle agent_handle, controller_handle;
++	uint32_t attributes, open_count;
++};
++
++typedef efi_status (EFIAPI *r39_open_protocol_info)(efi_handle, const efi_guid *,
++    struct r39_open_protocol_entry **, uint64_t *);
++
++_Static_assert(sizeof(struct r39_open_protocol_entry) == 24, "UEFI open protocol entry ABI");
++
++/* PartitionDxe opens DiskIo on the parent, first BY_DRIVER and then
++ * BY_CHILD_CONTROLLER with the same agent and the new partition handle. */
++static int
++r39_warm_diskio_has_child(efi_boot_services *bs, efi_handle parent, efi_handle child)
++{
++	static const efi_guid disk_io_guid =
++	    { 0xce345171, 0xba0b, 0x11d2, { 0x8e, 0x4f, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b } };
++	struct r39_open_protocol_entry *entries = NULL;
++	uint64_t count = 0;
++	r39_open_protocol_info information = (r39_open_protocol_info)bs->open_protocol_information;
++	if (information(parent, &disk_io_guid, &entries, &count) != 0 || !entries) {
++		return 0;
++	}
++	efi_handle agent = NULL;
++	int child_entries = 0, driver_found = 0;
++	for (uint64_t i = 0; i < count; i++) {
++		if (entries[i].attributes == R39_OPEN_BY_CHILD_CONTROLLER && entries[i].controller_handle == child &&
++		    entries[i].agent_handle && entries[i].open_count) {
++			if (child_entries) {
++				child_entries = 2;
++				break;
++			}
++			agent = entries[i].agent_handle;
++			child_entries = 1;
++		}
++	}
++	for (uint64_t i = 0; child_entries == 1 && i < count; i++) {
++		if (entries[i].attributes == R39_OPEN_BY_DRIVER && entries[i].controller_handle == parent &&
++		    entries[i].agent_handle == agent && entries[i].open_count) {
++			driver_found = 1;
++			break;
++		}
++	}
++	return bs->free_pool(entries) == 0 && driver_found;
++}
++
++/* Child and parent are the handles retained by block_start() for the
++ * guarded userdata entry. A failed bind always clears the output. */
++static inline int
++r39_warm_owner_bind(efi_boot_services *bs, uint64_t boot_cookie, efi_handle child, efi_handle parent,
++    const efi_block_io *selected, struct r39_warm_ufs_owner *owner)
++{
++	static const efi_guid block_guid = EFI_BLOCK_IO_GUID;
++	static const efi_guid owner_guid = R39_WARM_OWNER_GUID;
++	struct r39_warm_owner_snapshot snapshot = {0};
++	void *parent_block = NULL, *child_block = NULL, *iface = NULL;
++	if (!owner) return 0;
++	*owner = (struct r39_warm_ufs_owner){0};
++	if (!bs || !bs->handle_protocol || !bs->open_protocol_information || !bs->free_pool || !boot_cookie ||
++	    !child || !parent || child == parent || !selected || !selected->media || !selected->media->present ||
++	    !selected->media->logical || selected->media->read_only || !selected->flush_blocks ||
++	    bs->handle_protocol(child, &block_guid, &child_block) != 0 || child_block != selected ||
++	    bs->handle_protocol(parent, &block_guid, &parent_block) != 0 || !parent_block || parent_block == selected ||
++	    bs->handle_protocol(parent, &owner_guid, &iface) != 0 || !iface) {
++		return 0;
++	}
++	const struct r39_warm_owner_protocol *protocol = iface;
++	const efi_block_io *root = parent_block;
++	if (protocol->revision != R39_WARM_OWNER_REVISION || protocol->size != sizeof(*protocol) || !protocol->snapshot ||
++	    !root->media || !root->media->present || root->media->logical || root->media->read_only || !root->flush_blocks ||
++	    !r39_warm_diskio_has_child(bs, parent, child) || protocol->snapshot(protocol, &snapshot) != 0 ||
++	    snapshot.block_io != root || snapshot.hc_pa != R39_WARM_UFS_BASE || !snapshot.utrl_pa ||
++	    (snapshot.utrl_pa & 4095u)) {
++		return 0;
++	}
++	*owner = (struct r39_warm_ufs_owner){
++	    .boot_cookie = boot_cookie, .hc_pa = snapshot.hc_pa, .utrl_pa = snapshot.utrl_pa,
++	    .part_bio = selected, .media_id = selected->media->media_id,
++	};
++	return 1;
++}
+--- /dev/null
++++ b/xnuloader/ufs-return-proof.inc
+@@ -0,0 +1,124 @@
++/* Host proposal for r39-perf-ufs-support01/xnuloader/loader.c.
++ * Include after the mailbox and hc_requested declarations. */
++
++/* Loader-private copy of the validated warm DXE ownership handshake.
++ * Publish it only after binding the writable mBlock lineage to part_bio.
++ * utrl_pa must come from DXE's (UINT64)(UINTN)utrl. See README.md. */
++struct r39_warm_ufs_owner {
++	uint64_t boot_cookie;
++	uint64_t hc_pa;
++	uint64_t utrl_pa;
++	const efi_block_io *part_bio;
++	uint32_t media_id;
++};
++
++/* Staged WarmUfs.inc and LithiumUfsEntry. 0x78 is the task doorbell. */
++#define R39_WARM_UFS_BASE 0x00624000ULL
++#define R39_WARM_REG_CAP 0x00u
++#define R39_WARM_REG_HCS 0x30u
++#define R39_WARM_REG_HCE 0x34u
++#define R39_WARM_REG_UTRLBA 0x50u
++#define R39_WARM_REG_UTRLBAU 0x54u
++#define R39_WARM_REG_UTRLDBR 0x58u
++#define R39_WARM_REG_UTRLRSR 0x60u
++#define R39_WARM_REG_UTMRLDBR 0x78u
++#define R39_WARM_CAP_64BIT (1u << 24)
++#define R39_WARM_HCS_READY ((1u << 0) | (1u << 1)) /* HCS_DP | HCS_UTRLRDY */
++
++enum r39_ufs_proof_result {
++	R39_UFS_PROOF_OK,
++	R39_UFS_PROOF_PROFILE,
++	R39_UFS_PROOF_OWNER,
++	R39_UFS_PROOF_MAILBOX,
++	R39_UFS_PROOF_BUSY,
++	R39_UFS_PROOF_NOT_READY,
++	R39_UFS_PROOF_LIST,
++};
++
++typedef uint32_t (*r39_warm_ufs_read32)(uint64_t pa);
++
++#if defined(__aarch64__)
++/* Use with the warm Device mapping in the staged Mu memory map. */
++static inline uint32_t
++r39_warm_ufs_mmio_read32(uint64_t pa)
++{
++	__asm__ volatile ("dsb sy" ::: "memory");
++	return *(const volatile uint32_t *)(uintptr_t)pa;
++}
++#endif
++
++/* Call on the resident loader core after the versioned, boot-bound HFS/seal
++ * proof and the strict SMP stop check. No further mailbox polls, storage
++ * callbacks or recovery may run on this path. A missing handshake is NULL. */
++static enum r39_ufs_proof_result
++r39_ufs_return_validate(uint64_t boot_cookie, uint32_t flush_request,
++    const struct r39_warm_ufs_owner *owner, r39_warm_ufs_read32 read32)
++{
++	const volatile struct loader_block *mb = &block_shared;
++
++	if (!block_enabled || !block_write_requested || block_rawbench || hc_requested ||
++	    block_write_part < 0 || mb->parts > BLOCK_MAX_PARTS ||
++	    (uint32_t)block_write_part >= mb->parts) {
++		return R39_UFS_PROOF_PROFILE;
++	}
++	uint32_t part = (uint32_t)block_write_part;
++	const efi_block_io *bio = block_bios[part];
++	if (!boot_cookie || !owner || !read32 || owner->boot_cookie != boot_cookie ||
++	    owner->hc_pa != R39_WARM_UFS_BASE || !owner->utrl_pa ||
++	    (owner->utrl_pa & 4095u) || !bio || owner->part_bio != bio ||
++	    !bio->media || !bio->media->present || !bio->media->logical || bio->media->read_only ||
++	    bio->media->media_id != owner->media_id || !bio->flush_blocks) {
++		return R39_UFS_PROOF_OWNER;
++	}
++
++	/* block_poll() cleans the loader-owned answer before returning. Refresh
++	 * the request and native marker written by XNU, as in the built loader. */
++	uint64_t ask = (uint64_t)(uintptr_t)&block_shared.ask;
++	uint64_t native = (uint64_t)(uintptr_t)&block_shared.kernel_native;
++	flush_dcache(ask, ask + sizeof(block_shared.ask));
++	flush_dcache(native, native + sizeof(block_shared.kernel_native));
++	__atomic_signal_fence(__ATOMIC_SEQ_CST);
++	if (mb->native.hc_pa || mb->loader_native.take_back || mb->kernel_native.list_in ||
++	    mb->kernel_native.switched_in || mb->kernel_native.switched_out) {
++		return R39_UFS_PROOF_PROFILE;
++	}
++	if (mb->magic != BLOCK_MAGIC || mb->version != BLOCK_VERSION ||
++	    mb->size != sizeof(block_shared) || mb->write_part_plus_one != part + 1 ||
++	    mb->write_caps != BLOCK_CAN_FAST || mb->write_first != BLOCK_WRITE_FIRST ||
++	    !flush_request || mb->ask.request != flush_request || mb->answer.answered != flush_request ||
++	    mb->ask.op != BLOCK_OP_FLUSH || mb->ask.part != part || mb->ask.lba != BLOCK_WRITE_FIRST ||
++	    mb->ask.count != 1 || mb->ask.lba >= mb->part[part].blocks ||
++	    mb->ask.lba >= BLOCK_LITHIUM_END || mb->answer.status != 0) {
++		return R39_UFS_PROOF_MAILBOX;
++	}
++
++	/* Read the warm controller independently of the saved firmware owner. */
++	uint64_t base = owner->hc_pa;
++	uint32_t transfer = read32(base + R39_WARM_REG_UTRLDBR);
++	uint32_t task = read32(base + R39_WARM_REG_UTMRLDBR);
++	if (transfer || task) {
++		return R39_UFS_PROOF_BUSY;
++	}
++	uint32_t cap = read32(base + R39_WARM_REG_CAP);
++	uint32_t hce = read32(base + R39_WARM_REG_HCE);
++	uint32_t hcs = read32(base + R39_WARM_REG_HCS);
++	uint32_t lo = read32(base + R39_WARM_REG_UTRLBA);
++	uint32_t hi = read32(base + R39_WARM_REG_UTRLBAU);
++	uint32_t run = read32(base + R39_WARM_REG_UTRLRSR);
++	transfer = read32(base + R39_WARM_REG_UTRLDBR);
++	task = read32(base + R39_WARM_REG_UTMRLDBR);
++	if (transfer || task) {
++		return R39_UFS_PROOF_BUSY;
++	}
++	if (!(cap & R39_WARM_CAP_64BIT) || !(hce & 1u) ||
++	    (hcs & R39_WARM_HCS_READY) != R39_WARM_HCS_READY) {
++		return R39_UFS_PROOF_NOT_READY;
++	}
++	if (!(run & 1u) || (((uint64_t)hi << 32) | lo) != owner->utrl_pa) {
++		return R39_UFS_PROOF_LIST;
++	}
++	if (mb->ask.request != flush_request || mb->answer.answered != flush_request) {
++		return R39_UFS_PROOF_MAILBOX;
++	}
++	return R39_UFS_PROOF_OK;
++}

@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "efi_sha256": "9af607ab2aebeb3bd60f4fbcf87c7ce0b49bdf7eba5c99f19db941647e358386",
+  "build_sources": {
+    "boot/darwinboot-ios14/BootArgs.h": "e1548ae7f44f0556dbdeacf03a0f36380b3b7bcf1c7a4519241d761593f8829e",
+    "boot/darwinboot-ios14/command-line.patch": "53177558e064df7857dfe56c13b530933435066119b1a993e22b6fa48a3b40f6",
+    "boot/darwinboot-ios14/verify-abi.c": "d2adc0a0b2141df9cdf926d1375ed2e4735a3a19084eefc0ae2e770fc7e0f767",
+    "scripts/build-ios14-darwinboot.py": "9e294b39170a8ced1e97346ab9011db014255036093164cc416117e52fc931c2"
+  },
+  "validator_source_sha256": "4b91bf11170b2a0e8e64183629891ead10bc7a1b412f08d39febae2061e8898d",
+  "command_line_cases": [
+    {
+      "name": "null",
+      "passed": true,
+      "accepted": true,
+      "guard_and_adjacent_fields_unchanged": true
+    },
+    {
+      "name": "empty",
+      "passed": true,
+      "accepted": true,
+      "guard_and_adjacent_fields_unchanged": true
+    },
+    {
+      "name": "normal",
+      "passed": true,
+      "accepted": true,
+      "guard_and_adjacent_fields_unchanged": true
+    },
+    {
+      "name": "maximum-607",
+      "passed": true,
+      "accepted": true,
+      "guard_and_adjacent_fields_unchanged": true
+    },
+    {
+      "name": "too-long-608",
+      "passed": true,
+      "accepted": false,
+      "guard_and_adjacent_fields_unchanged": true
+    },
+    {
+      "name": "non-ascii",
+      "passed": true,
+      "accepted": false,
+      "guard_and_adjacent_fields_unchanged": true
+    },
+    {
+      "name": "utf16-surrogate",
+      "passed": true,
+      "accepted": false,
+      "guard_and_adjacent_fields_unchanged": true
+    }
+  ],
+  "command_line_fragment_sha256": "bcf692ca3cf8cb4247bd088cbf1e9bdb8078843371ebff6e621f827bb0639c97",
+  "adjacent_boot_flags_memory_and_guard_unchanged": true,
+  "command_line_capacity": 608,
+  "host_compile_command": [
+    "clang",
+    "-shared",
+    "-fPIC",
+    "-fshort-wchar",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-I",
+    "/home/jia/ios-mix1-build/darwinboot-ios14-workspace/DarwinBootPkg/Driver",
+    "-I",
+    "/home/jia/ios-mix1-build/Mu-Silicium/Mu_Basecore/MdePkg/Include",
+    "-I",
+    "/home/jia/ios-mix1-build/Mu-Silicium/Mu_Basecore/MdePkg/Include/X64",
+    "/mnt/f/IOS-MIX1/out/darwinboot-ios14/command-line-host-check.c",
+    "-o",
+    "/mnt/f/IOS-MIX1/out/darwinboot-ios14/command-line-host-check.so"
+  ],
+  "parser_test_source_sha256": "b3b87de8908dbb30f55fb7732826a2449f568faf32b9ae0d59ab7f8121d86757",
+  "real_ios14_kernel_sha256": "f2fe5f5e0684989ae2c3d37dbf641c207fa67d09273bba45e10f8376fc9d4fba",
+  "real_ios14_kernel_parser_accepted": true,
+  "host_parser_test_log": "out/darwinboot-ios14/kernel-parser-test.log",
+  "all_passed": true,
+  "hardware_boot_performed": false,
+  "uefi_execution_performed": false,
+  "limitations": [
+    "Only command-line validation/copy and Mach-O parsing are executed on the host.",
+    "No XNU relocation, prelink, Apple CPU replacement, device tree or user-space compatibility is proven.",
+    "The 7195 source reference is adjacent to the 14.8 kernel version, not identical."
+  ]
+}

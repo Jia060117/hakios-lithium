@@ -1,0 +1,78 @@
+{
+  "production_probe_sha256": "7d851b5bb026127232c194513233a405ea1c91dafe43fd0ef7f3fa252278a6c9",
+  "cases": [
+    {
+      "case": "el1",
+      "entry_el": 1,
+      "passed": true,
+      "preserved": "x0-x3, x19-x30, SP, DAIF, VBAR",
+      "bounded_record_write": true
+    },
+    {
+      "case": "el2",
+      "entry_el": 2,
+      "passed": true,
+      "preserved": "x0-x3, x19-x30, SP, DAIF, VBAR",
+      "bounded_record_write": true
+    },
+    {
+      "case": "el1-recover-trap",
+      "entry_el": 1,
+      "passed": true,
+      "preserved": "x0-x3, x19-x30, SP, DAIF, VBAR",
+      "bounded_record_write": true
+    },
+    {
+      "case": "el2-recover-trap",
+      "entry_el": 2,
+      "passed": true,
+      "preserved": "x0-x3, x19-x30, SP, DAIF, VBAR",
+      "bounded_record_write": true
+    },
+    {
+      "case": "missing-marker",
+      "entry_el": 1,
+      "passed": true,
+      "preserved": "x0-x3, x19-x30, SP, DAIF, VBAR",
+      "bounded_record_write": true
+    },
+    {
+      "case": "bad-magic",
+      "entry_el": 1,
+      "passed": true,
+      "preserved": "x0-x3, x19-x30, SP, DAIF, VBAR",
+      "bounded_record_write": true
+    },
+    {
+      "case": "truncated-total",
+      "entry_el": 1,
+      "passed": true,
+      "preserved": "x0-x3, x19-x30, SP, DAIF, VBAR",
+      "bounded_record_write": true
+    },
+    {
+      "case": "oversized-total",
+      "entry_el": 1,
+      "passed": true,
+      "preserved": "x0-x3, x19-x30, SP, DAIF, VBAR",
+      "bounded_record_write": true
+    },
+    {
+      "case": "unaligned-fdt",
+      "entry_el": 1,
+      "passed": true,
+      "preserved": "x0-x3, x19-x30, SP, DAIF, VBAR",
+      "bounded_record_write": true
+    },
+    {
+      "case": "bad-version",
+      "entry_el": 1,
+      "passed": true,
+      "preserved": "x0-x3, x19-x30, SP, DAIF, VBAR",
+      "bounded_record_write": true
+    }
+  ],
+  "all_passed": true,
+  "validated_cases": 10,
+  "limitation": "QEMU models ARMv8 CPU behavior, not the MIX bootloader or Qualcomm hardware."
+}

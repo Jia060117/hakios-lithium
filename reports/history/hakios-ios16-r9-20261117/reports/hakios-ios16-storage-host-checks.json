@@ -1,0 +1,83 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "valid",
+      "accepted": true,
+      "passed": true
+    },
+    {
+      "case": "wrong type",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "wrong start",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "wrong size",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "wrong name",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "header CRC",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "table CRC",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "entry overflow",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "table LBA outside disk",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "short header",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "backup LBA mismatch",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "zero unique GUID",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "overlap",
+      "accepted": false,
+      "passed": true
+    }
+  ],
+  "actual_board_gpt_guard_exercised": true,
+  "actual_scsi_exercised": true,
+  "asan_ubsan_passed": true,
+  "source_sha256": {
+    "scripts/test-hakios-ios16-storage.py": "2cf419ed0cfe11433ecf7ccbc0b72abd41937a8ceffcecef4f10d689ce717210",
+    "ports/hakios-lithium/firmware/lithiumPkg/Drivers/LithiumUfsDxe/LithiumUfsDxe.c": "114b66926adb28b8ffbcea0cc5d78fc64d9c5ef4283eddff7d86161c60de08e1",
+    "ports/hakios-lithium/firmware/lithiumPkg/Drivers/LithiumUfsDxe/WarmUfs.inc": "40cc28fb6eebec3afbbf604a5f5c6060620caeaf4bae682c8ebae1190d56a2f9",
+    "ports/hakios-lithium/firmware/lithiumPkg/Include/LithiumStorage.h": "4e78cb970dbe8d51238e865ba85d9afe4633d5ee23cf654b8e2bedc6ecb9638e"
+  },
+  "source_gpt_sha256": "7c150d07b6de3d8f0b08ef6ce90c570ec0dba80bc4803e197d83d61194d75311",
+  "fixture_geometry_is_synthetic": true,
+  "hardware_verified": false,
+  "scope": "Actual C command/GPT/range code; DMA/cache/MMIO are mocked; no UFS hardware or durability claim"
+}

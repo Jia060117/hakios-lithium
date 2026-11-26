@@ -1,0 +1,633 @@
+{
+  "recorded_at": "2026-11-12T07:17:20.118781+00:00",
+  "reference_map": "upstream/research/uefi-g0245d/Platforms/Gree/g0245dPkg/Library/MemoryMapLib/MemoryMapLib.c",
+  "reference_map_sha256": "d68f649cfebd2d8b5917a15f00b0a40558d9d9cf75c9b8c7a6be21002b662885",
+  "reference_regions": [
+    {
+      "name": "Kernel",
+      "start": "0x80000000",
+      "end_exclusive": "0x83400000",
+      "bytes": 54525952,
+      "memory_type": "Reserv",
+      "resource_type": "SYS_MEM",
+      "line": 37
+    },
+    {
+      "name": "Display Reserved Pre",
+      "start": "0x83400000",
+      "end_exclusive": "0x83401000",
+      "bytes": 4096,
+      "memory_type": "Reserv",
+      "resource_type": "MEM_RES",
+      "line": 48
+    },
+    {
+      "name": "Display Reserved",
+      "start": "0x83401000",
+      "end_exclusive": "0x85800000",
+      "bytes": 37744640,
+      "memory_type": "Reserv",
+      "resource_type": "MEM_RES",
+      "line": 49
+    },
+    {
+      "name": "SMEM",
+      "start": "0x86000000",
+      "end_exclusive": "0x86200000",
+      "bytes": 2097152,
+      "memory_type": "Reserv",
+      "resource_type": "MEM_RES",
+      "line": 50
+    },
+    {
+      "name": "FV Region",
+      "start": "0x8a000000",
+      "end_exclusive": "0x8c000000",
+      "bytes": 33554432,
+      "memory_type": "BsData",
+      "resource_type": "SYS_MEM",
+      "line": 51
+    },
+    {
+      "name": "ABOOT FV",
+      "start": "0x8c000000",
+      "end_exclusive": "0x8c200000",
+      "bytes": 2097152,
+      "memory_type": "Reserv",
+      "resource_type": "SYS_MEM",
+      "line": 52
+    },
+    {
+      "name": "UEFI FD",
+      "start": "0x92000000",
+      "end_exclusive": "0x92300000",
+      "bytes": 3145728,
+      "memory_type": "BsData",
+      "resource_type": "SYS_MEM",
+      "line": 55
+    },
+    {
+      "name": "Advanced Logger",
+      "start": "0x92300000",
+      "end_exclusive": "0x92400000",
+      "bytes": 1048576,
+      "memory_type": "Reserv",
+      "resource_type": "SYS_MEM",
+      "line": 64
+    },
+    {
+      "name": "DXE Heap",
+      "start": "0x95000000",
+      "end_exclusive": "0x9b000000",
+      "bytes": 100663296,
+      "memory_type": "Conv",
+      "resource_type": "SYS_MEM",
+      "line": 73
+    },
+    {
+      "name": "SEC Heap",
+      "start": "0x9f000000",
+      "end_exclusive": "0x9f08c000",
+      "bytes": 573440,
+      "memory_type": "BsData",
+      "resource_type": "SYS_MEM",
+      "line": 74
+    },
+    {
+      "name": "MMU PageTables",
+      "start": "0x9f08d000",
+      "end_exclusive": "0x9f090000",
+      "bytes": 12288,
+      "memory_type": "BsData",
+      "resource_type": "SYS_MEM",
+      "line": 75
+    },
+    {
+      "name": "UEFI Stack",
+      "start": "0x9f090000",
+      "end_exclusive": "0x9f0d0000",
+      "bytes": 262144,
+      "memory_type": "BsData",
+      "resource_type": "SYS_MEM",
+      "line": 76
+    },
+    {
+      "name": "Log Buffer",
+      "start": "0x9f0f7000",
+      "end_exclusive": "0x9f0ff000",
+      "bytes": 32768,
+      "memory_type": "RtData",
+      "resource_type": "SYS_MEM",
+      "line": 77
+    },
+    {
+      "name": "Info Blk",
+      "start": "0x9f0ff000",
+      "end_exclusive": "0x9f100000",
+      "bytes": 4096,
+      "memory_type": "RtData",
+      "resource_type": "SYS_MEM",
+      "line": 78
+    },
+    {
+      "name": "APSS_GIC500_GICD",
+      "start": "0x9bc0000",
+      "end_exclusive": "0x9bd0000",
+      "bytes": 65536,
+      "memory_type": "MmIO",
+      "resource_type": "MMAP_IO",
+      "line": 83
+    },
+    {
+      "name": "APSS_GIC500_GICR",
+      "start": "0x9c00000",
+      "end_exclusive": "0x9d00000",
+      "bytes": 1048576,
+      "memory_type": "MmIO",
+      "resource_type": "MMAP_IO",
+      "line": 84
+    },
+    {
+      "name": "BLSP2_UART2",
+      "start": "0x75b0000",
+      "end_exclusive": "0x75b1000",
+      "bytes": 4096,
+      "memory_type": "MmIO",
+      "resource_type": "MMAP_IO",
+      "line": 87
+    },
+    {
+      "name": "APSS_WDT_TMR1",
+      "start": "0x9830000",
+      "end_exclusive": "0x9831000",
+      "bytes": 4096,
+      "memory_type": "MmIO",
+      "resource_type": "MMAP_IO",
+      "line": 93
+    },
+    {
+      "name": "APSS_GCC",
+      "start": "0x300000",
+      "end_exclusive": "0x390000",
+      "bytes": 589824,
+      "memory_type": "MmIO",
+      "resource_type": "MMAP_IO",
+      "line": 101
+    },
+    {
+      "name": "UFS_HC_PHY",
+      "start": "0x624000",
+      "end_exclusive": "0x628000",
+      "bytes": 16384,
+      "memory_type": "MmIO",
+      "resource_type": "MMAP_IO",
+      "line": 106
+    },
+    {
+      "name": "APSS_MMSS_CC",
+      "start": "0x8c0000",
+      "end_exclusive": "0x8d0000",
+      "bytes": 65536,
+      "memory_type": "MmIO",
+      "resource_type": "MMAP_IO",
+      "line": 110
+    },
+    {
+      "name": "MDSS_MDP_DSI",
+      "start": "0x900000",
+      "end_exclusive": "0xa00000",
+      "bytes": 1048576,
+      "memory_type": "MmIO",
+      "resource_type": "MMAP_IO",
+      "line": 114
+    },
+    {
+      "name": "APSS_TLMM",
+      "start": "0x1010000",
+      "end_exclusive": "0x1310000",
+      "bytes": 3145728,
+      "memory_type": "MmIO",
+      "resource_type": "MMAP_IO",
+      "line": 117
+    },
+    {
+      "name": "APSS_SPMI_CORE",
+      "start": "0x400f000",
+      "end_exclusive": "0x4012000",
+      "bytes": 12288,
+      "memory_type": "MmIO",
+      "resource_type": "MMAP_IO",
+      "line": 120
+    },
+    {
+      "name": "APSS_SPMI_CNFG",
+      "start": "0x400a000",
+      "end_exclusive": "0x400d000",
+      "bytes": 12288,
+      "memory_type": "MmIO",
+      "resource_type": "MMAP_IO",
+      "line": 128
+    },
+    {
+      "name": "APSS_SPMI_CHNLS",
+      "start": "0x4400000",
+      "end_exclusive": "0x4c00000",
+      "bytes": 8388608,
+      "memory_type": "MmIO",
+      "resource_type": "MMAP_IO",
+      "line": 143
+    },
+    {
+      "name": "APSS_SPMI_OBSRVR",
+      "start": "0x4c00000",
+      "end_exclusive": "0x5400000",
+      "bytes": 8388608,
+      "memory_type": "MmIO",
+      "resource_type": "MMAP_IO",
+      "line": 144
+    }
+  ],
+  "fixed_dt_overlaps": [
+    {
+      "reference_region": "Display Reserved Pre",
+      "reference_line": 48,
+      "mix_region": "/reserved-memory/dfps_data_mem@83400000",
+      "start": "0x83400000",
+      "end_exclusive": "0x83401000",
+      "mix_no_map": false,
+      "assessment": "preserved_mapping_requires_semantic_review"
+    },
+    {
+      "reference_region": "Display Reserved",
+      "reference_line": 49,
+      "mix_region": "/reserved-memory/cont_splash_mem@83401000",
+      "start": "0x83401000",
+      "end_exclusive": "0x85800000",
+      "mix_no_map": false,
+      "assessment": "preserved_mapping_requires_semantic_review"
+    },
+    {
+      "reference_region": "SMEM",
+      "reference_line": 50,
+      "mix_region": "/reserved-memory/removed_regions@85800000",
+      "start": "0x86000000",
+      "end_exclusive": "0x86200000",
+      "mix_no_map": true,
+      "assessment": "preserved_mapping_requires_semantic_review"
+    },
+    {
+      "reference_region": "FV Region",
+      "reference_line": 51,
+      "mix_region": "/reserved-memory/modem_region@89c00000",
+      "start": "0x8a000000",
+      "end_exclusive": "0x8c000000",
+      "mix_no_map": true,
+      "assessment": "allocation_or_firmware_conflict"
+    },
+    {
+      "reference_region": "ABOOT FV",
+      "reference_line": 52,
+      "mix_region": "/reserved-memory/modem_region@89c00000",
+      "start": "0x8c000000",
+      "end_exclusive": "0x8c200000",
+      "mix_no_map": true,
+      "assessment": "preserved_mapping_requires_semantic_review"
+    },
+    {
+      "reference_region": "UEFI FD",
+      "reference_line": 55,
+      "mix_region": "/reserved-memory/peripheral_region@8fe00000",
+      "start": "0x92000000",
+      "end_exclusive": "0x92300000",
+      "mix_no_map": true,
+      "assessment": "allocation_or_firmware_conflict"
+    },
+    {
+      "reference_region": "Advanced Logger",
+      "reference_line": 64,
+      "mix_region": "/reserved-memory/peripheral_region@8fe00000",
+      "start": "0x92300000",
+      "end_exclusive": "0x92400000",
+      "mix_no_map": true,
+      "assessment": "allocation_or_firmware_conflict"
+    }
+  ],
+  "firmware_elfs": [
+    {
+      "path": "lithium_images_V9.5.2.0.NAHCNFA_20180405.0000.00_7.0_cn/images/xbl.elf",
+      "bytes": 1830488,
+      "sha256": "f162ac550cabd114edf43d81aeb514c36474373055ab550467ac07d1a64f9de1",
+      "elf_class": 64,
+      "machine": 183,
+      "entry": "0x6214120",
+      "program_headers": [
+        {
+          "index": 0,
+          "type": 0,
+          "flags": "0x7000000",
+          "offset": 0,
+          "virtual_start": "0x0",
+          "physical_start": "0x0",
+          "physical_end_exclusive": "0x0",
+          "file_bytes": 1016,
+          "memory_bytes": 0,
+          "alignment": 0,
+          "file_backed": true,
+          "file_extent_within_image": true
+        },
+        {
+          "index": 1,
+          "type": 0,
+          "flags": "0x2200000",
+          "offset": 4096,
+          "virtual_start": "0x85eec000",
+          "physical_start": "0x85eec000",
+          "physical_end_exclusive": "0x85eee000",
+          "file_bytes": 6984,
+          "memory_bytes": 8192,
+          "alignment": 4096,
+          "file_backed": true,
+          "file_extent_within_image": true
+        },
+        {
+          "index": 2,
+          "type": 1,
+          "flags": "0x5",
+          "offset": 12288,
+          "virtual_start": "0x6208000",
+          "physical_start": "0x6208000",
+          "physical_end_exclusive": "0x625f2e4",
+          "file_bytes": 357092,
+          "memory_bytes": 357092,
+          "alignment": 65536,
+          "file_backed": true,
+          "file_extent_within_image": true
+        },
+        {
+          "index": 3,
+          "type": 1,
+          "flags": "0x6",
+          "offset": 369392,
+          "virtual_start": "0x6260000",
+          "physical_start": "0x6260000",
+          "physical_end_exclusive": "0x62693d8",
+          "file_bytes": 37848,
+          "memory_bytes": 37848,
+          "alignment": 65536,
+          "file_backed": true,
+          "file_extent_within_image": true
+        },
+        {
+          "index": 4,
+          "type": 1,
+          "flags": "0x6",
+          "offset": 407248,
+          "virtual_start": "0x626a000",
+          "physical_start": "0x626a000",
+          "physical_end_exclusive": "0x626f2d0",
+          "file_bytes": 0,
+          "memory_bytes": 21200,
+          "alignment": 65536,
+          "file_backed": false,
+          "file_extent_within_image": true
+        },
+        {
+          "index": 5,
+          "type": 1,
+          "flags": "0x6",
+          "offset": 407248,
+          "virtual_start": "0x85e00000",
+          "physical_start": "0x85e00000",
+          "physical_end_exclusive": "0x85e24da0",
+          "file_bytes": 0,
+          "memory_bytes": 150944,
+          "alignment": 65536,
+          "file_backed": false,
+          "file_extent_within_image": true
+        },
+        {
+          "index": 6,
+          "type": 1,
+          "flags": "0x5",
+          "offset": 407248,
+          "virtual_start": "0x6680000",
+          "physical_start": "0x6680000",
+          "physical_end_exclusive": "0x66829d0",
+          "file_bytes": 10704,
+          "memory_bytes": 10704,
+          "alignment": 65536,
+          "file_backed": true,
+          "file_extent_within_image": true
+        },
+        {
+          "index": 7,
+          "type": 1,
+          "flags": "0x6",
+          "offset": 417952,
+          "virtual_start": "0x6683000",
+          "physical_start": "0x6683000",
+          "physical_end_exclusive": "0x6683694",
+          "file_bytes": 1684,
+          "memory_bytes": 1684,
+          "alignment": 65536,
+          "file_backed": true,
+          "file_extent_within_image": true
+        },
+        {
+          "index": 8,
+          "type": 1,
+          "flags": "0x5",
+          "offset": 419648,
+          "virtual_start": "0x21e000",
+          "physical_start": "0x21e000",
+          "physical_end_exclusive": "0x223f40",
+          "file_bytes": 24384,
+          "memory_bytes": 24384,
+          "alignment": 65536,
+          "file_backed": true,
+          "file_extent_within_image": true
+        },
+        {
+          "index": 9,
+          "type": 1,
+          "flags": "0x6",
+          "offset": 444032,
+          "virtual_start": "0x66a2000",
+          "physical_start": "0x66a2000",
+          "physical_end_exclusive": "0x66b4400",
+          "file_bytes": 0,
+          "memory_bytes": 74752,
+          "alignment": 65536,
+          "file_backed": false,
+          "file_extent_within_image": true
+        },
+        {
+          "index": 10,
+          "type": 1,
+          "flags": "0x5",
+          "offset": 444032,
+          "virtual_start": "0x85e80000",
+          "physical_start": "0x85e80000",
+          "physical_end_exclusive": "0x85ea80ee",
+          "file_bytes": 164078,
+          "memory_bytes": 164078,
+          "alignment": 65536,
+          "file_backed": true,
+          "file_extent_within_image": true
+        },
+        {
+          "index": 11,
+          "type": 1,
+          "flags": "0x6",
+          "offset": 608112,
+          "virtual_start": "0x85ec0000",
+          "physical_start": "0x85ec0000",
+          "physical_end_exclusive": "0x85eeb9a0",
+          "file_bytes": 178592,
+          "memory_bytes": 178592,
+          "alignment": 65536,
+          "file_backed": true,
+          "file_extent_within_image": true
+        },
+        {
+          "index": 12,
+          "type": 1,
+          "flags": "0x6",
+          "offset": 786704,
+          "virtual_start": "0x85eb0000",
+          "physical_start": "0x85eb0000",
+          "physical_end_exclusive": "0x85eb9a08",
+          "file_bytes": 0,
+          "memory_bytes": 39432,
+          "alignment": 65536,
+          "file_backed": false,
+          "file_extent_within_image": true
+        },
+        {
+          "index": 13,
+          "type": 1,
+          "flags": "0x7",
+          "offset": 786704,
+          "virtual_start": "0x80200000",
+          "physical_start": "0x80200000",
+          "physical_end_exclusive": "0x802f0000",
+          "file_bytes": 983040,
+          "memory_bytes": 983040,
+          "alignment": 4096,
+          "file_backed": true,
+          "file_extent_within_image": true
+        },
+        {
+          "index": 14,
+          "type": 1,
+          "flags": "0x5",
+          "offset": 1769744,
+          "virtual_start": "0x207000",
+          "physical_start": "0x207000",
+          "physical_end_exclusive": "0x215871",
+          "file_bytes": 59505,
+          "memory_bytes": 59505,
+          "alignment": 65536,
+          "file_backed": true,
+          "file_extent_within_image": true
+        },
+        {
+          "index": 15,
+          "type": 1,
+          "flags": "0x6",
+          "offset": 1829264,
+          "virtual_start": "0x217800",
+          "physical_start": "0x217800",
+          "physical_end_exclusive": "0x217cc8",
+          "file_bytes": 1224,
+          "memory_bytes": 1224,
+          "alignment": 65536,
+          "file_backed": true,
+          "file_extent_within_image": true
+        },
+        {
+          "index": 16,
+          "type": 1,
+          "flags": "0x6",
+          "offset": 1830496,
+          "virtual_start": "0x219800",
+          "physical_start": "0x219800",
+          "physical_end_exclusive": "0x2199d0",
+          "file_bytes": 0,
+          "memory_bytes": 464,
+          "alignment": 65536,
+          "file_backed": false,
+          "file_extent_within_image": true
+        }
+      ]
+    },
+    {
+      "path": "lithium_images_V9.5.2.0.NAHCNFA_20180405.0000.00_7.0_cn/images/emmc_appsboot.mbn",
+      "bytes": 1892412,
+      "sha256": "91835d1f70edaad214d72dca22f13230edcfd62849c3f5b79409d1cc673e3081",
+      "elf_class": 32,
+      "machine": 40,
+      "entry": "0x92a00000",
+      "program_headers": [
+        {
+          "index": 0,
+          "type": 0,
+          "flags": "0x7000000",
+          "offset": 0,
+          "virtual_start": "0x0",
+          "physical_start": "0x0",
+          "physical_end_exclusive": "0x0",
+          "file_bytes": 180,
+          "memory_bytes": 0,
+          "alignment": 0,
+          "file_backed": true,
+          "file_extent_within_image": true
+        },
+        {
+          "index": 1,
+          "type": 0,
+          "flags": "0x2200000",
+          "offset": 4096,
+          "virtual_start": "0x92a8f000",
+          "physical_start": "0x92a8f000",
+          "physical_end_exclusive": "0x92a91000",
+          "file_bytes": 6568,
+          "memory_bytes": 8192,
+          "alignment": 4096,
+          "file_backed": true,
+          "file_extent_within_image": true
+        },
+        {
+          "index": 2,
+          "type": 1879048193,
+          "flags": "0x4",
+          "offset": 616516,
+          "virtual_start": "0x92a8e844",
+          "physical_start": "0x92a8e844",
+          "physical_end_exclusive": "0x92a8e864",
+          "file_bytes": 32,
+          "memory_bytes": 32,
+          "alignment": 4,
+          "file_backed": true,
+          "file_extent_within_image": true
+        },
+        {
+          "index": 3,
+          "type": 1,
+          "flags": "0x7",
+          "offset": 32768,
+          "virtual_start": "0x92a00000",
+          "physical_start": "0x92a00000",
+          "physical_end_exclusive": "0x92bd74f8",
+          "file_bytes": 1859644,
+          "memory_bytes": 1930488,
+          "alignment": 32768,
+          "file_backed": true,
+          "file_extent_within_image": true
+        }
+      ]
+    }
+  ],
+  "safe_allocation_map_established": false,
+  "limitation": "PT_LOAD extents and Android DT do not identify all bootloader heaps, relocation targets, secure runtime allocations or live framebuffer state."
+}

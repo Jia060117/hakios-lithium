@@ -1,0 +1,78 @@
+--- a/xnu/files/iokit/Kernel/MiniIOMobileFramebuffer.cpp
++++ b/xnu/files/iokit/Kernel/MiniIOMobileFramebuffer.cpp
+@@ -42,6 +42,7 @@
+ #if defined(LITHIUM_ARMV8_0)
+ #include "../../../../devices/lithium/diagnostics/framebuffer-profile.inc"
+ #include "../../../../devices/lithium/diagnostics/bgr24-pack.inc"
++#include "../../../../devices/lithium/diagnostics/display-kernel.inc"
+ #endif
+ 
+ extern "C" void hakios_tl(const char * format, ...) __printflike(1, 2);
+@@ -614,16 +615,20 @@
+ 	fPixelBytes = vinfo.v_depth / 8;
+ 	fWidth = gFBWidth ? gFBWidth : fPanelWidth;
+ 	fHeight = gFBHeight ? gFBHeight : fPanelHeight;
+-	if (gFBScale != 0 && gFBScale != kFBDefaultScale) {
++	uint32_t scale = gFBScale, subtype = gFBSubtype;
++#if defined(LITHIUM_ARMV8_0)
++	lithium_display_dt_log("before");
++	struct lithium_display_profile profile = lithium_display_resolve(fWidth, fHeight, scale, subtype);
++	scale = profile.scale; subtype = profile.subtype;
++#endif
++	if (scale != 0 && scale != kFBDefaultScale) {
+ 		static const char * const places[][2] = { { "/chosen", "display-scale" }, { "/product", "artwork-scale-factor" } };
+-		uint32_t scale = gFBScale;
+-
+-		if (gFBSubtype == 0) {
++
++		if (subtype == 0) {
+ 			fWidth = kFBPointsWide * scale;
+ 			fHeight = kFBPointsHigh * scale;
+ 		} else {
+ 			IORegistryEntry * product = IORegistryEntry::fromPath("/product", gIODTPlane);
+-			uint32_t subtype = gFBSubtype;
+ 
+ 			if (product != NULL) {
+ 				product->setProperty("artwork-device-subtype", &subtype, sizeof(subtype));
+@@ -640,6 +645,12 @@
+ 			}
+ 		}
+ 	}
++#if defined(LITHIUM_ARMV8_0)
++	lithium_display_dt_log("after");
++	IOLog("LITHIUM DISPLAY GEOMETRY render=%ux%u panel=%ux%u panel_stride=%u panel_bpp=%u auto_profile=%u requested_scale=%u requested_subtype=%u effective_scale=%u effective_subtype=%u map=full_panel_stretch\n",
++	    fWidth, fHeight, fPanelWidth, fPanelHeight, fRowBytes, fPixelBytes * 8, profile.automatic,
++	    gFBScale, gFBSubtype, scale, subtype);
++#endif
+ 	fColumn = IONewZero(uint32_t, fPanelWidth);
+ 	fColumnWeight = IONewZero(uint16_t, fPanelWidth);
+ 	fDiff = gDiff != 0;
+--- a/userland/src/inject_sb.c
++++ b/userland/src/inject_sb.c
+@@ -1031,6 +1031,7 @@
+  * next boot, and the lock screen shows the same picture.
+  */
+ typedef struct { double x, y, width, height; } hk_rect;
++#include "../../devices/lithium/diagnostics/display-userspace.inc"
+ 
+ static bool wallpaper_hide_only;        /* wallpaper_freeze=2: no picture, the wallpaper hidden (what it costs, measured) */
+ static const void *wallpaper_frozen_key = &wallpaper_frozen_key;
+@@ -1380,6 +1381,7 @@
+ static void
+ status_bar_fallback_is_split(void)
+ {
++	if (lithium_display_native_statusbar()) return;
+ 	Class fallback = objc_getClass("_UIStatusBarVisualProvider_Fallback");
+ 	/* (no UIScreen here: this runs in the library's constructor, before UIKit is up -- +[UIScreen mainScreen] asserted) */
+ 	char args[1024] = "";
+@@ -2278,6 +2280,10 @@
+ 	 */
+ 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+ 		lithium_sb_mark("main_queue_enter");
++		/* UIKit is initialized here; no UIScreen access in the constructor. */
++		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC), dispatch_get_main_queue(), ^{ lithium_display_dump(0); });
++		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 15 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{ lithium_display_dump(1); });
++		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 60 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{ lithium_display_dump(2); });
+ 		Class uidev = objc_getClass("UIDevice");
+ 		SEL current = sel_registerName("currentDevice");
+ 		SEL monitoring = sel_registerName("setBatteryMonitoringEnabled:");

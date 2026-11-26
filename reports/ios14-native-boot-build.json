@@ -1,0 +1,216 @@
+{
+  "image_path": "out/native-xnu/lithium-xnu-native.img",
+  "image_sha256": "de646823a6f48c2e08ff6a3ccbf19ab0009f8cb96034816e561661769ae0dabc",
+  "image_bytes": 18530304,
+  "kernel_sha256": "f2ea131e460ce9a98351cd1f48396ca0e448f208058d7818f0f8f5647bee38e5",
+  "reference_commit": "6f27e41ff249f2680540ebe8ee5ab982c5e641c9",
+  "source_hashes": {
+    "ports/lithium/native/lithium_amfi.c": "04d9c55e03baa90dff5569f5620f4a50467ed311372cf4b10272f1267544e86c",
+    "ports/lithium/native/lithium_early.c": "960d842fe7646dae8cb0152608d34b54e2ef6a042796342780feca9783db3a4d",
+    "ports/lithium/native/lithium_early.h": "506880b346a9c4ffcf349b04180cdd41e1ab30b0d065c86ea96aa6f5f2cdfff9",
+    "ports/lithium/native/lithium_firmware_trust.c": "ddc616d539f0fc597b50e3a75a99dd9cb61177f7aacf9d2cad5fa48d191d4631",
+    "ports/lithium/native/shim.c": "ef3784d5fd89bc5b0ce99f31fd19fa731850c83b7ddc40af3fd207e4b5c66074",
+    "ports/lithium/native/ufs_cow.h": "4a19eda852fbf5b1a82a92a53fccc525b851099c3c798af6edb11f92c7ddae61",
+    "ports/lithium/native/ufs_cow_adapter.inc": "9152b23b55a6347e645c236cec0a9d35345b08163c2b256f1e5d35c1ffa7cf81",
+    "ports/lithium/native/ufs_gpt.h": "c868cb25000dbcfeccf3ed23345827b221eb2e3abd79a380042292e90c54a4d5"
+  },
+  "payload_sha256": "a42bad17ca50d97b65732f9c75a32c15611ef8897e4043d89f3f3de7f8fef414",
+  "payload_bytes": 16649968,
+  "adt_sha256": "553715a6e3048d4ca974a3ca53f6790c18f65fbbf914fd1f810216c85fb2f648",
+  "payload": {
+    "cputype": "0x100000c",
+    "cpusub": 0,
+    "fixups": 0,
+    "virt_base": "0xfffffff006000000",
+    "entry": "0xfffffff007328488",
+    "kernel_end": "0xfffffff007e3c000",
+    "ramdisk": null,
+    "size": 16649968,
+    "segs": [
+      [
+        "__TEXT",
+        "0xfffffff007004000",
+        "0x108000"
+      ],
+      [
+        "__DATA_CONST",
+        "0xfffffff00710c000",
+        "0x84000"
+      ],
+      [
+        "__TEXT_EXEC",
+        "0xfffffff007190000",
+        "0x684000"
+      ],
+      [
+        "__KLD",
+        "0xfffffff007814000",
+        "0x4000"
+      ],
+      [
+        "__LASTDATA_CONST",
+        "0xfffffff007818000",
+        "0x4000"
+      ],
+      [
+        "__KLDDATA",
+        "0xfffffff00781c000",
+        "0x4000"
+      ],
+      [
+        "__DATA",
+        "0xfffffff007820000",
+        "0xe4000"
+      ],
+      [
+        "__BOOTDATA",
+        "0xfffffff007904000",
+        "0x3c000"
+      ],
+      [
+        "__LINKINFO",
+        "0xfffffff007940000",
+        "0x40000"
+      ],
+      [
+        "__LINKEDIT",
+        "0xfffffff007980000",
+        "0x4bc000"
+      ]
+    ]
+  },
+  "kernel_phys_entry": "0x101328488",
+  "physical_ram_base": "0x100000000",
+  "physical_ram_bytes": 536870912,
+  "kernel_segment_ranges": [
+    [
+      "0x101004000",
+      "0x10110c000"
+    ],
+    [
+      "0x10110c000",
+      "0x101190000"
+    ],
+    [
+      "0x101190000",
+      "0x101814000"
+    ],
+    [
+      "0x101814000",
+      "0x101818000"
+    ],
+    [
+      "0x101818000",
+      "0x10181c000"
+    ],
+    [
+      "0x10181c000",
+      "0x101820000"
+    ],
+    [
+      "0x101820000",
+      "0x101904000"
+    ],
+    [
+      "0x101904000",
+      "0x101940000"
+    ],
+    [
+      "0x101940000",
+      "0x101980000"
+    ],
+    [
+      "0x101980000",
+      "0x101e3c000"
+    ]
+  ],
+  "shim_payload_end": "0x41073ef0",
+  "source_below_live_fdt": true,
+  "framebuffer": {
+    "address": "0x83401000",
+    "width": 1080,
+    "height": 2040,
+    "stride": 3240,
+    "format": "BGR24"
+  },
+  "static_checks_passed": true,
+  "alias_instruction_validation": {
+    "kernel_sha256": "f2ea131e460ce9a98351cd1f48396ca0e448f208058d7818f0f8f5647bee38e5",
+    "instruction_sequences_passed": true,
+    "missing_par_read_rejected": true,
+    "addresses": {
+      "table_probe": "0xfffffff00731ecf0",
+      "before_tlbi_probe": "0xfffffff00731ed60",
+      "after_tlbi_probe": "0xfffffff00731edb8",
+      "pixel_store": "0xfffffff00731ee04",
+      "relocate_call": "0xfffffff00731ee18"
+    },
+    "disassembly": [
+      {
+        "path": "/home/jia/ios-mix1-build/xnu7195-lithium/obj/DEVELOPMENT_ARM64_LITHIUM/instruction-check/00.txt",
+        "sha256": "00b36c7818b1befba78d30ea5461ab2843979702686f32db06e9f63ab1caafe0"
+      },
+      {
+        "path": "/home/jia/ios-mix1-build/xnu7195-lithium/obj/DEVELOPMENT_ARM64_LITHIUM/instruction-check/01.txt",
+        "sha256": "c993aa31fd4892d6c8c69974939280e9c7619abe81696a738e9b3868b6293c24"
+      },
+      {
+        "path": "/home/jia/ios-mix1-build/xnu7195-lithium/obj/DEVELOPMENT_ARM64_LITHIUM/instruction-check/02.txt",
+        "sha256": "e2aeea591a10f004b21c8c50529b00a157c054da98fb9dcc97bc7f1249c81bea"
+      }
+    ],
+    "qemu_used": false,
+    "hardware_verified": false,
+    "scope": "Emitted AT/ISB/MRS, ordered TLBI and pixel-store sequence only; no execution proof"
+  },
+  "aes_validation_sha256": "2546514cb13630e8ea6e0a09c9ac63cd6698a51f8d63f9d870ff860a4345d302",
+  "md5_validation_sha256": "771b782339a84fc0640087de5ed3b9d28eb86c16b9b91b6cdc0f1d70a3c7751c",
+  "sha256_validation_sha256": "00b9e174e409fbcc4f9211fee177747231b8b61590ac09223caa6b8d2ad76409",
+  "amfi_validation_sha256": "9ea234efa108e74e1e4080a31782b97f229b5c8f5cdba98b99a192e8789213bb",
+  "firmware_trust_validation_sha256": "ff3b6fa5df06021b5cd05587ad2b6d60667f14c9b1ca9f5bf1e3d7749f489b48",
+  "complete_bootloader_allocation_map": false,
+  "allocation_basis": "bounded upper DDR from live FDT; fixed reservations and all dynamic allocation windows/PT_LOADs are below 4G",
+  "native_xnu_entry_verified": false,
+  "ios_userspace_started": false,
+  "qemu_used": false,
+  "device_operations": false,
+  "root_image_included": false,
+  "temporary_boot_only": true,
+  "ufs_read_only_probe": false,
+  "ufs_root_requested": true,
+  "boot_arguments": "debug=0x14e serial=3 cpus=1 keepsyms=1 -v rd=ufsroot0 lithium_root_crc=0x6143e5cf launchdsuffix=release lithium_root_cow=1 vm_compressor=2",
+  "volatile_root_requested": true,
+  "cow_validation_sha256": "9a92e337951b41778c927d9ac481e0ba19da73b13bcfacb3782b479020766a48",
+  "preboot_seed_report_sha256": "41e9201f010dab006932d47ce3cd6c4c7adc2cb1804b73ab834e4e45573d8cff",
+  "preboot_seed_sha256": "87705c528286bd3f14e6a6868aacb3805616915be4c710cf547de989c912a2c9",
+  "volatile_write_limit_bytes": 67108864,
+  "physical_ufs_read_only": true,
+  "ufs_validation_sha256": "5fef41b35ff0fd534de80ce48f09e492a124715cff47cab4c4c29aae7c40d5f3",
+  "ufs_dma_validation_sha256": "b7d20bb27663ebd14632620fe837149e5b415977b3fa259963af17a76b8934f0",
+  "hfs_readonly_validation_sha256": "9099ac6f3795739502fcf0d1361ee693caf7ba9569b47694ccae76d0d792ce30",
+  "external_root": {
+    "image_sha256": "396e0b17d99eae20abda540f35834f95cd2857c858cc1a959f709cc7194ef6b3",
+    "image_bytes": 17179869184,
+    "image_path": "/home/jia/ios-mix1-build/ios14-root-hfs.img",
+    "report_sha256": "7ef42346367a43509dbe916a148172f1926200dc7801cf6e94f5b7191bdb8599",
+    "input_report_sha256": "ab28eee2008adb513d175f823320d7b0e2d04152a5c93bc73674082985947877",
+    "version": {
+      "BuildID": "0C7AAC00-11BE-11EC-BD5B-D1A2FCD51755",
+      "ProductBuildVersion": "18H17",
+      "ProductCopyright": "1983-2021 Apple Inc.",
+      "ProductName": "iPhone OS",
+      "ProductVersion": "14.8",
+      "SystemImageID": "685372C6-3C8C-4DD3-B562-7CD5DBE5C1AE"
+    },
+    "partition": "userdata",
+    "bsd_device": "ufsroot0",
+    "read_only": false,
+    "first_block_crc32": "0x6143e5cf",
+    "volume_block_size": 4096,
+    "volume_blocks": 4194304,
+    "flashed_to_device": false,
+    "device_readback_verified": false,
+    "physical_read_only": true,
+    "writes_persist_across_reboot": false
+  }
+}

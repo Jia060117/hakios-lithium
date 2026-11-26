@@ -1,0 +1,728 @@
+diff --git a/maintenance/hakios-lithium/peripherals/boot-options-test.c b/maintenance/hakios-lithium/peripherals/boot-options-test.c
+index 11e896c..55906ac 100644
+--- a/maintenance/hakios-lithium/peripherals/boot-options-test.c
++++ b/maintenance/hakios-lithium/peripherals/boot-options-test.c
+@@ -11,6 +11,7 @@ parse(const char *input, bool valid)
+     assert(lithium_peripheral_options_parse(input, strlen(input), &options) == valid);
+     if (!valid) {
+         assert(!options.touch && !options.touch_log && !options.touch_poll);
++        assert(!options.touch_stage_requested && options.touch_stage == 0);
+         assert(!options.gpu_probe && options.gpu_stage == 0 && !options.gpu_wd);
+     }
+     return options;
+@@ -23,34 +24,56 @@ main(void)
+         "bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata "
+         "var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 "
+         "fbwidth=750 fbheight=1334 loader_return_after=10800", true);
+-    assert(!options.touch && !options.gpu_probe);
++    assert(!options.touch && !options.touch_stage_requested && !options.gpu_probe);
+ 
+     options = parse("gpu_stage=0 touch_log=1 touch_poll=1 gpu_wd=1 touchscreen=1", true);
+     assert(!options.touch && !options.touch_log && !options.touch_poll);
++    assert(!options.touch_stage_requested && options.touch_stage == 0);
+     assert(!options.gpu_probe && options.gpu_stage == 0 && !options.gpu_wd);
+ 
+     options = parse("touch=1\tgpu_probe=1\ngpu_stage=0 gpu_wd=1 touch_poll=1\r", true);
+     assert(options.touch && options.touch_poll && !options.touch_log);
++    assert(!options.touch_stage_requested);
+     assert(options.gpu_probe && options.gpu_stage == 0 && options.gpu_wd);
+ 
+     options = parse("touch=1 touch_log=1 touch_poll=0 gpu_stage=1", true);
+     assert(options.touch && options.touch_log && !options.touch_poll);
++    assert(!options.touch_stage_requested);
+     assert(options.gpu_probe && options.gpu_stage == 1 && !options.gpu_wd);
+     assert(parse("gpu_stage=4", true).gpu_stage == 4);
+ 
++    static const char *stage_args[] = {
++        "touch_stage=0", "touch_stage=1", "touch_stage=2", "touch_stage=3",
++    };
++    for (unsigned stage = 0; stage <= 3; ++stage) {
++        options = parse(stage_args[stage], true);
++        assert(!options.touch && !options.touch_log && !options.touch_poll);
++        assert(options.touch_stage_requested && options.touch_stage == stage);
++        assert(!options.gpu_probe && options.gpu_stage == 0 && !options.gpu_wd);
++    }
++    options = parse("gpu_probe=1 gpu_stage=4 gpu_wd=1 touch_stage=0", true);
++    assert(options.touch_stage_requested && options.touch_stage == 0);
++    assert(options.gpu_probe && options.gpu_stage == 4 && options.gpu_wd);
++
+     const char *invalid[] = {
+         "touch", "touch=", "touch=1=1", "touch=2", "touch=01", "touch=-1",
+         "touch=1 touch=1", "touch=0 touch=1", "touch_log=3", "touch_poll=9",
+         "gpu_stage=5", "gpu_stage=x", "gpu_stage= 1", "touch=1 gpu_wd=2",
+         "gpu_probe=1 gpu_probe=0", "gpu_stage=1 gpu_stage=0",
++        "touch_stage", "touch_stage=", "touch_stage=4", "touch_stage=x",
++        "touch_stage=00", "touch_stage=-1", "touch_stage=1x",
++        "touch_stage=0 touch_stage=0", "touch_stage=0 touch_stage=3",
++        "touch=0 touch_stage=0", "touch_stage=1 touch=1",
++        "touch_log=0 touch_stage=2", "touch_poll=1 touch_stage=3",
+     };
+     for (size_t i = 0; i < sizeof(invalid) / sizeof(invalid[0]); ++i) {
+         parse(invalid[i], false);
+     }
+     static const char hidden_args[] = "touch=1 \0gpu_stage=1";
+     assert(!lithium_peripheral_options_parse(hidden_args, sizeof(hidden_args) - 1, &options));
+-    assert(!options.touch && !options.gpu_probe);
++    assert(!options.touch && !options.touch_stage_requested && options.touch_stage == 0);
++    assert(!options.gpu_probe);
+     assert(lithium_peripheral_options_parse(NULL, 0, &options));
+     assert(!lithium_peripheral_options_parse(NULL, 1, &options));
+-    puts("PASS boot options: defaults, probe/phase 0, touch dependencies and malformed overrides");
++    puts("PASS boot options: defaults, explicit touch stages, legacy conflicts, GPU and malformed overrides");
+ }
+diff --git a/maintenance/hakios-lithium/peripherals/boot-options.h b/maintenance/hakios-lithium/peripherals/boot-options.h
+index e2a91b8..c5e5197 100644
+--- a/maintenance/hakios-lithium/peripherals/boot-options.h
++++ b/maintenance/hakios-lithium/peripherals/boot-options.h
+@@ -8,6 +8,8 @@ struct lithium_peripheral_options {
+     bool touch;
+     bool touch_log;
+     bool touch_poll;
++    bool touch_stage_requested;
++    unsigned touch_stage;
+     bool gpu_probe;
+     unsigned gpu_stage;
+     bool gpu_wd;
+@@ -23,6 +25,7 @@ enum lithium_peripheral_option_id {
+     LITHIUM_TOUCH,
+     LITHIUM_TOUCH_LOG,
+     LITHIUM_TOUCH_POLL,
++    LITHIUM_TOUCH_STAGE,
+     LITHIUM_GPU_PROBE,
+     LITHIUM_GPU_STAGE,
+     LITHIUM_GPU_WD,
+@@ -45,6 +48,7 @@ lithium_peripheral_options_parse(const char *args, size_t length,
+         [LITHIUM_TOUCH] = {"touch", sizeof("touch") - 1, 1},
+         [LITHIUM_TOUCH_LOG] = {"touch_log", sizeof("touch_log") - 1, 1},
+         [LITHIUM_TOUCH_POLL] = {"touch_poll", sizeof("touch_poll") - 1, 1},
++        [LITHIUM_TOUCH_STAGE] = {"touch_stage", sizeof("touch_stage") - 1, 3},
+         [LITHIUM_GPU_PROBE] = {"gpu_probe", sizeof("gpu_probe") - 1, 1},
+         [LITHIUM_GPU_STAGE] = {"gpu_stage", sizeof("gpu_stage") - 1, 4},
+         [LITHIUM_GPU_WD] = {"gpu_wd", sizeof("gpu_wd") - 1, 1},
+@@ -86,7 +90,11 @@ lithium_peripheral_options_parse(const char *args, size_t length,
+             if (size != name_length + 2 || (seen & (1u << key)) != 0) {
+                 return false;
+             }
+-            const unsigned value = (unsigned)((unsigned char)args[start + name_length + 1] - '0');
++            const char digit = args[start + name_length + 1];
++            if (digit < '0' || digit > '9') {
++                return false;
++            }
++            const unsigned value = (unsigned)(digit - '0');
+             if (value > keys[key].max_value) {
+                 return false;
+             }
+@@ -95,9 +103,16 @@ lithium_peripheral_options_parse(const char *args, size_t length,
+             break;
+         }
+     }
++    const unsigned legacy_touch = (1u << LITHIUM_TOUCH) |
++        (1u << LITHIUM_TOUCH_LOG) | (1u << LITHIUM_TOUCH_POLL);
++    if ((seen & (1u << LITHIUM_TOUCH_STAGE)) != 0 && (seen & legacy_touch) != 0) {
++        return false;
++    }
+     options->touch = values[LITHIUM_TOUCH] != 0;
+     options->touch_log = options->touch && values[LITHIUM_TOUCH_LOG] != 0;
+     options->touch_poll = options->touch && values[LITHIUM_TOUCH_POLL] != 0;
++    options->touch_stage_requested = (seen & (1u << LITHIUM_TOUCH_STAGE)) != 0;
++    options->touch_stage = values[LITHIUM_TOUCH_STAGE];
+     options->gpu_stage = values[LITHIUM_GPU_STAGE];
+     options->gpu_probe = values[LITHIUM_GPU_PROBE] != 0 || options->gpu_stage != 0;
+     options->gpu_wd = options->gpu_probe && values[LITHIUM_GPU_WD] != 0;
+
+diff --git a/maintenance/hakios-lithium/peripherals-next/touch-delivery.h b/maintenance/hakios-lithium/peripherals-next/touch-delivery.h
+new file mode 100644
+index 0000000..e6200e2
+--- /dev/null
++++ b/maintenance/hakios-lithium/peripherals-next/touch-delivery.h
+@@ -0,0 +1,204 @@
++#ifndef LITHIUM_TOUCH_DELIVERY_H
++#define LITHIUM_TOUCH_DELIVERY_H
++
++#include "../peripherals/touch-queue.h"
++
++/* Host-tested protocol only: no physical queue, IOHID, clock or lock is bound.
++ * Zero-initialize once, then serialize ALL calls on one producer executor.
++ * busy rejects callback recursion; it is NOT a cross-thread synchronization
++ * primitive. Do not copy, reinitialize or directly mutate a live object.
++ * Geometry is fixed for the stream; the immutable queue helper owns all maps.
++ */
++enum lithium_touch_delivery_result {
++    LITHIUM_DELIVERY_OK,
++    LITHIUM_DELIVERY_INVALID,
++    LITHIUM_DELIVERY_ORDER,
++    LITHIUM_DELIVERY_PENDING,
++    LITHIUM_DELIVERY_NO_PENDING,
++    LITHIUM_DELIVERY_BUSY,
++    LITHIUM_DELIVERY_UNAVAILABLE,
++    LITHIUM_DELIVERY_REJECTED,
++    LITHIUM_DELIVERY_POISONED
++};
++
++enum lithium_touch_submit_result {
++    /* Exactly zero records/metadata became visible; retry is safe. */
++    LITHIUM_SUBMIT_REJECT_ALL = 0,
++    /* All records AND their batch identity were atomically accepted. */
++    LITHIUM_SUBMIT_ACCEPT_ALL = 1,
++    /* Partial, timed-out or otherwise uncertain publication: NEVER retry. */
++    LITHIUM_SUBMIT_UNCERTAIN = 2
++};
++
++struct lithium_touch_delivery_batch {
++    uint64_t sequence;      /* Producer acquisition sequence, nonzero, no wrap. */
++    uint64_t monotonic_ns;  /* Producer monotonic clock, nonzero, no wrap. */
++    struct lithium_touch_queue_batch queue;
++};
++
++enum { LITHIUM_TOUCH_ATOMIC_ADAPTER_V1 = 1 };
++struct lithium_touch_delivery_adapter {
++    unsigned atomic_abi;
++    void *context;
++    /* Synchronous, bounded; borrowed batch valid only during this callback.
++     * Copy it before returning ACCEPT_ALL. Never retain the pointer.
++     * Implement real reserve/copy/publish of the WHOLE batch, not a loop of
++     * best-effort posts. REJECT_ALL must have no externally visible effect.
++     * Retry carries identical sequence/time/events/finger/stroke allocation.
++     * For non-empty batches, return ACCEPT_ALL only once, or from an adapter's
++     * exact duplicate receipt; never republish a previously accepted batch.
++     * Empty no-op frames bypass this callback and are committed locally. Their
++     * sequence/time high-water is producer-local and is not acknowledged by
++     * the sink. Unknown returns are treated as UNCERTAIN. ABI declaration is
++     * a contract, not proof. */
++    enum lithium_touch_submit_result (*submit)(void *context,
++        const struct lithium_touch_delivery_batch *batch);
++    /* Optional recovery fence, NOT a queue-only reset. ACCEPT_ALL certifies
++     * that through_sequence and all older in-flight work cannot appear later,
++     * and downstream HID contacts have been released/reset and acknowledged.
++     * Must use a real adapter/consumer handshake. No such implementation is
++     * supplied here. Repeated calls for one fence must be idempotent. Any
++     * other result leaves the object poisoned; never infer a reset locally. */
++    enum lithium_touch_submit_result (*resync)(void *context,
++        uint64_t through_sequence);
++};
++
++struct lithium_touch_delivery {
++    struct lithium_touch_queue_state committed;
++    struct lithium_touch_queue_state candidate;
++    struct lithium_touch_delivery_batch batch;
++    struct lithium_touch_geometry geometry;
++    struct lithium_touch_delivery_adapter adapter;
++    uint64_t reserved_sequence, reserved_ns;
++    /* A lost input frame with no active contacts produces no HID release.
++     * Preserve that fact locally; it is not delivered or acknowledged by the
++     * current HakiOS event-only batch ABI. Saturate instead of wrapping. */
++    uint64_t local_empty_losses;
++    bool local_empty_losses_saturated;
++    bool initialized, pending, busy, poisoned;
++};
++
++static inline enum lithium_touch_delivery_result
++lithium_touch_delivery_init(struct lithium_touch_delivery *d,
++    const struct lithium_touch_geometry *geometry,
++    const struct lithium_touch_delivery_adapter *adapter)
++{
++    uint32_t x, y;
++    if (!d) return LITHIUM_DELIVERY_INVALID;
++    if (d->busy) return LITHIUM_DELIVERY_BUSY;
++    if (d->initialized) return LITHIUM_DELIVERY_INVALID;
++    if (!adapter || adapter->atomic_abi != LITHIUM_TOUCH_ATOMIC_ADAPTER_V1 ||
++        !adapter->submit) return LITHIUM_DELIVERY_UNAVAILABLE;
++    if (!lithium_touch_queue_map(geometry, 0, 0, &x, &y))
++        return LITHIUM_DELIVERY_INVALID;
++    d->geometry = *geometry;
++    d->adapter = *adapter;
++    d->initialized = true;
++    return LITHIUM_DELIVERY_OK;
++}
++
++/* One pending frame maximum, at most 20 events; no allocation or retry loop.
++ * Caller stamps acquisition sequence and time from one monotonic source;
++ * both must strictly exceed the last PREPARED frame, including rejected ones.
++ * Malformed frames reserve neither stamp nor identities; report actual source
++ * loss separately with frame=NULL,length=0,lost=true and newer stamps.
++ * A pending frame cannot be superseded (even by loss): stop acquisition or
++ * record loss, resolve this batch, then prepare that explicit loss. Missing
++ * controller IDs/UP are handled by the immutable decoder.
++ * Candidate changes, identity allocation and releases are private until ALL
++ * non-empty events are accepted. Zero-event frames commit locally because
++ * they have no HID transition to publish; an empty stream-loss is counted in
++ * producer-local diagnostics, not acknowledged or reconstructed downstream.
++ */
++static inline enum lithium_touch_delivery_result
++lithium_touch_delivery_prepare(struct lithium_touch_delivery *d,
++    uint64_t sequence, uint64_t monotonic_ns, const uint8_t *frame,
++    size_t length, bool lost)
++{
++    if (!d) return LITHIUM_DELIVERY_INVALID;
++    if (d->busy) return LITHIUM_DELIVERY_BUSY;
++    if (!d->initialized) return LITHIUM_DELIVERY_UNAVAILABLE;
++    if (d->poisoned) return LITHIUM_DELIVERY_POISONED;
++    if (d->pending) return LITHIUM_DELIVERY_PENDING;
++    if (sequence <= d->reserved_sequence || monotonic_ns <= d->reserved_ns)
++        return LITHIUM_DELIVERY_ORDER;
++    struct lithium_touch_queue_state next = d->committed;
++    struct lithium_touch_delivery_batch batch = {
++        .sequence = sequence, .monotonic_ns = monotonic_ns
++    };
++    if (!lithium_touch_queue_frame(&next, &d->geometry, frame, length, lost,
++            &batch.queue)) return LITHIUM_DELIVERY_INVALID;
++    d->candidate = next;
++    d->batch = batch;
++    d->reserved_sequence = sequence;
++    d->reserved_ns = monotonic_ns;
++    d->pending = true;
++    return LITHIUM_DELIVERY_OK;
++}
++
++/* Call again only after explicit zero-publication rejection. No restamping or
++ * reparsing on retry. Queue acceptance is NOT end HID consumer acknowledgment.
++ * No end-to-end exactly-once claim without sink idempotence and receipts,
++ * and no persistence guarantee across producer crash or reinitialization.
++ */
++static inline enum lithium_touch_delivery_result
++lithium_touch_delivery_submit(struct lithium_touch_delivery *d)
++{
++    if (!d) return LITHIUM_DELIVERY_INVALID;
++    if (d->busy) return LITHIUM_DELIVERY_BUSY;
++    if (!d->initialized) return LITHIUM_DELIVERY_UNAVAILABLE;
++    if (d->poisoned) return LITHIUM_DELIVERY_POISONED;
++    if (!d->pending) return LITHIUM_DELIVERY_NO_PENDING;
++    if (d->batch.queue.count == 0) {
++        if (d->batch.queue.stream_lost) {
++            if (d->local_empty_losses == UINT64_MAX)
++                d->local_empty_losses_saturated = true;
++            else
++                ++d->local_empty_losses;
++        }
++        d->committed = d->candidate;
++        d->pending = false;
++        return LITHIUM_DELIVERY_OK;
++    }
++    d->busy = true;
++    const enum lithium_touch_submit_result result =
++        d->adapter.submit(d->adapter.context, &d->batch);
++    d->busy = false;
++    if (result == LITHIUM_SUBMIT_REJECT_ALL) return LITHIUM_DELIVERY_REJECTED;
++    if (result != LITHIUM_SUBMIT_ACCEPT_ALL) {
++        d->poisoned = true;
++        return LITHIUM_DELIVERY_POISONED;
++    }
++    d->committed = d->candidate;
++    d->pending = false;
++    return LITHIUM_DELIVERY_OK;
++}
++
++/* Partial/uncertain delivery has no rollback. Keep the failed batch for audit;
++ * block all new work/replay until an actual downstream recovery fence succeeds.
++ * Preserve sequence/time high-water marks and burn candidate stroke identities
++ * even when partially visible; next frame rejoins with fresh stroke identities.
++ */
++static inline enum lithium_touch_delivery_result
++lithium_touch_delivery_resync(struct lithium_touch_delivery *d)
++{
++    if (!d) return LITHIUM_DELIVERY_INVALID;
++    if (d->busy) return LITHIUM_DELIVERY_BUSY;
++    if (!d->initialized) return LITHIUM_DELIVERY_UNAVAILABLE;
++    if (!d->poisoned) return LITHIUM_DELIVERY_INVALID;
++    if (!d->adapter.resync) return LITHIUM_DELIVERY_UNAVAILABLE;
++    d->busy = true;
++    const enum lithium_touch_submit_result result =
++        d->adapter.resync(d->adapter.context, d->reserved_sequence);
++    d->busy = false;
++    if (result != LITHIUM_SUBMIT_ACCEPT_ALL) return LITHIUM_DELIVERY_POISONED;
++    struct lithium_touch_queue_state clean = {0};
++    clean.frames.last_identity = d->candidate.frames.last_identity;
++    d->committed = clean;
++    d->candidate = clean;
++    d->pending = false;
++    d->poisoned = false;
++    return LITHIUM_DELIVERY_OK;
++}
++
++#endif
+
+diff --git a/maintenance/hakios-lithium/peripherals-next/touch-delivery-test.c b/maintenance/hakios-lithium/peripherals-next/touch-delivery-test.c
+new file mode 100644
+index 0000000..49d9fd0
+--- /dev/null
++++ b/maintenance/hakios-lithium/peripherals-next/touch-delivery-test.c
+@@ -0,0 +1,379 @@
++#include <assert.h>
++#include <stdio.h>
++#include <string.h>
++#include "touch-delivery.h"
++
++static const struct lithium_touch_geometry geometry = {
++    .width = LITHIUM_R20_WIDTH_POINTS, .height = LITHIUM_R20_HEIGHT_POINTS,
++    .left = 0, .top = 0, .right = LITHIUM_R20_WIDTH_POINTS - 1,
++    .bottom = LITHIUM_R20_HEIGHT_POINTS - 1, .rotation = 0
++};
++enum fake_mode { NORMAL, REENTER, PARTIAL, UNKNOWN, REJECT };
++struct fake_queue {
++    struct lithium_touch_delivery *producer;
++    struct lithium_touch_delivery_batch seen, accepted;
++    size_t capacity, attempts, accepts, published;
++    uint64_t last_sequence, last_ns, fence;
++    enum fake_mode mode;
++    enum lithium_touch_submit_result reset_result;
++    unsigned reset_calls;
++};
++
++static void empty(uint8_t *frame) { memset(frame, 0xff, LITHIUM_TOUCH_FRAME_BYTES); }
++static void finger(uint8_t *frame, unsigned i, unsigned id, unsigned event,
++    unsigned x, unsigned y)
++{
++    assert(i < LITHIUM_TOUCH_MAX_CONTACTS);
++    uint8_t *p = frame + 3 + 6 * i;
++    p[0] = (uint8_t)((event << 6) | (x >> 8)); p[1] = (uint8_t)x;
++    p[2] = (uint8_t)((id << 4) | (y >> 8)); p[3] = (uint8_t)y;
++    p[4] = 0; p[5] = 1;
++}
++
++static void check_busy(struct lithium_touch_delivery *d)
++{
++    assert(lithium_touch_delivery_prepare(d, 999, 999, NULL, 0, true) == LITHIUM_DELIVERY_BUSY);
++    assert(lithium_touch_delivery_submit(d) == LITHIUM_DELIVERY_BUSY);
++    assert(lithium_touch_delivery_resync(d) == LITHIUM_DELIVERY_BUSY);
++    assert(lithium_touch_delivery_init(d, &geometry, NULL) == LITHIUM_DELIVERY_BUSY);
++}
++
++/* Synthetic bounded reservation model, not the upstream queue implementation. */
++static enum lithium_touch_submit_result submit(void *context,
++    const struct lithium_touch_delivery_batch *batch)
++{
++    struct fake_queue *q = context;
++    ++q->attempts;
++    q->seen = *batch;
++    assert(batch->queue.count <= 2 * LITHIUM_TOUCH_MAX_CONTACTS);
++    if (q->mode == REENTER) {
++        assert(q->producer->pending && q->producer->busy);
++        assert(q->producer->committed.frames.last_identity <
++            q->producer->candidate.frames.last_identity);
++        check_busy(q->producer);
++    }
++    if (q->mode == UNKNOWN) return (enum lithium_touch_submit_result)99;
++    if (q->mode == REJECT) return LITHIUM_SUBMIT_REJECT_ALL;
++    if (q->mode == PARTIAL) {
++        assert(batch->queue.count > 1);
++        ++q->published; /* Deliberate adapter contract violation/uncertainty. */
++        return LITHIUM_SUBMIT_UNCERTAIN;
++    }
++    if (batch->queue.count > q->capacity) return LITHIUM_SUBMIT_REJECT_ALL;
++    assert(batch->sequence > q->last_sequence && batch->monotonic_ns > q->last_ns);
++    q->capacity -= batch->queue.count;
++    q->published += batch->queue.count;
++    ++q->accepts;
++    q->last_sequence = batch->sequence; q->last_ns = batch->monotonic_ns;
++    q->accepted = *batch;
++    return LITHIUM_SUBMIT_ACCEPT_ALL;
++}
++
++static enum lithium_touch_submit_result resync(void *context, uint64_t fence)
++{
++    struct fake_queue *q = context;
++    ++q->reset_calls; q->fence = fence;
++    check_busy(q->producer);
++    return q->reset_result; /* Synthetic downstream fence acknowledgment only. */
++}
++
++static void init(struct lithium_touch_delivery *d, struct fake_queue *q)
++{
++    q->producer = d; q->capacity = 1000;
++    const struct lithium_touch_delivery_adapter a = {
++        LITHIUM_TOUCH_ATOMIC_ADAPTER_V1, q, submit, resync
++    };
++    assert(lithium_touch_delivery_init(d, &geometry, &a) == LITHIUM_DELIVERY_OK);
++}
++
++static void send(struct lithium_touch_delivery *d, uint64_t n, uint8_t *frame)
++{
++    assert(lithium_touch_delivery_prepare(d, n, n * 100, frame,
++        LITHIUM_TOUCH_FRAME_BYTES, false) == LITHIUM_DELIVERY_OK);
++    assert(lithium_touch_delivery_submit(d) == LITHIUM_DELIVERY_OK);
++}
++
++static void down_move_up(void)
++{
++    struct lithium_touch_delivery d = {0}; struct fake_queue q = {0};
++    uint8_t f[LITHIUM_TOUCH_FRAME_BYTES]; init(&d, &q); empty(f);
++    finger(f, 0, 14, 0, 1080, 2040);
++    assert(lithium_touch_delivery_prepare(&d, 1, 100, f, sizeof(f), false) == LITHIUM_DELIVERY_OK);
++    assert(d.committed.frames.active_count == 0 && d.committed.frames.last_identity == 0);
++    assert(d.candidate.frames.active_count == 1 && d.candidate.frames.last_identity == 1);
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_OK);
++    assert(q.accepted.sequence == 1 && q.accepted.monotonic_ns == 100);
++    assert(q.accepted.queue.count == 1 && q.accepted.queue.events[0].type == 1);
++    assert(q.accepted.queue.events[0].x == 65535 && q.accepted.queue.events[0].y == 65535);
++    const uint64_t identity = d.committed.frames.active[0].identity;
++    finger(f, 0, 14, 2, 540, 1020); send(&d, 2, f);
++    assert(q.accepted.queue.events[0].type == 2 && q.accepted.queue.events[0].finger == 0);
++    assert(q.accepted.queue.events[0].x == 32768 && q.accepted.queue.events[0].y == 32768);
++    assert(d.committed.frames.active[0].identity == identity);
++    finger(f, 0, 14, 1, 0, 0); send(&d, 3, f);
++    assert(q.accepted.queue.events[0].type == 3 && q.accepted.queue.events[0].x == 32768);
++    assert(d.committed.frames.active_count == 0 && d.committed.slots[0] == 0);
++    finger(f, 0, 14, 0, 0, 0); send(&d, 4, f);
++    assert(d.committed.frames.active[0].identity > identity);
++}
++
++static void multi_and_retry(void)
++{
++    struct lithium_touch_delivery d = {0}; struct fake_queue q = {0};
++    uint8_t f[LITHIUM_TOUCH_FRAME_BYTES]; init(&d, &q); empty(f);
++    for (unsigned i = 0; i < 10; ++i) finger(f, i, i + 5, 0, i * 100, i * 200);
++    send(&d, 1, f);
++    assert(d.committed.frames.active_count == 10 && q.accepted.queue.count == 10);
++    for (unsigned i = 0; i < 10; ++i) assert(d.committed.slots[i] == i + 1);
++    assert(lithium_touch_delivery_prepare(&d, 2, 200, f, sizeof(f), false) == LITHIUM_DELIVERY_OK);
++    assert(d.batch.queue.count == 20 && d.candidate.frames.last_identity == 20);
++    const struct lithium_touch_delivery_batch pending = d.batch;
++    const struct lithium_touch_queue_state candidate = d.candidate, committed = d.committed;
++    for (unsigned i = 0; i < 10; ++i) {
++        assert(d.batch.queue.events[i].type == 3 && d.batch.queue.events[i + 10].type == 1);
++        assert(d.batch.queue.events[i].finger == i && d.batch.queue.events[i + 10].finger == i);
++    }
++    /* N-1 free records: not even the release prefix may become visible. */
++    q.capacity = 19;
++    for (unsigned i = 0; i < 3; ++i) {
++        assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_REJECTED);
++        assert(q.accepts == 1 && q.published == 10);
++        assert(!memcmp(&d.batch, &pending, sizeof(pending)));
++        assert(!memcmp(&d.candidate, &candidate, sizeof(candidate)));
++        assert(!memcmp(&d.committed, &committed, sizeof(committed)));
++        assert(lithium_touch_delivery_prepare(&d, 3, 300, NULL, 0, true) == LITHIUM_DELIVERY_PENDING);
++    }
++    /* Changing the source buffer after prepare cannot change the retry. */
++    memset(f, 0, sizeof(f)); q.capacity = 20;
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_OK);
++    assert(!memcmp(&q.accepted, &pending, sizeof(pending)));
++    assert(d.committed.frames.last_identity == 20 && q.published == 30);
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_NO_PENDING);
++    assert(q.attempts == 5);
++}
++
++static void loss_once(void)
++{
++    struct lithium_touch_delivery d = {0}; struct fake_queue q = {0};
++    uint8_t f[LITHIUM_TOUCH_FRAME_BYTES]; init(&d, &q); empty(f);
++    finger(f, 0, 2, 0, 300, 400); finger(f, 1, 3, 0, 500, 600); send(&d, 1, f);
++    assert(lithium_touch_delivery_prepare(&d, 4, 400, NULL, 0, true) == LITHIUM_DELIVERY_OK);
++    assert(d.batch.queue.stream_lost && d.batch.queue.count == 2);
++    q.capacity = 0;
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_REJECTED);
++    assert(d.committed.frames.active_count == 2 && q.published == 2);
++    q.capacity = 2; assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_OK);
++    assert(q.published == 4 && d.committed.frames.active_count == 0);
++    assert(q.accepted.queue.events[0].type == 3 && q.accepted.queue.events[1].type == 3);
++    assert(lithium_touch_delivery_prepare(&d, 5, 500, NULL, 0, true) == LITHIUM_DELIVERY_OK);
++    assert(d.batch.queue.count == 0 && d.batch.queue.stream_lost);
++    const size_t attempts_before_empty_loss = q.attempts;
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_OK);
++    assert(q.attempts == attempts_before_empty_loss && q.published == 4);
++    assert(d.local_empty_losses == 1 && !d.local_empty_losses_saturated);
++    assert(!d.pending && d.committed.frames.active_count == 0);
++    assert(d.committed.frames.last_identity == 2 && d.reserved_sequence == 5 &&
++        d.reserved_ns == 500);
++    assert(!memcmp(&d.committed, &d.candidate, sizeof(d.committed)));
++    const size_t attempts_after_empty_loss = q.attempts;
++    assert(lithium_touch_delivery_prepare(&d, 6, 600, NULL, 0, true) == LITHIUM_DELIVERY_OK);
++    assert(d.batch.queue.count == 0 && d.batch.queue.stream_lost);
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_OK);
++    assert(q.attempts == attempts_after_empty_loss && d.committed.frames.active_count == 0);
++    assert(d.local_empty_losses == 2 && !d.local_empty_losses_saturated);
++    d.local_empty_losses = UINT64_MAX;
++    assert(lithium_touch_delivery_prepare(&d, 7, 700, NULL, 0, true) == LITHIUM_DELIVERY_OK);
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_OK);
++    assert(d.local_empty_losses == UINT64_MAX && d.local_empty_losses_saturated);
++    finger(f, 0, 2, 2, 300, 400); finger(f, 1, 3, 2, 500, 600);
++    q.capacity = 2; send(&d, 8, f); assert(d.committed.frames.last_identity == 4);
++    empty(f); q.capacity = 2; send(&d, 9, f); /* Missing IDs release too. */
++    assert(q.accepted.queue.count == 2 && d.committed.frames.active_count == 0);
++}
++
++static void order_and_empty(void)
++{
++    struct lithium_touch_delivery d = {0}; struct fake_queue q = {0};
++    uint8_t f[LITHIUM_TOUCH_FRAME_BYTES]; init(&d, &q); empty(f);
++    assert(lithium_touch_delivery_prepare(&d, 0, 1, f, sizeof(f), false) == LITHIUM_DELIVERY_ORDER);
++    assert(lithium_touch_delivery_prepare(&d, 1, 0, f, sizeof(f), false) == LITHIUM_DELIVERY_ORDER);
++    send(&d, 2, f);
++    assert(q.attempts == 0 && q.accepts == 0 && !d.pending);
++    assert(d.reserved_sequence == 2 && d.reserved_ns == 200);
++    assert(lithium_touch_delivery_prepare(&d, 2, 300, f, sizeof(f), false) == LITHIUM_DELIVERY_ORDER);
++    assert(lithium_touch_delivery_prepare(&d, 1, 300, f, sizeof(f), false) == LITHIUM_DELIVERY_ORDER);
++    assert(lithium_touch_delivery_prepare(&d, 3, 200, f, sizeof(f), false) == LITHIUM_DELIVERY_ORDER);
++    assert(lithium_touch_delivery_prepare(&d, 3, 199, f, sizeof(f), false) == LITHIUM_DELIVERY_ORDER);
++    assert(q.attempts == 0 && !d.pending);
++    finger(f, 0, 0, 0, 100, 100); send(&d, 3, f);
++    finger(f, 0, 0, 2, 100, 100);
++    q.capacity = 0; q.mode = REJECT;
++    assert(lithium_touch_delivery_prepare(&d, 4, 400, f, sizeof(f), false) == LITHIUM_DELIVERY_OK);
++    assert(d.batch.queue.count == 0 && d.candidate.frames.active_count == 1);
++    const size_t attempts_before_stationary = q.attempts;
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_OK);
++    assert(q.attempts == attempts_before_stationary && !d.pending);
++    assert(d.committed.frames.active_count == 1 &&
++        d.committed.frames.active[0].phase == LITHIUM_TOUCH_STATIONARY);
++    assert(d.local_empty_losses == 0 && !d.local_empty_losses_saturated);
++    assert(d.committed.frames.last_identity == 1 && d.reserved_sequence == 4 &&
++        d.reserved_ns == 400);
++    assert(!memcmp(&d.committed, &d.candidate, sizeof(d.committed)));
++    assert(lithium_touch_delivery_prepare(&d, 5, 500, NULL, 0, true) == LITHIUM_DELIVERY_OK);
++    assert(d.batch.queue.count == 1 && d.batch.queue.stream_lost &&
++        d.batch.queue.events[0].type == 3);
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_REJECTED);
++    q.mode = NORMAL; q.capacity = 1;
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_OK);
++    assert(d.committed.frames.active_count == 0 && q.accepted.queue.count == 1 &&
++        q.accepted.queue.events[0].type == 3);
++    finger(f, 0, 0, 0, 100, 100); q.capacity = 1; send(&d, 6, f);
++    finger(f, 0, 0, 1, 100, 100); q.mode = REJECT; q.capacity = 1;
++    assert(lithium_touch_delivery_prepare(&d, 7, 700, f, sizeof(f), false) == LITHIUM_DELIVERY_OK);
++    assert(d.batch.queue.count == 1 && d.batch.queue.events[0].type == 3);
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_REJECTED);
++    assert(d.pending && d.committed.frames.active_count == 1);
++    q.mode = NORMAL; q.capacity = 1;
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_OK);
++    assert(q.accepted.queue.count == 1 && q.accepted.queue.events[0].type == 3);
++    assert(d.local_empty_losses == 0);
++    assert(d.committed.frames.active_count == 0);
++    assert(lithium_touch_delivery_prepare(&d, UINT64_MAX, UINT64_MAX, f, sizeof(f), false) == LITHIUM_DELIVERY_OK);
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_OK);
++    assert(lithium_touch_delivery_prepare(&d, 1, 1, f, sizeof(f), false) == LITHIUM_DELIVERY_ORDER);
++    /* Test-only injection of allocator exhaustion; production state is opaque
++     * by contract and must never be modified this way by an adapter. */
++    struct lithium_touch_delivery exhausted = {0}; struct fake_queue eq = {0};
++    init(&exhausted, &eq); exhausted.committed.frames.last_identity = UINT64_MAX;
++    finger(f, 0, 0, 0, 100, 100);
++    assert(lithium_touch_delivery_prepare(&exhausted, 1, 1, f, sizeof(f), false) == LITHIUM_DELIVERY_INVALID);
++    assert(!exhausted.pending && exhausted.reserved_sequence == 0 && eq.attempts == 0);
++    assert(exhausted.committed.frames.last_identity == UINT64_MAX);
++}
++
++static void malformed(void)
++{
++    struct lithium_touch_delivery d = {0}; struct fake_queue q = {0};
++    uint8_t f[LITHIUM_TOUCH_FRAME_BYTES]; init(&d, &q); empty(f);
++    finger(f, 0, 1, 0, 100, 100); send(&d, 1, f);
++    const struct lithium_touch_delivery old = d;
++    assert(lithium_touch_delivery_prepare(&d, 2, 200, f, 62, false) == LITHIUM_DELIVERY_INVALID);
++    assert(lithium_touch_delivery_prepare(&d, 2, 200, NULL, 63, false) == LITHIUM_DELIVERY_INVALID);
++    assert(lithium_touch_delivery_prepare(&d, 2, 200, f, 63, true) == LITHIUM_DELIVERY_INVALID);
++    assert(lithium_touch_delivery_prepare(&d, 2, 200, NULL, 1, true) == LITHIUM_DELIVERY_INVALID);
++    finger(f, 1, 1, 2, 200, 200);
++    assert(lithium_touch_delivery_prepare(&d, 2, 200, f, 63, false) == LITHIUM_DELIVERY_INVALID);
++    empty(f); finger(f, 0, 1, 3, 200, 200);
++    assert(lithium_touch_delivery_prepare(&d, 2, 200, f, 63, false) == LITHIUM_DELIVERY_INVALID);
++    finger(f, 0, 1, 1, 1081, 2040);
++    assert(lithium_touch_delivery_prepare(&d, 2, 200, f, 63, false) == LITHIUM_DELIVERY_INVALID);
++    finger(f, 0, 1, 2, 1080, 2041);
++    assert(lithium_touch_delivery_prepare(&d, 2, 200, f, 63, false) == LITHIUM_DELIVERY_INVALID);
++    assert(!memcmp(&d, &old, sizeof(d)) && q.attempts == 1);
++    /* Malformation does not silently synthesize UP or consume the stamp. */
++    assert(lithium_touch_delivery_prepare(&d, 2, 200, NULL, 0, true) == LITHIUM_DELIVERY_OK);
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_OK);
++    assert(q.accepted.queue.count == 1 && q.accepted.queue.events[0].type == 3);
++}
++
++static void rotations(void)
++{
++    for (unsigned r = 0; r < 360; r += 90) {
++        struct lithium_touch_delivery d = {0}; struct fake_queue q = {0};
++        struct lithium_touch_geometry g = geometry; g.rotation = r;
++        q.producer = &d; q.capacity = 20;
++        const struct lithium_touch_delivery_adapter a = {1, &q, submit, resync};
++        assert(lithium_touch_delivery_init(&d, &g, &a) == LITHIUM_DELIVERY_OK);
++        uint8_t f[LITHIUM_TOUCH_FRAME_BYTES]; empty(f); finger(f, 0, 0, 0, 0, 0);
++        send(&d, 1, f);
++        assert(q.accepted.queue.events[0].x == ((r == 90 || r == 180) ? 65535u : 0u));
++        assert(q.accepted.queue.events[0].y == ((r == 180 || r == 270) ? 65535u : 0u));
++        finger(f, 0, 0, 2, 540, 1020); send(&d, 2, f);
++        assert(q.accepted.queue.events[0].x == 32768 && q.accepted.queue.events[0].y == 32768);
++    }
++    struct lithium_touch_delivery d = {0}; struct fake_queue q = {0};
++    struct lithium_touch_geometry g = geometry; g.left = 36; g.right = 323;
++    q.producer = &d; q.capacity = 1;
++    const struct lithium_touch_delivery_adapter a = {1, &q, submit, NULL};
++    assert(lithium_touch_delivery_init(&d, &g, &a) == LITHIUM_DELIVERY_OK);
++    uint8_t f[LITHIUM_TOUCH_FRAME_BYTES]; empty(f); finger(f, 0, 0, 0, 0, 0);
++    send(&d, 1, f); uint32_t x, y;
++    assert(lithium_touch_queue_map(&g, 0, 0, &x, &y));
++    assert(q.accepted.queue.events[0].x == x && q.accepted.queue.events[0].y == y);
++}
++
++static void reentrancy_and_unavailable(void)
++{
++    struct lithium_touch_delivery d = {0}; struct fake_queue q = {0};
++    struct lithium_touch_delivery_adapter a = {0};
++    assert(lithium_touch_delivery_init(&d, &geometry, NULL) == LITHIUM_DELIVERY_UNAVAILABLE);
++    assert(lithium_touch_delivery_init(&d, &geometry, &a) == LITHIUM_DELIVERY_UNAVAILABLE);
++    a.atomic_abi = 1;
++    assert(lithium_touch_delivery_init(&d, &geometry, &a) == LITHIUM_DELIVERY_UNAVAILABLE);
++    a.submit = submit; a.atomic_abi = 2;
++    assert(lithium_touch_delivery_init(&d, &geometry, &a) == LITHIUM_DELIVERY_UNAVAILABLE);
++    assert(lithium_touch_delivery_prepare(&d, 1, 1, NULL, 0, true) == LITHIUM_DELIVERY_UNAVAILABLE);
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_UNAVAILABLE);
++    assert(lithium_touch_delivery_resync(&d) == LITHIUM_DELIVERY_UNAVAILABLE);
++    a.atomic_abi = 1;
++    struct lithium_touch_geometry bad = geometry; bad.rotation = 45;
++    assert(lithium_touch_delivery_init(&d, &bad, &a) == LITHIUM_DELIVERY_INVALID);
++    assert(!d.initialized && q.attempts == 0);
++    init(&d, &q); q.mode = REENTER;
++    uint8_t f[LITHIUM_TOUCH_FRAME_BYTES]; empty(f); finger(f, 0, 0, 0, 0, 0);
++    send(&d, 1, f); assert(q.attempts == 1 && q.accepts == 1 && !d.busy);
++    assert(lithium_touch_delivery_init(&d, &geometry, &a) == LITHIUM_DELIVERY_INVALID);
++    assert(lithium_touch_delivery_prepare(NULL, 1, 1, NULL, 0, true) == LITHIUM_DELIVERY_INVALID);
++    assert(lithium_touch_delivery_submit(NULL) == LITHIUM_DELIVERY_INVALID);
++    assert(lithium_touch_delivery_resync(NULL) == LITHIUM_DELIVERY_INVALID);
++    assert(lithium_touch_delivery_init(NULL, NULL, NULL) == LITHIUM_DELIVERY_INVALID);
++}
++
++static void poison_and_resync(void)
++{
++    struct lithium_touch_delivery d = {0}; struct fake_queue q = {0};
++    uint8_t f[LITHIUM_TOUCH_FRAME_BYTES]; init(&d, &q); empty(f);
++    finger(f, 0, 0, 0, 100, 100); finger(f, 1, 1, 0, 200, 200);
++    assert(lithium_touch_delivery_prepare(&d, 1, 100, f, sizeof(f), false) == LITHIUM_DELIVERY_OK);
++    q.mode = PARTIAL;
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_POISONED);
++    assert(q.published == 1 && d.committed.frames.active_count == 0 && d.pending);
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_POISONED);
++    assert(lithium_touch_delivery_prepare(&d, 2, 200, NULL, 0, true) == LITHIUM_DELIVERY_POISONED);
++    assert(q.attempts == 1);
++    assert(lithium_touch_delivery_resync(&d) == LITHIUM_DELIVERY_POISONED);
++    assert(q.reset_calls == 1 && q.fence == 1 && d.poisoned);
++    q.reset_result = LITHIUM_SUBMIT_UNCERTAIN;
++    assert(lithium_touch_delivery_resync(&d) == LITHIUM_DELIVERY_POISONED);
++    q.reset_result = LITHIUM_SUBMIT_ACCEPT_ALL;
++    assert(lithium_touch_delivery_resync(&d) == LITHIUM_DELIVERY_OK);
++    assert(!d.poisoned && !d.pending && d.committed.frames.last_identity == 2);
++    assert(d.reserved_sequence == 1 && d.reserved_ns == 100);
++    assert(lithium_touch_delivery_prepare(&d, 1, 100, f, sizeof(f), false) == LITHIUM_DELIVERY_ORDER);
++    q.mode = NORMAL; send(&d, 2, f);
++    assert(d.committed.frames.active[0].identity == 3 && d.committed.frames.last_identity == 4);
++    assert(lithium_touch_delivery_resync(&d) == LITHIUM_DELIVERY_INVALID);
++    /* An unknown callback result also poisons, with no optional recovery hook. */
++    struct lithium_touch_delivery other = {0}; struct fake_queue oq = {0};
++    const struct lithium_touch_delivery_adapter a = {1, &oq, submit, NULL};
++    assert(lithium_touch_delivery_init(&other, &geometry, &a) == LITHIUM_DELIVERY_OK);
++    oq.mode = UNKNOWN;
++    assert(lithium_touch_delivery_prepare(&other, 1, 1, f, sizeof(f), false) == LITHIUM_DELIVERY_OK);
++    assert(lithium_touch_delivery_submit(&other) == LITHIUM_DELIVERY_POISONED);
++    assert(lithium_touch_delivery_resync(&other) == LITHIUM_DELIVERY_UNAVAILABLE);
++    assert(lithium_touch_delivery_submit(&other) == LITHIUM_DELIVERY_POISONED && oq.attempts == 1);
++}
++
++int main(void)
++{
++    down_move_up(); puts("PASS down/move/up, private state, timestamps, identity reuse prevention");
++    multi_and_retry(); puts("PASS 10 contacts/20 events, saturation, exact retry, no partial prefix");
++    loss_once(); puts("PASS explicit loss, rejected release retry, repeated loss, missing-ID release");
++    order_and_empty(); puts("PASS duplicate/decreasing sequence/time, empty/stationary, no wrap");
++    malformed(); puts("PASS malformed length/null/loss/IDs/events/coordinates, no mutation");
++    rotations(); puts("PASS immutable geometry: four rotations, midpoint, viewport");
++    reentrancy_and_unavailable(); puts("PASS callback recursion, absent atomic adapter, invalid API inputs");
++    poison_and_resync(); puts("PASS partial/unknown poison, no replay, failed/successful recovery fence");
++    puts("PASS 8 synthetic touch delivery groups; no physical queue or IOHID connected");
++    return 0;
++}

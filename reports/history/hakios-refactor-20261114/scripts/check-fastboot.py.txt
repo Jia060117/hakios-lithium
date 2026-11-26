@@ -1,0 +1,160 @@
+"""Check this lithium's Fastboot state with bounded waits and optional reboot.
+
+Requires an explicit --enter-bootloader to reboot from the authorized ADB
+device. Performs query commands only in Fastboot, then optionally returns to
+Android. Never flashes, erases, unlocks, locks, or boots an image.
+"""
+import argparse
+from datetime import datetime
+import json
+from pathlib import Path
+import re
+import shutil
+import subprocess
+import time
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def run(args, timeout=12):
+    try:
+        p = subprocess.run(args, capture_output=True, timeout=timeout)
+        return dict(command=args, returncode=p.returncode,
+                    stdout=p.stdout.decode("utf-8", errors="replace").strip(),
+                    stderr=p.stderr.decode("utf-8", errors="replace").strip())
+    except subprocess.TimeoutExpired as e:
+        return dict(command=args, returncode=None, timeout_seconds=timeout,
+                    stdout=(e.stdout or b"").decode("utf-8", errors="replace").strip(),
+                    stderr=(e.stderr or b"").decode("utf-8", errors="replace").strip())
+
+
+def listed(executable):
+    result = run([executable, "devices"])
+    devices = []
+    for line in result["stdout"].splitlines():
+        fields = line.split()
+        if len(fields) >= 2 and fields[1] in ("device", "fastboot"):
+            devices.append(fields[0])
+    return devices
+
+
+def wait_for(executable, serial, seconds):
+    deadline = time.monotonic() + seconds
+    while time.monotonic() < deadline:
+        if serial in listed(executable):
+            return True
+        time.sleep(1)
+    return False
+
+
+def variable_value(result, name):
+    combined = result.get("stdout", "") + "\n" + result.get("stderr", "")
+    # Horizontal whitespace only: an empty value must not consume the next
+    # line and mislabel Fastboot's "Finished" timing message as a value.
+    match = re.search(r"(?:\(bootloader\)[ \t]*)?" + re.escape(name) + r":[ \t]*([^\r\n]*)", combined)
+    return (match.group(1).strip() or None) if match and result.get("returncode") == 0 else None
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--enter-bootloader", action="store_true")
+    parser.add_argument("--return-to-android", action="store_true")
+    parser.add_argument("--serial")
+    parser.add_argument("--reparse-log", type=Path, help="Rebuild the sanitized report offline; no ADB/Fastboot commands")
+    args = parser.parse_args()
+    if args.reparse_log:
+        report = json.loads(args.reparse_log.read_text(encoding="utf-8"))
+        public = json.loads((ROOT / "reports/fastboot-status.json").read_text(encoding="utf-8"))
+        public["variables"] = {name: variable_value(value, name) for name, value in report["queries"].items() if name != "oem device-info"}
+        public["returned_to_android"] = report["returned_to_android"]
+        oem = report["queries"].get("oem device-info", {})
+        oem_text = oem.get("stdout", "") + "\n" + oem.get("stderr", "")
+        public["critical_unlocked_verified"] = oem.get("returncode") == 0 and bool(re.search(r"Device critical unlocked:[ \t]*true", oem_text, re.I))
+        public["local_log_path"] = str(args.reparse_log.resolve().relative_to(ROOT)).replace("\\", "/")
+        public["empty_values_are_unknown"] = True
+        (ROOT / "reports/fastboot-status.json").write_text(json.dumps(public, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        print("Reparsed saved log offline; empty values remain null.")
+        print("Returned to Android:", public["returned_to_android"])
+        return
+    adb, fastboot = shutil.which("adb"), shutil.which("fastboot")
+    if not adb or not fastboot:
+        raise SystemExit("adb and fastboot must be on PATH")
+    adb_devices = listed(adb)
+    serial = args.serial
+    if args.enter_bootloader:
+        if serial is None:
+            if len(adb_devices) != 1:
+                raise SystemExit("Connect exactly one authorized ADB device or specify --serial")
+            serial = adb_devices[0]
+        if serial not in adb_devices:
+            raise SystemExit("Specified device is not authorized in ADB")
+        identity = run([adb, "-s", serial, "shell", "getprop", "ro.product.device"])
+        if identity["returncode"] != 0 or identity["stdout"] != "lithium":
+            raise SystemExit("Refusing to reboot a non-lithium or unidentified device")
+    else:
+        if serial is None:
+            raise SystemExit("Existing Fastboot sessions require --serial from the prior verified ADB session")
+        identity = None
+    directory = ROOT / "reports/local" / (datetime.now().strftime("%Y%m%d-%H%M%S-%f") + "-fastboot")
+    directory.mkdir(parents=True)
+    report = dict(serial=serial, adb_identity=identity, queries={},
+                  bootloader_reboot_performed=False, returned_to_android=False,
+                  partition_writes_performed=False, image_boot_performed=False)
+    public = dict(device="lithium", checked_at=datetime.now().astimezone().isoformat(),
+                  fastboot_visible=False, bootloader_unlocked_verified=False,
+                  returned_to_android=False, partition_writes_performed=False)
+    def save():
+        (directory / "fastboot.json").write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        (ROOT / "reports/fastboot-status.json").write_text(json.dumps(public, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    try:
+        if args.enter_bootloader:
+            report["enter_bootloader"] = run([adb, "-s", serial, "reboot", "bootloader"])
+            if report["enter_bootloader"]["returncode"] != 0:
+                raise RuntimeError("ADB bootloader reboot failed")
+            report["bootloader_reboot_performed"] = True
+            save()
+        if not wait_for(fastboot, serial, 40):
+            report["fastboot_visible"] = False
+            raise RuntimeError("Fastboot was not visible within 40 seconds; inspect the Windows USB driver")
+        public["fastboot_visible"] = report["fastboot_visible"] = True
+        print("Fastboot connected; querying verified ADB device.", flush=True)
+        for name in ("product", "unlocked", "secure", "version-bootloader", "max-download-size",
+                     "partition-size:boot", "partition-size:recovery", "partition-size:userdata",
+                     "partition-type:userdata", "current-slot"):
+            result = run([fastboot, "-s", serial, "getvar", name])
+            report["queries"][name] = result
+            public.setdefault("variables", {})[name] = variable_value(result, name)
+            public.setdefault("query_returncodes", {})[name] = result["returncode"]
+        result = run([fastboot, "-s", serial, "oem", "device-info"])
+        report["queries"]["oem device-info"] = result
+        combined = result["stdout"] + "\n" + result["stderr"]
+        public["bootloader_unlocked_verified"] = result["returncode"] == 0 and bool(re.search(r"Device unlocked:\s*true", combined, re.I))
+        public["oem_device_info_returncode"] = result["returncode"]
+        public["critical_unlocked_verified"] = result["returncode"] == 0 and bool(re.search(r"Device critical unlocked:[ \t]*true", combined, re.I))
+        for name, value in public.get("variables", {}).items():
+            print(name, "=", value, flush=True)
+        print("Unlocked independently verified:", public["bootloader_unlocked_verified"], flush=True)
+    except Exception as e:
+        report["error"] = public["error"] = str(e)
+        raise
+    finally:
+        public["local_log_path"] = str((directory / "fastboot.json").relative_to(ROOT)).replace("\\", "/")
+        public["empty_values_are_unknown"] = True
+        save()
+        if args.return_to_android and serial in listed(fastboot):
+            report["reboot_android"] = run([fastboot, "-s", serial, "reboot"])
+            if report["reboot_android"]["returncode"] == 0:
+                print("Returning to Android; waiting up to 100 seconds.", flush=True)
+                visible = wait_for(adb, serial, 100)
+                if visible:
+                    identity = run([adb, "-s", serial, "shell", "getprop", "ro.product.device"])
+                    report["returned_adb_identity"] = identity
+                    report["returned_to_android"] = public["returned_to_android"] = identity["returncode"] == 0 and identity["stdout"] == "lithium"
+        save()
+        print("Local log:", directory / "fastboot.json", flush=True)
+        print("Returned to Android:", public["returned_to_android"], flush=True)
+        print("No partition writes, wipe, root, image boot or lock-state changes performed.", flush=True)
+
+
+if __name__ == "__main__":
+    main()

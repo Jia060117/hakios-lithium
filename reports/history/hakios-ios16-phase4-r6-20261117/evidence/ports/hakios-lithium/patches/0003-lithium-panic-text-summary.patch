@@ -1,0 +1,142 @@
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -351,31 +351,118 @@
+ 
+ static int hc_list_is_uefis(void);
+ #if defined(HAKIOS_LITHIUM)
+-/* Keep a bounded, printable tail on screen; compose_logs retains the raw log. */
++/* XNU 8796 kern/debug.h: packed embedded_panic_header v4 prefix.
++ * Read its declared text spans only; compressed kcdata stays in the raw RAM
++ * region and compose_logs. This decoder never changes the kernel panic path. */
++struct lithium_panic_prefix {
++    uint32_t magic, crc, version;
++    uint64_t flags;
++    uint32_t text_offset, text_len, stack_offset, stack_len;
++    uint32_t other_offset, other_len;
++} __attribute__((packed));
++_Static_assert(__builtin_offsetof(struct lithium_panic_prefix, text_offset)==20,
++    "XNU embedded panic header layout");
++
++static int
++lithium_panic_text(const void *region, uint64_t capacity, const char **text, uint64_t *bytes)
++{
++    struct lithium_panic_prefix h;
++    if (region==NULL || capacity<sizeof(h)) return 0;
++    memcpy(&h,region,sizeof(h));
++    if (h.magic!=0x46554e4b || h.version!=4 || h.text_offset<sizeof(h) ||
++        !h.text_len || h.text_offset>capacity || h.text_len>capacity-h.text_offset) return 0;
++    if (h.stack_len && (h.stack_offset<h.text_offset+h.text_len ||
++        h.stack_offset>capacity || h.stack_len>capacity-h.stack_offset)) return 0;
++    *text=(const char *)region+h.text_offset; *bytes=h.text_len;
++    return 1;
++}
++
++static const char *
++lithium_find(const char *text, uint64_t bytes, const char *key)
++{
++    uint64_t n=0;
++    while (key[n]) n++;
++    if (n>bytes) return NULL;
++    for (uint64_t i=0;i<=bytes-n;i++) if (memcmp(text+i,key,n)==0) return text+i;
++    return NULL;
++}
++
++/* Maximum 28 physical rows at 57 columns, leaving room for the header and
++ * end banner in the board's 40-row console. Long/binary lines cannot wrap
++ * away the cause. Blank or control bytes are never interpreted as commands. */
++static uint32_t lithium_summary_rows;
++static const char *
++lithium_summary_line(const char *p, const char *end)
++{
++    uint32_t n=0, printable=0;
++    const char *next=p;
++    while (next<end && *next!='\n') {
++        if ((unsigned char)*next>=32 && (unsigned char)*next<127) printable++;
++        next++;
++    }
++    if (lithium_summary_rows>=28) return next<end ? next+1 : end;
++    if ((uint64_t)(next-p)>8 && printable*4<(uint64_t)(next-p)*3) {
++        print("[binary span omitted from display]\n"); lithium_summary_rows++;
++        return next<end ? next+1 : end;
++    }
++    for (;p<next && n<224 && (n/57)+lithium_summary_rows<28;p++,n++) {
++        unsigned char c=*p;
++        put_char(c>=32 && c<127 ? c : ' ');
++    }
++    put_char('\n'); lithium_summary_rows+=(n+56)/57 ? (n+56)/57 : 1;
++    return next<end ? next+1 : end;
++}
++
++static void
++lithium_summary_lines(const char *p, const char *end, unsigned count)
++{
++    while (p<end && count-- && lithium_summary_rows<28) p=lithium_summary_line(p,end);
++}
++
++static void
++lithium_log_summary(const char *log, uint64_t bytes, const void *region, uint64_t capacity)
++{
++    const char *text=log, *line;
++    uint64_t text_bytes=bytes;
++    lithium_summary_rows=0;
++    print("LITHIUM IOS16 RETURN; RAW BYTES %d\n",bytes);
++    if (log==NULL) { print("Kernel did not supply a log\n"); return; }
++    int structured=lithium_panic_text(region,capacity,&text,&text_bytes);
++    if (structured) print("PANIC TEXT FROM XNU V4 HEADER\n");
++    else {
++        /* The returned upstream buffer appends binary panic data after this
++         * marker. When its header is unavailable, stop before that appendix. */
++        const char *marker=lithium_find(log,bytes,"\n--- panic buffer ---\n");
++        if (marker) text_bytes=(uint64_t)(marker-log);
++    }
++    line=lithium_find(text,text_bytes,"panic(");
++    if (line) {
++        print("PANIC CAUSE AND CONTEXT:\n");
++        lithium_summary_lines(line,text+text_bytes,6);
++    } else {
++        print("PANIC CAUSE NOT RECOVERED\n");
++        if (structured) lithium_summary_lines(text,text+text_bytes,6);
++    }
++    for (unsigned i=0;i<2;i++) {
++        line=lithium_find(text,text_bytes,i ? "Panicked thread:" : "Panicked task");
++        if (line) lithium_summary_lines(line,text+text_bytes,i ? 7 : 1);
++    }
++    if (!structured) {
++        print("LAST TEXT LOG:\n");
++        uint64_t start=text_bytes, lines=0;
++        while (start>0 && lines<6) if (text[--start]=='\n') lines++;
++        if (start) start++;
++        lithium_summary_lines(text+start,text+text_bytes,6);
++    }
++    print("RAW LOG AND STACKSHOT RETAINED IN RAM\n");
++    print("SUMMARY RETAINED UNTIL REBOOT\n");
++}
++
+ static void
+ lithium_return_screen(const char *log, uint64_t bytes)
+ {
+     ((efi_status (EFIAPI *)(efi_text_output *, uint8_t))ST->con_out->reset)(ST->con_out, 0);
+-    print("LITHIUM IOS16 RETURN: %d kernel log bytes\n", bytes);
+-    if (log == NULL) { print("Kernel did not supply a log\n"); return; }
+-    const char *panic_line = NULL;
+-    for (uint64_t i = 0; i + 6 <= bytes; i++) {
+-        if ((i == 0 || log[i-1] == '\n') && memcmp(log+i,"panic(",6)==0) panic_line=log+i;
+-    }
+-    if (panic_line) {
+-        print("PANIC CAUSE: ");
+-        for (unsigned i=0; panic_line<log+bytes && *panic_line!='\n' && i<240; i++,panic_line++) {
+-            unsigned char c=*panic_line; put_char(c>=32 && c<127 ? c : '.');
+-        }
+-        put_char('\n');
+-    }
+-    uint64_t start=bytes, lines=0;
+-    while (start>0 && lines<26) if (log[--start]=='\n') lines++;
+-    if (start) start++;
+-    for (uint64_t i=start; i<bytes; i++) {
+-        unsigned char c=log[i]; put_char(c=='\n'||(c>=32&&c<127) ? c : '.');
+-    }
+-    print("\nSUMMARY RETAINED UNTIL REBOOT; RAW LOG IN RAM\n");
++    lithium_log_summary(log,bytes,(const void *)PANIC_LOG_BASE,PANIC_LOG_SIZE);
+ }
+ #endif
+ 

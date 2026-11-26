@@ -1,0 +1,1936 @@
+{
+  "schema": "hakios.gpu.abi.snapshot.v1",
+  "date": "2026-11-23",
+  "requested_stack": "A530 -> hakios-metal A5xx -> HakiosMetalCA",
+  "status": "host_abi_validated_only",
+  "a530_submit": "unsupported",
+  "sources": [
+    {
+      "id": "kernel",
+      "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+      "sha256": "2d3ba9f37a45980438299137bb24f89fe81ff3376850337a3b5df51ff4ef8eb8",
+      "bytes": 47089,
+      "lines": 1326
+    },
+    {
+      "id": "metal_header",
+      "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+      "sha256": "ea45cbe172ea65e53f2f4d1dac67681f358338ad4349e09b171eb903002706c9",
+      "bytes": 9417,
+      "lines": 205
+    },
+    {
+      "id": "metal_gpu",
+      "path": "upstream/hakios-xnu-kernel/hakios-metal/src/gpu.cpp",
+      "sha256": "d16c01c4c94c4475dc96888661d5f6051f78f972e4552de70f648eff08417188",
+      "bytes": 5738,
+      "lines": 201
+    },
+    {
+      "id": "iokit",
+      "path": "upstream/hakios-xnu-kernel/hakios-metal/src/iokit_transport.cpp",
+      "sha256": "48067c25eff3c46d4c9c75872fabd8498c4f53b9e3e259fe39b5343d841745c6",
+      "bytes": 3145,
+      "lines": 83
+    }
+  ],
+  "byte_order": "little",
+  "pointer_bits": 64,
+  "selectors": [
+    {
+      "name": "GEM_CLOSE",
+      "number": 9,
+      "hex": "0x9",
+      "record": "HakiosGpuGemClose",
+      "metal_wrapper": true,
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 72,
+          "last_line": 89,
+          "excerpt_sha256": "39b94f8a78335e59fb2a607f6651863e468792a451ca5e39bb0c604502d58d4c"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 22,
+          "last_line": 34,
+          "excerpt_sha256": "936f041da45f919a98298fd3aa9cf0bb737da3ccba3ee5394ba9d8072563e24d"
+        }
+      ]
+    },
+    {
+      "name": "GET_PARAM",
+      "number": 64,
+      "hex": "0x40",
+      "record": "HakiosGpuParam",
+      "metal_wrapper": true,
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 72,
+          "last_line": 89,
+          "excerpt_sha256": "39b94f8a78335e59fb2a607f6651863e468792a451ca5e39bb0c604502d58d4c"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 22,
+          "last_line": 34,
+          "excerpt_sha256": "936f041da45f919a98298fd3aa9cf0bb737da3ccba3ee5394ba9d8072563e24d"
+        }
+      ]
+    },
+    {
+      "name": "SET_PARAM",
+      "number": 65,
+      "hex": "0x41",
+      "record": "HakiosGpuParam",
+      "metal_wrapper": false,
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 72,
+          "last_line": 89,
+          "excerpt_sha256": "39b94f8a78335e59fb2a607f6651863e468792a451ca5e39bb0c604502d58d4c"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 22,
+          "last_line": 34,
+          "excerpt_sha256": "936f041da45f919a98298fd3aa9cf0bb737da3ccba3ee5394ba9d8072563e24d"
+        }
+      ]
+    },
+    {
+      "name": "GEM_NEW",
+      "number": 66,
+      "hex": "0x42",
+      "record": "HakiosGpuGemNew",
+      "metal_wrapper": true,
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 72,
+          "last_line": 89,
+          "excerpt_sha256": "39b94f8a78335e59fb2a607f6651863e468792a451ca5e39bb0c604502d58d4c"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 22,
+          "last_line": 34,
+          "excerpt_sha256": "936f041da45f919a98298fd3aa9cf0bb737da3ccba3ee5394ba9d8072563e24d"
+        }
+      ]
+    },
+    {
+      "name": "GEM_INFO",
+      "number": 67,
+      "hex": "0x43",
+      "record": "HakiosGpuGemInfo",
+      "metal_wrapper": true,
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 72,
+          "last_line": 89,
+          "excerpt_sha256": "39b94f8a78335e59fb2a607f6651863e468792a451ca5e39bb0c604502d58d4c"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 22,
+          "last_line": 34,
+          "excerpt_sha256": "936f041da45f919a98298fd3aa9cf0bb737da3ccba3ee5394ba9d8072563e24d"
+        }
+      ]
+    },
+    {
+      "name": "CPU_PREP",
+      "number": 68,
+      "hex": "0x44",
+      "record": "HakiosGpuCpuPrep",
+      "metal_wrapper": true,
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 72,
+          "last_line": 89,
+          "excerpt_sha256": "39b94f8a78335e59fb2a607f6651863e468792a451ca5e39bb0c604502d58d4c"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 22,
+          "last_line": 34,
+          "excerpt_sha256": "936f041da45f919a98298fd3aa9cf0bb737da3ccba3ee5394ba9d8072563e24d"
+        }
+      ]
+    },
+    {
+      "name": "CPU_FINI",
+      "number": 69,
+      "hex": "0x45",
+      "record": "HakiosGpuCpuFini",
+      "metal_wrapper": true,
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 72,
+          "last_line": 89,
+          "excerpt_sha256": "39b94f8a78335e59fb2a607f6651863e468792a451ca5e39bb0c604502d58d4c"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 22,
+          "last_line": 34,
+          "excerpt_sha256": "936f041da45f919a98298fd3aa9cf0bb737da3ccba3ee5394ba9d8072563e24d"
+        }
+      ]
+    },
+    {
+      "name": "SUBMIT",
+      "number": 70,
+      "hex": "0x46",
+      "record": "HakiosGpuSubmit",
+      "metal_wrapper": true,
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 72,
+          "last_line": 89,
+          "excerpt_sha256": "39b94f8a78335e59fb2a607f6651863e468792a451ca5e39bb0c604502d58d4c"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 22,
+          "last_line": 34,
+          "excerpt_sha256": "936f041da45f919a98298fd3aa9cf0bb737da3ccba3ee5394ba9d8072563e24d"
+        }
+      ]
+    },
+    {
+      "name": "WAIT_FENCE",
+      "number": 71,
+      "hex": "0x47",
+      "record": "HakiosGpuWaitFence",
+      "metal_wrapper": true,
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 72,
+          "last_line": 89,
+          "excerpt_sha256": "39b94f8a78335e59fb2a607f6651863e468792a451ca5e39bb0c604502d58d4c"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 22,
+          "last_line": 34,
+          "excerpt_sha256": "936f041da45f919a98298fd3aa9cf0bb737da3ccba3ee5394ba9d8072563e24d"
+        }
+      ]
+    },
+    {
+      "name": "MADVISE",
+      "number": 72,
+      "hex": "0x48",
+      "record": "HakiosGpuMadvise",
+      "metal_wrapper": false,
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 72,
+          "last_line": 89,
+          "excerpt_sha256": "39b94f8a78335e59fb2a607f6651863e468792a451ca5e39bb0c604502d58d4c"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 22,
+          "last_line": 34,
+          "excerpt_sha256": "936f041da45f919a98298fd3aa9cf0bb737da3ccba3ee5394ba9d8072563e24d"
+        }
+      ]
+    },
+    {
+      "name": "QUEUE_NEW",
+      "number": 74,
+      "hex": "0x4a",
+      "record": "HakiosGpuQueue",
+      "metal_wrapper": true,
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 72,
+          "last_line": 89,
+          "excerpt_sha256": "39b94f8a78335e59fb2a607f6651863e468792a451ca5e39bb0c604502d58d4c"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 22,
+          "last_line": 34,
+          "excerpt_sha256": "936f041da45f919a98298fd3aa9cf0bb737da3ccba3ee5394ba9d8072563e24d"
+        }
+      ]
+    },
+    {
+      "name": "QUEUE_CLOSE",
+      "number": 75,
+      "hex": "0x4b",
+      "record": "HakiosGpuQueueClose",
+      "metal_wrapper": true,
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 72,
+          "last_line": 89,
+          "excerpt_sha256": "39b94f8a78335e59fb2a607f6651863e468792a451ca5e39bb0c604502d58d4c"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 22,
+          "last_line": 34,
+          "excerpt_sha256": "936f041da45f919a98298fd3aa9cf0bb737da3ccba3ee5394ba9d8072563e24d"
+        }
+      ]
+    },
+    {
+      "name": "QUEUE_QUERY",
+      "number": 76,
+      "hex": "0x4c",
+      "record": "HakiosGpuQueueQuery",
+      "metal_wrapper": false,
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 72,
+          "last_line": 89,
+          "excerpt_sha256": "39b94f8a78335e59fb2a607f6651863e468792a451ca5e39bb0c604502d58d4c"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 22,
+          "last_line": 34,
+          "excerpt_sha256": "936f041da45f919a98298fd3aa9cf0bb737da3ccba3ee5394ba9d8072563e24d"
+        }
+      ]
+    },
+    {
+      "name": "USER_MEMORY",
+      "number": 125,
+      "hex": "0x7d",
+      "record": "HakiosGpuUserMemory",
+      "metal_wrapper": false,
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 72,
+          "last_line": 89,
+          "excerpt_sha256": "39b94f8a78335e59fb2a607f6651863e468792a451ca5e39bb0c604502d58d4c"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 22,
+          "last_line": 34,
+          "excerpt_sha256": "936f041da45f919a98298fd3aa9cf0bb737da3ccba3ee5394ba9d8072563e24d"
+        }
+      ]
+    },
+    {
+      "name": "SURFACE",
+      "number": 126,
+      "hex": "0x7e",
+      "record": "HakiosGpuSurface",
+      "metal_wrapper": true,
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 72,
+          "last_line": 89,
+          "excerpt_sha256": "39b94f8a78335e59fb2a607f6651863e468792a451ca5e39bb0c604502d58d4c"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 22,
+          "last_line": 34,
+          "excerpt_sha256": "936f041da45f919a98298fd3aa9cf0bb737da3ccba3ee5394ba9d8072563e24d"
+        }
+      ]
+    },
+    {
+      "name": "SHOW",
+      "number": 127,
+      "hex": "0x7f",
+      "record": "HakiosGpuShow",
+      "metal_wrapper": false,
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 72,
+          "last_line": 89,
+          "excerpt_sha256": "39b94f8a78335e59fb2a607f6651863e468792a451ca5e39bb0c604502d58d4c"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 22,
+          "last_line": 34,
+          "excerpt_sha256": "936f041da45f919a98298fd3aa9cf0bb737da3ccba3ee5394ba9d8072563e24d"
+        }
+      ]
+    }
+  ],
+  "constants": [
+    {
+      "name": "PIPE_3D",
+      "value": 1,
+      "evidence": [
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 77,
+          "last_line": 100,
+          "excerpt_sha256": "96d5613d275e7711727b3d3d9a233081ab18c4ebf212090d3dbfb5289776ca35"
+        }
+      ]
+    },
+    {
+      "name": "PARAM_GPU_ID",
+      "value": 1,
+      "evidence": [
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 77,
+          "last_line": 100,
+          "excerpt_sha256": "96d5613d275e7711727b3d3d9a233081ab18c4ebf212090d3dbfb5289776ca35"
+        }
+      ]
+    },
+    {
+      "name": "PARAM_GMEM_SIZE",
+      "value": 2,
+      "evidence": [
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 77,
+          "last_line": 100,
+          "excerpt_sha256": "96d5613d275e7711727b3d3d9a233081ab18c4ebf212090d3dbfb5289776ca35"
+        }
+      ]
+    },
+    {
+      "name": "PARAM_CHIP_ID",
+      "value": 3,
+      "evidence": [
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 77,
+          "last_line": 100,
+          "excerpt_sha256": "96d5613d275e7711727b3d3d9a233081ab18c4ebf212090d3dbfb5289776ca35"
+        }
+      ]
+    },
+    {
+      "name": "PARAM_MAX_FREQ",
+      "value": 4,
+      "evidence": [
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 77,
+          "last_line": 100,
+          "excerpt_sha256": "96d5613d275e7711727b3d3d9a233081ab18c4ebf212090d3dbfb5289776ca35"
+        }
+      ]
+    },
+    {
+      "name": "PARAM_TIMESTAMP",
+      "value": 5,
+      "evidence": [
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 77,
+          "last_line": 100,
+          "excerpt_sha256": "96d5613d275e7711727b3d3d9a233081ab18c4ebf212090d3dbfb5289776ca35"
+        }
+      ]
+    },
+    {
+      "name": "PARAM_GMEM_BASE",
+      "value": 6,
+      "evidence": [
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 77,
+          "last_line": 100,
+          "excerpt_sha256": "96d5613d275e7711727b3d3d9a233081ab18c4ebf212090d3dbfb5289776ca35"
+        }
+      ]
+    },
+    {
+      "name": "PARAM_PRIORITIES",
+      "value": 7,
+      "evidence": [
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 77,
+          "last_line": 100,
+          "excerpt_sha256": "96d5613d275e7711727b3d3d9a233081ab18c4ebf212090d3dbfb5289776ca35"
+        }
+      ]
+    },
+    {
+      "name": "PARAM_PP_PGTABLE",
+      "value": 8,
+      "evidence": [
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 77,
+          "last_line": 100,
+          "excerpt_sha256": "96d5613d275e7711727b3d3d9a233081ab18c4ebf212090d3dbfb5289776ca35"
+        }
+      ]
+    },
+    {
+      "name": "PARAM_FAULTS",
+      "value": 9,
+      "evidence": [
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 77,
+          "last_line": 100,
+          "excerpt_sha256": "96d5613d275e7711727b3d3d9a233081ab18c4ebf212090d3dbfb5289776ca35"
+        }
+      ]
+    },
+    {
+      "name": "PARAM_SUSPENDS",
+      "value": 10,
+      "evidence": [
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 77,
+          "last_line": 100,
+          "excerpt_sha256": "96d5613d275e7711727b3d3d9a233081ab18c4ebf212090d3dbfb5289776ca35"
+        }
+      ]
+    },
+    {
+      "name": "PARAM_HIGHEST_BANK_BIT",
+      "value": 16,
+      "evidence": [
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 77,
+          "last_line": 100,
+          "excerpt_sha256": "96d5613d275e7711727b3d3d9a233081ab18c4ebf212090d3dbfb5289776ca35"
+        }
+      ]
+    },
+    {
+      "name": "PARAM_RAYTRACING",
+      "value": 17,
+      "evidence": [
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 77,
+          "last_line": 100,
+          "excerpt_sha256": "96d5613d275e7711727b3d3d9a233081ab18c4ebf212090d3dbfb5289776ca35"
+        }
+      ]
+    },
+    {
+      "name": "PARAM_UBWC_SWIZZLE",
+      "value": 18,
+      "evidence": [
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 77,
+          "last_line": 100,
+          "excerpt_sha256": "96d5613d275e7711727b3d3d9a233081ab18c4ebf212090d3dbfb5289776ca35"
+        }
+      ]
+    },
+    {
+      "name": "PARAM_MACROTILE_MODE",
+      "value": 19,
+      "evidence": [
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 77,
+          "last_line": 100,
+          "excerpt_sha256": "96d5613d275e7711727b3d3d9a233081ab18c4ebf212090d3dbfb5289776ca35"
+        }
+      ]
+    },
+    {
+      "name": "INFO_OFFSET",
+      "value": 0,
+      "evidence": [
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 77,
+          "last_line": 100,
+          "excerpt_sha256": "96d5613d275e7711727b3d3d9a233081ab18c4ebf212090d3dbfb5289776ca35"
+        }
+      ]
+    },
+    {
+      "name": "INFO_IOVA",
+      "value": 1,
+      "evidence": [
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 77,
+          "last_line": 100,
+          "excerpt_sha256": "96d5613d275e7711727b3d3d9a233081ab18c4ebf212090d3dbfb5289776ca35"
+        }
+      ]
+    },
+    {
+      "name": "BO_READ_ONLY",
+      "value": 2,
+      "evidence": [
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 77,
+          "last_line": 100,
+          "excerpt_sha256": "96d5613d275e7711727b3d3d9a233081ab18c4ebf212090d3dbfb5289776ca35"
+        }
+      ]
+    },
+    {
+      "name": "BO_WRITE_COMBINED",
+      "value": 131072,
+      "evidence": [
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 77,
+          "last_line": 100,
+          "excerpt_sha256": "96d5613d275e7711727b3d3d9a233081ab18c4ebf212090d3dbfb5289776ca35"
+        }
+      ]
+    },
+    {
+      "name": "SUBMIT_BO_READ",
+      "value": 1,
+      "evidence": [
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 77,
+          "last_line": 100,
+          "excerpt_sha256": "96d5613d275e7711727b3d3d9a233081ab18c4ebf212090d3dbfb5289776ca35"
+        }
+      ]
+    },
+    {
+      "name": "SUBMIT_BO_WRITE",
+      "value": 2,
+      "evidence": [
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 77,
+          "last_line": 100,
+          "excerpt_sha256": "96d5613d275e7711727b3d3d9a233081ab18c4ebf212090d3dbfb5289776ca35"
+        }
+      ]
+    },
+    {
+      "name": "SUBMIT_COMMAND_BUFFER",
+      "value": 1,
+      "evidence": [
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 77,
+          "last_line": 100,
+          "excerpt_sha256": "96d5613d275e7711727b3d3d9a233081ab18c4ebf212090d3dbfb5289776ca35"
+        }
+      ]
+    },
+    {
+      "name": "INFO_SET_NAME",
+      "value": 2,
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 163,
+          "last_line": 172,
+          "excerpt_sha256": "2df13eb64b3f1ccee5a3e92b17c1994c54b0fef794be697e75963d6fde85f1ef"
+        }
+      ]
+    },
+    {
+      "name": "INFO_FLAGS",
+      "value": 5,
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 163,
+          "last_line": 172,
+          "excerpt_sha256": "2df13eb64b3f1ccee5a3e92b17c1994c54b0fef794be697e75963d6fde85f1ef"
+        }
+      ]
+    },
+    {
+      "name": "PREP_NO_SYNC",
+      "value": 4,
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 163,
+          "last_line": 172,
+          "excerpt_sha256": "2df13eb64b3f1ccee5a3e92b17c1994c54b0fef794be697e75963d6fde85f1ef"
+        }
+      ]
+    },
+    {
+      "name": "SUBMIT_FENCE_FD_OUT",
+      "value": 536870912,
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 163,
+          "last_line": 172,
+          "excerpt_sha256": "2df13eb64b3f1ccee5a3e92b17c1994c54b0fef794be697e75963d6fde85f1ef"
+        }
+      ]
+    }
+  ],
+  "records": [
+    {
+      "name": "HakiosGpuTimespec",
+      "size": 16,
+      "alignment": 8,
+      "fields": [
+        {
+          "name": "seconds",
+          "type": "int64_t",
+          "offset": 0
+        },
+        {
+          "name": "nanoseconds",
+          "type": "int64_t",
+          "offset": 8
+        }
+      ],
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 91,
+          "last_line": 93,
+          "excerpt_sha256": "9bfe0abcc7fc45aeb173bb904dd8709cc8e57ad11dc063b501cf82f7b8ff13bb"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 36,
+          "last_line": 36,
+          "excerpt_sha256": "1f772e1aa1864c5579b586ebc62df62d5824bb6de37615347811715e1107eedb"
+        }
+      ]
+    },
+    {
+      "name": "HakiosGpuParam",
+      "size": 24,
+      "alignment": 8,
+      "fields": [
+        {
+          "name": "pipe",
+          "type": "uint32_t",
+          "offset": 0
+        },
+        {
+          "name": "param",
+          "type": "uint32_t",
+          "offset": 4
+        },
+        {
+          "name": "value",
+          "type": "uint64_t",
+          "offset": 8
+        },
+        {
+          "name": "len",
+          "type": "uint32_t",
+          "offset": 16
+        },
+        {
+          "name": "pad",
+          "type": "uint32_t",
+          "offset": 20
+        }
+      ],
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 94,
+          "last_line": 98,
+          "excerpt_sha256": "127316756136283482e5556b78ad7648949ca73dc0916e5f4a9592a332ed4738"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 37,
+          "last_line": 37,
+          "excerpt_sha256": "2a0f329451a57cd36bf90ac2118f34502cd6e304e050a6b0734fd88331f66d47"
+        }
+      ]
+    },
+    {
+      "name": "HakiosGpuGemNew",
+      "size": 16,
+      "alignment": 8,
+      "fields": [
+        {
+          "name": "size",
+          "type": "uint64_t",
+          "offset": 0
+        },
+        {
+          "name": "flags",
+          "type": "uint32_t",
+          "offset": 8
+        },
+        {
+          "name": "handle",
+          "type": "uint32_t",
+          "offset": 12
+        }
+      ],
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 99,
+          "last_line": 102,
+          "excerpt_sha256": "4f84bca7a72d7586cae908c1a170a65f5bf8ab34999c84b90c4ce5fedb7485b1"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 38,
+          "last_line": 38,
+          "excerpt_sha256": "bfb7e9ae8105bcdd8cd600748e902b196857fe9235f9f9e07615d2ae13945987"
+        }
+      ]
+    },
+    {
+      "name": "HakiosGpuGemInfo",
+      "size": 24,
+      "alignment": 8,
+      "fields": [
+        {
+          "name": "handle",
+          "type": "uint32_t",
+          "offset": 0
+        },
+        {
+          "name": "info",
+          "type": "uint32_t",
+          "offset": 4
+        },
+        {
+          "name": "value",
+          "type": "uint64_t",
+          "offset": 8
+        },
+        {
+          "name": "len",
+          "type": "uint32_t",
+          "offset": 16
+        },
+        {
+          "name": "pad",
+          "type": "uint32_t",
+          "offset": 20
+        }
+      ],
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 103,
+          "last_line": 107,
+          "excerpt_sha256": "f3a5e6dd5e1525109c124c6d8b9fab29d6ef8c6d181c1271f14ba2a9088b2c2b"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 39,
+          "last_line": 39,
+          "excerpt_sha256": "5f79535f48f4004296cf7a2b70d6fff270d32eb48dc167ffa2cee05194b6301d"
+        }
+      ]
+    },
+    {
+      "name": "HakiosGpuCpuPrep",
+      "size": 24,
+      "alignment": 8,
+      "fields": [
+        {
+          "name": "handle",
+          "type": "uint32_t",
+          "offset": 0
+        },
+        {
+          "name": "op",
+          "type": "uint32_t",
+          "offset": 4
+        },
+        {
+          "name": "timeout",
+          "type": "Timespec",
+          "offset": 8
+        }
+      ],
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 108,
+          "last_line": 111,
+          "excerpt_sha256": "2ec320b0cbe23dedfd6c474fb1d53765be5820260570147cfbf68f59827f974c"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 40,
+          "last_line": 40,
+          "excerpt_sha256": "f3f3c2fbd7aa5b40861915a1d6a4612a19deb797fbfa872f851fde3c2679ab75"
+        }
+      ]
+    },
+    {
+      "name": "HakiosGpuCpuFini",
+      "size": 4,
+      "alignment": 4,
+      "fields": [
+        {
+          "name": "handle",
+          "type": "uint32_t",
+          "offset": 0
+        }
+      ],
+      "evidence": [
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 41,
+          "last_line": 41,
+          "excerpt_sha256": "95cddda979170ef94732585f04ed5c65b1af84c423c447dcae9136be83a3365d"
+        }
+      ]
+    },
+    {
+      "name": "HakiosGpuSubmitCmd",
+      "size": 32,
+      "alignment": 8,
+      "fields": [
+        {
+          "name": "type",
+          "type": "uint32_t",
+          "offset": 0
+        },
+        {
+          "name": "submit_idx",
+          "type": "uint32_t",
+          "offset": 4
+        },
+        {
+          "name": "submit_offset",
+          "type": "uint32_t",
+          "offset": 8
+        },
+        {
+          "name": "size",
+          "type": "uint32_t",
+          "offset": 12
+        },
+        {
+          "name": "pad",
+          "type": "uint32_t",
+          "offset": 16
+        },
+        {
+          "name": "nr_relocs",
+          "type": "uint32_t",
+          "offset": 20
+        },
+        {
+          "name": "relocs",
+          "type": "uint64_t",
+          "offset": 24
+        }
+      ],
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 112,
+          "last_line": 115,
+          "excerpt_sha256": "95b73d924f89a3d8a68a97969c902dbeb7f83e67580ccc96ea8fa91e39d274f2"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 42,
+          "last_line": 42,
+          "excerpt_sha256": "3256db3ba96671b5a0cd76a781e085bf85ce3b1c1736c843875e0c75c04d215d"
+        }
+      ]
+    },
+    {
+      "name": "HakiosGpuSubmitBo",
+      "size": 16,
+      "alignment": 8,
+      "fields": [
+        {
+          "name": "flags",
+          "type": "uint32_t",
+          "offset": 0
+        },
+        {
+          "name": "handle",
+          "type": "uint32_t",
+          "offset": 4
+        },
+        {
+          "name": "presumed",
+          "type": "uint64_t",
+          "offset": 8
+        }
+      ],
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 116,
+          "last_line": 119,
+          "excerpt_sha256": "9180fcc255eaf31913b8388b27a1cc5bd57ad61cc5250c54fcd5234cfb74f9d0"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 43,
+          "last_line": 43,
+          "excerpt_sha256": "8ad5ed8a582789165717ad427711e070ba124db6c322faef9369bafa0fa83cd2"
+        }
+      ]
+    },
+    {
+      "name": "HakiosGpuSubmit",
+      "size": 72,
+      "alignment": 8,
+      "fields": [
+        {
+          "name": "flags",
+          "type": "uint32_t",
+          "offset": 0
+        },
+        {
+          "name": "fence",
+          "type": "uint32_t",
+          "offset": 4
+        },
+        {
+          "name": "nr_bos",
+          "type": "uint32_t",
+          "offset": 8
+        },
+        {
+          "name": "nr_cmds",
+          "type": "uint32_t",
+          "offset": 12
+        },
+        {
+          "name": "bos",
+          "type": "uint64_t",
+          "offset": 16
+        },
+        {
+          "name": "cmds",
+          "type": "uint64_t",
+          "offset": 24
+        },
+        {
+          "name": "fence_fd",
+          "type": "int32_t",
+          "offset": 32
+        },
+        {
+          "name": "queueid",
+          "type": "uint32_t",
+          "offset": 36
+        },
+        {
+          "name": "in_syncobjs",
+          "type": "uint64_t",
+          "offset": 40
+        },
+        {
+          "name": "out_syncobjs",
+          "type": "uint64_t",
+          "offset": 48
+        },
+        {
+          "name": "nr_in_syncobjs",
+          "type": "uint32_t",
+          "offset": 56
+        },
+        {
+          "name": "nr_out_syncobjs",
+          "type": "uint32_t",
+          "offset": 60
+        },
+        {
+          "name": "syncobj_stride",
+          "type": "uint32_t",
+          "offset": 64
+        },
+        {
+          "name": "pad",
+          "type": "uint32_t",
+          "offset": 68
+        }
+      ],
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 120,
+          "last_line": 127,
+          "excerpt_sha256": "8b2913ea31def9a26abd1c22e1b8ad6542cb441dd33e8abbe3a839bbf1b1cc55"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 44,
+          "last_line": 51,
+          "excerpt_sha256": "81c6fabb415137e91e575bd8c8d0f3725c0f6ddef438430da50673c7c86df3a3"
+        }
+      ]
+    },
+    {
+      "name": "HakiosGpuWaitFence",
+      "size": 32,
+      "alignment": 8,
+      "fields": [
+        {
+          "name": "fence",
+          "type": "uint32_t",
+          "offset": 0
+        },
+        {
+          "name": "flags",
+          "type": "uint32_t",
+          "offset": 4
+        },
+        {
+          "name": "timeout",
+          "type": "Timespec",
+          "offset": 8
+        },
+        {
+          "name": "queueid",
+          "type": "uint32_t",
+          "offset": 24
+        }
+      ],
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 128,
+          "last_line": 132,
+          "excerpt_sha256": "ed584b3e7d5ab8a29dc768ced17f255361ae3b44127e0caea4b0aa2584c10db2"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 52,
+          "last_line": 52,
+          "excerpt_sha256": "a3c0033d9f214c543908649f4f4dc15dc5ae450cdbefe0f7617704a5548cea91"
+        }
+      ]
+    },
+    {
+      "name": "HakiosGpuMadvise",
+      "size": 12,
+      "alignment": 4,
+      "fields": [
+        {
+          "name": "handle",
+          "type": "uint32_t",
+          "offset": 0
+        },
+        {
+          "name": "madv",
+          "type": "uint32_t",
+          "offset": 4
+        },
+        {
+          "name": "retained",
+          "type": "uint32_t",
+          "offset": 8
+        }
+      ],
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 133,
+          "last_line": 135,
+          "excerpt_sha256": "4b53a5c77a0156f3c7bd3c9e00a3a336d6cab98501450c2e05cf9d5940bbd7a7"
+        }
+      ]
+    },
+    {
+      "name": "HakiosGpuQueue",
+      "size": 12,
+      "alignment": 4,
+      "fields": [
+        {
+          "name": "flags",
+          "type": "uint32_t",
+          "offset": 0
+        },
+        {
+          "name": "prio",
+          "type": "uint32_t",
+          "offset": 4
+        },
+        {
+          "name": "id",
+          "type": "uint32_t",
+          "offset": 8
+        }
+      ],
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 136,
+          "last_line": 138,
+          "excerpt_sha256": "4690ab77e709705c10081fdbe2385e47464b452122f24efffe0740eb4e2c83c2"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 53,
+          "last_line": 53,
+          "excerpt_sha256": "9824383fd50190fe22f76fb48ad50e233aa469e45c250c92a372c78ba5df2fa8"
+        }
+      ]
+    },
+    {
+      "name": "HakiosGpuQueueClose",
+      "size": 4,
+      "alignment": 4,
+      "fields": [],
+      "evidence": [
+        {
+          "source": "metal_gpu",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/src/gpu.cpp",
+          "first_line": 133,
+          "last_line": 138,
+          "excerpt_sha256": "85b9aa31de1c1fc6475709f653e8876e9e6ce33fe8fdd7748970531d593e8ba3"
+        },
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 1238,
+          "last_line": 1241,
+          "excerpt_sha256": "6d59bd0218f20eec662f8479b47871868d5ffff36183b2be2c3fc168b694b24f"
+        }
+      ]
+    },
+    {
+      "name": "HakiosGpuQueueQuery",
+      "size": 24,
+      "alignment": 8,
+      "fields": [
+        {
+          "name": "data",
+          "type": "uint64_t",
+          "offset": 0
+        },
+        {
+          "name": "id",
+          "type": "uint32_t",
+          "offset": 8
+        },
+        {
+          "name": "param",
+          "type": "uint32_t",
+          "offset": 12
+        },
+        {
+          "name": "len",
+          "type": "uint32_t",
+          "offset": 16
+        },
+        {
+          "name": "pad",
+          "type": "uint32_t",
+          "offset": 20
+        }
+      ],
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 139,
+          "last_line": 142,
+          "excerpt_sha256": "dc76b5bcc04d814e94c6ff665ce24e30ddea35c70ebab3e76c3a5afa324d1bf9"
+        }
+      ]
+    },
+    {
+      "name": "HakiosGpuGemClose",
+      "size": 8,
+      "alignment": 4,
+      "fields": [
+        {
+          "name": "handle",
+          "type": "uint32_t",
+          "offset": 0
+        },
+        {
+          "name": "pad",
+          "type": "uint32_t",
+          "offset": 4
+        }
+      ],
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 143,
+          "last_line": 145,
+          "excerpt_sha256": "da0d946161506aad4bfe4dc6eb87594c0a7ae96bf39ffb888f5cf02e886e05a5"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 54,
+          "last_line": 54,
+          "excerpt_sha256": "a79e4e519b3d0d6705a3cf3f6a470059794b1e5d1d2b42c670792b142fde5e22"
+        }
+      ]
+    },
+    {
+      "name": "HakiosGpuUserMemory",
+      "size": 24,
+      "alignment": 8,
+      "fields": [
+        {
+          "name": "address",
+          "type": "uint64_t",
+          "offset": 0
+        },
+        {
+          "name": "size",
+          "type": "uint64_t",
+          "offset": 8
+        },
+        {
+          "name": "handle",
+          "type": "uint32_t",
+          "offset": 16
+        },
+        {
+          "name": "flags",
+          "type": "uint32_t",
+          "offset": 20
+        }
+      ],
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 146,
+          "last_line": 150,
+          "excerpt_sha256": "51ded1946977fabe65b6281f513b7a20dae076e33285ed6e587dc7d8639f4afe"
+        }
+      ]
+    },
+    {
+      "name": "HakiosGpuSurface",
+      "size": 40,
+      "alignment": 8,
+      "fields": [
+        {
+          "name": "surface",
+          "type": "uint32_t",
+          "offset": 0
+        },
+        {
+          "name": "handle",
+          "type": "uint32_t",
+          "offset": 4
+        },
+        {
+          "name": "size",
+          "type": "uint64_t",
+          "offset": 8
+        },
+        {
+          "name": "offset",
+          "type": "uint32_t",
+          "offset": 16
+        },
+        {
+          "name": "rowBytes",
+          "type": "uint32_t",
+          "offset": 20
+        },
+        {
+          "name": "width",
+          "type": "uint32_t",
+          "offset": 24
+        },
+        {
+          "name": "height",
+          "type": "uint32_t",
+          "offset": 28
+        },
+        {
+          "name": "pixelFormat",
+          "type": "uint32_t",
+          "offset": 32
+        },
+        {
+          "name": "planes",
+          "type": "uint32_t",
+          "offset": 36
+        }
+      ],
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 151,
+          "last_line": 157,
+          "excerpt_sha256": "c7ff33de3be20fcb56f2b6e9f40baaa880b326afcaa52debb983ef47d20e8b4a"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 59,
+          "last_line": 59,
+          "excerpt_sha256": "83df8dacdaf420c34dcbc1556481dce9faf23893d622ba63b23cad96228592a3"
+        }
+      ]
+    },
+    {
+      "name": "HakiosGpuShow",
+      "size": 24,
+      "alignment": 8,
+      "fields": [
+        {
+          "name": "pixels",
+          "type": "uint64_t",
+          "offset": 0
+        },
+        {
+          "name": "width",
+          "type": "uint32_t",
+          "offset": 8
+        },
+        {
+          "name": "height",
+          "type": "uint32_t",
+          "offset": 12
+        },
+        {
+          "name": "rowBytes",
+          "type": "uint32_t",
+          "offset": 16
+        },
+        {
+          "name": "pad",
+          "type": "uint32_t",
+          "offset": 20
+        }
+      ],
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 158,
+          "last_line": 161,
+          "excerpt_sha256": "5a9abac4b1147aa8886ac0abd2ecdc3221e108947c70aa722f05c19beb20fe15"
+        }
+      ]
+    }
+  ],
+  "contract": {
+    "service": {
+      "text": "IOService class/name HakiosGPU; kIOUserClientClassKey value HakiosGPUUserClient; IOServiceMatching(\"HakiosGPU\"), IOServiceOpen type 0. No chip/family/capability properties are published by these four files. kIOUserClientClassKey string definition is outside scope.",
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 303,
+          "last_line": 323,
+          "excerpt_sha256": "13049b349c547b892268fa9ada6b02fc91300debde7cd0924669612a106b8ab5"
+        },
+        {
+          "source": "iokit",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/src/iokit_transport.cpp",
+          "first_line": 67,
+          "last_line": 80,
+          "excerpt_sha256": "75469d5b8e206d56b870be039842700a2bf4f63d3117a0db652114661e7264fc"
+        }
+      ]
+    },
+    "readiness": {
+      "text": "User client start requires hakios_gpu_ready(). Methods return NotReady after ready is lost, except SHOW; first reject null input, input >72 bytes, or missing fBuffers.",
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 465,
+          "last_line": 472,
+          "excerpt_sha256": "4f9ffa6f783f2eed44829db7cd35e5cbd15a816f6f2821349e4f6c89468d2027"
+        },
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 1220,
+          "last_line": 1232,
+          "excerpt_sha256": "7c1cbe81f46592b937c800250ceb7d9ba29d721d8e480feda771083cbabf360b"
+        }
+      ]
+    },
+    "framing": {
+      "text": "Selectors are request numbers, not Linux ioctl encoded words. Native little-endian 64-bit records; pointers are uint64 user virtual addresses, never portable file offsets. Kernel zero-fills union then copies 0..72 input bytes, with no per-selector exact-size check; successful output copies min(input size, output capacity), including padding. Metal passes same in/out pointer and length but does not validate returned length. This checker requires canonical full sizes; it is intentionally stricter.",
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 71,
+          "last_line": 161,
+          "excerpt_sha256": "699ed4096ca4340d61b45dafcd5b94141019b02284986eabbfc9f638a47fa979"
+        },
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 1220,
+          "last_line": 1232,
+          "excerpt_sha256": "7c1cbe81f46592b937c800250ceb7d9ba29d721d8e480feda771083cbabf360b"
+        },
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 1319,
+          "last_line": 1325,
+          "excerpt_sha256": "9a7f8fed00f41c5871039350ec81bb3a35b50374a456088cd3a2ce2ce57ea7ab"
+        },
+        {
+          "source": "iokit",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/src/iokit_transport.cpp",
+          "first_line": 22,
+          "last_line": 39,
+          "excerpt_sha256": "b91fbb3a4ef3d2ddd5a46a69dec21c820ae9f955a1bcf39bc783b5121740fbed"
+        }
+      ]
+    },
+    "params": {
+      "text": "MsmParam pipe=1 from Metal; kernel only consumes param/value and delegates to external hakios_gpu_parameter, so actual supported IDs/values cannot be established here. gpu.hpp lists IDs 1..10,0x10..0x13; its comment says GPU_ID value 0 on its upstream target, not selector 0. chipId() truncates uint64 to low uint32; faults() and chipId() return 0 on query failure. A635-family 0x06030500 in comments is not A530 device evidence.",
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 48,
+          "last_line": 64,
+          "excerpt_sha256": "6f7e3a7083381fc63788b625338724357d0f8b2d8b929ce35e2397e24530bf97"
+        },
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 1235,
+          "last_line": 1241,
+          "excerpt_sha256": "452fb9fad54d80446693cc2848964fa57eedcbfa4a18c74b09021b24e6dc5842"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 73,
+          "last_line": 100,
+          "excerpt_sha256": "1b2d98aea88327de8594023e802b244d2f7f4c6abd7cd762966e1dd80c91f6d0"
+        },
+        {
+          "source": "metal_gpu",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/src/gpu.cpp",
+          "first_line": 22,
+          "last_line": 41,
+          "excerpt_sha256": "e7f6f953988acd7f5610e2d984dbfec2eb09c8d1d6b4986be4983190ecb8a7a5"
+        }
+      ]
+    },
+    "gem_new": {
+      "text": "Metal rejects size 0, rounds to 16 KiB, creates -> queries IOVA -> maps; info/map failure closes handle (map failure ENOMEM). Kernel rounds with round_page_64/PAGE_SIZE (numeric kernel PAGE_SIZE definition outside these files), accepts rounded 1..256 MiB, allocates handle 1..8192 and maps GPU pages in 4096-byte steps; GPU_READONLY bit passed to backend. Fresh memory is zeroed per source comment; kept same-client size/flags buffers can be returned uncleared unless gpu_keep=2. Flags do not select WC in gemNew.",
+      "evidence": [
+        {
+          "source": "metal_gpu",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/src/gpu.cpp",
+          "first_line": 9,
+          "last_line": 9,
+          "excerpt_sha256": "51aa46dbb38c22d7c2aa43bc9bdc1e336c9586ace78272bf5c14449e97e15fb5"
+        },
+        {
+          "source": "metal_gpu",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/src/gpu.cpp",
+          "first_line": 43,
+          "last_line": 74,
+          "excerpt_sha256": "fbf5dd9a462e4c0759080cab3a360bb12476b4b78c0a727e7608cd7e8badd55e"
+        },
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 605,
+          "last_line": 665,
+          "excerpt_sha256": "49cf278a801516ef5ad8b9817ff511e57f3e9234ff613f997a813ca3dc914118"
+        },
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 720,
+          "last_line": 799,
+          "excerpt_sha256": "7499016799506aefbb4403744a5808bfbf826f4d847d39c812f0c8cda05f3f37"
+        }
+      ]
+    },
+    "gem_info": {
+      "text": "Invalid handle BadArgument; info0 OFFSET=handle<<32 (not mapped by this offset); info1 IOVA=GPU address; info5 FLAGS=saved flags; info2 SET_NAME success/no storage; others Unsupported. len/pad not consumed by this implementation.",
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 947,
+          "last_line": 968,
+          "excerpt_sha256": "a0b6eb60607eb5a53ef49d4744f6205824d9af9d82efcb6126f4680512f87e54"
+        }
+      ]
+    },
+    "cpu_prep_fini": {
+      "text": "PREP ignores handle and waits for global hakios_gpu_last(), not BO-local fence. op&4 NOSYNC gives patience0; otherwise absolute continuous-clock deadline, clamped 0..5000ms with overflow handling. Poll delay 200us. Unfinished PREP returns Busy. FINI is success/no-op; Metal ignores its error.",
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 174,
+          "last_line": 180,
+          "excerpt_sha256": "0131431819bfe6cd4ffb4974f4b82bb7063c02a190594b4f6ed4cd6565d402f0"
+        },
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 195,
+          "last_line": 222,
+          "excerpt_sha256": "06514f7a7e10b4b105145c61e01fc873502e9d402740a9ad35da3cf6d57b8581"
+        },
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 259,
+          "last_line": 279,
+          "excerpt_sha256": "a48c0579d1b5b5d4d633ee4d2872c65eca53c1c695bf6436da4bb7b0e790235b"
+        },
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 1238,
+          "last_line": 1260,
+          "excerpt_sha256": "411017fb6a6bac2a904155c3297854fe6ae102903c35039cabf67d719c1dc08c"
+        },
+        {
+          "source": "metal_gpu",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/src/gpu.cpp",
+          "first_line": 191,
+          "last_line": 199,
+          "excerpt_sha256": "b12963b9cd7852bcb7db0b560edea166288a366c4143239ddf33eac576eb2b42"
+        }
+      ]
+    },
+    "submit": {
+      "text": "nr_bos 1..8192, nr_cmds 1..128; copyin arrays of 16/32-byte records (VMError on copy failure). Non-type1 commands skipped. Type1 requires live command BO index, nr_relocs=0, offset/size divisible by4, uint64(offset)+size <= BO bytes. Zero command size and all-skipped types are not explicitly rejected. BO presumed/flags and request pipe/queue/syncobj fields are not used for scheduling or relocation here; invalid non-command BOs are skipped in cache/fence loops. Calls EXTERNAL hakios_gpu_submit(addresses,words,count); nonzero fence Success, zero Timeout. FENCE_FD_OUT sets fence_fd=-1, no fd exported.",
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 970,
+          "last_line": 994,
+          "excerpt_sha256": "47090992549f87a6cd2bf33fd9fe1b837d53caf8f101aef611424e9c318d6362"
+        },
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 1009,
+          "last_line": 1063,
+          "excerpt_sha256": "834fa2d66bc6a004a73968bceacaa4054329b147f01ed3f06c32eeef9c9347f7"
+        },
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 1080,
+          "last_line": 1099,
+          "excerpt_sha256": "de36f26a24e040328b586b0e6ea453664bbe2d1df69cfee33657fc53ef421df7"
+        },
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 1141,
+          "last_line": 1150,
+          "excerpt_sha256": "3f92c5675f9c9010a81abcb5cbb089c76d7a0869d7bc26e25029405a496852f9"
+        }
+      ]
+    },
+    "metal_submit": {
+      "text": "Metal rejects zero words, misaligned offset or out-of-BO end; command BO first/READ; other uses deduplicated by handle and READ/WRITE ORed. One CMD_BUF, byte size words*4, flags=pipe3D, fence_fd=-1, queueid supplied; bos/cmds are temporary uint64 process VAs valid for synchronous call. Fence output changes only on success. words*4 is uint32 in cmd.size; caller/newBo size constraints matter.",
+      "evidence": [
+        {
+          "source": "metal_gpu",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/src/gpu.cpp",
+          "first_line": 140,
+          "last_line": 181,
+          "excerpt_sha256": "7116a572826d333de0366cd8e24424c2ee2f1d7c7b7ca9356e20296d7c2ede0e"
+        }
+      ]
+    },
+    "wait_fence": {
+      "text": "WAIT rejects signed-wrap comparison (int32)(fence-last)>0, otherwise waits requested fence to absolute continuous deadline (max5000ms); unfinished Timeout. flags and queueid ignored. Metal clamps negative duration to0 and adds nowNs; signed addition overflow is not handled in deadline().",
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 259,
+          "last_line": 279,
+          "excerpt_sha256": "a48c0579d1b5b5d4d633ee4d2872c65eca53c1c695bf6436da4bb7b0e790235b"
+        },
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 1264,
+          "last_line": 1282,
+          "excerpt_sha256": "c125b94d4e564e24a89f3dc34ef6ac136d5de940827455ed7d622af33a85148d"
+        },
+        {
+          "source": "metal_gpu",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/src/gpu.cpp",
+          "first_line": 11,
+          "last_line": 19,
+          "excerpt_sha256": "6d8fc1764ddec7f8311ca26167c7332d4176dfab8f127438db0139b5035412eb"
+        },
+        {
+          "source": "metal_gpu",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/src/gpu.cpp",
+          "first_line": 183,
+          "last_line": 189,
+          "excerpt_sha256": "d5c7f76b511294b00fd64aaaffb65fcfe43a81b4490f5df4088795d97114b403"
+        }
+      ]
+    },
+    "queues_close": {
+      "text": "QUEUE_NEW returns ++fNextQueue; flags/prio unused, no demonstrated independent queues. QUEUE_CLOSE, SET_PARAM, CPU_FINI success/no-op. QUERY attempts copyout uint64 zero if data!=0 && len>=8, ignoring copyout return and query id/param. MADVISE retained=1. GEM_CLOSE invalid handle BadArgument, otherwise removes handle and defers busy memory reclamation, may retain memory indefinitely after hang. Metal unmaps then closes on owned BO release; disown unmaps without closing duplicate handle.",
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 480,
+          "last_line": 535,
+          "excerpt_sha256": "eb46ce441b7f8b3e8ec9e763dd1f692f6d2ebd60cfdc91dbc17447296edd2b4b"
+        },
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 1238,
+          "last_line": 1241,
+          "excerpt_sha256": "6d59bd0218f20eec662f8479b47871868d5ffff36183b2be2c3fc168b694b24f"
+        },
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 1283,
+          "last_line": 1304,
+          "excerpt_sha256": "e3c73491fd7401570e7c4fb5133c1dfb685ac9f821bdd017ffb5604e8691fb1e"
+        },
+        {
+          "source": "metal_gpu",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/src/gpu.cpp",
+          "first_line": 94,
+          "last_line": 138,
+          "excerpt_sha256": "cfc714d0a35310ff7b238074c1c4db789b19fc0f2750bcc8a9d8745350916cbc"
+        }
+      ]
+    },
+    "surface_user_show": {
+      "text": "SURFACE ID -> cached IOSurface memory, metadata/40-byte record, same live handle on repeat; handle=0xffffffff describes only and returns handle0. NotFound absent, Unsupported client-backed surface. USER_MEMORY address/size whole kernel pages, nonzero<=256MiB; prepares/wires pages, readonly fallback sets GPU_READONLY=0x2, VMError if neither prepare works. SHOW is CPU pixel copy to panel, not GPU submit: 32-bit blue-first, width/height1..4096, rowBytes>=4*width, total<=256MiB.",
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 809,
+          "last_line": 870,
+          "excerpt_sha256": "08cd13f734b5e9404ffe1cac31ea78880636fd237ea74863f76f59bc63979109"
+        },
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 879,
+          "last_line": 945,
+          "excerpt_sha256": "8033eb27a93b5c7ee255505396e36693b491f70fb8d1853406da8b6bd0ad02e8"
+        },
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 1153,
+          "last_line": 1179,
+          "excerpt_sha256": "5f1862d480a87749d5d7e47ba3052a6beb6560cb79ee22994244fec706ecd36d"
+        }
+      ]
+    },
+    "mapping_cache": {
+      "text": "Map memory type=GEM handle; clientMemoryForType retains memory, marks seen=true, options=0. Metal IOConnectMapMemory64 uses kIOMapAnywhere, ignores supplied expected size and returned map size; map error nullptr, unmap result ignored. GEM allocations default descriptor WC, gpu_cached=1 ordinary cached; kBoWriteCombined numeric flag is declared but not consulted to choose cache mode. Submit flushes mapped cached GEMs, imported user pages by physical segments every submission, surfaces unless unchanged seed/unseen/<4ms; mapped surfaces every submission. Always calls to_memory(NULL,0) barrier. CPU_PREP waits; FINI performs no cache maintenance. to_memory/flush implementations outside scope, so no proven A530 coherency or invalidation guarantee.",
+      "evidence": [
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 332,
+          "last_line": 333,
+          "excerpt_sha256": "ee62c696fa22e7b3407b66c062ae04229ee7bb2cd708bbd47d969975d15c5c57"
+        },
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 773,
+          "last_line": 783,
+          "excerpt_sha256": "363ac5ea1929f5f11ecb5d51d06e00ba84187927d76615aa740b34369d0d7589"
+        },
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 997,
+          "last_line": 1045,
+          "excerpt_sha256": "0a177dacf31b9dcff66ceaa19f583c7877985f403d43db4e73d3b2bd49d43e24"
+        },
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 1182,
+          "last_line": 1199,
+          "excerpt_sha256": "e79e4a3818313fb9b43735c00845fa632e968024cc6c18dcaf5a79a50f89a751"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 93,
+          "last_line": 100,
+          "excerpt_sha256": "07690cf063e6d462ad2347ec1ddf95b3dc87458ff297fc7a66cb656d7b023df4"
+        },
+        {
+          "source": "iokit",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/src/iokit_transport.cpp",
+          "first_line": 41,
+          "last_line": 57,
+          "excerpt_sha256": "11250f9539ea10b571a06b48362608beb96e4e3da4c270eebd4b90e25746e6f0"
+        }
+      ]
+    },
+    "returns": {
+      "text": "IOKit symbolic Success->0, NoMemory->ENOMEM, BadArgument->EINVAL, Timeout->ETIMEDOUT, Busy->EBUSY, NotFound->ENOENT, Unsupported->ENOSYS; all others (including NotReady/VMError) log and EIO. Surface API comment says ENOTSUP but actual transport returns ENOSYS. Actual numeric IOReturn definitions are outside permitted four sources; test shim numbers are surrogate tokens, not ABI evidence. Host errno numbers must not be serialized as Darwin errno numbers.",
+      "evidence": [
+        {
+          "source": "iokit",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/src/iokit_transport.cpp",
+          "first_line": 22,
+          "last_line": 39,
+          "excerpt_sha256": "b91fbb3a4ef3d2ddd5a46a69dec21c820ae9f955a1bcf39bc783b5121740fbed"
+        },
+        {
+          "source": "metal_header",
+          "path": "upstream/hakios-xnu-kernel/hakios-metal/include/hakios-metal/gpu.hpp",
+          "first_line": 170,
+          "last_line": 175,
+          "excerpt_sha256": "01b6067d0c31280fc7880aad5fed336cc219e1a11a0389e5a6059dfdf71b465e"
+        },
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 920,
+          "last_line": 920,
+          "excerpt_sha256": "97f5f0dd14ff557b8e9dfa9b5f3a50ce4c141b12a5a6e2f391c1ff4f2da117da"
+        },
+        {
+          "source": "kernel",
+          "path": "upstream/hakios-xnu-kernel/drivers/gpu/hakios.gpu.cpp",
+          "first_line": 1228,
+          "last_line": 1229,
+          "excerpt_sha256": "8670f364e2919ae73230c40c629a490cb7980a83605cf60a73d5ea7fac950d96"
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "No A530 register, power, firmware, SMMU, command-stream, fence completion or cache hardware validation.",
+    "No backend implementation read: external declarations/call sites establish dependency, not A530 support.",
+    "Host execute()/a530_submit() returns unsupported for valid shapes and never issues or fabricates a fence.",
+    "HakiosMetalCA caller and Metal capability implementation are outside four-file scope; no end-to-end compatibility claim.",
+    "No runtime service discovery, device access, upstream edits, build/index/AGENTS changes or shared file writes.",
+    "Native arm64 layout compile is host cross-compilation; it is not an arm64 execution or hardware test."
+  ],
+  "results": "evidence/gpu-metal-20261123/abi/results.json"
+}

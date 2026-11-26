@@ -1,0 +1,488 @@
+{
+  "schema": "hakios-gpu-g0-saved-runtime-v1",
+  "analyzed_at": "2026-11-22T19:57:20.930802+00:00",
+  "attempt": "gpu-g0-01",
+  "passed": true,
+  "status": "G0_passed",
+  "accepted_at": "2026-11-23T03:52:07.672005+08:00",
+  "image_sha256": "61bc8b8220f54e8a2b0772a694690901b89e48a65b2d52463c8f962ab02c7933",
+  "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_sanity=1 cpu_perf_fixed=1 cpu_perf_hz=614400000 cpu_thermal_diag=1 cpu_inherited_supply_r39=1 gpu_stage=0 gpu_probe=1 gpu_wd=1 lithium_log_retry=1",
+  "snapshot_passed": true,
+  "cpu_binding_observed": true,
+  "allocation_cleanup_observed": true,
+  "begin": [
+    {
+      "line": 107,
+      "fields": {
+        "stage": "0",
+        "logical": "0",
+        "affinity": "0x1",
+        "max_logical": "2",
+        "register_count": "9",
+        "passes": "2",
+        "read_cap": "18",
+        "deadline_us": "50000",
+        "gpu_aperture": "unread",
+        "smmu": "unread",
+        "gpu_writes": "0",
+        "irq_attached": "0"
+      }
+    }
+  ],
+  "end": [
+    {
+      "line": 132,
+      "fields": {
+        "stage": "0",
+        "status": "snapshot_complete",
+        "valid0": "0x1ff",
+        "valid1": "0x1ff",
+        "stable_mask": "0x1ff",
+        "unstable_mask": "0x0",
+        "reads": "18",
+        "loads": "18",
+        "read_failures": "0",
+        "completed_passes": "2",
+        "errors": "0x0",
+        "elapsed_us": "18",
+        "gpu_writes": "0",
+        "power_verified": "0",
+        "chip_id": "UNREAD"
+      }
+    }
+  ],
+  "registers": [
+    {
+      "line": 111,
+      "pass_index": 0,
+      "reg": "CX_GDSCR",
+      "pa": 9191476,
+      "valid": 1,
+      "raw": 2236417,
+      "stable": 1
+    },
+    {
+      "line": 112,
+      "pass_index": 0,
+      "reg": "GX_GDSCR",
+      "pa": 9191460,
+      "valid": 1,
+      "raw": 2236417,
+      "stable": 1
+    },
+    {
+      "line": 113,
+      "pass_index": 0,
+      "reg": "GPU_AHB_CBCR",
+      "pa": 9191484,
+      "valid": 1,
+      "raw": 2147516416,
+      "stable": 1
+    },
+    {
+      "line": 114,
+      "pass_index": 0,
+      "reg": "GPU_AON_ISENSE_CBCR",
+      "pa": 9191492,
+      "valid": 1,
+      "raw": 2147483648,
+      "stable": 1
+    },
+    {
+      "line": 115,
+      "pass_index": 0,
+      "reg": "GPU_GX_GFX3D_CBCR",
+      "pa": 9191464,
+      "valid": 1,
+      "raw": 2147484192,
+      "stable": 1
+    },
+    {
+      "line": 116,
+      "pass_index": 0,
+      "reg": "GPU_GX_RBBMTIMER_CBCR",
+      "pa": 9191600,
+      "valid": 1,
+      "raw": 2147483648,
+      "stable": 1
+    },
+    {
+      "line": 117,
+      "pass_index": 0,
+      "reg": "GFX3D_CMD_RCGR",
+      "pa": 9191424,
+      "valid": 1,
+      "raw": 2147483648,
+      "stable": 1
+    },
+    {
+      "line": 118,
+      "pass_index": 0,
+      "reg": "GCC_MMSS_BIMC_GFX_CBCR",
+      "pa": 3182608,
+      "valid": 1,
+      "raw": 2147500577,
+      "stable": 1
+    },
+    {
+      "line": 119,
+      "pass_index": 0,
+      "reg": "GCC_BIMC_GFX_CBCR",
+      "pa": 3432472,
+      "valid": 1,
+      "raw": 1,
+      "stable": 1
+    },
+    {
+      "line": 120,
+      "pass_index": 1,
+      "reg": "CX_GDSCR",
+      "pa": 9191476,
+      "valid": 1,
+      "raw": 2236417,
+      "stable": 1
+    },
+    {
+      "line": 121,
+      "pass_index": 1,
+      "reg": "GX_GDSCR",
+      "pa": 9191460,
+      "valid": 1,
+      "raw": 2236417,
+      "stable": 1
+    },
+    {
+      "line": 122,
+      "pass_index": 1,
+      "reg": "GPU_AHB_CBCR",
+      "pa": 9191484,
+      "valid": 1,
+      "raw": 2147516416,
+      "stable": 1
+    },
+    {
+      "line": 123,
+      "pass_index": 1,
+      "reg": "GPU_AON_ISENSE_CBCR",
+      "pa": 9191492,
+      "valid": 1,
+      "raw": 2147483648,
+      "stable": 1
+    },
+    {
+      "line": 124,
+      "pass_index": 1,
+      "reg": "GPU_GX_GFX3D_CBCR",
+      "pa": 9191464,
+      "valid": 1,
+      "raw": 2147484192,
+      "stable": 1
+    },
+    {
+      "line": 125,
+      "pass_index": 1,
+      "reg": "GPU_GX_RBBMTIMER_CBCR",
+      "pa": 9191600,
+      "valid": 1,
+      "raw": 2147483648,
+      "stable": 1
+    },
+    {
+      "line": 126,
+      "pass_index": 1,
+      "reg": "GFX3D_CMD_RCGR",
+      "pa": 9191424,
+      "valid": 1,
+      "raw": 2147483648,
+      "stable": 1
+    },
+    {
+      "line": 127,
+      "pass_index": 1,
+      "reg": "GCC_MMSS_BIMC_GFX_CBCR",
+      "pa": 3182608,
+      "valid": 1,
+      "raw": 2147500577,
+      "stable": 1
+    },
+    {
+      "line": 128,
+      "pass_index": 1,
+      "reg": "GCC_BIMC_GFX_CBCR",
+      "pa": 3432472,
+      "valid": 1,
+      "raw": 1,
+      "stable": 1
+    }
+  ],
+  "decoded_registers": [
+    {
+      "reg": "CX_GDSCR",
+      "pa": "0x008c4034",
+      "raw": "0x00222001",
+      "pwr_on": 0,
+      "sw_override": 0,
+      "hw_control": 0,
+      "sw_collapse": 1,
+      "meaning": "GDSC reports collapsed, PWR_ON clear"
+    },
+    {
+      "reg": "GX_GDSCR",
+      "pa": "0x008c4024",
+      "raw": "0x00222001",
+      "pwr_on": 0,
+      "sw_override": 0,
+      "hw_control": 0,
+      "sw_collapse": 1,
+      "meaning": "GDSC reports collapsed, PWR_ON clear"
+    },
+    {
+      "reg": "GPU_AHB_CBCR",
+      "pa": "0x008c403c",
+      "raw": "0x80008000",
+      "branch_enable": 0,
+      "branch_off": 1,
+      "meaning": "documented branch enable/off fields only; no actual MHz or ownership claim"
+    },
+    {
+      "reg": "GPU_AON_ISENSE_CBCR",
+      "pa": "0x008c4044",
+      "raw": "0x80000000",
+      "branch_enable": 0,
+      "branch_off": 1,
+      "meaning": "documented branch enable/off fields only; no actual MHz or ownership claim"
+    },
+    {
+      "reg": "GPU_GX_GFX3D_CBCR",
+      "pa": "0x008c4028",
+      "raw": "0x80000220",
+      "branch_enable": 0,
+      "branch_off": 1,
+      "meaning": "documented branch enable/off fields only; no actual MHz or ownership claim"
+    },
+    {
+      "reg": "GPU_GX_RBBMTIMER_CBCR",
+      "pa": "0x008c40b0",
+      "raw": "0x80000000",
+      "branch_enable": 0,
+      "branch_off": 1,
+      "meaning": "documented branch enable/off fields only; no actual MHz or ownership claim"
+    },
+    {
+      "reg": "GFX3D_CMD_RCGR",
+      "pa": "0x008c4000",
+      "raw": "0x80000000"
+    },
+    {
+      "reg": "GCC_MMSS_BIMC_GFX_CBCR",
+      "pa": "0x00309010",
+      "raw": "0x80004221",
+      "branch_enable": 1,
+      "branch_off": 1,
+      "meaning": "documented branch enable/off fields only; no actual MHz or ownership claim"
+    },
+    {
+      "reg": "GCC_BIMC_GFX_CBCR",
+      "pa": "0x00346018",
+      "raw": "0x00000001",
+      "branch_enable": 1,
+      "branch_off": 0,
+      "meaning": "documented branch enable/off fields only; no actual MHz or ownership claim"
+    }
+  ],
+  "gpu_mmio_writes": 0,
+  "gpu_aperture_read": false,
+  "chip_id": null,
+  "firmware_loaded": false,
+  "gpu_acceleration_verified": false,
+  "power_rail_voltage_verified": false,
+  "cpu_temperature_peak_native_mC": {
+    "0x0": 51200,
+    "0x1": 51800,
+    "0x100": 48000,
+    "0x101": 48600
+  },
+  "temperature_rows": 172,
+  "stop_temperature_rows": [
+    {
+      "line": 355,
+      "fields": {
+        "phase": "stop",
+        "affinity": "0x0",
+        "sensor": "TSENS0",
+        "id": "4",
+        "raw": "0x002041e6",
+        "enabled": "1",
+        "valid": "1",
+        "native_mC": "48600",
+        "reason": "native_hardware_units",
+        "trdy_read": "1",
+        "trdy": "0",
+        "status_reads": "1",
+        "reads": "4",
+        "at_abs": "27428053195",
+        "calibration_verified": "0",
+        "freshness_verified": "0"
+      }
+    },
+    {
+      "line": 356,
+      "fields": {
+        "phase": "stop",
+        "affinity": "0x1",
+        "sensor": "TSENS0",
+        "id": "6",
+        "raw": "0x002061cd",
+        "enabled": "1",
+        "valid": "1",
+        "native_mC": "46100",
+        "reason": "native_hardware_units",
+        "trdy_read": "1",
+        "trdy": "0",
+        "status_reads": "1",
+        "reads": "4",
+        "at_abs": "27428053195",
+        "calibration_verified": "0",
+        "freshness_verified": "0"
+      }
+    },
+    {
+      "line": 357,
+      "fields": {
+        "phase": "stop",
+        "affinity": "0x100",
+        "sensor": "TSENS0",
+        "id": "9",
+        "raw": "0x002091c3",
+        "enabled": "1",
+        "valid": "1",
+        "native_mC": "45100",
+        "reason": "native_hardware_units",
+        "trdy_read": "1",
+        "trdy": "0",
+        "status_reads": "1",
+        "reads": "4",
+        "at_abs": "27428053195",
+        "calibration_verified": "0",
+        "freshness_verified": "0"
+      }
+    },
+    {
+      "line": 358,
+      "fields": {
+        "phase": "stop",
+        "affinity": "0x101",
+        "sensor": "TSENS0",
+        "id": "11",
+        "raw": "0x0020b1c3",
+        "enabled": "1",
+        "valid": "1",
+        "native_mC": "45100",
+        "reason": "native_hardware_units",
+        "trdy_read": "1",
+        "trdy": "0",
+        "status_reads": "1",
+        "reads": "4",
+        "at_abs": "27428053195",
+        "calibration_verified": "0",
+        "freshness_verified": "0"
+      }
+    }
+  ],
+  "source_contention_dropped_bytes": 0,
+  "usb": {
+    "raw_bytes": 65444,
+    "console_bytes": 57924,
+    "frames": 235,
+    "raw_sha256": "934b551850868285aa2d606378b6079e91d627354ab6746d7b379c54bedde061",
+    "console_sha256": "520007cbc338040e19585171df9b66c4881e2cd997815d2e29ffb4d297335499",
+    "first_offset": 0,
+    "final_offset": 57924,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "incomplete_frame_bytes": 0,
+    "device_lost_max": 0,
+    "frames_reporting_device_loss": 0,
+    "independent_parser_agrees_with_frozen_receiver": true,
+    "frozen_redecode_equals_complete_console": true,
+    "transport_verified": true,
+    "kernel_banner_offset": 0,
+    "timer_offset": 56455,
+    "normal_return_offset": 57808,
+    "drain_success": true,
+    "drain_records": [
+      {
+        "offset": 57875,
+        "drained": 1,
+        "target": 57875
+      }
+    ],
+    "emitted_kernel_stream_through_timer_verified": true,
+    "all_firmware_daemon_and_original_printf_logs_complete": false,
+    "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
+  },
+  "receiver_terminal": {
+    "started_at": "2026-11-23T03:52:06.324945+08:00",
+    "enumerated": true,
+    "frames": 235,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "status": "capture_failed",
+    "output": "F:\\IOS-MIX1\\evidence\\gpu-g0-20261123\\package\\runs\\gpu-g0-01\\console.log",
+    "device_commands_sent": false,
+    "candidate_seen": true,
+    "identity_verified": true,
+    "descriptor_errors": 0,
+    "descriptor_error_samples": [],
+    "configuration_verified": true,
+    "console_bytes": 57924,
+    "failure_stage": "capturing",
+    "failure": "[Errno 32] Pipe error",
+    "finished_at": "2026-11-23T03:55:40.335676+08:00"
+  },
+  "return_verification": {
+    "started_at": "2026-11-23T03:56:56.098317+08:00",
+    "elapsed_seconds": 288.425307,
+    "devices_query_count": 1,
+    "product_query_count": 1,
+    "device_rows": [
+      [
+        "54223ce9",
+        "fastboot"
+      ]
+    ],
+    "same_serial_fastboot": true,
+    "observed_product": "MSM8996_A8",
+    "product_verified": true,
+    "passed": true,
+    "retry": false,
+    "attempt_id": "gpu-g0-01",
+    "phase": "g0",
+    "capture_stop_requested": true,
+    "finished_at": "2026-11-23T03:56:56.595875+08:00"
+  },
+  "no_panic_text_in_collected_stream": true,
+  "physical_screen_observed": false,
+  "cpu_frequency_kind": "614.4 MHz configuration model; no PMU measured MHz",
+  "device_operation_scope": "5 preflight reads, one temporary boot, one post-return devices/product check; no retry",
+  "next": "G1 source-backed GPU GFX/MX supply and bus prerequisites before power-on/chip-ID",
+  "input_sha256": {
+    "console.frames": "934b551850868285aa2d606378b6079e91d627354ab6746d7b379c54bedde061",
+    "console.log": "520007cbc338040e19585171df9b66c4881e2cd997815d2e29ffb4d297335499",
+    "result.json": "4b0f027dea56f63409daa6add9c36122ec681e7c6249762cc9197d0348ecb521",
+    "usb-status.json": "42f69de51836bf6be415ac0bfeaa1924a1ed9eb9d8c5ff069a5a4a36d5f1bb95",
+    "return-verification.json": "3c9d1ca5aa5060096c9c4095cffa68e9acc982ab0ae497f2806970a844a6c4a2",
+    "capture-host.py": "d5a9aecdd3c5ac728b233628d9ae810a598a35ba05d9068d0db3ed70fde3791c"
+  },
+  "report": "reports/hakios-ios16-gpu-g0-01.md",
+  "accepted_boot_counts": {
+    "hakios": 97,
+    "ios16": 66
+  },
+  "independent_register_review": "evidence/gpu-g0-20261123/core/runtime-g0-01.json",
+  "git_index_sha256": "fdf775be66b9e456182cd10df6271edadef7f977b6d0b02fa275030f985d1eb2",
+  "baseline_preserved": true,
+  "phase_complete": true,
+  "next_phase": "G1",
+  "G1_device_authorized": false
+}

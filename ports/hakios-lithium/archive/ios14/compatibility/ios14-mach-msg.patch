@@ -1,0 +1,35 @@
+--- a/osfmk/ipc/mach_msg.c
++++ b/osfmk/ipc/mach_msg.c
+@@ -552,6 +552,9 @@
+ }
+ 
+ #if XNU_TARGET_OS_OSX || XNU_TARGET_OS_IOS
++#if defined(LITHIUM_ARMV8_0)
++static TUNABLE(bool, lithium_ios14_legacy_msg, "lithium_ios14_test", false);
++#endif
+ #if DEVELOPMENT || DEBUG
+ static TUNABLE(bool, allow_legacy_mach_msg, "allow_legacy_mach_msg", false);
+ #endif /* DEVELOPMENT || DEBUG */
+@@ -606,6 +609,22 @@
+ 	uint32_t sdk = pro->p_platform_data.p_sdk;
+ 	uint32_t sdk_major = sdk >> 16;
+ 	task_t task = current_task();
++
++#if defined(LITHIUM_ARMV8_0)
++	/* 18H17 libSystem uses mach_msg_overwrite_trap, predating mach_msg2.
++	 * Keep all upstream copyin, rights, size, descriptor and send checks.
++	 * This exception is limited to the explicit iOS14 test and exact SDK14.8. */
++	if (lithium_ios14_legacy_msg && platform == PLATFORM_IOS && sdk == 0x000e0800) {
++		if (header->msgh_id == 200) {
++			char line[128];
++			extern void loader_log_line(const char *line);
++			snprintf(line, sizeof(line), "LITHIUM P2 MACH14 platform=%u sdk=%x id=%d legacy=1\n",
++			    platform, sdk, header->msgh_id);
++			loader_log_line(line);
++		}
++		return true;
++	}
++#endif
+ 
+ #if __x86_64__
+ 	if (!task_has_64Bit_addr(task)) {

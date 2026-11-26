@@ -1,0 +1,9 @@
+# R19诊断系统调用修正包
+
+R19在真实HFSX只读挂载及VERSION正数读取后，由诊断程序错误沿用被read清零的x1触发SIGSEGV。修正改用已经链接的完整上游libmini_syscall，让C编译器处理调用寄存器；仅在诊断边界将上游-1/errno转换为原先负errno约定。上游libmini源码保持固定提交原字节。
+
+实际诊断/调用边界/摘要的7项ASan与UBSan主机检查通过，包括错误返回、分段读取和三个哈希。最终ARM64二进制确认check_file调用mini_syscall，诊断函数无内联svc。APFS诊断根盘经上游工具及独立读回检查，Android/gzip/FAT/XNUP容器独立解包、ARMv8检查和137项冻结哈希通过。完整HakiOS内核与R19逐字节一致；UFS映射修正的两组map/unmap及普通map/read/unmap顺序继续核验。
+
+镜像SHA256：`c00191bbef17f45b079f402313dfac2040b8f59ca5b1ca2bc855a1add2013346`。内核SHA256：`e9a91f1478bdcc30d635ce325ccefed143abbb098e7be8997b4fa8aba0ba6bf0`。冻结目录：`artifacts/hakios/p2-storage-ready-probe-syscall`，完整同次输入见[JSON](hakios-p2-storage-test-ready-probe-syscall.json)。真实userdata沿用已核验的日志修复，不重新维护；本次准备没有设备启动或分区写入。
+
+下一轮按已有授权核验Fastboot身份、容量、电池后只发一次临时boot。约120秒，加25秒加载停留，结束摘要持续保留，无需守屏。通过条件仍为只读挂载、HEADER与VERSION/DYLD/LAUNCHD全部match1、卸载RC0、RESULT PASS及正常定时返回。尚未真机验证该修正，不宣称iOS14进程、ABI或图形兼容成立；P1保持3/3。

@@ -1,0 +1,149 @@
+{
+  "schema": 1,
+  "attempt": "HakiOS lithium R9",
+  "started_at": "2026-11-15T00:04:23.730071+08:00",
+  "recorded_at": "2026-11-15T00:39:53.921167+08:00",
+  "baseline": {
+    "project": "HakiOS",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2"
+  },
+  "package": {
+    "image_sha256": "e0d0394a99d41fa64b727752632215d8d87869cf7ba02ceb37a830857aa26e4f",
+    "image_bytes": 15683584,
+    "kernel_sha256": "cea35d92711dec40712b1044174df8c49b78f20ae1a0a3d3e346364989a97b01",
+    "loader_sha256": "7f18c2ce2acf265824951b46e8b6797f8f6229678f5bc4558673232dd4775004",
+    "fd_sha256": "35c2314bce5ca01f5148a2976d49541944bc2c9f812f7f631cb9b98553090932",
+    "hello_sha256": "fc3dcce5e628fe4b4b0f4ff0d17c934ac39beed543b168a379ca4999b5488c96",
+    "payload_sha256": "7e64c625a35d7ab22118e9f7ce942efa4867f4b4dacc87290bc305ca6577bb55",
+    "cmdline": "cores=1 serial=3 -v hello_wait=600 loader_return_after=660",
+    "stock_dtb_table_sha256": "ab929abf55ad4822ae83489a58d6b550b7b24ea8398ce8ead1de7b1d2caed6aa"
+  },
+  "frozen_artifacts_path": "artifacts/hakios/device-tests/20261115-000423",
+  "identity_verified": true,
+  "bootloader_unlocked": true,
+  "userdata_bytes": 250710192128,
+  "temporary_boot_issued": true,
+  "fastboot_returncode": 0,
+  "command_accepted": true,
+  "fastboot_boot_output": "Sending 'boot.img' (15316 KB)                      OKAY [  0.377s]\nBooting                                            OKAY [  0.739s]\nFinished. Total time: 1.126s\n",
+  "user_screen_observation": {
+    "source": "user_text",
+    "text": "已进入并持续增加",
+    "question_context": "Whether R9 entered Hello and logs continued increasing",
+    "observation_pending": false,
+    "running_feedback_recorded_at": "2026-11-15T00:08:15.150208+08:00",
+    "final_screen_evidence_pending": false,
+    "timer_select_values_pending": true,
+    "independent_stopwatch_data_supplied": false,
+    "later_feedback": "根本拍不到啊。。。要等十分钟不说，wakes=600以后就关了，我能确定的只有不会panic，其他都确定不了，我不可能守着手机屏幕十分钟不动吧",
+    "clarification": "停在结束文字摘要",
+    "no_panic_reported_by_user": true,
+    "return_summary_reported_by_user": true,
+    "intermediate_photo_capture_not_required_from_user": true,
+    "return_to_fastboot_confirmed_by_user": true,
+    "return_to_fastboot_user_text": "已进入",
+    "later_identity_preflight_report": "reports/hakios-device-r10.json"
+  },
+  "latest_usb": {
+    "checked_at": "2026-11-15T00:39:53.921167+08:00",
+    "authorized_device_in_fastboot": false,
+    "adb_present": false,
+    "local_log_path": "reports/local/hakios-r9-after-return-usb.json"
+  },
+  "verified_stages": {
+    "fastboot_command": true,
+    "uefi": false,
+    "mmu_hobs": false,
+    "bds": false,
+    "gop": false,
+    "efi_file_hash": false,
+    "loader": false,
+    "kernel": false,
+    "hello": true
+  },
+  "outcome": "hello_progress_then_return_summary_and_no_panic_user_reported_exact_counts_unavailable",
+  "exact_failure_stage": "none_reported_so_far",
+  "loader_pe": {
+    "preferred_base": "0x40400000",
+    "size_of_image": 9879552,
+    "mapped_window": [
+      "0x40400000",
+      "0x41000000"
+    ],
+    "fits_mapped_window": true,
+    "relocations_present": true
+  },
+  "uefi_heap": {
+    "base": "0x124000000",
+    "end_exclusive": "0x128000000",
+    "size_bytes": 67108864,
+    "measured_ddr_checked": true,
+    "reservation_ranges_checked": 10,
+    "other_board_regions_disjoint": true,
+    "memory_evidence_path": "reports/live-memory.json",
+    "memory_evidence_sha256": "38cc2d64f1b8b2f760492a78cbdd9f8916b9dd6f7041a641f7c11f4aafd9414d",
+    "memory_map_sha256": "6d63cc3bdae336dc8429d10e74bede596bdd281c92c0fa70a8484dc5fc977145",
+    "runtime_availability_verified": false
+  },
+  "hardware_verified": false,
+  "ios14_compatibility_verified": false,
+  "partition_writes_performed": false,
+  "qemu_used": false,
+  "stack_contract": {
+    "base": "0x41590000",
+    "end_exclusive": "0x415d0000",
+    "size_bytes": 262144,
+    "memory_map_pcd_loader_bounds_match": true,
+    "cache_line_aligned": true,
+    "hardware_handoff_verified": false
+  },
+  "repeat_of": {
+    "report": "reports/hakios-device-r8.json",
+    "exact_package_hashes_match": true,
+    "R8_runtime_evidence_not_inherited_for_this_boot": true
+  },
+  "stage_evidence_basis": {
+    "hello": "user_text_in_reply_to_R9_Hello_question",
+    "kernel": "current_R9_photographic_identity_evidence_pending",
+    "timer_select": "counts_not_supplied_yet",
+    "loader_return": "not_observed_yet"
+  },
+  "test_contract": {
+    "prepared_at": "2026-11-15T00:04:23.423158+08:00",
+    "round": 9,
+    "image_sha256": "e0d0394a99d41fa64b727752632215d8d87869cf7ba02ceb37a830857aa26e4f",
+    "scope": "Identical R8 full HakiOS platform repeat only",
+    "acceptance": [
+      "600 successful select wakes, zero errors",
+      "Increasing actual timer PPI27 and context-switch counts through late sample",
+      "Compare against independent stopwatch, preserving measurement origin",
+      "Normal timed return and readable summary",
+      "Three qualifying consecutive boots before full P1"
+    ],
+    "battery_query_path": "reports/local/20261115-000347-185962-hakios-preflight/battery-query.json",
+    "independent_stopwatch_result_pending": true,
+    "host_boot_clock_is_not_hello_start": true,
+    "host_clock_path": "reports/local/20261115-000423-705691-hakios-preflight/r9-host-boot-clock.json"
+  },
+  "battery_preflight": {
+    "voltage_raw": 3521000,
+    "battery_soc_ok": "yes",
+    "local_evidence_path": "reports/local/20261115-000423-705691-hakios-preflight/battery-query.json",
+    "battery_percentage_unknown": true
+  },
+  "runtime_acceptance": {
+    "P1_passed": false,
+    "current_Hello_reported": true,
+    "direct_timer_irq_counter_observed": false,
+    "select_600_wakes_completed": false,
+    "independent_wallclock_comparison_verified": false,
+    "continuous_ten_minutes_verified": false,
+    "orderly_timed_return_observed": false,
+    "final_observation_pending": false,
+    "previous_identical_image_600_wake_timed_return_count": 1,
+    "no_panic_reported_by_user": true,
+    "return_summary_reported_by_user": true,
+    "exact_final_measurements_unavailable": true
+  }
+}

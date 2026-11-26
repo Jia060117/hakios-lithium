@@ -1,0 +1,83 @@
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -379,7 +379,21 @@
+ {
+ 	((efi_status (EFIAPI *)(efi_text_output *, uint8_t))ST->con_out->reset)(ST->con_out, 0);
+ 	print("LITHIUM RETURN LOG %d BYTES\n", bytes);
+-	if (log == NULL) return;
++	print("P2 STORAGE LOADER:\n");
++	volatile uint64_t *ufs_state = (volatile uint64_t *)(uintptr_t)0x415ff300ULL;
++	if (ufs_state[0] == 0x465532505854494cULL) {
++		print("UEFI UFS stage=%d cap=%x hce=%x hcs=%x\n",ufs_state[1],ufs_state[2],ufs_state[3],ufs_state[4]);
++		print("UEFI UFS ver=%x doorbell=%x rc_ocs_st=%x\n",ufs_state[6],ufs_state[5],ufs_state[7]);
++	}
++	lithium_show_line(lithium_last_line(log_buf, log_len, "LITHIUM P2 LOADER "), log_buf + log_len);
++	lithium_show_line(lithium_last_line(log_buf, log_len, "LITHIUM P2 STOP "), log_buf + log_len);
++	if (log == NULL) { print("KERNEL NOT STARTED; STORAGE/PSCI STOP\n"); return; }
++	print("P2 STORAGE KERNEL:\n");
++	static const char *p2[] = {"LITHIUM P2 START ", "LITHIUM P2 HEADER ", "LITHIUM P2 MOUNT ",
++	    "LITHIUM P2 VERSION ", "LITHIUM P2 DYLD ", "LITHIUM P2 LAUNCHD ",
++	    "LITHIUM P2 UNMOUNT ", "LITHIUM P2 RESULT "};
++	for (unsigned i=0; i<sizeof(p2)/sizeof(p2[0]); i++)
++	    lithium_show_line(lithium_last_line(log, bytes, p2[i]), log + bytes);
+ 	const char *panic_line = lithium_last_line(log, bytes, "panic(cpu ");
+ 	const char *timed = lithium_last_line(log, bytes, "--- loader_return_after expired ---");
+ 	print(panic_line != NULL ? "KERNEL PANIC CAUSE:\n" :
+@@ -411,7 +425,7 @@
+ 	if (bio == NULL) {
+ 		/* No log partition (QEMU): echo the returned kernel log on the console instead. */
+ #if defined(HAKIOS_LITHIUM)
+-		if (klog != NULL) lithium_return_screen(klog, klog_len);
++		lithium_return_screen(klog, klog_len);
+ #else
+ 		if (klog != NULL) {
+ 			print("\n== KERNEL LOG ==\n");
+@@ -3144,6 +3158,28 @@
+ 	if (ufs_requested >= 2) {
+ 		block_start();
+ 	}
++#if defined(HAKIOS_LITHIUM)
++	int lithium_storage_test = 0;
++	for (const char *c=pi.cmdline; *c; c++)
++		if ((c == pi.cmdline || c[-1] == ' ') && starts_with(c,"lithium_storage_test=1") &&
++		    (c[22] == 0 || c[22] == ' ')) lithium_storage_test = 1;
++	if (lithium_storage_test) {
++		int ready = 0;
++		for (uint32_t i=0; block_enabled && i<block_shared.parts; i++) {
++			const struct loader_block_part *p = &block_shared.part[i];
++			if (memcmp(p->name, "userdata", 9) != 0 || p->flags & BLOCK_PART_UNIT) continue;
++			efi_block_io *bio = block_bios[i];
++			if (p->block_size == 4096 && p->start_lba == 98304 &&
++			    p->blocks == 61208543ULL && bio->media->read_only && !block_write_requested &&
++			    kernel_mpidr != this_mpidr &&
++			    !EFI_ERROR(bio->read_blocks(bio,bio->media->media_id,0,8192,ufs_buffer)) &&
++			    ufs_buffer[1024] == 0x48 && ufs_buffer[1025] == 0x58) ready++;
++		}
++		print(ready == 1 ? "LITHIUM P2 LOADER READY userdata HFSX read_only=1\n" :
++		    "LITHIUM P2 LOADER FAIL userdata/geometry/HFSX/bootcpu\n");
++		if (ready != 1) { write_logs(NULL,0); return 1; }
++	}
++#endif
+ 	if (checkpoint == CHECKPOINT_SELFTEST) {
+ 		kernel_mpidr = this_mpidr;
+ 	}
+@@ -3630,6 +3666,9 @@
+ 				/* the kernel still has that core; what it logged can be had all the same */
+ 				print("THE KERNEL HUNG on core %x: no sign of life for %d seconds; its log follows\n", kernel_mpidr,
+ 				    (uint64_t)SILENCE_SECONDS);
++#if defined(HAKIOS_LITHIUM)
++				print("LITHIUM P2 STOP kernel silence timeout\n");
++#endif
+ 				set_result("hung", loader_ctx[CTX_LOG_LEN], 0);
+ 				write_logs((const char *)loader_ctx[CTX_LOG_PA], loader_ctx[CTX_LOG_LEN]);
+ 				return 1;
+@@ -3640,6 +3679,9 @@
+ 				} else {
+ 					print("core %x did not start: PSCI error %d\n", kernel_mpidr, (uint64_t)-status);
+ 				}
++#if defined(HAKIOS_LITHIUM)
++				print("LITHIUM P2 STOP core=%x PSCI/status=%d\n",kernel_mpidr,(uint64_t)(status < 0 ? -status : status));
++#endif
+ 				set_result("no-such-core", (uint64_t)(status < 0 ? -status : status), 0);
+ 				write_logs(NULL, 0);
+ 				return 1;

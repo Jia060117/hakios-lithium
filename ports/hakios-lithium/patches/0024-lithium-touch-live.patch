@@ -1,0 +1,29 @@
+--- a/xnu/files/osfmk/arm64/loader_return.c
++++ b/xnu/files/osfmk/arm64/loader_return.c
+@@ -583,6 +583,8 @@
+ 	if (!as_panic) {
+ #if defined(LITHIUM_ARMV8_0)
+ 		extern void lithium_lsdb_finalize(void);
++		extern void hakios_lithium_touch_stop(void);
++		hakios_lithium_touch_stop();
+ 		lithium_lsdb_finalize();
+ #endif
+ 		hakios_var_save_on_return();   /* the data volume kept, while the system is still whole */
+--- a/userland/src/init.c
++++ b/userland/src/init.c
+@@ -203,9 +203,12 @@
+ 	    !lithium_touch_diag_is(value, length, "1")) {
+ 		return 1;
+ 	}
+-	*reason = "touch_stage_requires_exact_1";
+-	if (lithium_touch_diag_arg(args, "touch_stage", &value, &length) != 1 ||
+-	    !lithium_touch_diag_is(value, length, "1")) {
++	*reason = "touch_stage_or_live_required";
++	unsigned stages = lithium_touch_diag_arg(args, "touch_stage", &value, &length);
++	int stage_one = stages == 1 && lithium_touch_diag_is(value, length, "1");
++	unsigned lives = lithium_touch_diag_arg(args, "touch", &value, &length);
++	int live_one = lives == 1 && lithium_touch_diag_is(value, length, "1");
++	if (!((stage_one && lives == 0) || (live_one && stages == 0))) {
+ 		return 1;
+ 	}
+ 	*reason = "ufs_requires_exact_0";

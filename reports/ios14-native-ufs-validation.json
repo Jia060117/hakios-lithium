@@ -1,0 +1,90 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "name": "valid measured geometry",
+      "accepted": true,
+      "result": 0
+    },
+    {
+      "name": "bad header CRC",
+      "accepted": false,
+      "result": 2
+    },
+    {
+      "name": "entry count overflow",
+      "accepted": false,
+      "result": 2
+    },
+    {
+      "name": "entry size unsupported",
+      "accepted": false,
+      "result": 2
+    },
+    {
+      "name": "entry table outside disk",
+      "accepted": false,
+      "result": 3
+    },
+    {
+      "name": "header size out of buffer",
+      "accepted": false,
+      "result": 2
+    },
+    {
+      "name": "primary at wrong LBA",
+      "accepted": false,
+      "result": 2
+    },
+    {
+      "name": "backup beyond disk",
+      "accepted": false,
+      "result": 2
+    },
+    {
+      "name": "bad entry CRC",
+      "accepted": false,
+      "result": 4
+    },
+    {
+      "name": "partition beyond usable",
+      "accepted": false,
+      "result": 5
+    },
+    {
+      "name": "reversed extent",
+      "accepted": false,
+      "result": 5
+    },
+    {
+      "name": "partition inside GPT",
+      "accepted": false,
+      "result": 5
+    },
+    {
+      "name": "duplicate userdata",
+      "accepted": false,
+      "result": 6
+    },
+    {
+      "name": "overlapping extent",
+      "accepted": false,
+      "result": 8
+    },
+    {
+      "name": "prefix is not exact name",
+      "accepted": false,
+      "result": 7
+    },
+    {
+      "name": "non ASCII UTF16 name",
+      "accepted": false,
+      "result": 7
+    }
+  ],
+  "crc32_known_answer": true,
+  "parser_sha256": "c868cb25000dbcfeccf3ed23345827b221eb2e3abd79a380042292e90c54a4d5",
+  "staged_source_identical": true,
+  "hardware_read_verified": false,
+  "qemu_used": false
+}

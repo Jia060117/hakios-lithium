@@ -1,0 +1,60 @@
+{
+  "revision": "R38-perf-fixed01",
+  "prepared_at": "2026-11-21T00:33:32.763455+08:00",
+  "image": {
+    "path": "lithium-hakios-ios16-r37-ram-frequency-10.img",
+    "bytes": 16334848,
+    "sha256": "268605b90e1b571300c53ea556d085c9fbec8118ea0ccea97aaff2991d51cea1"
+  },
+  "package": "artifacts/hakios/lithium-ios16/phase4-r37-ram-frequency-10",
+  "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_clock_diag=1 cpu_power_diag=1 cpu_freq_pmu_setup=0 cpu_sanity=1 cpu_spmi_diag=1 cpu_perf_fixed=1 cpu_freq_diag=1",
+  "sole_new_arg": "cpu_perf_fixed=1",
+  "kernel_reused": {
+    "bytes": 15074008,
+    "sha256": "eb5b407451e41be6b2b14ff4c6b7d24d034b1ba30470e396de0d989c35a83a4a"
+  },
+  "loader": "022f6e087211892186437906e236b9e22fbae3fa591615d29d81b474abfd10ee",
+  "mu": "db2c35d3834312d8854d7c75015f42dc1ad00ce9d1e1c5cacfa7a7d8c292cc13",
+  "helper_host_tests": {
+    "hardware_verified": false,
+    "device_operations": 0,
+    "hashes": {
+      "ports/hakios-lithium/return-fastboot/cpu-perf-uefi-r38.inc": "a5c41313ed595cbf7dc893f8d21bd66610db74b29553eca19df95e5510c01b2b",
+      "ports/hakios-lithium/diagnostics/cpu-perf-fixed-r38.h": "ef5fca4a93356be0fb4749df4daae626660e5f4ddb6bd07fd1b6f0a7a8b02b6c",
+      "ports/hakios-lithium/diagnostics/cpu-spmi-read-r38.h": "862be6f321467719e7c21acf9eb1345330d0f1cfb84a6caa22048e1072422e46",
+      "evidence/cpu-r38-20261120/perf-uefi/mock.c": "9dbd32c6e4a2373dd7613b7dc191730d1b42049a83c3b7343e6680ccdcfacb5b",
+      "evidence/cpu-r38-20261120/perf-uefi/native-compile.c": "f2161d56dc7bbea10567e8c0f71b2ec04d6dca71261149a8beacb0770b30dcfd",
+      "evidence/cpu-r38-20261120/perf-uefi/test.py": "594617ac93388fb764eb61e09cd5000c37279ff54f64bdb22f92b38976b88b58",
+      "scripts/package-hakios-cpu-r37-ram.py": "c49d6fb770e0ae826749dff2651a3160e48e3df7ab402ae3e65afa8e42a59fae"
+    },
+    "runs": [
+      {
+        "mode": "asan-ubsan",
+        "exit_code": 0,
+        "cases": 103,
+        "checks": 22369
+      },
+      {
+        "mode": "optimized",
+        "exit_code": 0,
+        "cases": 103,
+        "checks": 22369
+      }
+    ],
+    "actual_base_args_without_rd_verified": true,
+    "aarch64_native_leaves_compiled": true,
+    "passed": true
+  },
+  "clock_core_tests": "evidence/cpu-r38-20261120/perf-uefi-main/result.json",
+  "model_cpu_hz": 307200000,
+  "max_pll_mux_writes": 11,
+  "voltage_writes": 0,
+  "s11_programmed_uv_required": 905000,
+  "cpu_stock_requirement_uv": 585000,
+  "soc_fuse_profile": "actual12raw64/bin0/rev2/primary/partial0/limitation0",
+  "physical_ufs_provider_absent": true,
+  "hardware_verified": false,
+  "unknown_or_failure": "abort launch and retain summary; no rollback or automatic retry",
+  "normal_end": "180s RAM timer/drain strictCPU_OFF and sameUEFIowner automaticFastboot",
+  "four_xnu_cpus": false
+}

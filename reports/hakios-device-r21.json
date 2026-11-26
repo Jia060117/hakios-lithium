@@ -1,0 +1,169 @@
+{
+  "schema": 1,
+  "attempt": "HakiOS lithium R21",
+  "started_at": "2026-11-15T23:29:19.863745+08:00",
+  "recorded_at": "2026-11-15T23:29:21.375556+08:00",
+  "baseline": {
+    "project": "HakiOS",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2"
+  },
+  "package": {
+    "image_sha256": "a970807f8e6f80d28d78d6ee4ff6f71033b086483626be23b09ad29f6cf83cd8",
+    "image_bytes": 15740928,
+    "kernel_sha256": "13199b15f99ee15c9a7fb1577d1124d90f24356a7be52eff1c47dccdf08eddbc",
+    "loader_sha256": "e7364fd3e968ed117c7ee2683e2469ffd8a80d861d576d04057b34c06fa83b33",
+    "fd_sha256": "792cf0afc5e1bf232f795277d484cd0583d432388948ed94bfa7744d45bb015e",
+    "payload_sha256": "2bdf58479b643c4f6a65b49c186234b536c455c98903c50708cbdafb610b58b2",
+    "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=2 lithium_storage_test=1 systrace=1 loader_return_after=120 lithium_ios14_test=1",
+    "stock_dtb_table_sha256": "ab929abf55ad4822ae83489a58d6b550b7b24ea8398ce8ead1de7b1d2caed6aa",
+    "test_profile": "p2-ios14-dynamic",
+    "ramdisk_sha256": "fcc6cd47d49e55ae61e7f7353d737eb7e597900e29f7b0dedcb10e7eca13bf91",
+    "dynamic_init_sha256": "61bb3bf1ad013fcbaa68d36e4044fc3832d46f8a188c5b36800a4a232bc8be33",
+    "loader_identity": {
+      "target": "iPhone10,1 / D20AP",
+      "source_sha256": "1827dfc68e87b822c43e86781872caa6a5d490efc5145a2a60feba0e2bd54b93",
+      "generator_sha256": "ae6cebdcfa22994661211e0bc35fd14770484173f951ceef6a65e9b84ad3ff99",
+      "header_sha256": "71874512c290ec24d799173f2aa10131c6f61573d598c0e281252e373c5b6630",
+      "placeholder": false
+    }
+  },
+  "frozen_artifacts_path": "artifacts/hakios/p2-ios14-dynamic-ready",
+  "frozen_boot_image": "reports/local/20261115-232919-842142-hakios-preflight/lithium-hakios-test.img",
+  "local_log_path": "reports/local/20261115-232919-842142-hakios-preflight",
+  "test_contract_path": "reports/local/20261115-232919-842142-hakios-preflight/test-contract.json",
+  "filesystem_input": {
+    "report": "reports/hakios-hfs-journal-repair.json",
+    "frozen_contract_path": "reports/local/20261115-232919-842142-hakios-preflight/filesystem-input.json",
+    "original_volume_plus_verified_journal_delta": true,
+    "prior_maintenance_written_bytes": 8192,
+    "first8192_unchanged": true,
+    "full_volume_after_hash_measured": false
+  },
+  "identity_verified": true,
+  "bootloader_unlocked": true,
+  "userdata_bytes": 250710192128,
+  "temporary_boot_issued": true,
+  "fastboot_returncode": 0,
+  "command_accepted": true,
+  "fastboot_boot_output": "Sending 'boot.img' (15372 KB)                      OKAY [  0.398s]\nBooting                                            OKAY [  0.786s]\nFinished. Total time: 1.191s\n",
+  "latest_usb": {
+    "checked_at": "2026-11-15T23:29:21.375556+08:00",
+    "authorized_device_in_fastboot": false,
+    "adb_present": false,
+    "local_log_path": "reports/local/20261115-232919-842142-hakios-preflight/post-boot-usb.json"
+  },
+  "battery_preflight": {
+    "battery_soc_ok": "yes",
+    "local_log_path": "reports/local/20261115-232919-842142-hakios-preflight/battery-query.json"
+  },
+  "user_screen_observation": {
+    "source": "user_photo",
+    "observation_pending": false,
+    "current_screen": "Retained dynamic FAIL stage6; df and mount SIGKILL; orderly timed return",
+    "automatic_reboot_observed": false
+  },
+  "verified_stages": {
+    "fastboot_command": true,
+    "uefi": true,
+    "loader": true,
+    "kernel": true,
+    "hello": false,
+    "full_init": true,
+    "hfs_root_switch": true,
+    "original_ios14_dynamic_programs": false,
+    "warm_ufs_ready": true,
+    "original_cache_header": true,
+    "original_dyld_shared_region_call": true
+  },
+  "outcome": "readonly_root_switch_and_SR438_succeeded_original_tools_SIGKILL",
+  "exact_failure_stage": "original_18H17_child_programs_terminated_SIGKILL_source_unknown",
+  "runtime_acceptance": {
+    "dynamic_programs_passed": false,
+    "final_summary_pending": false,
+    "orderly_return_observed": true,
+    "panic_return_observed": false,
+    "final_summary_retained": true,
+    "root_switch_verified": true,
+    "root_readonly_verified": true,
+    "shared_region_438_core_rc0_observed": true,
+    "original_tools_exit0_verified": false
+  },
+  "hardware_verified": true,
+  "ios14_compatibility_verified": false,
+  "partition_writes_performed": false,
+  "qemu_used": false,
+  "observation_recorded_at": "2026-11-15T23:36:44.444313+08:00",
+  "kernel_execution_verified": true,
+  "screen_evidence": {
+    "photos": [
+      {
+        "path": "reports/local/20261115-232919-842142-hakios-preflight/r21-dynamic-sigkill.jpg",
+        "sha256": "106040bdc946c39ad4ec3be629596796e256469aaf517c9152f9bae886d3fee3"
+      }
+    ],
+    "transcription_path": "reports/local/20261115-232919-842142-hakios-preflight/r21-screen-transcription.txt",
+    "transcription_sha256": "6bdeb8cf3591db214054fb5fa3cf7ad781ed13db96ddeba289a979a45ef9e607",
+    "raw_kernel_log_captured": false,
+    "transcription_scope": "Visible normalized screen text with original wrapping; EXIT magnitude1 corresponds to source exit=-1"
+  },
+  "measurements": {
+    "loader_return_log_bytes": 17961,
+    "ufs_stage": 6,
+    "root_switch_rc": 0,
+    "root_readonly": true,
+    "cache_header_match": true,
+    "shared_region_mapping_count": 3,
+    "shared_region_slide": 175423488,
+    "shared_region_rc": 0,
+    "children": {
+      "DF": {
+        "pid": 2,
+        "waited": true,
+        "exit_code": -1,
+        "signal": 9,
+        "timeout": false,
+        "exit_minus_sign_normalized_from_frozen_source": true
+      },
+      "MOUNT": {
+        "pid": 3,
+        "waited": true,
+        "exit_code": -1,
+        "signal": 9,
+        "timeout": false,
+        "exit_minus_sign_normalized_from_frozen_source": true
+      }
+    },
+    "result": "FAIL",
+    "result_stage": 6,
+    "clock_ticks_start": 23436357149,
+    "clock_ticks_end": 25744171255,
+    "frequency_hz": 19200000,
+    "hardware_elapsed_ms": 120198,
+    "clock_valid": true,
+    "ppi27_start": 0,
+    "ppi27_end": 10116,
+    "irq_delta": 10116,
+    "samples": 2,
+    "stalled": 0,
+    "min_step": 3485,
+    "last_timer_ppi27": 9525,
+    "last_timer_heartbeat": 12,
+    "last_timer_elapsed_ms": 110176
+  },
+  "failure": {
+    "signal": "SIGKILL",
+    "source_identified": false,
+    "parent_wait_error_cleanup_not_excluded": true,
+    "codesigning_not_confirmed": true,
+    "memory_pressure_not_confirmed": true,
+    "exit1_is_not_a_normal_exit_code": true
+  },
+  "observation_archival": {
+    "frozen_evidence_hashes_checked": 144,
+    "device_queries_performed": false,
+    "temporary_boot_issued": false,
+    "partition_writes_performed": false,
+    "new_kernel_compiled": false
+  }
+}

@@ -1,0 +1,10 @@
+--- a/xnu-deps/host/bin/xnu-clang
++++ b/xnu-deps/host/bin/xnu-clang
+@@ -18,3 +18,6 @@
+ done
++if [ -n "${HAKIOS_USERLAND_LD64:-}" ]; then
++  extra+=(-Wl,-platform_version,ios,${XNU_SDK_VERSION:-16.5},${XNU_SDK_VERSION:-16.5})
++fi
+-exec /usr/bin/$drv -include "$HB/../../hostinc/xnu_clang_compat.h" -target arm64-apple-ios${XNU_SDK_VERSION:-16.5} --ld-path="$HB/ld64" \
++exec /usr/bin/$drv -include "$HB/../../hostinc/xnu_clang_compat.h" -target arm64-apple-ios${XNU_SDK_VERSION:-16.5} --ld-path="${HAKIOS_USERLAND_LD64:-$HB/ld64}" \
+   -w "${extra[@]}" "${args[@]}"

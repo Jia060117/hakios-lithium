@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "attempt": "HakiOS lithium R5",
+  "started_at": "2026-11-14T20:55:06.189838+08:00",
+  "recorded_at": "2026-11-14T20:59:13.340538+08:00",
+  "baseline": {
+    "project": "HakiOS",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2"
+  },
+  "package": {
+    "image_sha256": "e44328863c4d8eeba608111c93d89498160192e3bed6d70e2632b66bc93c4b89",
+    "image_bytes": 15683584,
+    "kernel_sha256": "02357c2cdb8b6d3cf700071adf3a77d2987667bc2a238bfc5383bdb907cd6698",
+    "loader_sha256": "103ef5e1aaac6815d84e4504281d754d60a38b2b1873e003141b7d65d1aa46ae",
+    "fd_sha256": "d4055e95e94435bce19e0e4da39961ace343d54c34607421eb52dac8f1cc7764",
+    "hello_sha256": "c6ce7932427b0980316497bbdf62f10cd6f19057f1309a34d3cff25fd6522bbe",
+    "payload_sha256": "967d668435f473bd389df665a180f1926654814938049e281bc8a0b7974eeb98",
+    "cmdline": "cores=1 serial=3 -v hello_wait=600",
+    "stock_dtb_table_sha256": "ab929abf55ad4822ae83489a58d6b550b7b24ea8398ce8ead1de7b1d2caed6aa"
+  },
+  "frozen_artifacts_path": "artifacts/hakios/device-tests/20261114-205506",
+  "identity_verified": true,
+  "bootloader_unlocked": true,
+  "userdata_bytes": 250710192128,
+  "temporary_boot_issued": true,
+  "fastboot_returncode": 0,
+  "command_accepted": true,
+  "fastboot_boot_output": "Sending 'boot.img' (15316 KB)                      OKAY [  0.375s]\nBooting                                            OKAY [  0.740s]\nFinished. Total time: 1.124s\n",
+  "user_screen_observation": {
+    "source": "user_text",
+    "text": "这次直接重启进miui了",
+    "observation_pending": false,
+    "automatic_reboot_reported": true,
+    "miui_boot_screen_reported": true,
+    "android_boot_completed_verified": false
+  },
+  "latest_usb": {
+    "checked_at": "2026-11-14T20:59:13.339539+08:00",
+    "authorized_device_in_fastboot": true,
+    "adb_present": false,
+    "local_log_path": "reports/local/20261114-205506-161509-hakios-preflight/post-boot-usb.json"
+  },
+  "verified_stages": {
+    "fastboot_command": true,
+    "uefi": false,
+    "mmu_hobs": false,
+    "bds": false,
+    "gop": false,
+    "efi_file_hash": false,
+    "loader": false,
+    "kernel": false,
+    "hello": false
+  },
+  "outcome": "automatic_reboot_to_miui_reported_execution_stage_unknown",
+  "exact_failure_stage": "unknown",
+  "loader_pe": {
+    "preferred_base": "0x40400000",
+    "size_of_image": 9875456,
+    "mapped_window": [
+      "0x40400000",
+      "0x41000000"
+    ],
+    "fits_mapped_window": true,
+    "relocations_present": true
+  },
+  "uefi_heap": {
+    "base": "0x124000000",
+    "end_exclusive": "0x128000000",
+    "size_bytes": 67108864,
+    "measured_ddr_checked": true,
+    "reservation_ranges_checked": 10,
+    "other_board_regions_disjoint": true,
+    "memory_evidence_path": "reports/live-memory.json",
+    "memory_evidence_sha256": "38cc2d64f1b8b2f760492a78cbdd9f8916b9dd6f7041a641f7c11f4aafd9414d",
+    "memory_map_sha256": "6d63cc3bdae336dc8429d10e74bede596bdd281c92c0fa70a8484dc5fc977145",
+    "runtime_availability_verified": false
+  },
+  "hardware_verified": false,
+  "ios14_compatibility_verified": false,
+  "partition_writes_performed": false,
+  "qemu_used": false
+}

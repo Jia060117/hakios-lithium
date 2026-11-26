@@ -1,0 +1,109 @@
+"""Validate the built 7195 loader's command line boundary and real iOS14 input.
+
+Uses the exact production command-line fragment and upstream Mach-O parser.
+Host checks only: no UEFI execution, kernel boot, SDK or phone is simulated.
+"""
+import ctypes
+import hashlib
+import json
+from pathlib import Path
+import shutil
+import struct
+import subprocess
+import sys
+
+ROOT=Path(__file__).resolve().parents[1]
+BASE=Path('/home/jia/ios-mix1-build')
+WORK=BASE/'darwinboot-ios14-workspace'
+OUT=ROOT/'out/darwinboot-ios14'
+MU=BASE/'Mu-Silicium'
+DARWIN=ROOT/'upstream/UniXNU/drivers/DarwinBoot'
+
+def sha(path): return hashlib.sha256(path.read_bytes()).hexdigest()
+
+def main():
+    assert sys.platform=='linux','Run in the WSL build venv'
+    build=json.loads((OUT/'inputs.json').read_text())
+    assert build['build_success'] and build['abi_checks_passed']
+    for name,digest in build['sources'].items(): assert sha(ROOT/name)==digest,name
+    for name,digest in build['original_inputs'].items(): assert sha(ROOT/name)==digest,name
+    assert sha(ROOT/build['efi_path'])==build['efi_sha256']
+    driver=WORK/'DarwinBootPkg/Driver/DarwinBoot.c'
+    header=WORK/'DarwinBootPkg/Driver/BootArgs.h'
+    assert sha(driver)==build['patched_driver_sha256'] and sha(header)==build['patched_header_sha256']
+    source=driver.read_text()
+    declaration='  CHAR8                           CommandLine[sizeof (((DARWIN_BOOT_ARGS *)0)->CommandLine)];'
+    assert source.count(declaration)==1
+    first=source.index('  ZeroMem (CommandLine, sizeof (CommandLine));')
+    last=source.index('  Root = NULL;',first)
+    fragment=source[first:last]
+    copy='  CopyMem (Args->CommandLine, CommandLine, sizeof (CommandLine));'
+    assert source.count(copy)==1
+    harness='''
+#include <Uefi.h>
+#include "BootArgs.h"
+#define ZeroMem(p,n) __builtin_memset((p),0,(n))
+#define CopyMem(d,s,n) __builtin_memcpy((d),(s),(n))
+#define Print(...) ((void)0)
+EFI_STATUS check_command_line(CONST CHAR16 *Input,DARWIN_BOOT_ARGS *Args) {
+  struct { CONST CHAR16 *BootArgs; } RequestValue={Input};
+  CONST __typeof__(RequestValue) *Request=&RequestValue;
+  UINTN Index;
+'''+declaration+'\n'+fragment+copy+'\n  return EFI_SUCCESS;\n}\n'
+    cfile=OUT/'command-line-host-check.c'; cfile.write_text(harness)
+    library=OUT/'command-line-host-check.so'
+    command=['clang','-shared','-fPIC','-fshort-wchar','-O2','-Wall','-Wextra','-Werror',
+        '-I',str(WORK/'DarwinBootPkg/Driver'),'-I',str(MU/'Mu_Basecore/MdePkg/Include'),
+        '-I',str(MU/'Mu_Basecore/MdePkg/Include/X64'),str(cfile),'-o',str(library)]
+    subprocess.run(command,check=True)
+    lib=ctypes.CDLL(str(library))
+    lib.check_command_line.argtypes=[ctypes.c_void_p,ctypes.c_void_p]
+    lib.check_command_line.restype=ctypes.c_uint64
+    tests=[('null',None,True),('empty',[],True),('normal',list(b'-v keepsyms=1'),True),
+        ('maximum-607',list(b'x'*607),True),('too-long-608',list(b'x'*608),False),
+        ('non-ascii',[ord('x'),0x80],False),('utf16-surrogate',[0xd800],False)]
+    results=[]; capacity=build['abi_layout']['command_line_bytes']; size=build['abi_layout']['struct_bytes']
+    offset=build['abi_layout']['CommandLine']; guard=32
+    for name,units,accepted in tests:
+        memory=ctypes.create_string_buffer(bytes([0xa5])*(size+2*guard))
+        before=bytes(memory.raw)
+        values=None if units is None else (ctypes.c_uint16*(len(units)+1))(*units,0)
+        status=lib.check_command_line(values,ctypes.addressof(memory)+guard)
+        assert status==(0 if accepted else 0x8000000000000004),(name,hex(status))
+        after=memory.raw
+        if accepted:
+            expected=bytes(units or [])+bytes(capacity-len(units or []))
+            expected_whole=before[:guard+offset]+expected+before[guard+offset+capacity:]
+            assert after==expected_whole,(name,'write escaped command line field')
+        else: assert after==before,(name,'rejected input wrote output')
+        assert after[:guard]==before[:guard] and after[-guard:]==before[-guard:]
+        assert after[guard+0x2d0:guard+0x2e0]==before[guard+0x2d0:guard+0x2e0],'boot flags or memory corrupted'
+        results.append(dict(name=name,passed=True,accepted=accepted,guard_and_adjacent_fields_unchanged=True))
+    # This existing upstream test compiles the actual ParseKernel routines.
+    # Copy only its runner so it reads the built overlay source, not a second
+    # parser or a source file different from the one linked into the driver.
+    tests_dir=WORK/'Test'; tests_dir.mkdir(exist_ok=True)
+    parser_test=DARWIN/'Test/test-kernel-parser.py'
+    shutil.copy2(parser_test,tests_dir/parser_test.name)
+    kernel=ROOT/'artifacts/research/ios14/kernelcache.decompressed'
+    assert sha(kernel)=='f2fe5f5e0684989ae2c3d37dbf641c207fa67d09273bba45e10f8376fc9d4fba'
+    check=subprocess.run([sys.executable,str(tests_dir/parser_test.name),str(kernel)],capture_output=True,text=True,timeout=30)
+    (OUT/'kernel-parser-test.log').write_text(check.stdout+check.stderr)
+    assert check.returncode==0,check.stdout+check.stderr
+    assert 'PASS: actual kernel' in check.stdout
+    report=dict(schema=1,efi_sha256=build['efi_sha256'],build_sources=build['sources'],
+        validator_source_sha256=sha(Path(__file__)),command_line_cases=results,
+        command_line_fragment_sha256=hashlib.sha256((declaration+fragment+copy).encode()).hexdigest(),
+        adjacent_boot_flags_memory_and_guard_unchanged=True,command_line_capacity=capacity,
+        host_compile_command=command,parser_test_source_sha256=sha(parser_test),
+        real_ios14_kernel_sha256=sha(kernel),real_ios14_kernel_parser_accepted=True,
+        host_parser_test_log='out/darwinboot-ios14/kernel-parser-test.log',all_passed=True,
+        hardware_boot_performed=False,uefi_execution_performed=False,
+        limitations=['Only command-line validation/copy and Mach-O parsing are executed on the host.',
+          'No XNU relocation, prelink, Apple CPU replacement, device tree or user-space compatibility is proven.',
+          'The 7195 source reference is adjacent to the 14.8 kernel version, not identical.'])
+    (ROOT/'reports/ios14-loader-validation.json').write_text(json.dumps(report,indent=2)+'\n')
+    print(json.dumps(dict(all_passed=True,command_line_cases=len(results),real_ios14_kernel_parser_accepted=True,
+        efi_sha256=build['efi_sha256']),indent=2))
+
+if __name__=='__main__': main()

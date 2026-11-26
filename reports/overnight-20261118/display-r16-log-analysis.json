@@ -1,0 +1,315 @@
+{
+  "schema": 1,
+  "scope": "offline observations from one saved console; no device operations",
+  "log_profile_status": "fail",
+  "checks": {
+    "capture_boundary": {
+      "status": "unverified",
+      "lines": [
+        1,
+        183
+      ],
+      "observed": [
+        {
+          "line": 1,
+          "fields": {
+            "banner_sha256": "8223601f370632fb7c96257266ce451c75091c7674b21829a06f8a18aa583b40"
+          }
+        },
+        {
+          "line": 183,
+          "fields": {
+            "banner_sha256": "8223601f370632fb7c96257266ce451c75091c7674b21829a06f8a18aa583b40"
+          }
+        }
+      ],
+      "reason": "the same banner can repeat within one boot; capture boundary not proved"
+    },
+    "cpu": {
+      "status": "pass",
+      "lines": [
+        121
+      ],
+      "observed": [
+        {
+          "line": 121,
+          "fields": {
+            "logical": "0",
+            "mpidr": "0x80000001",
+            "affinity": "0x1",
+            "max": "0",
+            "boot": "1",
+            "cpus": "1",
+            "expected": "0x1",
+            "match": "1"
+          }
+        }
+      ],
+      "reason": "required numeric observations agree"
+    },
+    "kernel_dt": {
+      "status": "fail",
+      "lines": [
+        91,
+        92
+      ],
+      "observed": [
+        {
+          "line": 91,
+          "fields": {
+            "phase": "before",
+            "chosen": "3",
+            "artwork": "3",
+            "subtype": "2436",
+            "valid": "1/1/1"
+          }
+        },
+        {
+          "line": 92,
+          "fields": {
+            "phase": "after",
+            "chosen": "2",
+            "artwork": "2",
+            "subtype": "1334",
+            "valid": "1/1/1"
+          }
+        }
+      ],
+      "reason": "observed values contradict the expected profile"
+    },
+    "geometry": {
+      "status": "pass",
+      "lines": [
+        93
+      ],
+      "observed": [
+        {
+          "line": 93,
+          "fields": {
+            "w": "750",
+            "h": "1334",
+            "pw": "1080",
+            "ph": "2040",
+            "row": "3240",
+            "bpp": "24",
+            "auto": "1",
+            "scale": "2",
+            "subtype": "1334"
+          }
+        }
+      ],
+      "reason": "required numeric observations agree"
+    },
+    "backboardd": {
+      "status": "fail",
+      "lines": [
+        1716,
+        1718
+      ],
+      "parts": [
+        {
+          "status": "fail",
+          "lines": [
+            1716
+          ],
+          "observed": [
+            {
+              "line": 1716,
+              "fields": {
+                "scale": "3",
+                "preferred": "3"
+              }
+            }
+          ],
+          "reason": "observed values contradict the expected profile"
+        },
+        {
+          "status": "fail",
+          "lines": [
+            1718
+          ],
+          "observed": [
+            {
+              "line": 1718,
+              "fields": {
+                "w": "750",
+                "h": "1334",
+                "scale": "3"
+              }
+            }
+          ],
+          "reason": "observed values contradict the expected profile"
+        }
+      ]
+    },
+    "mobilegestalt": {
+      "status": "fail",
+      "lines": [
+        4934,
+        4935,
+        4936
+      ],
+      "observed": [
+        {
+          "line": 4934,
+          "fields": {
+            "key": "width",
+            "available": "1",
+            "complete": "1",
+            "value": "+750"
+          }
+        },
+        {
+          "line": 4935,
+          "fields": {
+            "key": "height",
+            "available": "1",
+            "complete": "1",
+            "value": "+1334"
+          }
+        },
+        {
+          "line": 4936,
+          "fields": {
+            "key": "scale",
+            "available": "1",
+            "complete": "1",
+            "value": "+3.0000000000"
+          }
+        }
+      ],
+      "reason": "observed values contradict the expected profile"
+    },
+    "uiscreen": {
+      "status": "fail",
+      "lines": [
+        4925,
+        5472,
+        7311
+      ],
+      "observed": [
+        {
+          "line": 4925,
+          "fields": {
+            "sample": "0",
+            "bounds": "0,0,250,444.667",
+            "scale": "3",
+            "native": "0,0,750,1334",
+            "ns": "3",
+            "valid": "1/1/1/1"
+          }
+        },
+        {
+          "line": 5472,
+          "fields": {
+            "sample": "1",
+            "bounds": "0,0,250,444.667",
+            "scale": "3",
+            "native": "0,0,750,1334",
+            "ns": "3",
+            "valid": "1/1/1/1"
+          }
+        },
+        {
+          "line": 7311,
+          "fields": {
+            "sample": "2",
+            "bounds": "0,0,250,444.667",
+            "scale": "3",
+            "native": "0,0,750,1334",
+            "ns": "3",
+            "valid": "1/1/1/1"
+          }
+        }
+      ],
+      "reason": "observed values contradict the expected profile"
+    },
+    "surface": {
+      "status": "pass",
+      "lines": [
+        2021,
+        2113
+      ],
+      "observed": [
+        {
+          "line": 2021,
+          "fields": {
+            "w": "750",
+            "h": "1334",
+            "format": "BGRA",
+            "row": "3072"
+          }
+        },
+        {
+          "line": 2113,
+          "fields": {
+            "w": "750",
+            "h": "1334",
+            "format": "BGRA",
+            "row": "3072"
+          }
+        }
+      ],
+      "reason": "required numeric observations agree"
+    },
+    "home_window_geometry": {
+      "status": "fail",
+      "lines": [
+        4928,
+        5475,
+        7314
+      ],
+      "observed": [
+        {
+          "line": 4928,
+          "fields": {
+            "sample": "0",
+            "frame": "0,0,250,444.667",
+            "bounds": "0,0,250,444.667"
+          }
+        },
+        {
+          "line": 5475,
+          "fields": {
+            "sample": "1",
+            "frame": "0,0,250,444.667",
+            "bounds": "0,0,250,444.667"
+          }
+        },
+        {
+          "line": 7314,
+          "fields": {
+            "sample": "2",
+            "frame": "0,0,250,444.667",
+            "bounds": "0,0,250,444.667"
+          }
+        }
+      ],
+      "reason": "observed values contradict the expected profile"
+    },
+    "loader": {
+      "status": "unverified",
+      "lines": [],
+      "observed": [],
+      "reason": "no matching observation"
+    },
+    "profile_markers": {
+      "status": "unverified",
+      "lines": [],
+      "observed": [],
+      "reason": "no matching observation"
+    }
+  },
+  "screen_dimensions_observations": [
+    {
+      "line": 4933,
+      "text": "LITHIUM DISPLAY MG key=ScreenDimensions available=0 complete=0 value=(unavailable)"
+    }
+  ],
+  "visual_acceptance": "unverified",
+  "goal_complete": false,
+  "package_identity": "not established by console text",
+  "note": "Even pass requires separate Dock/labels/physical-boundary photographs and frozen-package provenance.",
+  "input_path": "/mnt/f/IOS-MIX1/reports/local/20261118-042809-642502-ios16-r16/console.log",
+  "input_sha256": "ca8555361421ec1d1111d45064fd51a7c2db7c759e386816f44902fcb3b08212"
+}

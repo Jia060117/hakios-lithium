@@ -1,0 +1,188 @@
+{
+  "generated_at_utc": "2026-11-18T11:56:17.326229+00:00",
+  "scope": "Frozen artifact and saved-log readback only; not hardware acceptance",
+  "prior_goal_turn": "No display acceptance progress during the separate peripherals deliverable",
+  "goal_complete": false,
+  "device_operations": false,
+  "display_runtime_source_changed": false,
+  "qemu_used": false,
+  "baseline_image_sha256": "ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55",
+  "candidate_image_sha256": "8d5aa292bb747f3e5022de7a9fa5adee3bb9422d8fa296f4b6a376ca59a973bd",
+  "candidate_bytes": 16269312,
+  "candidate_kernel_sha256": "ad1000f25aa1acb0f4c4d5a4f695c3b0782d9648273640cc1f9278b3b7336dc4",
+  "candidate_loader_sha256": "a9c0b8ac2757b8a3dfe7f90fee1e0076cfa8c2471df56d1eb2f5f66424e4c29a",
+  "actual_embedded_loader_rechecked": true,
+  "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=750 fbheight=1334 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1",
+  "current_post_r18_port_delta": [
+    "patches/0019-lithium-peripheral-admission.patch",
+    "peripherals/boot-options.h",
+    "peripherals/contract.json",
+    "peripherals/kernel.inc"
+  ],
+  "display_source_sha256": {
+    "/home/jia/ios-mix1-build/hakios-lithium-ios16/xnuloader/loader.c": "addecda569872ba830c435cbd8507bf1957b642bf1934b45ef5451a7482f11d9",
+    "/home/jia/ios-mix1-build/hakios-lithium-ios16/userland/src/inject_sb.c": "b1dc87973adb010b90ff7e31a7bbc66d73c6d23e2a1f548ec896447374d9f81d"
+  },
+  "saved_log_sha256": "ca8555361421ec1d1111d45064fd51a7c2db7c759e386816f44902fcb3b08212",
+  "measured_r16_screens": [
+    {
+      "line": 4925,
+      "sample": 0,
+      "bounds": [
+        0.0,
+        0.0,
+        250.0,
+        444.667
+      ],
+      "scale": 3.0,
+      "native_bounds": [
+        0.0,
+        0.0,
+        750.0,
+        1334.0
+      ],
+      "native_scale": 3.0,
+      "valid": "1/1/1/1"
+    },
+    {
+      "line": 5472,
+      "sample": 1,
+      "bounds": [
+        0.0,
+        0.0,
+        250.0,
+        444.667
+      ],
+      "scale": 3.0,
+      "native_bounds": [
+        0.0,
+        0.0,
+        750.0,
+        1334.0
+      ],
+      "native_scale": 3.0,
+      "valid": "1/1/1/1"
+    },
+    {
+      "line": 7311,
+      "sample": 2,
+      "bounds": [
+        0.0,
+        0.0,
+        250.0,
+        444.667
+      ],
+      "scale": 3.0,
+      "native_bounds": [
+        0.0,
+        0.0,
+        750.0,
+        1334.0
+      ],
+      "native_scale": 3.0,
+      "valid": "1/1/1/1"
+    }
+  ],
+  "saved_log_rows": [
+    {
+      "line": 91,
+      "text": "LITHIUM DISPLAY DT phase=before chosen_scale=3 artwork_scale=3 subtype=2436 valid=1/1/1"
+    },
+    {
+      "line": 92,
+      "text": "LITHIUM DISPLAY DT phase=after chosen_scale=2 artwork_scale=2 subtype=1334 valid=1/1/1"
+    },
+    {
+      "line": 93,
+      "text": "LITHIUM DISPLAY GEOMETRY render=750x1334 panel=1080x2040 panel_stride=3240 panel_bpp=24 auto_profile=1 requested_scale=0 requested_subtype=0 effective_scale=2 effective_subtype=1334 map=full_panel_stretch"
+    },
+    {
+      "line": 121,
+      "text": "LITHIUM RUN A logical=0 mpidr=0x80000001 affinity=0x1 max_logical=0 bootcpu=1 cpus=1 expected_affinity=0x1 match=1"
+    },
+    {
+      "line": 4925,
+      "text": "LITHIUM DISPLAY UISCREEN sample=0 bounds=0,0,250,444.667 scale=3 native_bounds=0,0,750,1334 native_scale=3 valid=1/1/1/1"
+    },
+    {
+      "line": 4933,
+      "text": "LITHIUM DISPLAY MG key=ScreenDimensions available=0 complete=0 value=(unavailable)"
+    },
+    {
+      "line": 4936,
+      "text": "LITHIUM DISPLAY MG key=main-screen-scale available=1 complete=1 value=<CFNumber 0x9d8da9c5bfb25bb4 [0x1f1fac180]>{value = +3.0000000000, type = kCFNumberFloat32Type}"
+    },
+    {
+      "line": 5472,
+      "text": "LITHIUM DISPLAY UISCREEN sample=1 bounds=0,0,250,444.667 scale=3 native_bounds=0,0,750,1334 native_scale=3 valid=1/1/1/1"
+    },
+    {
+      "line": 7311,
+      "text": "LITHIUM DISPLAY UISCREEN sample=2 bounds=0,0,250,444.667 scale=3 native_bounds=0,0,750,1334 native_scale=3 valid=1/1/1/1"
+    }
+  ],
+  "original_temp_photo_present": false,
+  "requirements": [
+    {
+      "id": "1",
+      "requirement": "Full physical/render/DT/MG/UIKit size-chain audit",
+      "status": "partial",
+      "evidence": "R18 display audit and rechecked R16 measured consumers",
+      "missing": "Closed-framework source/caching decision and post-R18 runtime values"
+    },
+    {
+      "id": "2",
+      "requirement": "Explain conflicting widths and visual root cause",
+      "status": "partial",
+      "evidence": "3240/3=1080 BGR24; independent BGRA32 row3072; actual250pt@3 vs intended375pt@2",
+      "missing": "Post-fix visual comparison; do not treat 810 as a real measured buffer"
+    },
+    {
+      "id": "3",
+      "requirement": "Minimal implementation and exact baseline boot args/CPU preservation",
+      "status": "implemented_host_verified",
+      "evidence": "Frozen R18 payload, actual EFI loader and exact source hashes",
+      "missing": "Hardware qualification of the correction"
+    },
+    {
+      "id": "4",
+      "requirement": "Before/after dimensions logged",
+      "status": "instrumented_host_verified",
+      "evidence": "Linked loader markers, source tests, R16 real DT/MG/UIScreen logs",
+      "missing": "Actual R18 loader/kernel/backboardd/SpringBoard sequence"
+    },
+    {
+      "id": "5a",
+      "requirement": "Dock four icons fully visible",
+      "status": "unverified",
+      "evidence": null
+    },
+    {
+      "id": "5b",
+      "requirement": "Labels do not overlap next row",
+      "status": "unverified",
+      "evidence": null
+    },
+    {
+      "id": "5c",
+      "requirement": "Content remains within physical screen",
+      "status": "unverified",
+      "evidence": null
+    },
+    {
+      "id": "6",
+      "requirement": "Unverified claims explicitly labeled",
+      "status": "documented",
+      "evidence": "This matrix and existing R18 audit hardware-unverified section"
+    },
+    {
+      "id": "delivery",
+      "requirement": "Files/lines, build commands, exact boot args, log list and photo angle",
+      "status": "documented",
+      "evidence": "reports/hakios-ios16-display-r18-audit.md"
+    }
+  ],
+  "blocker": "R18 physical display/consumer observations unavailable; user currently prohibits phone actions",
+  "next_safe_action": "Read-only source provenance investigation and prepare conditional evidence handoff",
+  "script_sha256": "bac599ee6d5463edd1d103fe6e3375e757ceff3a01d9dc755fc79e376976522e"
+}

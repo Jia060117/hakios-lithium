@@ -1,0 +1,63 @@
+Subject: lithium: honor XNU7195 contiguous DMA allocation flags
+
+Round7 reached BSD but rejected KMA_ZERO|KMA_PERMANENT before allocating.
+Keep raw Mach result, zero explicitly and verify each physical page before DMA.
+
+diff --git a/bsd/dev/lithium_ufs.c b/bsd/dev/lithium_ufs.c
+--- a/bsd/dev/lithium_ufs.c
++++ b/bsd/dev/lithium_ufs.c
+@@ -456,6 +456,35 @@
+ 	.d_type       = D_DISK,
+ };
+ 
++/* XNU7195 vm_kern.c only accepts KMA_KOBJECT, KMA_LOMEM and
++ * KMA_NOPAGEWAIT here. ZERO/PERMANENT exist for other allocators, but this
++ * API rejects them before looking for pages. kmem_alloc_contig wires its
++ * successful allocation; retain that mapping for this driver's lifetime.
++ */
++static int __attribute__((noinline))
++ufs_alloc_dma(void)
++{
++    kern_return_t kr = kmem_alloc_contig(kernel_map, &su.dma, DMA_SIZE,
++        PAGE_MASK, 0, 0, KMA_NONE, VM_KERN_MEMORY_IOKIT);
++    printf("LITHIUM UFS: kmem_alloc_contig kr=%d bytes=0x%x flags=0\n", kr, DMA_SIZE);
++    if (kr != KERN_SUCCESS) return ENOMEM;
++    /* This API does not zero its returned pages. Clear all descriptors and
++     * bounce bytes before any host ownership or cache maintenance. */
++    bzero((void *)su.dma, DMA_SIZE);
++    ppnum_t first = pmap_find_phys(kernel_pmap, (addr64_t)su.dma);
++    if (!first) return ENOMEM;
++    su.dma_pa = ptoa_64(first);
++    for (vm_size_t off=0; off<DMA_SIZE; off+=PAGE_SIZE) {
++        ppnum_t pn=pmap_find_phys(kernel_pmap,(addr64_t)(su.dma+off));
++        if (!pn || ptoa_64(pn) != su.dma_pa+off) {
++            printf("LITHIUM UFS: DMA physical continuity failed at 0x%lx\n", (unsigned long)off);
++            return EIO;
++        }
++    }
++    printf("LITHIUM UFS: DMA zeroed and physical continuity verified at 0x%llx\n",su.dma_pa);
++    return 0;
++}
++
+ static int
+ lithium_ufs_init(void)
+ {
+@@ -477,16 +506,8 @@
+     printf("LITHIUM UFS: mapping measured controller 0x624000, read-only probe\n");
+     su.regs = ml_io_map(reg[0], reg[1]);
+     if (!su.regs) return ENOMEM;
+-	if (kmem_alloc_contig(kernel_map, &su.dma, DMA_SIZE, PAGE_MASK, 0, 0,
+-	    KMA_ZERO | KMA_PERMANENT, VM_KERN_MEMORY_IOKIT) != KERN_SUCCESS) {
+-		printf("LITHIUM UFS: no contiguous DMA memory\n");
+-		return ENOMEM;
+-	}
+-	ppnum_t pn = pmap_find_phys(kernel_pmap, (addr64_t)su.dma);
+-	if (!pn) {
+-		return ENOMEM;
+-	}
+-	su.dma_pa = ptoa_64(pn);
++    error = ufs_alloc_dma();
++    if (error) return error;
+ 	su.lun = 0;
+ 	su.secsize = DEV_BSIZE;
+ 

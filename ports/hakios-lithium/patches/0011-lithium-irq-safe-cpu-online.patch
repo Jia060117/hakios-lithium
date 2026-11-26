@@ -1,0 +1,43 @@
+--- a/xnu/files/iokit/Kernel/GenericARMPE.cpp
++++ b/xnu/files/iokit/Kernel/GenericARMPE.cpp
+@@ -22,6 +22,10 @@
+ 
+ #include "MiniDrivers.h"
+ 
++#if defined(LITHIUM_ARMV8_0)
++#include "../../../../devices/lithium/diagnostics/cpu-online.inc"
++#endif
++
+ extern "C" {
+ kern_return_t processor_start(processor_t processor);
+ kern_return_t processor_exit(processor_t processor);
+@@ -130,8 +134,7 @@
+ 	/* The interrupt controller and timer were set up in arm_init / arm_init_cpu (pe_init_fiq). */
+ 	setCPUState(kIOCPUStateRunning);
+ #if defined(LITHIUM_ARMV8_0)
+-	IOLog("LITHIUM CPU online logical=%u phys=0x%x mpidr=0x%llx midr=0x%llx cntfrq=%llu boot=%u; timer Hz, CPU MHz unmeasured\n",
+-	    (unsigned)getCPUNumber(), (unsigned)physID,
++	lithium_cpu_online_record((unsigned)getCPUNumber(), (unsigned)physID,
+ 	    (unsigned long long)__builtin_arm_rsr64("MPIDR_EL1"),
+ 	    (unsigned long long)__builtin_arm_rsr64("MIDR_EL1"),
+ 	    (unsigned long long)__builtin_arm_rsr64("CNTFRQ_EL0"), (unsigned)boot);
+@@ -302,6 +305,19 @@
+ 		}
+ 	}
+ 
++#if defined(LITHIUM_ARMV8_0)
++	/* All initCPU callbacks stay silent. Report from a normal, IRQ-enabled
++	 * thread after platform startup; one callback, four immutable records. */
++	thread_call_t online_call = thread_call_allocate([](thread_call_param_t, thread_call_param_t) {
++		lithium_cpu_online_dump();
++	}, NULL);
++	if (online_call != NULL) {
++		uint64_t deadline;
++		clock_interval_to_deadline(30, NSEC_PER_SEC, &deadline);
++		thread_call_enter_delayed(online_call, deadline);
++	}
++#endif
++
+ 	/* BSD looks the platform expert up by class (IOSecureBSDRoot). */
+ 	registerService();
+ 

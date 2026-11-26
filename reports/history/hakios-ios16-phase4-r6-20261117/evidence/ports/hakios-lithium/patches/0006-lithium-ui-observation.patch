@@ -1,0 +1,127 @@
+--- a/xnu/files/osfmk/arm64/loader_return.c
++++ b/xnu/files/osfmk/arm64/loader_return.c
+@@ -464,12 +464,61 @@
+ 	loader_return();
+ }
+ 
++
++/* MIX observation budget: one window after the first submitted base layer.
++ * This is a display milestone, never a claim that SpringBoard is ready.
++ * The normal initial timeout remains when no image is submitted; any
++ * extension is bounded by the independent maximum from timer startup.
++ */
++#if defined(LITHIUM_ARMV8_0)
++static _Atomic uint64_t lithium_first_frame;
++static uint64_t lithium_observe_started, lithium_observe_limit;
++static uint32_t lithium_observe_seconds;
++static thread_call_t lithium_observe_call;
++
++void lithium_display_first_frame(void);
++void
++lithium_display_first_frame(void)
++{
++	uint64_t now = mach_absolute_time(), ns;
++	if (!lithium_observe_seconds ||
++	    !os_atomic_cmpxchg(&lithium_first_frame, 0, now, release)) {
++		return;
++	}
++	absolutetime_to_nanoseconds(now - lithium_observe_started, &ns);
++	printf("LITHIUM UI OBSERVE: first base-layer frame at %llu ms; window %u seconds; desktop UNVERIFIED\n",
++	    (unsigned long long)(ns / NSEC_PER_MSEC), lithium_observe_seconds);
++}
++
++static bool
++lithium_observation_extend(void)
++{
++	uint64_t first = os_atomic_load(&lithium_first_frame, acquire), span, target, ns;
++	uint64_t now = mach_absolute_time();
++	if (!first || !lithium_observe_seconds) {
++		return false;
++	}
++	nanoseconds_to_absolutetime((uint64_t)lithium_observe_seconds * NSEC_PER_SEC, &span);
++	target = first + span;
++	if (target > lithium_observe_limit) target = lithium_observe_limit;
++	if (target <= now) return false;
++	absolutetime_to_nanoseconds(target - now, &ns);
++	printf("LITHIUM UI OBSERVE: extending %llu ms for first-frame observation; bounded total\n",
++	    (unsigned long long)(ns / NSEC_PER_MSEC));
++	thread_call_enter_delayed(lithium_observe_call, target);
++	return true;
++}
++#endif
++
+ static void
+ loader_return_timer(__unused thread_call_param_t p0, __unused thread_call_param_t p1)
+ {
+ 	static const char banner[] = "\n--- loader_return_after expired ---\n";
+ 	uint32_t cpu = 0, as_panic = 0;
+ 
++#if defined(LITHIUM_ARMV8_0)
++	if (lithium_observation_extend()) return;
++#endif
+ 	for (const char *c = banner; *c; c++) {
+ 		loader_log_putc(*c);
+ 	}
+@@ -502,6 +551,21 @@
+ 	}
+ 	thread_call_t call = thread_call_allocate(loader_return_timer, NULL);
+ 	clock_interval_to_deadline(seconds, NSEC_PER_SEC, &deadline);
++#if defined(LITHIUM_ARMV8_0)
++	uint32_t maximum = 0, window = 0;
++	lithium_observe_started = mach_absolute_time();
++	if (PE_parse_boot_argn("lithium_ui_after", &window, sizeof(window)) &&
++	    PE_parse_boot_argn("lithium_ui_max", &maximum, sizeof(maximum)) &&
++	    window > 0 && window <= 3600 && maximum >= seconds && maximum <= 7200) {
++		uint64_t span;
++		nanoseconds_to_absolutetime((uint64_t)maximum * NSEC_PER_SEC, &span);
++		lithium_observe_limit = lithium_observe_started + span;
++		lithium_observe_call = call;
++		lithium_observe_seconds = window;
++		printf("LITHIUM UI OBSERVE: initial %u seconds, after first frame %u seconds, maximum %u seconds\n",
++		    seconds, window, maximum);
++	}
++#endif
+ 	thread_call_enter_delayed(call, deadline);
+ }
+ STARTUP(EARLY_BOOT, STARTUP_RANK_LAST, loader_return_timer_init);
+--- a/xnu/files/iokit/Kernel/MiniIOMobileFramebuffer.cpp
++++ b/xnu/files/iokit/Kernel/MiniIOMobileFramebuffer.cpp
+@@ -1,5 +1,5 @@
+ /* MIX physical panel ownership; IOSurface remains the upstream iOS16 ABI. */
+-extern "C" { unsigned int lithium_display_owns_console; }
++extern "C" { unsigned int lithium_display_owns_console; void lithium_display_first_frame(void); }
+ /*
+  * MiniIOMobileFramebuffer: a stand-in for Apple's display driver family, as seen by
+  * IOMobileFramebuffer.framework (and through it by CoreAnimation's window server).
+@@ -1462,6 +1462,7 @@
+ {
+ 	uint32_t set = swapWord(swap, SWAP_LAYERS_SET);
+ 	uint64_t began = mach_absolute_time(), nanos, ready, shown, drawn;
++	uint64_t layer_elapsed = 0;
+ 	uint32_t layers = 0;
+ 	MiniIOSurface * recorded = NULL;
+ 	bool report;
+@@ -1569,7 +1570,9 @@
+ 				fGraphics = true;
+ 				PE_initialize_console(NULL, kPEGraphicsMode);
+ 			}
++			uint64_t layer_began = mach_absolute_time();
+ 			drawLayer(s, src, dst);
++			layer_elapsed += mach_absolute_time() - layer_began;
+ 			if (layer == 0) {
+ 				recorded = s;   /* (recorded once the frame is in the panel's memory: see below) */
+ 				gShownSurface = sid;
+@@ -1579,6 +1582,13 @@
+ 	drawn = mach_absolute_time();
+ 	if (recorded != NULL) {
+ 		record(recorded);
++		lithium_display_first_frame();
++	}
++	if (report) {
++		uint64_t ns;
++		absolutetime_to_nanoseconds(layer_elapsed, &ns);
++		IOLog("LITHIUM DISPLAY: swap %u layer_elapsed_us %llu panel %ux%u pixel_bytes %u; includes scheduling\n",
++		    swapWord(swap, SWAP_ID), ns / NSEC_PER_USEC, fPanelWidth, fPanelHeight, fPixelBytes);
+ 	}
+ 	fSwapsShown++;
+ 	if (gTouchLat) {

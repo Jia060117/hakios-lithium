@@ -1,0 +1,457 @@
+diff --git a/AGENTS.md b/AGENTS.md
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -1,3 +1,5 @@
++2026-11-19 R25真机结案：用户明确“可以上机”后，19:30:36临时启动冻结R25一次，镜像f0fd106f2146bc176f448c9a694bf4e7ca0247656c323bb68ffe128f123a336d获接受。实测logical0/MPIDR0x80000001/affinity0x1、bootcpu=1 cpus=1、match=1。Stage1四次GCC读取72us、零写入；CFG=0不满足(cfg&0x371f)==1，主动以inherited_root_or_reset_unverified停止，未到clock-enable/pinmux/QUP/I2C/IRQ/HID。USB58帧/14848字节独立重解码一致，缺口/重复/残帧/device-lost均0；Pipe error后无timer/drain尾部，非完整运行日志。用户原图确认UEFI RAW BYTES68684、RETURN REASON UNCONFIRMED、PANIC CAUSE NOT RECOVERED及PMRD关机尾部，不能判定panic或正常180秒timer。没有分区查询/操作、ADB、Android/Recovery、QEMU或重试，R15/R20哈希不变。R25已消费；下一步仅在主机核对显式时钟初始化及诊断终态/USB保留，任何后续查询/启动仍须说明并获对应确认。详见 reports/hakios-ios16-device-r25-touch-stage1.md/json。下方“没有手机操作/等待批准”段落为本次上机之前的主机准备历史。
++
+ 2026-11-19 最新单轮触摸取证/Stage1收口：R20-display 为唯一显示基线，R19 分辨率错误已归档、不再复测。R25 实验性时钟/引脚/QUP/GPIO快照镜像已完整构建、读回并冻结，SHA256 f0fd106f2146bc176f448c9a694bf4e7ca0247656c323bb68ffe128f123a336d；31套外围ASan/UBSan（含实际Stage1的351场景）、83来源检查、46项正常构建指令扫描与5项隔离Mu扫描通过；旧历史总回归仍在R9不识别既有0021几何补丁的哈希处失败，不冒称全部通过。R15/R20哈希不变。默认无touch_stage时无MMIO；本包显式touch_stage=1，仅4个GCC/TLMM字段，不做I2C/复位/供电/IRQ/HID。隔离Mu移除物理UFS provider，ufs=0、无flash root/Data参数，复用R20两份4MiB RAM卷和固定只读loader；此隔离探测不改变长期UFS路线。动态所有权、上电/NoC、电气/总线异常及实际触摸未验证；300ms软件预算不能约束永久MMIO挂死，未安装通用异常hook。本轮没有任何手机操作。最新用户要求覆盖旧自动授权：每次查询/启动前先说明并获确认；现在停下等“可以上机”，禁止Android/Recovery、分区操作和QEMU。详见 reports/hakios-ios16-touch-stage1-r25.md/json。
+ 
+ 2026-11-19 latest touch runtime phase: R20-display remains the sole accepted display baseline; R19 was tested with incorrect resolution and stays archived, without retries. Runtime composition and the actual HakiOS queue binding passed 14 existing + 12 follow-up host suites (26 total) with ASan/UBSan and 61 source hashes. Included Mu/loader software has no QUP6/I2C provider; this does not verify secure-world ownership or physical access. There is still no platform MMIO provider, production integration or new touch package; the existing Stage 0 production kernel is unchanged. No device operations occurred. See reports/hakios-ios16-touch-runtime-host-20261119.md/json and reports/touch-runtime-host-20261119-r1/passed.json.
+diff --git a/PLAN.md b/PLAN.md
+--- a/PLAN.md
++++ b/PLAN.md
+@@ -1,3 +1,5 @@
++2026-11-19 R25真机结案：用户明确“可以上机”后，19:30:36临时启动冻结R25一次，镜像f0fd106f2146bc176f448c9a694bf4e7ca0247656c323bb68ffe128f123a336d获接受。实测logical0/MPIDR0x80000001/affinity0x1、bootcpu=1 cpus=1、match=1。Stage1四次GCC读取72us、零写入；CFG=0不满足(cfg&0x371f)==1，主动以inherited_root_or_reset_unverified停止，未到clock-enable/pinmux/QUP/I2C/IRQ/HID。USB58帧/14848字节独立重解码一致，缺口/重复/残帧/device-lost均0；Pipe error后无timer/drain尾部，非完整运行日志。用户原图确认UEFI RAW BYTES68684、RETURN REASON UNCONFIRMED、PANIC CAUSE NOT RECOVERED及PMRD关机尾部，不能判定panic或正常180秒timer。没有分区查询/操作、ADB、Android/Recovery、QEMU或重试，R15/R20哈希不变。R25已消费；下一步仅在主机核对显式时钟初始化及诊断终态/USB保留，任何后续查询/启动仍须说明并获对应确认。详见 reports/hakios-ios16-device-r25-touch-stage1.md/json。下方“没有手机操作/等待批准”段落为本次上机之前的主机准备历史。
++
+ 2026-11-19 当前阶段已完成一个R25触摸Stage1主机诊断包并冻结，R20-display仍为唯一已验收显示基线，R19归档。板级/时钟/UEFI交接/实际include测试四线并行取证结束；31套主机外围回归、完整HakiOS构建、83项来源检查、46+5项指令扫描和镜像读回通过，历史总回归的R9几何快照门禁失败另有记录。新包只做GCC/TLMM准备与QUP/GPIO观察，默认关闭；无物理I2C/IRQ/HID。采用无物理UFS模块的独立Mu、固定只读loader及RAM引导，不访问现有root/Data的软件路径；真实所有权/电气/挂死仍未验证。下一步停止开发/设备操作，等待用户“可以上机”，每个设备操作仍需先说明并确认；不再开启新R轮次。精确镜像/参数/风险/补丁见 reports/hakios-ios16-touch-stage1-r25.md/json。
+ 
+ 2026-11-19 最新触摸胶合阶段：R20-display 为唯一显示基线，R19 分辨率错误已归档，不再复测。runtime 组合与实际 HakiOS 队列绑定经 14+12=26 套 ASan/UBSan 主机回归、61 项源哈希核验通过；Mu/loader 包含的软件无 QUP6/I2C provider。真实 MMIO、继承时钟/pinmux/供电、安全世界访问及 HID 消费仍未验证；生产 Stage 0 内核未改，尚无新触摸包或设备操作。下一步为真实板级访问后端，不重复 R19 验收。报告 reports/hakios-ios16-touch-runtime-host-20261119.md/json。
+diff --git a/OPERATIONS.md b/OPERATIONS.md
+--- a/OPERATIONS.md
++++ b/OPERATIONS.md
+@@ -1,3 +1,5 @@
++2026-11-19 R25真机结案：用户明确“可以上机”后，19:30:36临时启动冻结R25一次，镜像f0fd106f2146bc176f448c9a694bf4e7ca0247656c323bb68ffe128f123a336d获接受。实测logical0/MPIDR0x80000001/affinity0x1、bootcpu=1 cpus=1、match=1。Stage1四次GCC读取72us、零写入；CFG=0不满足(cfg&0x371f)==1，主动以inherited_root_or_reset_unverified停止，未到clock-enable/pinmux/QUP/I2C/IRQ/HID。USB58帧/14848字节独立重解码一致，缺口/重复/残帧/device-lost均0；Pipe error后无timer/drain尾部，非完整运行日志。用户原图确认UEFI RAW BYTES68684、RETURN REASON UNCONFIRMED、PANIC CAUSE NOT RECOVERED及PMRD关机尾部，不能判定panic或正常180秒timer。没有分区查询/操作、ADB、Android/Recovery、QEMU或重试，R15/R20哈希不变。R25已消费；下一步仅在主机核对显式时钟初始化及诊断终态/USB保留，任何后续查询/启动仍须说明并获对应确认。详见 reports/hakios-ios16-device-r25-touch-stage1.md/json。下方“没有手机操作/等待批准”段落为本次上机之前的主机准备历史。
++
+ 2026-11-19 最新操作边界：本轮只做主机取证、构建、测试和R25冻结，设备查询/启动/重启/刷写/分区操作均0。R25镜像SHA256 f0fd106f2146bc176f448c9a694bf4e7ca0247656c323bb68ffe128f123a336d；内嵌ufs=0、touch_stage=1、loader_return_after=180，独立Mu不含物理UFS驱动，loader不持久写日志，无root_apfs/var_hfs/ufs_write，双4MiB RAM引导卷逐字节来自R20。实验性MMIO仍可能外部abort/SError/XPU或永久挂死，开启时钟可能恢复遗留活动，软件超时不能保证救回，硬件未验证。本轮以报告和补丁收口，等待用户明确“可以上机”；每次查询/临时启动必须先说明命令和风险并获确认，旧的包完成后自动查询/启动授权不再适用。禁止Android/Recovery、任何分区读写操作（除用户逐项批准的只读查询）、刷写/擦除/格式化和QEMU。R20是唯一显示基线、R19归档不复测。当前手机状态未查询。详见 reports/hakios-ios16-touch-stage1-r25.md/json。
+ 
+ 2026-11-19 最新主机状态：仅以已验收的 R20-display 推进触摸，R19 不再启动/重试。runtime 与 HakiOS 队列胶合候选通过 26 套 ASan/UBSan 主机测试，R15/R20 哈希保持不变；Mu/loader 软件侧没有 QUP6/I2C provider，但物理访问条件与安全世界所有权未验证。没有生产 MMIO provider、新内核构建或完整触摸包，本阶段没有查询/操作手机。仍需实际后端、完整构建、整包检查和独立冻结后才满足既有真机授权条件。详见 reports/hakios-ios16-touch-runtime-host-20261119.md/json。
+diff --git a/project.json b/project.json
+--- a/project.json
++++ b/project.json
+@@ -42,7 +42,7 @@
+     "hardware_started": true,
+     "ios14_compatibility_verified": false,
+     "springboard_verified": true,
+-    "status": "R20-display baseline verified; R25 Stage1 snapshot host-frozen; new kernel hardware unverified",
++    "status": "R20 desktop baseline preserved; R25 kernel executed RAM-only Stage1 and stopped at inherited CFG gate",
+     "configuration_scaffold_created": true,
+     "upstream_config_checks_passed": true,
+     "platform_uefi_verified": true,
+@@ -51,12 +51,12 @@
+     "hardware_evidence_report": "reports\\hakios-ios16-device-r20-display.json",
+     "latest_kernel_binary_hardware_verified": false,
+     "kernel_sha256": "6488c7207463172008d11d661bf53ca86dc990d71dac8ee3c8f541ea148ab81f",
+-    "latest_kernel_binary_verification_scope": "Full host build/source/link/ARMv8.0 checks for experimental R25; no hardware execution",
++    "latest_kernel_binary_verification_scope": "R25 CPU affinity1 and four GCC reads observed; no clock/pin/QUP/I2C/HID or desktop acceptance",
+     "springboard_display_verified": true,
+     "last_hardware_verified_kernel_sha256": "8e9209c1ff077ba6ad16cbd467c6cceb3cb6b16c0357667e513b913190fd9b4b"
+   },
+   "schema": 2,
+-  "stage": "iOS16 phase4: R20-display accepted; R25 Stage1 diagnostic host-frozen; awaiting explicit per-operation device approval",
++  "stage": "iOS16 phase4: R20-display accepted; R25 one-shot diagnostic stopped at inherited CFG gate; UEFI return cause unconfirmed",
+   "project_instructions_path": "AGENTS.md",
+   "plan_path": "PLAN.md",
+   "operations_path": "OPERATIONS.md",
+@@ -66,28 +66,28 @@
+   "active_workspace": "/home/jia/ios-mix1-build/hakios-lithium-ios16",
+   "source_lock_path": "upstreams.lock.json",
+   "source_audit_report": "reports/hakios-p0-audit.md",
+-  "current_device_status": "R20-display home screen historically user-confirmed; current phone state not queried; R25 frozen host-only, awaiting explicit approval before any query or boot",
++  "current_device_status": "R25 UEFI return summary confirmed by user photograph; no further device query or retry",
+   "device_state": {
+     "last_observation_baseline": "ios16_r20_display_hakios",
+-    "live_state_requeried": false,
++    "live_state_requeried": true,
+     "userdata_contains_ios14_hfsx": false,
+     "android_recovery_requirement": "Do not boot Android or Recovery; userdata contains Darwin volumes. Manual power plus volume-down to Fastboot only when user chooses recovery from a failed test.",
+     "root_install_report": "reports/hakios-ios16-install.json",
+     "root_integrity_report": "reports/hakios-ios16-install.json",
+-    "live_usb_requeried": false,
+-    "latest_usb_query_report": "reports/hakios-ios16-device-r20-display.json",
+-    "latest_device_test_report": "reports\\hakios-ios16-device-r20-display.json",
+-    "last_screen_observation_source": "User reply and photo recorded in R20-display device report",
+-    "last_screen_observation": "R20-display SpringBoard home screen; display aspect and resolution confirmed normal",
+-    "current_physical_state_source": "User report on 2026-11-19; host not queried",
+-    "current_physical_state": "R20-display was left running at the home screen; current physical state has not been queried",
++    "live_usb_requeried": true,
++    "latest_usb_query_report": "reports/hakios-ios16-device-r25-touch-stage1.json",
++    "latest_device_test_report": "reports/hakios-ios16-device-r25-touch-stage1.json",
++    "last_screen_observation_source": "User R25 reply and original photo; saved in local evidence",
++    "last_screen_observation": "UEFI summary: return reason unconfirmed; panic cause not recovered; PMRD poweroff tail",
++    "current_physical_state_source": "User photograph on 2026-11-19; not requeried after capture ended",
++    "current_physical_state": "UEFI R25 return summary retained; no recovery action issued",
+     "current_state_host_queried": false,
+     "userdata_journal_initialized": false,
+     "userdata_journal_repair_report": null,
+     "userdata_hfs_mount_verified": true,
+     "userdata_contains_ios16_ufs_layout": true,
+     "root_integrity_scope": "32KiB component headers and unchanged 24KiB primary GPT sample; not full partition readback",
+-    "latest_device_operation_report": "reports/hakios-ios16-install.json",
++    "latest_device_operation_report": "reports/hakios-ios16-device-r25-touch-stage1.json",
+     "ios16_data_image_fsck_passed": true,
+     "ios16_data_runtime_read_write_verified": true
+   },
+@@ -162,19 +162,19 @@
+     "large_tasks_sequential": true
+   },
+   "work_status": {
+-    "status": "ios16_phase4_r20_display_verified_touch_stage0_host_gate_passed_physical_backend_pending",
++    "status": "ios16_r25_stage1_cfg_gate_stopped_uefi_user_confirmed",
+     "phase2_approved": true,
+     "device_operations_performed": true,
+     "device_boots_performed": true,
+     "partition_writes_performed": true,
+-    "hakios_temporary_boot_count": 48,
++    "hakios_temporary_boot_count": 49,
+     "backup_branch": "archive/ios14-r31-20261116",
+-    "next_step": "Obtain trusted QUP6 ownership and UEFI-to-XNU handoff evidence before hardware access; then integrate and freeze a physical touch package",
++    "next_step": "Review explicit QUP6 clock setup and diagnostic shutdown/log retention on host; no R25 retry",
+     "phase3_approved": true,
+     "auxiliary_stock_reader_boots_accepted": 4,
+-    "ios16_boots_performed": 17,
++    "ios16_boots_performed": 18,
+     "auxiliary_stock_reader_adb_runtime_observations": 3,
+-    "latest_evidence_recorded_at": "2026-11-19T08:32:43+08:00",
++    "latest_evidence_recorded_at": "2026-11-19T19:40:39.866423+08:00",
+     "latest_host_report": "reports/hakios-ios16-touch-stage0-host.md",
+     "r5_backup_branch": "archive/ios16-r5-20261117",
+     "r6_backup_branch": "archive/ios16-r6-20261117",
+@@ -184,7 +184,8 @@
+     "r9_backup_branch": "archive/ios16-r9-20261117",
+     "r10_backup_branch": "archive/ios16-r10-before-r11-20261117",
+     "current_run_shutdown_authorized": false,
+-    "host_shutdown_request_scope": "Historical R8 only; no R15 shutdown requested"
++    "host_shutdown_request_scope": "Historical R8 only; no R15 shutdown requested",
++    "latest_device_report": "reports/hakios-ios16-device-r25-touch-stage1.json"
+   },
+   "active_workspace_report": "reports/hakios-workspace.json",
+   "config_check_report": "reports/hakios-config-check.json",
+@@ -919,13 +920,13 @@
+   },
+   "touch_test_boundary": {
+     "recorded_on": "2026-11-19",
+-    "mode": "r25_stage1_snapshot_host_frozen_awaiting_explicit_device_approval",
++    "mode": "r25_single_approved_attempt_consumed_stage1_stopped_cfg_gate",
+     "phone_queries_allowed": false,
+     "phone_boot_allowed": false,
+     "partition_operations_allowed": false,
+     "qemu_allowed": false,
+     "user_explicit_resumption_required": true,
+-    "device_state": "R20-display home screen was user-confirmed; current phone state has not been queried",
++    "device_state": "R25 UEFI summary user-photo-confirmed; no subsequent device query",
+     "resumption_scope": "Only reviewed read-only query or temporary boot of this exact frozen RAM-only diagnostic, after corresponding confirmation",
+     "revision": 25,
+     "display_baseline_revision": "R20-display",
+@@ -956,7 +957,7 @@
+     "latest_kernel_contains_touch_stage_verified": true,
+     "production_kernel_sha256": "6488c7207463172008d11d661bf53ca86dc990d71dac8ee3c8f541ea148ab81f",
+     "host_build_report": "reports/hakios-ios16-touch-stage1-r25.md",
+-    "conditional_device_authorization": "Latest user task supersedes historical automatic authorization: explain and obtain confirmation for each query/boot; stop now until 可以上机; never write partitions or enter Android/Recovery",
++    "conditional_device_authorization": "The user's explicit 可以上机 authorized one reviewed R25 experiment, now consumed; explain and confirm any further query/boot",
+     "hardware_verified": false,
+     "report": "reports/hakios-ios16-touch-stage1-r25.md",
+     "package_report": "artifacts/hakios/lithium-ios16/phase4-r25-touch-stage1/contract.json",
+@@ -970,6 +971,11 @@
+     },
+     "runtime_glue_report": "reports/hakios-ios16-touch-runtime-host-20261119.md",
+     "per_device_operation_confirmation_required": true,
+-    "host_candidate_image_path": "artifacts/hakios/lithium-ios16/phase4-r25-touch-stage1/lithium-hakios-ios16-r25-touch-stage1.img"
++    "host_candidate_image_path": "artifacts/hakios/lithium-ios16/phase4-r25-touch-stage1/lithium-hakios-ios16-r25-touch-stage1.img",
++    "last_device_report": "reports/hakios-ios16-device-r25-touch-stage1.json",
++    "stage1_runtime_observed": true,
++    "stage1_snapshot_completed": false,
++    "physical_touch_verified": false,
++    "full_runtime_log_verified": false
+   }
+ }
+diff --git a/reports/hakios-ios16-device-r25-touch-stage1.md b/reports/hakios-ios16-device-r25-touch-stage1.md
+new file mode 100644
+--- /dev/null
++++ b/reports/hakios-ios16-device-r25-touch-stage1.md
+@@ -0,0 +1,97 @@
++# R25 触摸 Stage 1：继承时钟门禁停止
++
++2026-11-19，Asia/Shanghai。用户明确回复“可以上机”后，进行了一次受保护的 Fastboot 临时启动。镜像由 Fastboot 接受，内核进入 RAM 根卷并执行 Stage 1。触摸诊断在 GCC 继承配置检查处主动停止，未修改触摸时钟或引脚。用户随后确认并提供 UEFI 结束摘要照片。本次不重试，不开新修订；后续查询或启动仍须事先说明并取得对应确认。
++
++## 本次结论
++
++1. 同次日志确认 `logical=0 mpidr=0x80000001 affinity=0x1 max_logical=0 bootcpu=1 cpus=1 match=1`，没有落在已知较慢的 0x100/0x101 核上。
++2. Stage 1 的四次 GCC 寄存器读取返回，耗时 72us，映射两页、写入零次。返回值为 `blsp_bcr=0 bcr=0 cmd=0x80000000 cfg=0`。
++3. 源码要求 `(cfg & 0x371f) == 1`，实际为 0，因此输出 `inherited_root_or_reset_unverified` 并退出。两个 BCR 的 bit0 以及 CMD 的初检掩码 `0xf1` 均通过；该复合 reason 在本次具体由 CFG 条件触发，不能笼统归因于复位失败。
++4. `clocks_checked=0 pins_checked=0 reset=0 transfer=0 irq_attached=0 hid_events=0`。没有进入时钟使能、GPIO87/88 配置、QUP 寄存器快照、I2C、复位、供电、IRQ 或 HID 阶段。没有取得 FT5x46 运行时 ID 或真实触摸报告。
++5. 实际继承配置不满足该候选的准入条件；这不证明触摸芯片损坏、供电异常或根时钟频率是多少。不能仅把允许值从 1 放宽为 0，再直接访问 QUP。
++
++## 精确产物与参数
++
++- 镜像：`artifacts/hakios/lithium-ios16/phase4-r25-touch-stage1/lithium-hakios-ios16-r25-touch-stage1.img`，16,269,312 字节。
++- SHA256：`f0fd106f2146bc176f448c9a694bf4e7ca0247656c323bb68ffe128f123a336d`。
++- 内核：`6488c7207463172008d11d661bf53ca86dc990d71dac8ee3c8f541ea148ab81f`。
++- 冻结镜像、实际内嵌 payload、Mu/FAT/只读 loader、来源哈希和 R15/R20 在操作前重新核对通过。没有重新构建或修改冻结包。
++
++实际读回的内嵌参数如下。USB 片段没有记录 loader 最终拼接后的完整 boot-args 行，因此不能把以下内容称作同次控制台完整命令行；CPU 参数有同次运行日志佐证。
++
++```text
++bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 touch_stage=1
++```
++
++本包为隔离 RAM 诊断，Mu 不包含物理 LithiumUfsDxe，loader 为固定只读版本，没有 root_apfs/var_hfs/ufs_write/ufs_shared_pa 参数。日志确认根卷 md0 和辅助 md1 均为 4MiB RAM 卷。包含的软件路径未连接原有 UFS 系统/Data；没有执行分区查询、读写、刷写、擦除、格式化或 ADB/Android/Recovery 操作。Mu 之前厂商固件/TZ 的行为仍不在本次观测范围。
++
++## 操作与采集
++
++本地私有身份记录匹配；只读检查包括 Fastboot devices、product、oem device-info、battery-soc-ok 和 max-download-size。全部成功，随后只执行一次 `fastboot -s <private-device-serial> boot <frozen-private-copy>`。未运行通用旧轮次入口，未覆盖历史启动 guard 或全局 ready 合同。
++
++- 身份检查：19:30:19–19:30:20。
++- 单次启动 intent：19:30:36.648506+08:00。
++- Fastboot 接受返回：19:30:38.111442+08:00。
++- USB 枚举、专用串号及接口核验成功；保存 58 帧。
++- 接收器：19:31:10.385678+08:00 因 `Pipe error` 退出；未重新枚举或重新启动接收器。
++- 原始帧 16,704 字节，解码文本 14,848 字节。独立重解码与保存文本逐字节一致；缺口、重复、不完整帧及设备报告丢失均为 0。
++- 未采到 timer expired、normal return 或 drain 标记。因此只通过已保存 USB 前缀的传输核验，**完整运行日志未通过**。
++
++关键控制台行：
++
++```text
++LITHIUM TOUCH stage=1 phase=gcc_precheck next_phys=0x00325000
++LITHIUM TOUCH stage=1 inherited blsp_bcr=0x00000000 bcr=0x00000000 cmd=0x80000000 cfg=0x00000000
++LITHIUM TOUCH stage=1 end status=stopped reason=inherited_root_or_reset_unverified reads=4 writes=0 mappings=2 elapsed_us=72 clocks_checked=0 pins_checked=0 reset=0 transfer=0 irq_attached=0 hid_events=0
++LITHIUM RUN A logical=0 mpidr=0x80000001 affinity=0x1 max_logical=0 bootcpu=1 cpus=1 expected_affinity=0x1 match=1
++```
++
++源码定位：`ports/hakios-lithium/peripherals/touch-stage1.inc:176` 为一次性和执行上下文门禁，`:189` 开始 GCC 读取，`:194` 为本次失败条件，`:198` 才是未到达的时钟使能阶段。控制台对应第102–105、112行。
++
++## UEFI 照片及结束原因
++
++原图逐字节保存并校验 SHA256 `f25b11e9c6f1a3c3b2db51a3dfd648a2904585097c3670e1202a34b8a5d50108`。可辨认文字：
++
++```text
++LITHIUM IOS16 RETURN RAW BYTES 68684
++RETURN REASON UNCONFIRMED
++PANIC CAUSE NOT RECOVERED
++PMRD NOTIFYSYSTEMSHUTDOWN ...
++PMRD NOTIFYSYSTEMSHUTDOWN DONE
++PMRD PM QUIESCE TOOK 0 MS
++PMRD POWEROFF ALL DRIVERS TOOK 0 MS
++PMRD POWEROFF TOTAL 9 MS
++RAW LOG RETAINED IN RAM
++SUMMARY RETAINED UNTIL REBOOT
++```
++
++照片确认 session 已回到 UEFI 摘要，并保留了系统关机路径的尾部；不能据 `PANIC CAUSE NOT RECOVERED` 单独判定发生 panic，也不能认定正常 180秒 timer 完成。屏幕 PMRD 的时间戳不能当作本次启动耗时。
++
++UEFI 报告 RAM raw log 为 68,684 字节，USB 只有 14,848 字节；两者是不同日志通路，不能简单相减计作 USB 丢帧，但明确不能宣称已取得屏幕所称全部原始内容。当前没有读取手机 RAM 或任何分区以补齐尾部。
++
++USB 第126–129行显示 RAM 路径 `mount ramfs on /private/var` 返回 No such file or directory，目录初始化也失败；之后仍在打印 RAM 镜像目录。只读源码审查发现该通用 init 执行测试、run_rc 后会调用 `reboot(RB_HALT)`（`upstream/hakios-xnu-kernel/userland/src/init.c:1549`、`:1566`）。它与照片的关机路径相容，**只是候选解释**：同次 `init: done` 和 syscall 调用未被收全，尚不能确认实际触发者。该 RAM init 问题不能套用到已通过的 R20 UFS 桌面基线。
++
++## 下一步及未验证事项
++
++先做主机修订方案，取得必要依据后再冻结下一候选；本轮不自动修改或上机：
++
++1. 核对 vendor 对 QUP6 RCG 的源选择、HID 编码、UPDATE/ROOT_OFF 和时钟投票顺序，设计有依据的显式初始化/交接，而不是依赖当前未成立的继承条件或直接放宽 CFG 门禁。仍需解决动态所有权和供电/NoC 准入。
++2. 让隔离诊断在完成或停止后可靠保留结果、排空 USB 并明确返回原因，避免继续通用 RAM init 自检/关机路径而丢失终态。不能为修日志重新接入物理 UFS。
++3. 以上具备主机检查、完整构建及包读回后，再说明精确变更和测试目标，请用户确认单次测试。R25 已消费，不重复启动，不复测 R19。
++
++未知：触摸控制器状态/固件、QUP 访问、电源/NoC、根时钟实际频率、GPIO105/125物理 IRQ、I2C 收发、HID/backboardd 投递、全部RAM和稳定性。本次没有操作触摸或验收桌面。R20-display 仍为唯一已通过显示基线；R15/R20 字节保持不变。
++
++## 并行执行及主代理复核
++
++- Popper the 2nd 在启动前只读复核 Stage1 日志判据，指出 begin 之前已检查 affinity、成功/停止要以 end 字段判断，QUP VERSION 不等于触摸 ID；主代理抽查实际源码和同次日志。
++- Bernoulli the 2nd 在对话中断前收到独立日志审计分工，恢复时代理状态为 not_found，没有可核验交付，不计作审计通过。
++- 恢复后的独立复核由 Leibniz 进行，只读检查保存帧和失败条件；实际交付记录见同名 JSON。主代理另行运行既有 `hakios_usb_audit.audit`，核对 frame/console 哈希和具体 CFG 条件。
++- 设备操作、独占 intent、私有副本、USB 接收和状态/报告由主代理完成。所有代理均不操作手机，未发生代码合并或源码改动。
++
++## 本地证据和回退
++
++私有证据目录：`reports/local/20261119-r25-touch-stage1-approved/`，含 commands、authorization、offline-preflight、result、原始 frames/console、冻结接收器、USB状态/审计、原图、转录及操作前状态文件。设备标识仅留在被忽略的目录，不写入共享报告。
++
++独占 guard：`reports/local/ios16-r25-touch-stage1-boot-intent.json`，保留 accepted 历史并追加最终结果，禁止自动重试。实际单轮 runner 位于 `reports/local/run-ios16-r25-touch-stage1.py`，同样只保存在本机。
++
++本阶段只新增证据和更新当前状态，不改活动内核、触摸实现、打包脚本或冻结产物；没有重跑构建，沿用并核对上阶段构建证据。开工前 Git staged/dirty 内容和 index 保留。本轮导出独立状态/报告补丁并验证正反向还原，不包含固件、镜像、原始照片或私有设备标识。
+diff --git a/reports/hakios-ios16-device-r25-touch-stage1.json b/reports/hakios-ios16-device-r25-touch-stage1.json
+new file mode 100644
+--- /dev/null
++++ b/reports/hakios-ios16-device-r25-touch-stage1.json
+@@ -0,0 +1,184 @@
++{
++  "schema": 1,
++  "revision": "R25-touch-stage1",
++  "recorded_at": "2026-11-19T19:40:39.866423+08:00",
++  "outcome": "stage1_stopped_at_inherited_cfg_gate_user_confirmed_uefi_return_cause_unconfirmed",
++  "image_sha256": "f0fd106f2146bc176f448c9a694bf4e7ca0247656c323bb68ffe128f123a336d",
++  "image_path": "artifacts/hakios/lithium-ios16/phase4-r25-touch-stage1/lithium-hakios-ios16-r25-touch-stage1.img",
++  "payload_boot_args": "bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 touch_stage=1",
++  "final_loader_boot_args_line_captured": false,
++  "started_at": "2026-11-19T19:30:36.648506+08:00",
++  "fastboot_returned_at": "2026-11-19T19:30:38.111442+08:00",
++  "authorization": "User explicitly approved this exact R25 experiment before device operations",
++  "operation_counts": {
++    "readonly_fastboot_checks": 5,
++    "temporary_boots": 1,
++    "retries": 0,
++    "partition_queries": 0,
++    "partition_operations": 0,
++    "flash": 0,
++    "adb": 0,
++    "android_recovery_boots": 0,
++    "qemu": 0
++  },
++  "command_accepted": true,
++  "diagnostic_only": true,
++  "runtime_kernel_started": true,
++  "cpu": {
++    "logical": 0,
++    "mpidr": "0x80000001",
++    "affinity": "0x1",
++    "max_logical": 0,
++    "bootcpu": 1,
++    "cpus": 1,
++    "match": true,
++    "console_line": 112
++  },
++  "stage1": {
++    "status": "stopped",
++    "reason": "inherited_root_or_reset_unverified",
++    "blsp_bcr": "0x00000000",
++    "bcr": "0x00000000",
++    "cmd": "0x80000000",
++    "cfg": "0x00000000",
++    "failed_condition": "(cfg & 0x371f) must equal 1; observed 0",
++    "reads": 4,
++    "writes": 0,
++    "mappings": 2,
++    "elapsed_us": 72,
++    "clocks_checked": false,
++    "pins_checked": false,
++    "qup_snapshot_reached": false,
++    "reset": 0,
++    "transfer": 0,
++    "irq_attached": false,
++    "hid_events": 0,
++    "source_line": 194,
++    "console_lines": [
++      102,
++      103,
++      104,
++      105
++    ]
++  },
++  "usb_capture": {
++    "started_at": "2026-11-19T19:30:36.845918+08:00",
++    "enumerated": true,
++    "frames": 58,
++    "missing_bytes": 0,
++    "duplicate_bytes": 0,
++    "status": "capture_failed",
++    "output": "F:\\IOS-MIX1\\reports\\local\\20261119-r25-touch-stage1-approved\\console.log",
++    "device_commands_sent": false,
++    "candidate_seen": true,
++    "identity_verified": true,
++    "descriptor_errors": 0,
++    "descriptor_error_samples": [],
++    "configuration_verified": true,
++    "console_bytes": 14848,
++    "failure_stage": "capturing",
++    "failure": "[Errno 32] Pipe error",
++    "finished_at": "2026-11-19T19:31:10.385678+08:00"
++  },
++  "usb_audit": {
++    "raw_bytes": 16704,
++    "console_bytes": 14848,
++    "frames": 58,
++    "raw_sha256": "03d6a4267369f09d8e374de218695c2eda8f6e0c2c1ec2595b68213e1bae654a",
++    "console_sha256": "2fae95ac43b8f189bb3b15276509982e9c9d6bc8c32687fbcd9a746bed92597c",
++    "first_offset": 0,
++    "final_offset": 14848,
++    "missing_bytes": 0,
++    "duplicate_bytes": 0,
++    "incomplete_frame_bytes": 0,
++    "device_lost_max": 0,
++    "frames_reporting_device_loss": 0,
++    "independent_parser_agrees_with_frozen_receiver": true,
++    "frozen_redecode_equals_complete_console": true,
++    "transport_verified": true,
++    "kernel_banner_offset": 0,
++    "timer_offset": -1,
++    "normal_return_offset": -1,
++    "drain_success": false,
++    "drain_records": [],
++    "emitted_kernel_stream_through_timer_verified": false,
++    "all_firmware_daemon_and_original_printf_logs_complete": false,
++    "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
++  },
++  "full_log_complete": false,
++  "physical_screen": "UEFI return summary; user reply and original photograph",
++  "uefi_summary": {
++    "raw_bytes": 68684,
++    "return_reason": "UNCONFIRMED",
++    "panic_cause": "NOT RECOVERED",
++    "final_text": "PMRD NOTIFYSYSTEMSHUTDOWN / QUIESCE / POWEROFF",
++    "timer_verified": false,
++    "panic_verified": false,
++    "cause": "unconfirmed"
++  },
++  "photo_sha256": "f25b11e9c6f1a3c3b2db51a3dfd648a2904585097c3670e1202a34b8a5d50108",
++  "isolation": {
++    "physical_ufs_provider_included": false,
++    "ufs": 0,
++    "ram_md0_bytes": 4194304,
++    "ram_md1_bytes": 4194304,
++    "persistent_log_disabled": true,
++    "storage_access_not_requeried": true,
++    "pre_mu_vendor_firmware_behavior_verified": false
++  },
++  "ram_init": {
++    "mount_var_result": "No such file or directory",
++    "console_lines": [
++      126,
++      127,
++      128,
++      129
++    ],
++    "reboot_rb_halt_source": "upstream/hakios-xnu-kernel/userland/src/init.c:1566",
++    "rb_halt_is_candidate_only": true,
++    "actual_shutdown_caller_verified": false
++  },
++  "display_baseline": "R20-display",
++  "physical_touch_verified": false,
++  "r15_r20_unchanged": true,
++  "source_changed_this_device_phase": false,
++  "rebuild_performed_this_device_phase": false,
++  "local_evidence_path": "reports/local/20261119-r25-touch-stage1-approved",
++  "evidence_sha256": {
++    "commands.json": "d2a2ef7fd006f2b7d5bdab22b5f0cc3a69dd756179b2f5717bbf9bdd056fb6a4",
++    "authorization.json": "8aeb8d17e1bec37d0b9ec27c4ac490d93c0d27817feab208a636874b3f5f31ba",
++    "offline-preflight.json": "bbacc34e3638504a8d42632e60db7897e00791f618e75c51cc8f087a1ed830fe",
++    "console.log": "2fae95ac43b8f189bb3b15276509982e9c9d6bc8c32687fbcd9a746bed92597c",
++    "console.frames": "03d6a4267369f09d8e374de218695c2eda8f6e0c2c1ec2595b68213e1bae654a",
++    "capture-host.py": "d5a9aecdd3c5ac728b233628d9ae810a598a35ba05d9068d0db3ed70fde3791c",
++    "usb-status.json": "1c6491f591798198142239d439491afb9d01dc4367d474e68e4bc758ce72db9e",
++    "usb-audit.json": "909d4909124637061cd472ad46a0513617e421db68043fea76b845ee570f7b63",
++    "r25-uefi-return-original.jpg": "f25b11e9c6f1a3c3b2db51a3dfd648a2904585097c3670e1202a34b8a5d50108",
++    "r25-screen-transcription.txt": "1312fd62ca2e8d81178d6da430b2e1fd84a4f0338d4a8d3ba20f29b26f01c1e0"
++  },
++  "parallel_review": [
++    {
++      "agent": "Popper the 2nd",
++      "scope": "Host-only Stage1 success/stop criteria",
++      "result": "completed; source conditions checked by main agent"
++    },
++    {
++      "agent": "Bernoulli the 2nd",
++      "scope": "Host-only saved-log review before interruption",
++      "result": "not_found after interruption; no delivered audit counted"
++    },
++    {
++      "agent": "Leibniz",
++      "scope": "Independent existing audit() replay and CFG condition",
++      "result": "completed; same 58 frames/14848 bytes/zero gaps and CFG failure confirmed",
++      "main_agent_review": "Replayed audit independently and checked source lines 189-198"
++    }
++  ],
++  "next_steps": [
++    "Review vendor RCG source/HID/UPDATE/ROOT_OFF/branch-vote initialization and ownership evidence",
++    "Design isolated diagnostic retention and USB drain with explicit shutdown/return cause",
++    "Build and freeze reviewed revision before explaining and obtaining corresponding device confirmation"
++  ],
++  "no_automatic_retry": true,
++  "further_device_confirmation_required": true
++}

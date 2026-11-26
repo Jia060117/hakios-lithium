@@ -1,0 +1,57 @@
+{
+  "date": "2026-11-19",
+  "scope": "R20-display host-only Stage 0 source integration and HakiOS build; no device operation",
+  "display_baseline": {
+    "revision": "R20-display",
+    "image_sha256": "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82",
+    "verified_by_user": true,
+    "unchanged_after_build": true
+  },
+  "historical_r19": "archived; no retry or display acceptance",
+  "source_sync": {
+    "hakios_prepare": true,
+    "config_check": true,
+    "dependency_sync": true,
+    "ordered_geometry_patches": ["0010-lithium-ready-storage-smp.patch", "0012-lithium-object-progress.patch", "0021-lithium-r20-touch-geometry.patch"],
+    "source_review_checks": 83,
+    "phase4_build_check": true
+  },
+  "host_tests": {
+    "existing_suites": 14,
+    "new_suites": 7,
+    "total_suites": 21,
+    "compiler": "clang",
+    "sanitizers": ["ASan", "UBSan"],
+    "result": "passed",
+    "ordered_r20_geometry_test": "passed",
+    "evidence": "artifacts/hakios/lithium-ios16/touch-r20-host-gate-20261119-r7/passed.json"
+  },
+  "builds": {
+    "complete_hakios_kernel": {"passed": true, "sha256": "3e130b765b47ec06ac5e5392d5f94301d22ed43fa37b937827b65ab220180c93", "stage0_static_and_fail_closed_strings_linked": true},
+    "d22ap_loader": {"passed": true, "sha256": "f0084524c0fb7f36f3d4cd86c1cf6d3e00820f7ebcada0f2d1a618ccdcbdd81b"},
+    "mu_firmware": {"passed": true, "sha256": "2be05c780b07b5521a4bcacbb6fbb459aae2194768c9c84fd36eab88148ccaa5"},
+    "userland": {"passed": true, "launchd_jobs": 413, "root_apfs_sha256": "09f6917ea3ef051b44d313bc479d2b8f7ab7c138f71638f88deb963c25fb6624", "flashboot_apfs_sha256": "b48dd157a3aa981fb40ee7ba2d24628dc268acb48756c89492454a03bbb8d625", "system_apfs_sha256": "f9465f526753f9a0d3b9a2f9604650421bfd680a8c43f8e751966dfa7baab4fa"},
+    "instruction_scans": 46
+  },
+  "frozen_images": {
+    "r20_display_sha256": "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82",
+    "r15_desktop_sha256": "ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55",
+    "unchanged": true
+  },
+  "touch_package_ready": false,
+  "physical_touch_backend_present": false,
+  "mmio_access_in_stage0": false,
+  "stages_1_to_3_fail_closed": true,
+  "device_query_or_boot": false,
+  "partition_or_userdata_write": false,
+  "qemu": false,
+  "unverified": [
+    "QUP6 ownership and UEFI-to-XNU handoff",
+    "QUP clocks, pinmux and touch rail state",
+    "GPIO105/125 live IRQ selection",
+    "GPIO89 reset ownership",
+    "runtime FT5x46 identity and reports",
+    "HID/backboardd physical event delivery"
+  ],
+  "report": "reports/hakios-ios16-touch-stage0-build-20261119.md"
+}

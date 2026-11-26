@@ -1,0 +1,57 @@
+"""Read the 16GiB HFS volume through the bounded diagnostic; never writes phone."""
+import argparse, datetime, hashlib, json, os, pathlib, subprocess, time
+ROOT=pathlib.Path(__file__).resolve().parents[1]
+SIZE=17179869184
+EXPECTED='396e0b17d99eae20abda540f35834f95cd2857c858cc1a959f709cc7194ef6b3'
+
+def main():
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--resume',type=pathlib.Path);args=parser.parse_args()
+    base=ROOT/pathlib.Path((ROOT/'out/root-readback/current-log.txt').read_text())
+    info=subprocess.run(['adb','-s','54223ce9','exec-out','info'],capture_output=True,timeout=15,check=True).stdout
+    assert b'/readback-protected:\nMIX1_READBACK_V1' in info
+    assert b'/sys/class/block/sda15/ro:\n1\n' in info and b'PARTNAME=userdata' in info
+    mounts=info.split(b'/proc/mounts:\n')[1].split(b'\n/proc/cmdline:')[0]
+    assert not any(b'/dev/block/' in line for line in mounts.splitlines())
+    (base/'device-info.txt').write_bytes(info)
+    started=datetime.datetime.now().astimezone().isoformat();t=time.monotonic()
+    out=args.resume or pathlib.Path('E:/IOS-MIX1-artifacts/ios14-d20ap')/('userdata-readback-'+datetime.datetime.now().strftime('%Y%m%d-%H%M%S')+'.img')
+    h=hashlib.sha256();n=0
+    if args.resume:
+        assert out.resolve().parent==pathlib.Path('E:/IOS-MIX1-artifacts/ios14-d20ap').resolve() and out.name.startswith('userdata-readback-')
+        with out.open('rb') as f:
+            for block in iter(lambda:f.read(4*1024**2),b''):h.update(block);n+=len(block)
+            assert 0<n<SIZE
+            f.seek(max(0,n-1024**2));tail=f.read()
+        check=subprocess.run(['adb','-s','54223ce9','exec-out',f'read {n-len(tail)} {len(tail)}'],capture_output=True,timeout=20,check=True)
+        assert check.stdout==tail, 'Resume tail no longer matches device'
+        print(f'Resuming verified prefix: {n} bytes',flush=True)
+    resume_bytes=n
+    cmd=['adb','-s','54223ce9','exec-out',f'read {n} {SIZE-n}'];next_report=(n//1024**3+1)*1024**3
+    with (base/'readback-stderr.txt').open('ab') as err,out.open('ab' if args.resume else 'xb') as f:
+        p=subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=err)
+        try:
+            while True:
+                b=p.stdout.read(4*1024**2)
+                if not b:break
+                n+=len(b);assert n<=SIZE;h.update(b);f.write(b)
+                if n>=next_report:
+                    f.flush();os.fsync(f.fileno())
+                    print(f'{n//1024**3}/16 GiB, {(n-resume_bytes)/1024**2/(time.monotonic()-t):.1f} MiB/s',flush=True);next_report+=1024**3
+            code=p.wait(timeout=10)
+            f.flush();os.fsync(f.fileno())
+        finally:
+            if p.poll() is None:p.kill();p.wait()
+    result=dict(started_at=started,finished_at=datetime.datetime.now().astimezone().isoformat(),
+        bytes=n,expected_bytes=SIZE,sha256=h.hexdigest(),expected_sha256=EXPECTED,
+        full_volume_identical=n==SIZE and h.hexdigest()==EXPECTED and code==0,
+        readback_path=str(out),local_log_path=base.relative_to(ROOT).as_posix(),
+        adb_returncode=code,elapsed_seconds=time.monotonic()-t,resumed_prefix_bytes=resume_bytes,userdata_mounted=False,
+        disk_and_userdata_readonly_verified=True,partition_writes_performed=False,qemu_used=False,
+        scope='All bytes of the installed 16GiB HFSX volume; not remaining userdata or unrelated partitions',
+        user_report='Accidentally reached Xiaomi/MIUI logo or boot animation, then returned to Fastboot')
+    for path in [base/'result.json',ROOT/'reports/ios14-root-integrity.json']:
+        path.write_text(json.dumps(result,indent=2)+'\n',encoding='utf8')
+    print(json.dumps(result,indent=2),flush=True)
+    assert result['full_volume_identical'], 'Readback differs: inspect before restoring or booting XNU'
+
+if __name__=='__main__':main()

@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+"""Use iig-port's contiguous-message branches with XNU7195's four-field IORPC.
+
+DriverKit-440 emits split kernel-content pointers, introduced after this XNU.
+Its alternate branches already generate a contiguous Mach message, matching
+7195's IORPCMessageFromMach. Select only those layout/access branches, leaving
+kernel metaclass and dispatch declarations intact. No XNU ABI is extended.
+"""
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+
+FLAT_KERNEL_BLOCK = re.compile(
+    r"^#ifdef KERNEL\n"
+    r"(?P<yes>(?:(?!^\s*#\s*(?:if|else|endif)\b)[^\n]*\n)*)"
+    r"(?:^#else[^\n]*\n(?P<no>(?:(?!^\s*#\s*(?:if|else|endif)\b)[^\n]*\n)*))?"
+    r"^#endif[^\n]*\n", re.MULTILINE)
+
+
+def legacy_rpc(text):
+    count = 0
+
+    def select(match):
+        nonlocal count
+        branch = match["yes"]
+        if ("kernelContent" in branch or "#define MESSAGE_CONTENT" in branch or
+                re.search(r"const struct \w+_Msg \* message;", branch)):
+            count += 1
+            return match["no"] or ""
+        return match[0]
+
+    result = FLAT_KERNEL_BLOCK.sub(select, text)
+    if "kernelContent" in result:
+        raise ValueError("unhandled split-content IIG output; refusing a partial ABI conversion")
+    return result, count
+
+
+def main():
+    args = sys.argv[1:]
+    real = os.environ.get("IOS14_IIG_REAL", "/opt/unixnu-linux/XcodeDefault.xctoolchain/usr/bin/iig")
+    subprocess.run([real, *args], check=True)
+    impl_option = next((i for i, arg in enumerate(args) if arg in ("-impl", "--impl")), None)
+    if impl_option is None:
+        return
+    output = Path(args[impl_option + 1]).resolve()
+    workspace = Path(os.environ["IOS14_IIG_ROOT"]).resolve()
+    if not output.is_relative_to(workspace):
+        raise SystemExit("IIG output must be within this build workspace")
+    result, count = legacy_rpc(output.read_text())
+    output.write_text(result)
+    print(f"iig-ios14: selected {count} legacy RPC branches in {output.name}")
+
+
+if __name__ == "__main__":
+    main()

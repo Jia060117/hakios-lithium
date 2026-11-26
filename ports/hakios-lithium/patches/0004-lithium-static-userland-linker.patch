@@ -1,0 +1,14 @@
+--- a/userland/build.sh
++++ b/userland/build.sh
+@@ -86,7 +86,10 @@
+ cd "$(dirname "$(readlink -f "$0")")"
+ source ../xnu-env.sh
+ 
+-CC="xnu-clang -arch arm64 -Os -static -nostdlib -ffreestanding -fno-stack-protector -fno-builtin -Wall -Wextra"
++# The mini entry consumes the raw XNU stack and needs LC_UNIXTHREAD.
++# ld64.lld ignores -static and adds dyld; use the normal cctools linker for
++# these programs. The selected dynamic linker remains available to DYN.
++CC="env -u HAKIOS_USERLAND_LD64 xnu-clang -arch arm64 -march=armv8-a -Os -static -nostdlib -ffreestanding -fno-stack-protector -fno-builtin -Wall -Wextra"
+ LD="-Wl,-e,_start -Wl,-pagezero_size,0x100000000"
+ DYN="xnu-clang -arch arm64 -isysroot ${THEOS:-$HOME/theos}/sdks/iPhoneOS16.5.sdk -O1"
+ DARWIN=../sysimage

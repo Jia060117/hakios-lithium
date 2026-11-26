@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "revision": "R38-perf-fixed05",
+  "attempt_id": "r37-frequency-14",
+  "package": "artifacts/hakios/lithium-ios16/phase4-r37-ram-frequency-14",
+  "image": {
+    "path": "lithium-hakios-ios16-r37-ram-frequency-14.img",
+    "bytes": 16334848,
+    "sha256": "3e697c0195d28f44369e529ce6f6a7b7f7c73aa315c3370397ca6e62c5634e23"
+  },
+  "inputs": {
+    "kernel": "/home/jia/ios-mix1-build/hakios-lithium-ios16/hakios-kernel.r38-clock-power05",
+    "kernel_sha256": "eb5b407451e41be6b2b14ff4c6b7d24d034b1ba30470e396de0d989c35a83a4a",
+    "loader_sha256": "1d979a2ce19e1ac35fbee3d5a890402a78cc492c499d0d095f0084ef65a57205",
+    "ram_fd_sha256": "fd72564b0f3daa645dd2b400b4c346b4a71bedc37bff59473a1f5af80612a4b4",
+    "ram_root_sha256": "133d35b30af8f59c667b64aafe618b29f95355b84e7fde7e723863045ff332b8",
+    "frozen_r34_ram_sha256": "d1bbc6bf94defeacacf3ffbbae32bd3e227b70ef74bb1ceda2fb5539f8ad0d3b"
+  },
+  "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_clock_diag=1 cpu_power_diag=1 cpu_freq_pmu_setup=0 cpu_sanity=1 cpu_spmi_diag=1 cpu_perf_fixed=1 cpu_freq_diag=1",
+  "host_ready": true,
+  "booted": false,
+  "physical_ufs_provider_absent": true,
+  "change": "Final expectedMUX4 CLKCTL may be exactly71 or40040071; preMUX/initialguards exact71 remain",
+  "CLKCTL_bits30_18_names_verified": false,
+  "empirical_profile_not_general_status_mask": true,
+  "source_review": "evidence/cpu-r38-20261121/clkctl-source/report.json",
+  "tests": "evidence/cpu-r38-20261121/clkctl-tests/results.json",
+  "main_review": "evidence/cpu-r38-20261121/clkctl-main/main-test-review.json",
+  "host_test_cases_per_old_new": 44,
+  "host_checks_new_old": [
+    29622,
+    29604
+  ],
+  "same_kernel_args_RAM_and_hardware_programming_sequence": true,
+  "max_clock_writes": 11,
+  "new_regulator_or_CLKCTL_writes": 0,
+  "no_new_device_operations": true,
+  "CPU_effective_mhz": null,
+  "four_XNU_cores_verified": false,
+  "target_cpu_hz": 307200000,
+  "authors": {
+    "main": "photo/transcript/targetedpredicate/build/package/integration",
+    "Zeno": "primarysourcebitsemantics assessment",
+    "Curie": "actualold/newhelper44caseSanitizer tests/traces"
+  }
+}

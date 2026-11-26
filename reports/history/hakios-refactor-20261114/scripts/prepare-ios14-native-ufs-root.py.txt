@@ -1,0 +1,70 @@
+#!/usr/bin/env python3
+"""Select the measured read-only UFS device for an explicit rd=ufsroot0."""
+import difflib
+import importlib.util
+from pathlib import Path
+
+ROOT=Path(__file__).resolve().parents[1]
+PATCH=ROOT/'ports/lithium/patches/xnu-7195/0021-lithium-native-ufs-root.patch'
+
+def main():
+    spec=importlib.util.spec_from_file_location('native_alias',ROOT/'scripts/prepare-ios14-native-alias-probe.py')
+    helper=importlib.util.module_from_spec(spec);spec.loader.exec_module(helper)
+    edits={}
+    path='iokit/bsddev/IOKitBSDInit.cpp';old=helper.baseline(path,PATCH)
+    anchor='//\n//\tNow check if we are trying to root on a memory device'
+    assert old.count(anchor)==1
+    new=old.replace(anchor,'''#if defined(ARM64_BOARD_CONFIG_LITHIUM)
+    if (strcmp(rdBootVar, "ufsroot0") == 0) {
+        int error = lithium_ufs_rootdev(root);
+        if (error) {
+            panic("LITHIUM UFS: requested root unavailable, error %d", error);
+        }
+        OSSafeReleaseNULL(matching);
+        strlcpy(rootName, "ufsroot0", rootNameSize);
+        *oflags = 0;
+        IOLog("BSD root: %s, major %d, minor %d (read-only UFS)\\n",
+            rootName, major(*root), minor(*root));
+        IOFree(str, kMaxPathBuf + kMaxBootVar);
+        goto iofrootx;
+    }
+#endif
+
+'''+anchor)
+    edits[path]=(old,new)
+    path='bsd/dev/lithium_ufs.c';old=helper.baseline(path,PATCH)
+    anchor='    const uint8_t *sb=(const uint8_t *)(su.dma+DMA_BOUNCE+1024);\n'
+    assert old.count(anchor)==1
+    new=old.replace(anchor,anchor+'''    uint32_t expected_crc = 0;
+    if (PE_parse_boot_argn("lithium_root_crc", &expected_crc, sizeof(expected_crc))) {
+        uint32_t actual_crc=lg_crc((const uint8_t *)(su.dma+DMA_BOUNCE),4096,0);
+        if (actual_crc != expected_crc || sb[0] != 'H' || sb[1] != 'X' || sb[2] != 0 || sb[3] != 5) {
+            printf("LITHIUM UFS: root header rejected, actual 0x%x expected 0x%x\\n", actual_crc, expected_crc);
+            return EIO;
+        }
+        printf("LITHIUM UFS: HFSX root header CRC32 verified 0x%x\\n", actual_crc);
+    }
+''')
+    edits[path]=(old,new)
+    path='bsd/kern/bsd_init.c';old=helper.baseline(path,PATCH)
+    anchor='\t\tif (0 == (err = vfs_mountroot())) {\n'
+    assert old.count(anchor)==1
+    new=old.replace(anchor,anchor+'''#if defined(ARM64_BOARD_CONFIG_LITHIUM)
+            printf("LITHIUM ROOT: vfs_mountroot succeeded\\n");
+#endif
+''')
+    anchor='\tinit_rootvnode = NULLVP;  /* use rootvnode after this point */\n'
+    assert new.count(anchor)==1
+    new=new.replace(anchor,anchor+'''#if defined(ARM64_BOARD_CONFIG_LITHIUM)
+    printf("LITHIUM ROOT: root vnode installed; continuing BSD initialization\\n");
+#endif
+''')
+    edits[path]=(old,new)
+    patch='Subject: lithium: explicit read-only UFS root selection for built-in HFS\n\n'
+    patch+='Adapt the root hook from pinned sailfish 0028 to XNU7195; preserve ordinary matching.\n'
+    for path,(old,new) in edits.items():
+        patch+=f'diff --git a/{path} b/{path}\n'
+        patch+=''.join(difflib.unified_diff(old.splitlines(True),new.splitlines(True),fromfile='a/'+path,tofile='b/'+path))
+    PATCH.write_text(patch);print(PATCH)
+
+if __name__=='__main__':main()

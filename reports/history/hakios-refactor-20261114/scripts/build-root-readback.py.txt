@@ -1,0 +1,87 @@
+"""Build a temporary, no-automount reader from this lithium's stock recovery."""
+import gzip, hashlib, importlib.util, json, struct, subprocess
+from pathlib import Path
+
+ROOT=Path(__file__).resolve().parents[1]
+OUT=ROOT/'out/root-readback'
+STOCK=ROOT/'artifacts/stock/V9.5.2.0.NAHCNFA'
+
+def entries(b):
+    p=0
+    while p<len(b):
+        assert b[p:p+6]==b'070701'
+        h=[int(b[p+6+i*8:p+14+i*8],16) for i in range(13)]
+        n=b[p+110:p+110+h[11]-1].decode();p=(p+110+h[11]+3)&~3
+        d=b[p:p+h[6]];p=(p+h[6]+3)&~3
+        if n=='TRAILER!!!': return
+        yield n,(h[1],d)
+
+def archive(items):
+    out=bytearray()
+    # initramfs extraction does not create missing parent directories.
+    ordered=sorted(items.items(),key=lambda x:(x[0].count('/'),0 if x[1][0]&0o170000==0o040000 else 1,x[0]))
+    seen=set()
+    for name,(mode,data) in ordered:
+        parent=str(Path(name).parent).replace('\\','/')
+        assert parent=='.' or parent in seen, ('missing earlier directory',name,parent)
+        if mode&0o170000==0o040000: seen.add(name)
+    for i,(n,(mode,d)) in enumerate(ordered+[('TRAILER!!!',(0,b''))]):
+        name=n.encode()+b'\0';h=[i+1,mode,0,0,1,0,len(d),0,0,0,0,len(name),0]
+        out+=b'070701'+b''.join(f'{v:08x}'.encode() for v in h)+name
+        out+=bytes(-len(out)%4);out+=d;out+=bytes(-len(out)%4)
+    return bytes(out)
+
+def main():
+    OUT.mkdir(exist_ok=True,parents=True)
+    cmd=['wsl.exe','-d','Ubuntu','--exec','clang','--target=aarch64-linux-gnu','-O2','-Wall','-Wextra','-Werror',
+         '-nostdlib','-static','-fno-stack-protector','-fno-builtin','-fuse-ld=lld','-Wl,-e,_start',
+         '/mnt/f/IOS-MIX1/diagnostics/root-readback.c','-o','/mnt/f/IOS-MIX1/out/root-readback/reader']
+    subprocess.run(cmd,check=True)
+    original=dict(entries(gzip.decompress((STOCK/'recovery/ramdisk.cpio.gz').read_bytes())))
+    wanted=['init','sbin/adbd','sepolicy','file_contexts.bin','property_contexts','seapp_contexts','service_contexts']
+    items={n:original[n] for n in wanted if n in original}
+    assert all(n in items for n in ['init','sbin/adbd','sepolicy','file_contexts.bin','property_contexts'])
+    for n in ['dev','proc','sys','sbin','system','system/bin','data']:
+        items[n]=(0o40755,b'')
+    items['sbin/ueventd']=(0o120777,b'../init')
+    items['system/bin/sh']=(0o100755,(OUT/'reader').read_bytes())
+    rc=(ROOT/'diagnostics/root-readback-init.rc').read_bytes()
+    assert not any(x.strip().startswith((b'import ',b'mount_all ',b'service recovery ',b'service vold ')) for x in rc.splitlines())
+    items['init.rc']=(0o100644,rc)
+    items['ueventd.rc']=(0o100644,b'/dev/null 0666 root root\n/dev/zero 0666 root root\n/dev/random 0666 root root\n/dev/urandom 0666 root root\n/dev/ptmx 0666 root root\n')
+    items['default.prop']=(0o100644,b'ro.secure=0\nro.adb.secure=0\nro.debuggable=1\nro.product.name=lithium\nro.product.device=lithium\nro.product.model=MIX1Readback\nro.product.manufacturer=Xiaomi\nro.mix1.readback=1\n')
+    # Production recovery adbd can require authentication even when properties
+    # request no auth. Trust only this computer's already-existing public key.
+    host_key=Path.home()/'.android/adbkey.pub'
+    assert host_key.is_file()
+    items['adb_keys']=(0o100644,host_key.read_bytes())
+    cpio=archive(items); assert dict(entries(cpio))==items
+    rd=gzip.compress(cpio,compresslevel=9,mtime=0)
+    boot=(STOCK/'boot/boot.img').read_bytes()
+    assert hashlib.sha256(boot).hexdigest()=='2c070c67b07000a02de42fa05a6bcd93b7c32b3770d3fa9e495f321626278f44'
+    ks,ka,rs,ra,ss,sa,tags,page=struct.unpack_from('<8I',boot,8)
+    kernel=boot[page:page+ks]; assert kernel==(STOCK/'recovery/kernel-dtb.gz').read_bytes()
+    header=bytearray(boot[:page]);struct.pack_into('<I',header,16,len(rd))
+    cmdline=boot[64:576].split(b'\0')[0]+boot[608:1632].split(b'\0')[0]
+    parts=[x for x in cmdline.decode().split() if not x.startswith('androidboot.selinux=')]
+    parts+=['androidboot.selinux=permissive','mix1_readback=1']
+    cmdline=' '.join(parts).encode();assert len(cmdline)<1536
+    header[64:576]=cmdline[:512].ljust(512,b'\0');header[608:1632]=cmdline[512:].ljust(1024,b'\0')
+    h=hashlib.sha1()
+    for part in [kernel,rd,b'']:h.update(part);h.update(struct.pack('<I',len(part)))
+    header[576:608]=h.digest()+bytes(12)
+    output=bytes(header)+kernel+bytes(-len(kernel)%page)+rd+bytes(-len(rd)%page)
+    path=OUT/'lithium-root-readback.img';path.write_bytes(output)
+    spec=importlib.util.spec_from_file_location('stock',ROOT/'scripts/extract-stock.py');stock=importlib.util.module_from_spec(spec);spec.loader.exec_module(stock)
+    checked,_=stock.unpack_boot(path,OUT/'roundtrip')
+    assert checked['android_sha1_id_valid'] and (OUT/'roundtrip/ramdisk.cpio.gz').read_bytes()==rd
+    assert (OUT/'roundtrip/kernel-dtb.gz').read_bytes()==kernel
+    report={'image_sha256':hashlib.sha256(output).hexdigest(),'bytes':len(output),'stock_kernel_unchanged':True,
+            'ramdisk_entries':sorted(items),'services':['ueventd','adbd'],'block_mounts':[],
+            'reader_source_sha256':hashlib.sha256((ROOT/'diagnostics/root-readback.c').read_bytes()).hexdigest(),
+            'init_rc_sha256':hashlib.sha256(rc).hexdigest(),'cmdline':cmdline.decode(),'qemu_used':False,
+            'purpose':'Temporary block readback only. BLKROSET required before bounded read. No Android or recovery UI.'}
+    (OUT/'build.json').write_text(json.dumps(report,indent=2)+'\n')
+    print(json.dumps(report,indent=2))
+
+if __name__=='__main__': main()

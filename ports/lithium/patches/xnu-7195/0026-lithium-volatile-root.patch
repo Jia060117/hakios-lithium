@@ -1,0 +1,407 @@
+Subject: lithium: bounded volatile root overlay and preboot seed
+
+Physical UFS commands remain READ-only. Opt-in via lithium_root_cow=1.
+diff --git a/bsd/dev/lithium_ufs.c b/bsd/dev/lithium_ufs.c
+--- a/bsd/dev/lithium_ufs.c
++++ b/bsd/dev/lithium_ufs.c
+@@ -26,6 +26,7 @@
+ #include <miscfs/devfs/devfs.h>
+ #include <kern/locks.h>
+ #include <kern/clock.h>
++#include <kern/kalloc.h>
+ #include <machine/machine_routines.h>
+ #include <arm/caches_internal.h>
+ #include <vm/pmap.h>
+@@ -40,6 +41,7 @@
+ extern vm_offset_t ml_io_map(vm_offset_t phys_addr, vm_size_t size);
+ 
+ #include "lithium_ufs_gpt.h"
++#include "lithium_ufs_cow.h"
+ 
+ #define REG_CAP         0x00
+ #define REG_VER         0x08
+@@ -98,6 +100,9 @@
+ 	bool ready;
+ } su;
+ 
++static struct lc_cow root_cow;
++static bool cow_enabled;
++
+ static LCK_GRP_DECLARE(lithium_ufs_grp, "lithium_ufs");
+ static LCK_MTX_DECLARE(lithium_ufs_lock, &lithium_ufs_grp);
+ 
+@@ -289,13 +294,100 @@
+ 	return 0;
+ }
+ 
++/* Called with the UFS mutex, or before the device is exposed. */
++static int
++ufs_lower_read(__unused void *ctx, uint64_t off, uint32_t count, void *dst)
++{
++    uint64_t bytes = su.nblocks * UFS_BLOCK;
++    if (off > bytes || count > bytes - off) return EINVAL;
++    for (uint32_t done = 0; done < count;) {
++        uint64_t pos = off + done;
++        uint32_t skip = pos % UFS_BLOCK;
++        uint32_t want = MIN(count - done, BOUNCE_SIZE - skip);
++        uint32_t blocks = (skip + want + UFS_BLOCK - 1) / UFS_BLOCK;
++        int error = ufs_read_blocks(su.first_block + pos / UFS_BLOCK, blocks);
++        if (error) return error;
++        memcpy((uint8_t *)dst + done, (const void *)(su.dma + DMA_BOUNCE + skip), want);
++        done += want;
++    }
++    return 0;
++}
++static void *ufs_cow_alloc(__unused void *ctx)
++{
++    /* NOWAIT cannot expand an empty zone. Permit expansion using currently
++     * available pages, but never wait for paging from this disk's I/O path. */
++    return kheap_alloc(KHEAP_DATA_BUFFERS, LC_BLOCK, Z_NOPAGEWAIT);
++}
++static void ufs_cow_free(__unused void *ctx, void *p)
++{
++    kheap_free(KHEAP_DATA_BUFFERS, p, LC_BLOCK);
++}
++static void ufs_cow_discard(void)
++{
++    if (root_cow.table) {
++        for (uint32_t i = 0; i < root_cow.slots; i++)
++            if (root_cow.table[i].key) ufs_cow_free(NULL, root_cow.table[i].data);
++        kheap_free(KHEAP_DEFAULT, root_cow.table, LC_SLOTS * sizeof(struct lc_entry));
++    }
++    bzero(&root_cow, sizeof(root_cow));
++    cow_enabled = false;
++}
++static int __attribute__((noinline))
++ufs_cow_init(DTEntry node)
++{
++    const uint8_t *seed = NULL;
++    unsigned int size = 0;
++    if (SecureDTGetProperty(node, "ram-cow-seed", (const void **)&seed, &size) != kSuccess ||
++        size < 32 || memcmp(seed, "LCOWSE01", 8) ||
++        OSReadLittleInt64(seed, 8) != LC_ROOT_BYTES ||
++        OSReadLittleInt32(seed, 20) != LC_BLOCK + 8 ||
++        OSReadLittleInt32(seed, 24) != 1 || OSReadLittleInt32(seed, 28)) return EINVAL;
++    uint32_t n = OSReadLittleInt32(seed, 16);
++    if (!n || n > LC_LIMIT || size != 32 + n * (LC_BLOCK + 8)) return EINVAL;
++    root_cow.table = kheap_alloc(KHEAP_DEFAULT, LC_SLOTS * sizeof(struct lc_entry), Z_WAITOK | Z_ZERO);
++    if (!root_cow.table) return ENOMEM;
++    root_cow.slots = LC_SLOTS;
++    root_cow.limit = LC_LIMIT;
++    root_cow.bytes = LC_ROOT_BYTES;
++    root_cow.alloc = ufs_cow_alloc;
++    root_cow.release = ufs_cow_free;
++    root_cow.read_lower = ufs_lower_read;
++    uint32_t prior = 0;
++    int error = 0;
++    for (uint32_t i = 0; i < n; i++) {
++        const uint8_t *r = seed + 32 + i * (LC_BLOCK + 8);
++        uint32_t block = OSReadLittleInt32(r, 0), expected = OSReadLittleInt32(r, 4), done;
++        if (block >= LC_ROOT_BYTES / LC_BLOCK || (i && block <= prior)) { error = EINVAL; goto fail; }
++        prior = block;
++        error = ufs_read_blocks(su.first_block + block, 1);
++        if (error) goto fail;
++        if (lg_crc((const uint8_t *)(su.dma + DMA_BOUNCE), LC_BLOCK, 0) != expected) {
++            printf("LITHIUM COW: base sector %u CRC rejected\n", block);
++            error = EIO; goto fail;
++        }
++        error = lc_write(&root_cow, (uint64_t)block * LC_BLOCK, LC_BLOCK, r + 8, &done);
++        if (error || done != LC_BLOCK) { if (!error) error = EIO; goto fail; }
++    }
++    cow_enabled = true;
++    printf("LITHIUM COW: %u seed blocks verified; 64 MiB volatile limit; physical UFS read-only\n", n);
++    return 0;
++fail:
++    ufs_cow_discard();
++    return error;
++}
++int lithium_ufs_root_is_writable(dev_t dev);
++int lithium_ufs_root_is_writable(dev_t dev)
++{
++    return su.ready && cow_enabled && dev == su.bdev;
++}
++
+ static int
+ lithium_ufs_open(__unused dev_t dev, int flags, __unused int devtype, __unused struct proc *p)
+ {
+ 	if (!su.ready) {
+ 		return ENXIO;
+ 	}
+-	return (flags & FWRITE) ? EROFS : 0;
++	return ((flags & FWRITE) && !cow_enabled) ? EROFS : 0;
+ }
+ 
+ static int
+@@ -307,52 +399,37 @@
+ static void
+ lithium_ufs_strategy(buf_t bp)
+ {
+-	int error = 0;
+-	caddr_t vaddr = NULL;
+-	uint64_t off = (uint64_t)buf_blkno(bp) * su.secsize;
+-	uint32_t count = buf_count(bp);
+-	uint64_t part_bytes = su.nblocks * UFS_BLOCK;
+-
+-	buf_setresid(bp, count);
+-	if (!(buf_flags(bp) & B_READ)) {
+-		error = EROFS;
+-		goto done;
+-	}
+-	if (off > part_bytes || count > part_bytes - off) {
+-		error = EINVAL;
+-		goto done;
+-	}
+-	if (count == 0) {
+-		goto done;
+-	}
+-	if (buf_map(bp, &vaddr)) {
+-		error = EIO;
+-		goto done;
+-	}
+-
+-	lck_mtx_lock(&lithium_ufs_lock);
+-	for (uint32_t done = 0; done < count;) {
+-		uint64_t pos = off + done;
+-		uint64_t lba = pos / UFS_BLOCK;
+-		uint32_t skip = (uint32_t)(pos % UFS_BLOCK);
+-		uint32_t want = MIN(count - done, BOUNCE_SIZE - skip);
+-		uint32_t blocks = (skip + want + UFS_BLOCK - 1) / UFS_BLOCK;
+-		error = ufs_read_blocks(su.first_block + lba, blocks);
+-		if (error) {
+-			break;
+-		}
+-		memcpy(vaddr + done, (const void *)(su.dma + DMA_BOUNCE + skip), want);
+-		done += want;
+-		buf_setresid(bp, count - done);
+-	}
+-	lck_mtx_unlock(&lithium_ufs_lock);
+-	buf_unmap(bp);
+-
++    int error = 0;
++    caddr_t vaddr = NULL;
++    uint32_t count = buf_count(bp), completed = 0;
++    uint64_t sector = (uint64_t)buf_blkno(bp), off;
++    uint64_t bytes = cow_enabled ? LC_ROOT_BYTES : su.nblocks * UFS_BLOCK;
++    bool reading = (buf_flags(bp) & B_READ) != 0;
++    buf_setresid(bp, count);
++    if (!su.ready) { error = ENXIO; goto done; }
++    if (!reading && !cow_enabled) { error = EROFS; goto done; }
++    if (!su.secsize || sector > bytes / su.secsize) { error = EINVAL; goto done; }
++    off = sector * su.secsize;
++    if (off > bytes || count > bytes - off) { error = EINVAL; goto done; }
++    if (!count) goto done;
++    if (buf_map(bp, &vaddr)) { error = EIO; goto done; }
++    lck_mtx_lock(&lithium_ufs_lock);
++    if (su.failed) error = EIO;
++    else if (cow_enabled) {
++        error = reading ? lc_read(&root_cow, off, count, vaddr, &completed) :
++            lc_write(&root_cow, off, count, vaddr, &completed);
++    } else {
++        error = ufs_lower_read(NULL, off, count, vaddr);
++        if (!error) completed = count;
++    }
++    if (error && !reading)
++        printf("LITHIUM COW: write error %d used=%u/%u blocks\n", error, root_cow.used, root_cow.limit);
++    lck_mtx_unlock(&lithium_ufs_lock);
++    buf_setresid(bp, count - completed);
++    buf_unmap(bp);
+ done:
+-	if (error) {
+-		buf_seterror(bp, error);
+-	}
+-	buf_biodone(bp);
++    if (error) buf_seterror(bp, error);
++    buf_biodone(bp);
+ }
+ 
+ static int
+@@ -379,21 +456,29 @@
+ 		*f = UFS_BLOCK;
+ 		return 0;
+ 	case DKIOCGETBLOCKCOUNT:
+-		*o = su.nblocks * UFS_BLOCK / su.secsize;
++		*o = (cow_enabled ? LC_ROOT_BYTES : su.nblocks * UFS_BLOCK) / su.secsize;
+ 		return 0;
+ 	case DKIOCISWRITABLE:
+-		*f = 0;
++		*f = cow_enabled ? 1 : 0;
+ 		return 0;
+ 	case DKIOCGETMAXBLOCKCOUNTREAD:
+ 		*o = BOUNCE_SIZE / su.secsize;
+ 		return 0;
+ 	case DKIOCGETMAXBLOCKCOUNTWRITE:
+-		*o = 0;
++		*o = cow_enabled ? BOUNCE_SIZE / su.secsize : 0;
+ 		return 0;
+ 	case DKIOCGETMAXSEGMENTCOUNTREAD:
+ 	case DKIOCGETMAXSEGMENTCOUNTWRITE:
+ 		*o = 1;
+ 		return 0;
++    case DKIOCSYNCHRONIZECACHE:
++        /* Synchronous CPU copies are already visible under this lock.
++         * Durability is RAM lifetime only, as for a volatile memory disk. */
++        if (!cow_enabled) return EROFS;
++        lck_mtx_lock(&lithium_ufs_lock);
++        int error = su.failed ? EIO : 0;
++        lck_mtx_unlock(&lithium_ufs_lock);
++        return error;
+ 	default:
+ 		return ENOTTY;
+ 	}
+@@ -414,7 +499,7 @@
+ static int
+ lithium_ufs_psize(__unused dev_t dev)
+ {
+-	return su.ready ? (int)MIN(su.nblocks * UFS_BLOCK / su.secsize, INT_MAX) : -1;
++	return su.ready ? (int)MIN((cow_enabled ? LC_ROOT_BYTES : su.nblocks * UFS_BLOCK) / su.secsize, INT_MAX) : -1;
+ }
+ 
+ static int
+@@ -424,9 +509,10 @@
+ }
+ 
+ static int
+-lithium_ufs_write(__unused dev_t dev, __unused struct uio *uio, __unused int ioflag)
+-{
+-	return EROFS;
++lithium_ufs_write(dev_t dev, struct uio *uio, __unused int ioflag)
++{
++    if (!cow_enabled) return EROFS;
++    return physio(lithium_ufs_strategy, NULL, dev, B_WRITE, minphys, uio, (int)su.secsize);
+ }
+ 
+ static const struct bdevsw lithium_ufs_bdevsw = {
+@@ -556,6 +642,12 @@
+     printf("LITHIUM UFS: userdata first block CRC32 0x%x; superblock 0x%x ext magic 0x%x\n",
+         lg_crc((const uint8_t *)(su.dma+DMA_BOUNCE),4096,0),lg_le32(sb),
+         (unsigned)sb[56]|(unsigned)sb[57]<<8);
++    uint32_t cow = 0;
++    if (PE_parse_boot_argn("lithium_root_cow", &cow, sizeof(cow)) && cow) {
++        if (cow != 1 || expected_crc != 0x6143e5cf || !expected_crc) return EINVAL;
++        error = ufs_cow_init(node);
++        if (error) return error;
++    }
+ 	return 0;
+ }
+ 
+diff --git a/bsd/dev/lithium_ufs_cow.h b/bsd/dev/lithium_ufs_cow.h
+new file mode 100644
+--- /dev/null
++++ b/bsd/dev/lithium_ufs_cow.h
+@@ -0,0 +1,99 @@
++/* Bounded volatile block overlay. Caller serializes all operations.
++ * No lower write callback exists. Successful writes survive for this boot
++ * only; ENOSPC/ENOMEM and lower read failures retain exact partial progress.
++ * The caller provides a zeroed power-of-two table with >= 2*limit entries.
++ */
++#ifndef LITHIUM_UFS_COW_H
++#define LITHIUM_UFS_COW_H
++#define LC_BLOCK 4096u
++#define LC_ROOT_BYTES (16ULL << 30)
++#define LC_LIMIT 16384u
++#define LC_SLOTS (LC_LIMIT * 2u)
++struct lc_entry { uint32_t key; uint8_t *data; };
++struct lc_cow {
++    struct lc_entry *table;
++    uint32_t slots, limit, used;
++    uint64_t bytes;
++    void *ctx;
++    void *(*alloc)(void *);
++    void (*release)(void *, void *);
++    int (*read_lower)(void *, uint64_t, uint32_t, void *);
++};
++static struct lc_entry *lc_find(struct lc_cow *c, uint32_t block)
++{
++    uint32_t key = block + 1, i = (block * 2654435761u) & (c->slots - 1);
++    for (uint32_t n = 0; n < c->slots; n++, i = (i + 1) & (c->slots - 1)) {
++        if (!c->table[i].key || c->table[i].key == key) return &c->table[i];
++    }
++    return NULL;
++}
++static int lc_valid(struct lc_cow *c, uint64_t off, uint32_t len)
++{
++    return c->table && c->slots && !(c->slots & (c->slots - 1)) &&
++        c->limit && c->limit <= c->slots / 2 && c->bytes &&
++        !(c->bytes % LC_BLOCK) && c->bytes <= LC_ROOT_BYTES &&
++        off <= c->bytes && len <= c->bytes - off;
++}
++static int __attribute__((noinline)) lc_read(struct lc_cow *c, uint64_t off, uint32_t len,
++    void *dst, uint32_t *done)
++{
++    *done = 0;
++    if (!lc_valid(c, off, len)) return EINVAL;
++    while (*done < len) {
++        uint64_t pos = off + *done;
++        uint32_t block = (uint32_t)(pos / LC_BLOCK), skip = pos % LC_BLOCK;
++        uint32_t n = LC_BLOCK - skip;
++        if (n > len - *done) n = len - *done;
++        struct lc_entry *e = lc_find(c, block);
++        if (!e) return EIO;
++        if (e->key) {
++            memcpy((uint8_t *)dst + *done, e->data + skip, n);
++        } else {
++            /* Coalesce lower reads, retaining the driver's 1 MiB transfers. */
++            while (n < len - *done) {
++                uint32_t next = (uint32_t)((pos + n) / LC_BLOCK);
++                struct lc_entry *q = lc_find(c, next);
++                if (!q || q->key) break;
++                uint32_t step = len - *done - n;
++                if (step > LC_BLOCK) step = LC_BLOCK;
++                n += step;
++            }
++            int err = c->read_lower(c->ctx, pos, n, (uint8_t *)dst + *done);
++            if (err) return err;
++        }
++        *done += n;
++    }
++    return 0;
++}
++static int __attribute__((noinline)) lc_write(struct lc_cow *c, uint64_t off, uint32_t len,
++    const void *src, uint32_t *done)
++{
++    *done = 0;
++    if (!lc_valid(c, off, len)) return EINVAL;
++    while (*done < len) {
++        uint64_t pos = off + *done;
++        uint32_t block = (uint32_t)(pos / LC_BLOCK), skip = pos % LC_BLOCK;
++        uint32_t n = LC_BLOCK - skip;
++        if (n > len - *done) n = len - *done;
++        struct lc_entry *e = lc_find(c, block);
++        if (!e) return ENOSPC;
++        if (!e->key) {
++            if (c->used >= c->limit) return ENOSPC;
++            uint8_t *data = c->alloc(c->ctx);
++            if (!data) return ENOMEM;
++            if (skip || n != LC_BLOCK) {
++                int err = c->read_lower(c->ctx, (uint64_t)block * LC_BLOCK, LC_BLOCK, data);
++                if (err) { c->release(c->ctx, data); return err; }
++            }
++            memcpy(data + skip, (const uint8_t *)src + *done, n);
++            e->data = data;
++            e->key = block + 1;
++            c->used++;
++        } else {
++            memcpy(e->data + skip, (const uint8_t *)src + *done, n);
++        }
++        *done += n;
++    }
++    return 0;
++}
++#endif
+diff --git a/bsd/vfs/vfs_subr.c b/bsd/vfs/vfs_subr.c
+--- a/bsd/vfs/vfs_subr.c
++++ b/bsd/vfs/vfs_subr.c
+@@ -1174,6 +1174,13 @@
+ 
+ 		mp = vfs_rootmountalloc_internal(vfsp, "root_device");
+ 		mp->mnt_devvp = rootvp;
++#if defined(ARM64_BOARD_CONFIG_LITHIUM)
++        extern int lithium_ufs_root_is_writable(dev_t);
++        if (lithium_ufs_root_is_writable(vnode_specrdev(rootvp))) {
++            mp->mnt_flag &= ~MNT_RDONLY;
++            printf("LITHIUM ROOT: mounting volatile HFS root read-write\n");
++        }
++#endif
+ 
+ 		if (vfsp->vfc_mountroot) {
+ 			error = (*vfsp->vfc_mountroot)(mp, rootvp, ctx);

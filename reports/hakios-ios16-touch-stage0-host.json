@@ -1,0 +1,46 @@
+{
+  "date": "2026-11-19",
+  "scope": "HakiOS lithium touch stage-0 source integration and host gate; no device operation",
+  "display_baseline": {
+    "revision": "R20-display",
+    "sha256": "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82",
+    "verified_by_user": true
+  },
+  "r19_disposition": "tested on device; resolution incorrect; archived; no further test",
+  "source_integration": {
+    "touch_stage_parser_synced_to_port": true,
+    "stage0_static_log_in_port": true,
+    "stage0_cpu_and_mmio_access": false,
+    "stages1to3_fail_closed_without_qup6_handoff": true,
+    "physical_backend_present": false
+  },
+  "host_validation": {
+    "compiler": "clang",
+    "sanitizers": ["ASan", "UBSan"],
+    "existing_suites": 14,
+    "new_suites": 7,
+    "total_suites": 21,
+    "evidence": "artifacts/hakios/lithium-ios16/touch-r20-host-gate-20261119-r5/passed.json",
+    "recorded_source_files": 45,
+    "source_hashes_match": true,
+    "frozen_r20_hash_unchanged": true,
+    "frozen_r15_hash_unchanged": true
+  },
+  "active_build_workspace_sync_verified": false,
+  "latest_kernel_contains_touch_stage_verified": false,
+  "production_kernel_build": false,
+  "touch_package_ready": false,
+  "device_query_or_boot": false,
+  "partition_or_userdata_write": false,
+  "qemu": false,
+  "unverified": [
+    "UEFI-to-XNU QUP6 ownership/claim/release contract",
+    "QUP6 clock and GPIO pinmux runtime state",
+    "touch rails and reset ownership/state",
+    "GPIO105 versus GPIO125 live interrupt route",
+    "runtime FT5x46 identity and report reads",
+    "physical HID/backboardd event delivery"
+  ],
+  "next_gate": "obtain trusted QUP6 handoff/ownership evidence before enabling any QUP/TLMM access; then integrate and freeze a complete physical-touch package",
+  "report": "reports/hakios-ios16-touch-stage0-host.md"
+}

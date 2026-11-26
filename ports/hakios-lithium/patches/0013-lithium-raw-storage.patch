@@ -1,0 +1,95 @@
+--- a/drivers/storage/hakios.ufs.c
++++ b/drivers/storage/hakios.ufs.c
+@@ -1738,6 +1738,10 @@
+ SYSCTL_QUAD(_kern_hakios, OID_AUTO, ufs_native_fallbacks, CTLFLAG_RD | CTLFLAG_LOCKED, &ufs_native_fallbacks,
+     "times a read of this kernel's own UFS driver failed and the loader's was used instead");
+ 
++#if defined(LITHIUM_ARMV8_0)
++#include "../../../../devices/lithium/diagnostics/raw-storage.inc"
++#endif
++
+ /* ---- bringing it up ---- */
+ 
+ void
+@@ -1748,6 +1752,9 @@
+ 	vm_offset_t base;
+ 
+ 	if (!PE_parse_boot_argn("ufs_shared_pa", &pa, sizeof(pa)) || pa == 0) {
++#if defined(LITHIUM_ARMV8_0)
++		lithium_raw_storage_if_requested();
++#endif
+ 		return;                 /* the loader was not asked for ufs=2: there is nothing to read through */
+ 	}
+ 	base = ml_io_map_unmappable((vm_offset_t)(pa & ~(UFS_PAGE - 1)),
+@@ -1757,6 +1764,9 @@
+ 	    ufs_page->size != sizeof(struct loader_block) || ufs_page->parts > BLOCK_MAX_PARTS) {
+ 		printf("ufs: the loader's page at %llx is not one this kernel knows (magic %llx, version %u, size %u)\n",
+ 		    pa, ufs_page->magic, ufs_page->version, ufs_page->size);
++#if defined(LITHIUM_ARMV8_0)
++		lithium_raw_storage_if_requested();
++#endif
+ 		return;
+ 	}
+ 	ufs_parts = ufs_page->parts;
+@@ -1771,6 +1781,9 @@
+ 	ufs_cmajor = ufs_bmajor < 0 ? -1 : cdevsw_add_with_bdev(-1, &ufs_cdevsw, ufs_bmajor);
+ 	if (ufs_cmajor < 0) {
+ 		printf("ufs: no device numbers to be had\n");
++#if defined(LITHIUM_ARMV8_0)
++		lithium_raw_storage_if_requested();
++#endif
+ 		return;
+ 	}
+ 	for (uint32_t i = 0; i < ufs_parts; i++) {
+@@ -1907,6 +1920,9 @@
+ 		}
+ 	}
+ 
++#if defined(LITHIUM_ARMV8_0)
++	lithium_raw_storage_if_requested();
++#endif
+ 	if (PE_parse_boot_argn("ufs_bench", &check, sizeof(check)) && check != 0) {
+ 		/* right here, in bsd_init's thread, and then back to the loader: nothing else is wanted */
+ 		ufs_bench(NULL, THREAD_AWAKENED);
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -1717,6 +1717,8 @@
+ #define BLOCK_LITHIUM_FIRST 98304ULL
+ #define BLOCK_LITHIUM_BLOCKS 61208543ULL
+ #define BLOCK_LITHIUM_END 5242880ULL
++#include "../devices/lithium/firmware/lithiumPkg/Include/LithiumStorage.h"
++static int block_rawbench;
+ #else
+ #define BLOCK_DARWIN_NAME "darwin"
+ #define BLOCK_DARWIN_TYPE  { 0x7c3457ef, 0x0000, 0x11aa, { 0xaa, 0x11, 0x00, 0x30, 0x65, 0x43, 0xec, 0xac } }
+@@ -2348,7 +2350,8 @@
+ 		} else if (op == BLOCK_OP_WRITE || op == BLOCK_OP_WRITE_FAST || op == BLOCK_OP_FLUSH) {
+ 			if (block_write_part < 0 || part != (uint32_t)block_write_part || lba < BLOCK_WRITE_FIRST
+ #if defined(HAKIOS_LITHIUM)
+-			    || lba >= BLOCK_LITHIUM_END || count > BLOCK_LITHIUM_END - lba
++			    || ((lba >= BLOCK_LITHIUM_END || count > BLOCK_LITHIUM_END - lba) &&
++			        !(block_rawbench && lithium_scratch_range(lba,count)))
+ #endif
+ 			) {
+ 				/* not darwin, or not past what the build writes from the computer: never */
+@@ -3220,6 +3223,9 @@
+ 	 * the same for the other storage requests (they are only ever OR-ed in below): without this a run
+ 	 * that did not ask for ufs=2 is still offered a stale page and given its ufs_shared_pa
+ 	 */
++#if defined(HAKIOS_LITHIUM)
++	block_rawbench=0;
++#endif
+ 	hc_requested = 0;
+ 	block_probe_requested = 0;
+ 	block_enabled = 0;
+@@ -3240,6 +3246,10 @@
+ 		block_probe_requested |= starts_with(c, "ufs_probe=1") && (c == pi.cmdline || c[-1] == ' ');
+ 		block_write_requested |= starts_with(c, "ufs_write=1") && (c == pi.cmdline || c[-1] == ' ') &&
+ 		    (c[11] == 0 || c[11] == ' ');
++#if defined(HAKIOS_LITHIUM)
++		block_rawbench |= starts_with(c, "ufs_rawbench=1") && (c == pi.cmdline || c[-1] == ' ') &&
++		    (c[14] == 0 || c[14] == ' ');
++#endif
+ 		hc_requested |= starts_with(c, "ufs_native=") && (c == pi.cmdline || c[-1] == ' ') && c[11] >= '1' &&
+ 		    c[11] <= '9';
+ 	}

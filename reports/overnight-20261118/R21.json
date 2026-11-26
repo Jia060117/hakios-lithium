@@ -1,0 +1,60 @@
+{
+  "revision": 21,
+  "date": "2026-11-18",
+  "scope": "host-only audit, source helpers, and ASan/UBSan tests; no phone operations",
+  "passed": true,
+  "goal_complete": false,
+  "device_operations": false,
+  "adb_fastboot_device_commands": false,
+  "userdata_partition_changes": false,
+  "qemu_used": false,
+  "boot_image_produced": false,
+  "physical_touch_verified": false,
+  "gpu_hardware_verified": false,
+  "production_touch_backend_integrated": false,
+  "production_gpu_stage0_1_integrated": false,
+  "host_test_manifest": "artifacts/hakios/lithium-ios16/overnight-next-20261118/peripheral-tests-r4/passed.json",
+  "host_test_manifest_sha256": "2265f5dee048d8e57a76840eff12ee77bad8bb52fe3ae0772147b66edf0b970e",
+  "host_test_suites": {
+    "existing": 14,
+    "new": 4,
+    "total": 18,
+    "asan_ubsan": true
+  },
+  "r15_baseline_sha256": "ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55",
+  "r19_candidate_sha256": "2f74a8da0fe182d39c66a86db398f9816067cb05cce8a6a774398700ed38f60a",
+  "frozen_r19_evidence": {
+    "live_items": 149,
+    "snapshots": 149,
+    "snapshot_bytes": 1620843,
+    "unchanged_before_after_tests": true
+  },
+  "active_kernel": {
+    "source_commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2",
+    "r21_production_kernel_rebuilt": false,
+    "reason": "R21 added isolated host models/tests and did not change production kernel integration; no R21 boot image was made"
+  },
+  "reports": {
+    "phase1": "reports/overnight-20261118/R21-phase1-audit.md",
+    "phase2": "reports/overnight-20261118/R21-phase2-host.md",
+    "final": "reports/overnight-20261118/R21.md"
+  },
+  "patches": {
+    "phase1": {
+      "path": "reports/overnight-20261118/R21-phase1-audit.patch",
+      "sha256": "9898f7e424a7d99d5401078ecdd4a8b916129b5c610b34d1f1762a6e5720dd2f"
+    },
+    "phase2": {
+      "path": "reports/overnight-20261118/R21-phase2-host.patch",
+      "sha256": "ce45b75633baa15b6de37adc949059d22bb0aafa56389f9e0fe376c8df47bfe2"
+    },
+    "phase3_report": "reports/overnight-20261118/R21-phase3-report.patch"
+  },
+  "patch_validation": {
+    "numstat_parse_all": true,
+    "sequential_replay_from_head": true,
+    "representative_contents_match": true
+  },
+  "device_state": "not queried"
+}

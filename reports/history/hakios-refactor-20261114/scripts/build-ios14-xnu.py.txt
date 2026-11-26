@@ -1,0 +1,360 @@
+#!/usr/bin/env python3
+"""Build the pinned public XNU 7195 source on WSL with existing UniXNU tools.
+
+This is a source-build baseline, not a bootable lithium port. Source edits are
+confined to an isolated clone; no device operation is performed. Invoke from
+WSL, for example: python3 /mnt/f/IOS-MIX1/scripts/build-ios14-xnu.py headers
+"""
+import argparse
+import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import platform
+import shutil
+import subprocess
+import sys
+import tempfile
+
+ROOT = Path(__file__).resolve().parents[1]
+PIN = "776661b72c2db9861865df68d309f6f35faccff4"
+SOURCE = ROOT / "upstream/research/xnu-7195.141.2"
+
+
+def prepare_dependencies(work, sdk):
+    lock = json.loads((ROOT / "ports/lithium/xnu7195-dependencies.lock.json").read_text())
+    for entry in lock["projects"]:
+        directory = work / "deps" / entry["name"]
+        if not directory.exists():
+            subprocess.run(["git", "clone", "--quiet", "--depth", "1", "--branch", entry["tag"],
+                            f"https://github.com/apple-oss-distributions/{entry['name']}.git", directory], check=True)
+        if subprocess.check_output(["git", "-C", directory, "rev-parse", "HEAD"], text=True).strip() != entry["commit"]:
+            raise SystemExit(f"dependency revision mismatch: {directory}")
+        if subprocess.check_output(["git", "-C", directory, "status", "--porcelain"]):
+            raise SystemExit(f"dependency is modified: {directory}")
+    availability = work / "deps/AvailabilityVersions"
+    for relative, source in (("usr/include/AvailabilityVersions.h", "AvailabilityVersions.h"),
+                             ("usr/local/libexec/availability.pl", "availability.pl")):
+        target = sdk / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(availability / source, target)
+    return lock
+
+
+def prepare_kernel_sdk(work, sdk, env):
+    """Reuse UniXNU's source-header/firehose recipe with the 7195-era pins."""
+    libplatform = work / "deps/libplatform"
+    for source, destination in ((libplatform / "include", sdk / "usr/local/include"),
+                                (libplatform / "private", sdk / "usr/local/include"),
+                                (libplatform / "private/platform", sdk / "System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/platform")):
+        shutil.copytree(source, destination, dirs_exist_ok=True)
+    dispatch = work / "deps/libdispatch"
+    includes = sdk / "usr/local/include/os"
+    includes.mkdir(parents=True, exist_ok=True)
+    for header in (dispatch / "os").glob("*.h"):
+        result = subprocess.run(["unifdef", "-DKERNEL=1", "-DOS_FIREHOSE_SPI=1",
+                                 "-DOS_VOUCHER_ACTIVITY_SPI_TYPES=1", "-UOS_VOUCHER_ACTIVITY_SPI", header],
+                                capture_output=True)
+        if result.returncode not in (0, 1):
+            raise SystemExit(result.stderr.decode(errors="replace"))
+        (includes / header.name).write_bytes(result.stdout)
+    private_header = sdk / "usr/local/include/kernel/os/firehose_buffer_private.h"
+    private_header.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(includes / "firehose_buffer_private.h", private_header)
+    obj = work / "support/firehose_buffer.o"
+    archive = sdk / "usr/local/lib/kernel/libfirehose_kernel.a"
+    obj.parent.mkdir(parents=True, exist_ok=True)
+    archive.parent.mkdir(parents=True, exist_ok=True)
+    # Source revisions are checked on every invocation; avoid rebuilding the
+    # unchanged support archive while iterating on kernel compilation.
+    if not archive.exists():
+        framework = sdk / "System/Library/Frameworks/Kernel.framework"
+        command = ["xcrun", "clang", "-target", "arm64-apple-ios14.0", "-mcpu=kryo",
+                   "-std=gnu11", "-Os", "-g", "-mkernel", "-nostdinc", "-Wno-packed",
+                   "-DKERNEL=1", "-DDISPATCH_USE_DTRACE=0", "-DOS_ATOMIC_CONFIG_MEMORY_ORDER_DEPENDENCY=1",
+                   "-DOS_ATOMIC_CONFIG_STARVATION_FREE_ONLY=0"]
+        for include in (dispatch, framework / "PrivateHeaders", framework / "Headers", includes,
+                        sdk / "usr/local/include/firehose", sdk / "usr/include",
+                        sdk / "usr/local/include", work / "src/EXTERNAL_HEADERS"):
+            command.extend(["-I", str(include)])
+        command.extend(["-c", str(dispatch / "src/firehose/firehose_buffer.c"), "-o", str(obj)])
+        with (work / "logs/firehose-last.log").open("w") as output:
+            subprocess.run(command, env=env, stdout=output, stderr=subprocess.STDOUT, check=True)
+            subprocess.run(["xcrun", "libtool", "-static", "-o", archive, obj],
+                           env=env, stdout=output, stderr=subprocess.STDOUT, check=True)
+
+
+def prepare_lithium_crypto(work, tree):
+    """Stage pinned portable MD5/SHA1 and constant-time AES, with their license."""
+    pin = "7bea48e5e850ab4cafbe68d3765cdaba13a86d6f"
+    dependency = work / "deps/BearSSL"
+    if not dependency.exists():
+        dependency.mkdir(parents=True)
+        subprocess.run(["git", "init", "--quiet", dependency], check=True)
+    if not subprocess.run(["git", "-C", dependency, "cat-file", "-e", pin + "^{commit}"],
+                          capture_output=True).returncode == 0:
+        subprocess.run(["git", "-C", dependency, "fetch", "--quiet", "--depth", "1",
+                        "https://www.bearssl.org/git/BearSSL", pin], check=True)
+    subprocess.run(["git", "-C", dependency, "checkout", "--quiet", "--detach", pin], check=True)
+    if subprocess.check_output(["git", "-C", dependency, "rev-parse", "HEAD"], text=True).strip() != pin:
+        raise SystemExit("BearSSL source pin mismatch")
+    if subprocess.check_output(["git", "-C", dependency, "status", "--porcelain"]):
+        raise SystemExit("BearSSL reference must be clean")
+    files = [p.relative_to(dependency).as_posix() for p in sorted((dependency / "inc").glob("*.h"))]
+    files += ["src/inner.h", "src/config.h", "src/hash/sha1.c", "src/codec/dec32be.c", "src/codec/enc32be.c", "LICENSE.txt"]
+    files += ["src/hash/md5.c", "src/codec/dec32le.c", "src/codec/enc32le.c"]
+    files += [f"src/symcipher/{name}.c" for name in
+              ("aes_ct", "aes_ct_enc", "aes_ct_dec", "aes_ct_cbcenc", "aes_ct_cbcdec")]
+    target = tree / "libkern/crypto/lithium_bearssl"
+    hashes = {}
+    for name in files:
+        data = (dependency / name).read_bytes()
+        hashes[name] = hashlib.sha256(data).hexdigest()
+        if name == "src/inner.h":
+            if data.count(b"#include <limits.h>") != 1:
+                raise SystemExit("BearSSL limits.h anchor mismatch")
+            data = data.replace(b"#include <limits.h>", b"#if defined(KERNEL)\n#include <machine/limits.h>\n#else\n#include <limits.h>\n#endif")
+        destination = target / name
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if not destination.exists() or destination.read_bytes() != data:
+            destination.write_bytes(data)
+    return dict(repository="https://www.bearssl.org/git/BearSSL", commit=pin, source_sha256=hashes,
+                staged_directory=str(target), adaptation="kernel limits.h uses machine/limits.h")
+
+
+def prepare_lithium_hfs(work, tree, sdk):
+    """Stage pinned 7195-era HFS without modifying its reference checkout."""
+    source = work / 'deps/hfs'
+    target = tree / 'bsd/lithium_hfs'
+    hashes = {}
+    contents = {}
+    for directory in ('core', 'hfs_encodings'):
+        for original in sorted((source / directory).rglob('*')):
+            if not original.is_file(): continue
+            name = original.relative_to(source).as_posix()
+            data = original.read_bytes()
+            hashes[name] = hashlib.sha256(data).hexdigest()
+            if name == 'core/hfs_iokit.h':
+                text = data.decode()
+                include = '#include <AppleKeyStore/AppleKeyStoreFSServices.h>\n'
+                assert text.count(include) == 1
+                text = text.replace(include, '#if CONFIG_PROTECT\n'+include+'#endif\n')
+                i, j = text.index('int hfs_unwrap_key('), text.index('__END_DECLS')
+                text = text[:i]+'#if CONFIG_PROTECT\n'+text[i:j]+'#endif\n\n'+text[j:]
+                data = text.encode()
+            if name == 'core/hfs_vfsops.c':
+                before=b'(HFSTOVCB(hfsmp)->totalBlocks / 100) * HFS_ROOTNEARLOWDISKTRIGGERFRACTION'
+                assert data.count(before)==1
+                # Exactly floor((totalBlocks / 100) * 10.5), including the
+                # upstream integer division before multiplication. Use 64b
+                # intermediate and avoid floating point in scalar kernel code.
+                data=data.replace(before,b'((uint64_t)(HFSTOVCB(hfsmp)->totalBlocks / 100) * 21 / 2)')
+            contents[name] = data
+    hfs_patches = sorted((ROOT / 'ports/lithium/patches/hfs-556').glob('*.patch'))
+    # Apply to a disposable copy, then compare final bytes. Reference checkout
+    # stays untouched and repeated builds preserve unchanged source mtimes.
+    with tempfile.TemporaryDirectory(prefix='hfs-series-', dir=work) as temp:
+        staging = Path(temp)
+        for name, data in contents.items():
+            dst = staging / name
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            dst.write_bytes(data)
+        for patch in hfs_patches:
+            subprocess.run(['git', '-C', staging, 'apply', '--check', patch], check=True)
+            subprocess.run(['git', '-C', staging, 'apply', patch], check=True)
+        for name in contents:
+            contents[name] = (staging / name).read_bytes()
+    for name, data in contents.items():
+        destination = target / name
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if not destination.exists() or destination.read_bytes() != data:
+            destination.write_bytes(data)
+    for src, name in ((source/'APPLE_LICENSE','APPLE_LICENSE'),(sdk/'usr/include/TargetConditionals.h','TargetConditionals.h')):
+        data=src.read_bytes();dst=target/name
+        if not dst.exists() or dst.read_bytes()!=data:dst.write_bytes(data)
+    return dict(commit='ba1a9cdc6e83ae9dfb61e4b5a822fbf185ae5866',version='hfs-556.100.11',
+                source_sha256=hashes,staged_directory=str(target),
+                staged_sha256={name: hashlib.sha256(data).hexdigest() for name, data in contents.items()},
+                patches=[dict(path=p.relative_to(ROOT).as_posix(), sha256=hashlib.sha256(p.read_bytes()).hexdigest()) for p in hfs_patches],
+                adaptation='built-in KPI registration; plain unencrypted HFS volume, no AppleKeyStore')
+
+
+def prepare_lithium_pthread(work, tree, sdk):
+    source = work / "deps/libpthread"
+    target = tree / "bsd/pthread/lithium_libpthread"
+    replacements = {
+        "kern/kern_trace.h": [("vm_kernel_unslide_or_perm_external(ptr,", "vm_kernel_unslide_or_perm_external((vm_offset_t)ptr,", 1)],
+        "kern/kern_synch.c": [(f"pthread_kern->{name}(kwq,", f"pthread_kern->{name}((uintptr_t)kwq,", count)
+                              for name, count in (("psynch_wait_update_owner", 4), ("psynch_wait_complete", 1), ("psynch_wait_wakeup", 1))],
+        "kern/kern_support.c": [("*kevent_list_out = NULL;", "*kevent_list_out = 0;", 1),
+            ("user_addr_t kevent_list = NULL;", "user_addr_t kevent_list = 0;", 2),
+            ("workq_kevent(p, &th_addrs, NULL,", "workq_kevent(p, &th_addrs, 0,", 1),
+            ('panic(__func__ ": thread_set_wq_state failed: %d", error);',
+             'panic("%s: thread_set_wq_state failed: %d", __func__, error);', 4)],
+    }
+    hashes = {}
+    for directory in ("kern", "private", "include"):
+        for original in sorted((source / directory).rglob("*")):
+            if not original.is_file():
+                continue
+            name = original.relative_to(source).as_posix()
+            data = original.read_bytes()
+            hashes[name] = hashlib.sha256(data).hexdigest()
+            for before, after, count in replacements.get(name, []):
+                if data.count(before.encode()) != count:
+                    raise SystemExit(f"libpthread source anchor differs: {name}: {before}")
+                data = data.replace(before.encode(), after.encode())
+            destination = target / name
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            if not destination.exists() or destination.read_bytes() != data:
+                destination.write_bytes(data)
+    header = (sdk / "usr/include/TargetConditionals.h").read_bytes()
+    if not (target / "TargetConditionals.h").exists() or (target / "TargetConditionals.h").read_bytes() != header:
+        (target / "TargetConditionals.h").write_bytes(header)
+    return dict(commit="1cc19984213f4e21d435daa3679722aa1854f71b", version="libpthread-454.120.2",
+                source_sha256=hashes, adaptation="typed addresses and standard C panic string; full provider, not stubs",
+                staged_directory=str(target))
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("stage", choices=("headers", "kernel"))
+    parser.add_argument("--machine", choices=("BCM2837", "LITHIUM"), default="LITHIUM")
+    parser.add_argument("--workspace", type=Path)
+    parser.add_argument("--toolchain", type=Path, default=Path("/opt/unixnu-linux"))
+    parser.add_argument("--jobs", type=int, default=2)
+    args = parser.parse_args()
+    if platform.system() != "Linux" or args.jobs < 1:
+        parser.error("run on Linux/WSL and use a positive job count")
+    # Windows checked this NTFS reference out with CRLF. Normalize only Git's
+    # comparison; the isolated ext4 clone below is checked out with LF.
+    reference_git = ["git", "-c", "core.filemode=false", "-c", "core.autocrlf=true", "-C", SOURCE]
+    pin = subprocess.check_output([*reference_git, "rev-parse", "HEAD"], text=True).strip()
+    if pin != PIN or subprocess.check_output([*reference_git, "status", "--porcelain"]):
+        raise SystemExit("Apple reference must be clean and at the recorded commit")
+    default_workspace = "xnu7195-lithium" if args.machine == "LITHIUM" else "xnu7195-workspace"
+    work = (args.workspace or Path.home() / "ios-mix1-build" / default_workspace).resolve()
+    work.mkdir(parents=True, exist_ok=True)
+    tree = work / "src"
+    if not tree.exists():
+        subprocess.run(["git", "clone", "--quiet", "--shared", SOURCE, tree], check=True)
+    if subprocess.check_output(["git", "-C", tree, "rev-parse", "HEAD"], text=True).strip() != PIN:
+        raise SystemExit("isolated source checkout has a different revision")
+    patches = sorted((ROOT / "ports/lithium/patches/xnu-7195-build").glob("*.patch"))
+    if args.machine == "LITHIUM":
+        platform_patches = sorted((ROOT / "ports/lithium/patches/xnu-7195").glob("*.patch"))
+        if len(platform_patches) < 2:
+            raise SystemExit("run prepare-ios14-lithium.py before building LITHIUM")
+        patches += platform_patches
+    # Later patches can change the context of earlier patches, so reversing
+    # each one independently cannot identify an already applied series.
+    # Reconstruct the complete desired series in an isolated Git index.
+    desired_series = json.dumps([(p.relative_to(ROOT).as_posix(), hashlib.sha256(p.read_bytes()).hexdigest())
+                                 for p in patches], sort_keys=True)
+    source_stamp = work / "source-series.json"
+    if not source_stamp.exists() or source_stamp.read_text() != desired_series:
+        with tempfile.TemporaryDirectory(prefix="xnu-series-", dir=work) as staging:
+            patch_env = dict(os.environ, GIT_INDEX_FILE=str(Path(staging) / "index"))
+            subprocess.run(["git", "-C", tree, "read-tree", "HEAD"], env=patch_env, check=True)
+            for patch in patches:
+                subprocess.run(["git", "-C", tree, "apply", "--cached", patch], env=patch_env, check=True)
+            # src is the tool-owned, pinned build clone; reference is separate.
+            subprocess.run(["git", "-C", tree, "checkout-index", "--all", "--force"], env=patch_env, check=True)
+        source_stamp.write_text(desired_series)
+    crypto_dependency = prepare_lithium_crypto(work, tree) if args.machine == "LITHIUM" else None
+    sdk, obj, sym = (work / n for n in ("sdk", "obj", "sym"))
+    (sdk / "usr/include").mkdir(parents=True, exist_ok=True)
+    dependency_lock = prepare_dependencies(work, sdk)
+    target_header = ROOT / "upstream/UniXNU/scripts/linux/TargetConditionals.h"
+    (sdk / "usr/include/TargetConditionals.h").write_bytes(target_header.read_bytes())
+    pthread_dependency = prepare_lithium_pthread(work, tree, sdk) if args.machine == "LITHIUM" else None
+    hfs_dependency = prepare_lithium_hfs(work, tree, sdk) if args.machine == "LITHIUM" else None
+    clt = args.toolchain / "CommandLineTools/usr"
+    xct = args.toolchain / "XcodeDefault.xctoolchain/usr"
+    for tool in (clt / "bin/clang", clt / "bin/xnu-host-cc", clt / "bin/ld",
+                 clt / "bin/mig", clt / "libexec/migcom", xct / "bin/iig"):
+        if not tool.is_file():
+            raise SystemExit(f"missing existing tool: {tool}")
+    env = dict(os.environ, PATH=f"{clt}/bin:{args.toolchain}/bin:" + os.environ["PATH"],
+               LC_ALL="C", ZERO_AR_DATE="1", CROSS_CLANG=str(args.toolchain / "llvm/bin/clang"),
+               DARWIN_TRIPLE="arm64-apple-ios14.0",
+               CROSS_EXTRA_FLAGS="-mllvm -disable-atexit-based-global-dtor-lowering",
+               XNU_CLANG_DROP_FLAGS="-enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang",
+               XNU_TOOLCHAIN_BIN=f"{clt}/bin {xct}/bin", UNIXNU_SDKROOT=str(sdk),
+               IOS14_IIG_REAL=str(xct / "bin/iig"), IOS14_IIG_ROOT=str(work),
+               UNIXNU_SDK_VERSION="14.0", UNIXNU_SDK_BUILD="source-headers-7195.141.2",
+               UNIXNU_PLATFORM_PATH=str(sdk / "Platforms/iPhoneOS.platform"))
+    # GNU make does not track changes to environment compiler options. Ensure
+    # all C++ objects use the kernel's destructor-registration convention.
+    flag_stamp = work / "cxx-wrapper-flags.txt"
+    if not flag_stamp.exists() or flag_stamp.read_text() != env["CROSS_EXTRA_FLAGS"]:
+        for generated in obj.rglob("*.cpo"):
+            generated.unlink()
+        flag_stamp.write_text(env["CROSS_EXTRA_FLAGS"])
+    # Changing a MASTER file changes -D options rather than normal source
+    # dependencies. GNU make otherwise links objects from the earlier config.
+    configuration = json.dumps(dict(revision=2, machine=args.machine, cxx=env["CROSS_EXTRA_FLAGS"],
+                                    patches=[hashlib.sha256(p.read_bytes()).hexdigest() for p in patches]),
+                               sort_keys=True)
+    configuration_stamp = work / "compiler-configuration.json"
+    if not configuration_stamp.exists() or configuration_stamp.read_text() != configuration:
+        target_objects = obj / f"DEVELOPMENT_ARM64_{args.machine}"
+        # The old config generator also leaves disabled feature headers in
+        # place. Recreate this machine's generated tree, including headers.
+        resolved_target = target_objects.resolve()
+        if not resolved_target.is_relative_to(work) or resolved_target == work:
+            raise SystemExit("generated object directory escapes build workspace")
+        if target_objects.exists():
+            shutil.rmtree(resolved_target)
+        configuration_stamp.write_text(configuration)
+    if args.stage == "kernel":
+        prepare_kernel_sdk(work, sdk, env)
+    command = ["make", "--output-sync=target", "-C", str(tree), "installhdrs" if args.stage == "headers" else "build",
+               "SHELL=/bin/bash", "SDKROOT=iphoneos", "ARCH_CONFIGS=ARM64", f"MACHINE_CONFIGS={args.machine}",
+               "KERNEL_CONFIGS=DEVELOPMENT", "ARCH_STRING_FOR_CURRENT_MACHINE_CONFIG=arm64",
+               "PLATFORM=iPhoneOS", "HOST_OS_VERSION=11.0", "HOST_SDKROOT_RESOLVED=/",
+               f"HOST_CC={clt}/bin/xnu-host-cc", f"MIGCOM={clt}/libexec/migcom",
+               f"IIG={ROOT}/scripts/iig-ios14.py",
+               f"SYSCTL_HW_PHYSICALCPU={os.cpu_count() or 1}", f"SYSCTL_HW_LOGICALCPU={os.cpu_count() or 1}",
+               f"MEMORY_SIZE={os.sysconf('SC_PHYS_PAGES') * os.sysconf('SC_PAGE_SIZE')}",
+               f"MAKEJOBS=-j{args.jobs}", "BUILD_DSYM=0", "DO_CTFMERGE=0", "BUILD_LTO=0", "BUILD_WERROR=0",
+               "WARNFLAGS_STD=-Wall -Wextra -Wno-unused-parameter -Wno-unknown-warning-option",
+               "RC_NONARCH_CFLAGS=-DXNU_KEXT_PGO=0",
+               "RC_DARWIN_KERNEL_VERSION=20.6.0", "RC_ProjectSourceVersion=7195.141.2",
+               f"OBJROOT={obj}", f"SYMROOT={sym}", f"DSTROOT={sdk if args.stage == 'headers' else work / 'dst'}"]
+    stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    logs = work / "logs"
+    logs.mkdir(exist_ok=True)
+    log = logs / f"{args.stage}-{stamp}.log"
+    print(f"stage={args.stage}; workspace={work}; log={log}", flush=True)
+    with log.open("w") as output:
+        result = subprocess.run(command, env=env, stdout=output, stderr=subprocess.STDOUT)
+    binaries = list(obj.glob("**/mach.*.unstripped"))
+    record = dict(source_commit=PIN, workspace=str(work), stage=args.stage,
+                  dependency_lock=dependency_lock,
+                  crypto_dependency=crypto_dependency,
+                  pthread_dependency=pthread_dependency,
+                  hfs_dependency=hfs_dependency,
+                  patches=[dict(path=str(p.relative_to(ROOT)), sha256=hashlib.sha256(p.read_bytes()).hexdigest()) for p in patches] +
+                          (hfs_dependency['patches'] if hfs_dependency else []),
+                  target=f"iOS14 arm64 DEVELOPMENT {args.machine}; source build, hardware boot unverified",
+                  machine=args.machine,
+                  sdk_kind="source-exported kernel headers, not an Apple iPhoneOS SDK",
+                  unsupported_features=["kext PGO export (ENOTSUP)", "per-pmap W+X signing exception without PMAP_CS (KERN_NOT_SUPPORTED)"],
+                  command=command, environment={k: env[k] for k in env if k not in os.environ or env[k] != os.environ[k]},
+                  exit_code=result.returncode, log=str(log), log_sha256=hashlib.sha256(log.read_bytes()).hexdigest(),
+                  kernel_binaries=[dict(path=str(p), bytes=p.stat().st_size,
+                                        sha256=hashlib.sha256(p.read_bytes()).hexdigest()) for p in binaries],
+                  device_operations=False, kernel_boot_verified=False, ios_userspace_started=False)
+    serialized = json.dumps(record, indent=2) + "\n"
+    prefix = "ios14-xnu-lithium" if args.machine == "LITHIUM" else "ios14-xnu"
+    (ROOT / f"reports/{prefix}-build.json").write_text(serialized)
+    (ROOT / f"reports/{prefix}-{args.stage}.json").write_text(serialized)
+    print("\n".join(log.read_text(errors="replace").splitlines()[-50:]))
+    print(f"exit_code={result.returncode}; record={ROOT / f'reports/{prefix}-build.json'}", flush=True)
+    return result.returncode
+
+
+if __name__ == "__main__":
+    sys.exit(main())

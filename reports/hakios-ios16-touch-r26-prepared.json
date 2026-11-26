@@ -1,0 +1,205 @@
+{
+  "schema": 1,
+  "recorded_at": "2026-11-19T20:29:43.803653+08:00",
+  "revision": "R26-touch-clock",
+  "phase": "host_prepared_awaiting_device_confirmation",
+  "passed": true,
+  "image_path": "artifacts/hakios/lithium-ios16/phase4-r26-touch-clock/lithium-hakios-ios16-r26-touch-clock.img",
+  "image_sha256": "ff79c3ea55fb3022d997d119859b4b772fcbe233fc4364a8dc58a20c89612351",
+  "image_bytes": 16269312,
+  "kernel_sha256": "9170507ef742114f085286d01fe1b7f4a3b5f1f7551504c802ae62b226ef7f72",
+  "package_contract": "artifacts/hakios/lithium-ios16/phase4-r26-touch-clock/contract.json",
+  "package_contract_sha256": "4a0a09af53394b926368d7a5f7349a5120449831aa235e6027339a1dd37e66aa",
+  "payload_boot_args": "bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 touch_stage=1 touch_clock_init=1 touch_diag=1",
+  "command_budget": {
+    "capacity_including_nul": 608,
+    "conservative_reserved_bytes": 335,
+    "spare_bytes": 273,
+    "conservative_prefix": "debug=0x8 rd=md0 ufs_shared_pa=0x0000000000000000 hakios_kver=2.3.4-hakios-darwin22.5-msm8996-g63fc2b46-dirty "
+  },
+  "display_baseline": "R20-display",
+  "r19_retested": false,
+  "r25_retried": false,
+  "source_review_checks": 82,
+  "complete_hakios_kernel_build": true,
+  "complete_mu_d22ap_support_build": true,
+  "complete_userspace_launchd_jobs": 413,
+  "full_armv8_instruction_scans": 46,
+  "full_peripheral_suites": 33,
+  "base_suites": 16,
+  "followup_suites": 17,
+  "legacy_stage1_scenarios": 351,
+  "clock_init_scenarios_including_legacy": 5241,
+  "additional_clock_scenarios": 4890,
+  "diagnostic_init_scenarios": 368,
+  "sanitizers": [
+    "ASan",
+    "UBSan"
+  ],
+  "package_unit_tests": 13,
+  "merged_test_source_hashes": 85,
+  "actual_ram_volume_checks": {
+    "passed": true,
+    "actual_programs": {
+      "init": {
+        "sha256": "49280373ae22a38f7dd6c69912ea1b78b1f0c6a8d180d56cfa23c5e3d591e32f",
+        "bytes": 69016,
+        "architecture": "arm64",
+        "entry": "0x10000a2f8",
+        "unixthread": true,
+        "dyld_required": false,
+        "commands": [
+          25,
+          25,
+          25,
+          25,
+          2,
+          27,
+          42,
+          5
+        ],
+        "flags": "0x1",
+        "volume": "root.apfs",
+        "payload_entry": "ramdisk",
+        "path": "/sbin/init",
+        "volume_sha256": "b42f92754517b178538f7df2c702d2613d96d479235366a1322b4d9e01bb46ee",
+        "obj_path": "/home/jia/ios-mix1-build/hakios-lithium-ios16/userland/obj/init"
+      },
+      "stage0": {
+        "sha256": "7590c8831bd1fbfac6e810b1f3089519ee65eb6e021bebe72776ffa35e244d18",
+        "bytes": 34560,
+        "architecture": "arm64",
+        "entry": "0x100003cec",
+        "unixthread": true,
+        "dyld_required": false,
+        "commands": [
+          25,
+          25,
+          25,
+          25,
+          2,
+          27,
+          42,
+          5
+        ],
+        "flags": "0x1",
+        "volume": "flashboot.apfs",
+        "payload_entry": "resident",
+        "path": "/sbin/launchd",
+        "volume_sha256": "b48dd157a3aa981fb40ee7ba2d24628dc268acb48756c89492454a03bbb8d625",
+        "obj_path": "/home/jia/ios-mix1-build/hakios-lithium-ios16/userland/obj/stage0"
+      }
+    },
+    "permission_checks": 416,
+    "apfs_tool_sha256": "3bb9709d6b15726fba8a182c4fda83277b75567acdf3a9a2dc6c36747d07c74e",
+    "session_marker": "LITHIUM TOUCH session",
+    "mapping": {
+      "ramdisk": "root.apfs / redwood (md1)",
+      "resident": "flashboot.apfs / Boot (md0)"
+    }
+  },
+  "actual_package_readback": {
+    "passed": true,
+    "header": true,
+    "gzip": true,
+    "dtb": true,
+    "fat": true,
+    "xnup": true,
+    "mu": true,
+    "kernel": true,
+    "ramdisk": true,
+    "resident": true,
+    "cmdline": true
+  },
+  "boot_topology_unchanged": true,
+  "package_mu_reused_from_r25": true,
+  "physical_ufs_provider_absent": true,
+  "clock_root_register_writes": false,
+  "new_features_default_off": true,
+  "normal_support_report_semantics": "kernel_built=false is correct: support builds Mu/loader; actual kernel separately verified",
+  "inherited_build_limitation": "Normal HakiOS wrapper records existing configuration kext symbol-set exit2 after successfully linking mach output",
+  "historical_aggregate_passed": false,
+  "historical_aggregate_note": "Prior R9 hash gate rejects existing 0021 geometry; not altered or represented as passed",
+  "evidence_sha256": {
+    "scripts/hakios_touch_r26.py": "20a4100ec4bc63974e4488949a3b55027e38a68b38a6c855fbc0d9a9a2743b3a",
+    "scripts/package-hakios-ios16-touch-r26.py": "070a462ef7909010c4cb373be2487dff46729fb1fd6587efa869a529f8d2ca2d",
+    "scripts/test-hakios-touch-diagnostic-init.py": "6964143822d0ad5bf83c0becff243600173de0b796d95509b24d276f772b64c2",
+    "scripts/test-hakios-lithium-peripherals.py": "4affba4d2b0ee5f8bdf2e897faa041b4d9026a668e9fef417a4bade7df491c27",
+    "scripts/test-hakios-lithium-peripherals-next.py": "1265ecb00ae6728c7e6059d3ace902460fe793ee5c2b51c5ef5786e50ce9b767",
+    "scripts/review-hakios-ios16.py": "9a90dfb45d8bf07d866aeab437e8158eb41f766ce61454b80f6d0143b41df2cb",
+    "scripts/check-hakios-ios16-build.py": "b9d8c53e64bc59a1ee06ec2dd8b9bb1a99c15e92cd80ccf7613a86e0e092575c",
+    "reports/hakios-ios16-touch-r26-build-checks.json": "f430aa212dfa628bdce217207d678520357a9cf4bcb0c00778bce5de6fc2f59a",
+    "evidence/touch-r26-20261119/main/final-offline-preflight.json": "2f8fa34b1638e285895c27aee0f172ae4920e910ea6f9a21405d5bc6b9904417",
+    "evidence/touch-r26-20261119/main/actual-linked-integration.json": "9cf55f2ce10d1d69623a8cc842d5eaf4ddd91719e62ab0bdb1fc3bb1e39082cb",
+    "evidence/touch-r26-20261119/main/all-peripheral-tests/passed.json": "f45f69a440f8293b926ef40cb183b99e971862c5c7434909af17cdbeb630b09b",
+    "evidence/touch-r26-20261119/main/all-peripheral-tests/previous/passed.json": "a0767b7dcfea1fc886cdd50c885dfbf2e537c36aaf142907ba9eaef48d3305b6",
+    "evidence/touch-r26-20261119/main/all-peripheral-tests/touch-diagnostic-init/passed.json": "c9873b7a668b2ab908a2447ddc27d45556f3f48bdabbb6ee90f34e4d88b667c1",
+    "evidence/touch-r26-20261119/clocks/findings.md": "3fff4703cc48f772b01a31d8623b61f924c97f42169ab4200e985b43d74340f0",
+    "evidence/touch-r26-20261119/review/findings.md": "67c2bbcc3d9a3827902137f841561d5f297049cc9f0dd150c8fbecc34872b01f"
+  },
+  "source_delta": {
+    "passed": true,
+    "revision": "R26-touch-clock",
+    "display_baseline": "R20-display",
+    "exact_post_r25_source_delta": [
+      "patches/0022-lithium-touch-diagnostic-init.patch",
+      "peripherals/boot-options.h",
+      "peripherals/contract.json",
+      "peripherals/kernel.inc",
+      "peripherals/touch-stage1.inc"
+    ],
+    "hardware_verified": false,
+    "physical_touch_backend": false,
+    "stage1_observation_only": true,
+    "device_operations": false
+  },
+  "parallel_execution": [
+    {
+      "agent": "Curie",
+      "module": "clock primary-source review",
+      "main_review": "HID0/1 source, masks and vote order checked; stale contract hash corrected"
+    },
+    {
+      "agent": "Einstein",
+      "module": "diagnostic init patch/exact-main tests",
+      "main_review": "Patch reconstructed and linked init/APFS bytes checked; reproducible test entry fixed"
+    },
+    {
+      "agent": "Franklin",
+      "module": "R26 package and rejection checks",
+      "main_review": "Reversed volume-role assumption corrected by actual APFS reads; support metadata predicate corrected"
+    },
+    {
+      "agent": "Darwin",
+      "module": "4890 additional production Stage1 scenarios",
+      "main_review": "Adapter restricted to one fixture assertion; moved to maintained path and source hashes checked"
+    },
+    {
+      "agent": "Dewey",
+      "module": "independent init/adapter/provenance review",
+      "main_review": "Initial bootargs failure and parent-source closure limitations verified and disclosed"
+    }
+  ],
+  "unverified": [
+    "R26 CPU mapping, returning clock/pin/QUP accesses and register values on the phone",
+    "Dynamic ownership, rails/NoC/electrical state, actual frequency and secure-world constraints",
+    "Kernel timer runtime return, USB final drain, retained UEFI cause and complete runtime log",
+    "Initial boot_arg read failure cannot establish opt-in and may follow normal init; hold is not universal",
+    "Permanent MMIO/barrier/map stall or external abort/SError/XPU has no generic recovery",
+    "Physical I2C transactions, controller ID/firmware/reports, GPIO IRQ and HID delivery"
+  ],
+  "r15_r20_r25_unchanged": true,
+  "source_backup_files": 312,
+  "device_queries": 0,
+  "device_boots": 0,
+  "reboots": 0,
+  "flashes": 0,
+  "partition_operations": 0,
+  "adb_commands": 0,
+  "qemu": false,
+  "physical_touch_verified": false,
+  "runtime_hardware_verified": false,
+  "full_runtime_log_verified": false,
+  "any_further_device_operation_requires_confirmation": true,
+  "next_step": "Explain and obtain corresponding confirmation for one fixed R26 identity preflight/temporary boot/USB capture; no partition or Android/Recovery operations"
+}

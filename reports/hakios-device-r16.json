@@ -1,0 +1,154 @@
+{
+  "schema": 1,
+  "attempt": "HakiOS lithium R16",
+  "started_at": "2026-11-15T20:24:31.739908+08:00",
+  "recorded_at": "2026-11-15T20:24:33.210654+08:00",
+  "baseline": {
+    "project": "HakiOS",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2"
+  },
+  "package": {
+    "image_sha256": "89b3dd7e62d9c1f1e06ac8ce899543122f6a7308bb9c9ae0d28f2567145a86c4",
+    "image_bytes": 15728640,
+    "kernel_sha256": "3556a5e8543aae8ab8cfabc41fda08fabc457305f8d99e1c8a852d289ad0dd78",
+    "loader_sha256": "3fa58f4ee260a4c47cc6ecf6e9120e54a009235ba362c8e28451ea8287af6960",
+    "fd_sha256": "3ca34a8edf107f51e0ed516177bfcf3769f1e2741232e32d567331d4a2f17a85",
+    "payload_sha256": "3b4c3d6f7b4a547b7df5dad48ba8c93561757a96fe970ffb5cd7363642cb656c",
+    "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=2 lithium_storage_test=1 systrace=1 loader_return_after=120",
+    "stock_dtb_table_sha256": "ab929abf55ad4822ae83489a58d6b550b7b24ea8398ce8ead1de7b1d2caed6aa",
+    "test_profile": "p2-storage-readonly",
+    "ramdisk_sha256": "b54d6b60693c17ff423bee4e502b8e503a726e345808a62fbef2cc5ec747b118",
+    "storage_probe_sha256": "a369b2fd20b94417f564fa661498686a9293f4c813dc28a165a28c44596fb579"
+  },
+  "frozen_artifacts_path": "artifacts/hakios/p2-storage-ready-pid1-startup",
+  "frozen_boot_image": "reports/local/20261115-202431-718288-hakios-preflight/lithium-hakios-test.img",
+  "local_log_path": "reports/local/20261115-202431-718288-hakios-preflight",
+  "test_contract_path": "reports/local/20261115-202431-718288-hakios-preflight/test-contract.json",
+  "identity_verified": true,
+  "bootloader_unlocked": true,
+  "userdata_bytes": 250710192128,
+  "temporary_boot_issued": true,
+  "fastboot_returncode": 0,
+  "command_accepted": true,
+  "fastboot_boot_output": "Sending 'boot.img' (15360 KB)                      OKAY [  0.377s]\nBooting                                            OKAY [  0.786s]\nFinished. Total time: 1.169s\n",
+  "latest_usb": {
+    "checked_at": "2026-11-15T20:24:33.210654+08:00",
+    "authorized_device_in_fastboot": false,
+    "adb_present": false,
+    "local_log_path": "reports/local/20261115-202431-718288-hakios-preflight/post-boot-usb.json"
+  },
+  "battery_preflight": {
+    "battery_soc_ok": "yes",
+    "local_log_path": "reports/local/20261115-202431-718288-hakios-preflight/battery-query.json"
+  },
+  "user_screen_observation": {
+    "source": "user_photo",
+    "observation_pending": false,
+    "current_screen": "Retained header match, HFS mount ENOTBLK and orderly return summary",
+    "automatic_reboot_observed": false
+  },
+  "verified_stages": {
+    "fastboot_command": true,
+    "uefi": true,
+    "mmu_hobs": false,
+    "bds": true,
+    "gop": true,
+    "efi_file_hash": false,
+    "loader": true,
+    "kernel": true,
+    "hello": false,
+    "storage_probe": true,
+    "hfs_mount": false,
+    "warm_ufs_ready": true,
+    "loader_userdata_hfsx_header": true,
+    "storage_probe_entry": true,
+    "kernel_userdata_header": true
+  },
+  "outcome": "kernel_userdata_header_matched_HFS_mount_ENOTBLK",
+  "exact_failure_stage": "HFS_mount_device_vnode_type_check",
+  "runtime_acceptance": {
+    "storage_test_passed": false,
+    "final_summary_pending": false,
+    "kernel_started": true,
+    "diagnostic_startup_verified": true,
+    "kernel_userdata_header_verified": true,
+    "hfs_mount_verified": false,
+    "ios14_file_reads_verified": false,
+    "orderly_return_observed": true,
+    "panic_return_observed": false,
+    "final_summary_retained": true
+  },
+  "hardware_verified": false,
+  "ios14_compatibility_verified": false,
+  "partition_writes_performed": false,
+  "qemu_used": false,
+  "observation_recorded_at": "2026-11-15T20:51:33.660044+08:00",
+  "screen_evidence": {
+    "photos": [
+      {
+        "path": "reports/local/20261115-202431-718288-hakios-preflight/r16-header-match-mount-enotblk.jpg",
+        "sha256": "0a9f9cfdd3e8ff9a2e10ae457e337bc00de1ebf526925f51c9b6c594a2bae211"
+      }
+    ],
+    "transcription_path": "reports/local/20261115-202431-718288-hakios-preflight/r16-screen-transcription.txt",
+    "transcription_sha256": "f75cf390e4aa5734a5b8b22efcaf156d89fc26d6042d8b9d101d9a45034c16c1"
+  },
+  "failure": {
+    "mount_rc": -15,
+    "errno": 15,
+    "errno_name": "ENOTBLK",
+    "fspec": "/dev/rufs_userdata",
+    "fspec_node_type": "DEVFS_CHAR",
+    "required_node_type": "VBLK",
+    "provided_upstream_block_node": "/dev/ufs_userdata",
+    "contract_evidence": {
+      "errno": {
+        "source": "/home/jia/ios-mix1-build/hakios-lithium/xnu-src/xnu-8796.121.2/bsd/sys/errno.h",
+        "path": "reports/local/20261115-202431-718288-hakios-preflight/mount-contract-errno.txt",
+        "sha256": "c8a527ee020cee45bf69cd150b0c5743c148863d54bfa29e1193caa6af274f36"
+      },
+      "vfs": {
+        "source": "/home/jia/ios-mix1-build/hakios-lithium/xnu-src/xnu-8796.121.2/bsd/vfs/vfs_syscalls.c",
+        "path": "reports/local/20261115-202431-718288-hakios-preflight/mount-contract-vfs.txt",
+        "sha256": "a12d289cd073fd84e5ba5a979cad529a4f747e9e7c28725b88c478a6ecf28231"
+      },
+      "ufs": {
+        "source": "/home/jia/ios-mix1-build/hakios-lithium/drivers/storage/hakios.ufs.c",
+        "path": "reports/local/20261115-202431-718288-hakios-preflight/mount-contract-ufs.txt",
+        "sha256": "ef6e1985e910333cf8675c43015ce96deb3a8aff24fd3c921986425a0ea6f6a2"
+      }
+    },
+    "start_and_result_omitted_due_to_missing_prefix_space": true,
+    "return_rc_to_probe_stage": 2,
+    "result_line_observed": false
+  },
+  "measurements": {
+    "loader_return_log_bytes": 15049,
+    "ufs_stage": 6,
+    "ufs_cap": "0x107001f",
+    "ufs_hce": 1,
+    "ufs_hcs": "0x10f",
+    "ufs_ver": "0x10100",
+    "ufs_doorbell": 0,
+    "ufs_rc_ocs_st": 0,
+    "header_read_bytes": 8192,
+    "header_match": true,
+    "mount_rc": -15,
+    "clock_ticks_start": 16271011849,
+    "clock_ticks_end": 18578332919,
+    "frequency_hz": 19200000,
+    "hardware_elapsed_ms": 120172,
+    "clock_valid": true,
+    "ppi27_start": 0,
+    "ppi27_end": 7325,
+    "irq_delta": 7325,
+    "samples": 2,
+    "stalled": 0,
+    "min_step": 3249,
+    "last_timer_ppi27": 6736,
+    "last_timer_heartbeat": 12,
+    "last_timer_elapsed_ms": 110179
+  },
+  "kernel_execution_verified": true
+}

@@ -1,0 +1,23 @@
+From: ios14-lithium
+Subject: [build] provide the state used by the published compilation-hash API
+
+The public 7195 pmap includes the setter, matcher and locking calls but omits
+their storage definitions. Use the same static simple-lock initialization
+as the adjacent loaded-trust-cache state. The hash is still stored and
+compared by the original functions, not replaced with a fixed answer.
+
+diff --git a/osfmk/arm/pmap.c b/osfmk/arm/pmap.c
+--- a/osfmk/arm/pmap.c
++++ b/osfmk/arm/pmap.c
+@@ -671,5 +671,11 @@
+ static struct pmap_image4_trust_cache *pmap_image4_trust_caches MARK_AS_PMAP_DATA = NULL;
+ 
+ MARK_AS_PMAP_DATA SIMPLE_LOCK_DECLARE(pmap_loaded_trust_caches_lock, 0);
++static uint8_t pmap_compilation_service_cdhash[CS_CDHASH_LEN] MARK_AS_PMAP_DATA;
++MARK_AS_PMAP_DATA SIMPLE_LOCK_DECLARE(pmap_compilation_service_cdhash_lock, 0);
++#if DEVELOPMENT || DEBUG
++/* Diagnostic output is disabled unless explicitly enabled in source. */
++static bool pmap_cs_log_hacks;
++#endif
+ 
+ 

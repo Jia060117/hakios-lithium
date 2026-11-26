@@ -1,0 +1,168 @@
+--- a/xnu/files/osfmk/arm64/user_exception_trace.c
++++ b/xnu/files/osfmk/arm64/user_exception_trace.c
+@@ -67,7 +67,7 @@
+ 	proc = get_bsdtask_info(task);
+ 
+ 	printf("usertrap: %s[%d] exception %d code 0x%llx 0x%llx: pc 0x%llx lr 0x%llx sp 0x%llx, shared cache slide 0x%x\n",
+-	    proc ? proc_name_address(proc) : "?", proc ? proc_pid(proc) : -1, exception,
++	    proc ? proc_best_name(proc) : "?", proc ? proc_pid(proc) : -1, exception,
+ 	    count > 0 ? (unsigned long long)code[0] : 0, count > 1 ? (unsigned long long)code[1] : 0,
+ 	    (unsigned long long)get_saved_state_pc(state), (unsigned long long)get_saved_state_lr(state),
+ 	    (unsigned long long)get_saved_state_sp(state), slide);
+@@ -130,7 +130,7 @@
+ 		slide = region->sr_slide;
+ 		vm_shared_region_deallocate(region);
+ 	}
+-	printf("userabort: %s[%d] aborts, shared cache slide 0x%x; called from:", proc ? proc_name_address(proc) : "?",
++	printf("userabort: %s[%d] aborts, shared cache slide 0x%x; called from:", proc ? proc_best_name(proc) : "?",
+ 	    proc ? proc_pid(proc) : -1, slide);
+ 	fp = (uint64_t)get_saved_state_fp(state);
+ 	for (int depth = 0; depth < 24 && plausible_user_address(fp) && (fp & 7) == 0; depth++) {
+@@ -185,6 +185,7 @@
+ 
+ #if defined(LITHIUM_ARMV8_0)
+ #include "../../../../devices/lithium/diagnostics/thread-wait-observer.inc"
++#include "../../../../devices/lithium/diagnostics/service-wait-observer.inc"
+ #endif
+ 
+ static void
+@@ -204,7 +205,7 @@
+ 	static struct {
+ 		uint64_t tid, pc, lr, fp;
+ #if defined(LITHIUM_ARMV8_0)
+-		uint64_t x0, x1, x2, x3, x16;
++		uint64_t x0, x1, x2, x3, x4, x5, x16;
+ #endif
+ 		int state;
+ 		char name[64];          /* (bsd_getthreadname() copies MAXTHREADNAMESIZE, 64) */
+@@ -247,6 +248,8 @@
+ 		snap[count].x1 = get_saved_state_reg(state, 1);
+ 		snap[count].x2 = get_saved_state_reg(state, 2);
+ 		snap[count].x3 = get_saved_state_reg(state, 3);
++		snap[count].x4 = get_saved_state_reg(state, 4);
++		snap[count].x5 = get_saved_state_reg(state, 5);
+ 		snap[count].x16 = get_saved_state_reg(state, 16);
+ #endif
+ 		count++;
+@@ -272,7 +275,7 @@
+ 	clock_get_system_microtime(&secs, &usecs);
+ 	absolutetime_to_nanoseconds(mach_absolute_time(), &nanos);
+ 	snprintf(line, sizeof(line), "ustacks: %s[%d] %u threads, shared cache slide 0x%x, uptime %lu.%03u, at %llu\n",
+-	    proc_name_address(proc), proc_pid(proc), count, slide, (unsigned long)secs, (unsigned)usecs / 1000, nanos / 1000);
++	    proc_best_name(proc), proc_pid(proc), count, slide, (unsigned long)secs, (unsigned)usecs / 1000, nanos / 1000);
+ 	ustacks_say(line);
+ 
+ 	old_map = vm_map_switch(map);
+@@ -307,6 +310,10 @@
+ 		}
+ 		snprintf(line + at, sizeof(line) - at, "\n");
+ 		ustacks_say(line);
++#if defined(LITHIUM_ARMV8_0)
++		lithium_ustacks_ipc(task, snap[i].tid, snap[i].state, snap[i].x1,
++		    snap[i].x2, snap[i].x3, snap[i].x4, snap[i].x5, snap[i].x16);
++#endif
+ 	}
+ 	vm_map_switch(old_map);
+ 	vm_map_deallocate(map);
+@@ -350,7 +357,7 @@
+ 		times = recount_task_times(task);
+ 		now[count].pid = proc_pid(proc);
+ 		now[count].total = times.rtm_user + times.rtm_system;
+-		strlcpy(now[count].name, proc_name_address(proc), sizeof(now[count].name));
++		strlcpy(now[count].name, proc_best_name(proc), sizeof(now[count].name));
+ 		count++;
+ 	}
+ 	lck_mtx_unlock(&tasks_threads_lock);
+@@ -414,9 +421,9 @@
+ 	queue_iterate(&tasks, task, task_t, tasks) {
+ 		struct proc *proc = get_bsdtask_info(task);
+ 
+-		if (count < 8 && proc != NULL && (strncmp(proc_name_address(proc), ustacks_name, sizeof(ustacks_name)) == 0
+-#if defined(LITHIUM_ARMV8_0)
+-		    || lithium_ustacks_match(proc_name_address(proc))
++		if (count < 8 && proc != NULL && (strncmp(proc_best_name(proc), ustacks_name, sizeof(ustacks_name)) == 0
++#if defined(LITHIUM_ARMV8_0)
++		    || lithium_ustacks_match(proc_best_name(proc))
+ #endif
+ 		    )) {
+ 			task_reference(task);
+@@ -474,6 +481,13 @@
+ 	    !PE_parse_boot_argn("ustacks_at", &at, sizeof(at)) || at == 0) {
+ 		return;
+ 	}
++#if defined(LITHIUM_ARMV8_0)
++	/* Finite R8 defaults save the 608-byte loader command budget. */
++	ustacks_every = 360000; ustacks_count = 8; ustacks_threads = 96;
++	strlcpy(ustacks_tname, "*", sizeof(ustacks_tname));
++	lithium_ustacks_top = 1;
++	strlcpy(lithium_ustacks_related, "backboardd,lsd,containermanagerd,containermanagerd_system,runningboardd,installcoordinationd", sizeof(lithium_ustacks_related));
++#endif
+ 	PE_parse_boot_argn("ustacks_ms", &ustacks_every, sizeof(ustacks_every));
+ 	PE_parse_boot_argn("ustacks_threads", &ustacks_threads, sizeof(ustacks_threads));
+ 	PE_parse_boot_argn("ustacks_tname", ustacks_tname, sizeof(ustacks_tname));
+@@ -485,6 +499,9 @@
+ 		printf("LITHIUM USTACKS: invalid finite limits; disabled\n");
+ 		return;
+ 	}
++	printf("LITHIUM USTACKS config first=%u period_ms=%u count=%u threads=%u frames=%u procs=8 top=%u\n",
++	    at, ustacks_every, ustacks_count, ustacks_threads, USTACKS_MAX_FRAMES, lithium_ustacks_top);
++	printf("LITHIUM USTACKS related=%s names=proc_best_name\n", lithium_ustacks_related);
+ #endif
+ 	ustacks_call = thread_call_allocate(ustacks_fire, NULL);
+ 	clock_interval_to_deadline(at, NSEC_PER_SEC, &deadline);
+--- a/xnu/files/iokit/Kernel/MiniIOMobileFramebuffer.cpp
++++ b/xnu/files/iokit/Kernel/MiniIOMobileFramebuffer.cpp
+@@ -41,6 +41,7 @@
+ #include "MiniIOSurface.h"
+ #if defined(LITHIUM_ARMV8_0)
+ #include "../../../../devices/lithium/diagnostics/framebuffer-profile.inc"
++#include "../../../../devices/lithium/diagnostics/bgr24-pack.inc"
+ #endif
+ 
+ extern "C" void hakios_tl(const char * format, ...) __printflike(1, 2);
+@@ -852,7 +853,10 @@
+ 			const uint32_t * source = (const uint32_t *) (pixels + (size_t) (sy + y - py0) * stride) + sx;
+ 			if (fPixelBytes == 3) {
+ 				uint8_t * dest = fBase + (size_t) y * fRowBytes + (size_t) px0 * 3;
+-				for (int32_t x = 0; x < sw; x++) {
++				int32_t x = 0;
++				for (; sw - x >= 4; x += 4)
++					lithium_bgr24_store4(dest + (size_t)x * 3, source[x], source[x+1], source[x+2], source[x+3]);
++				for (; x < sw; x++) {
+ 					dest[x * 3] = source[x];
+ 					dest[x * 3 + 1] = source[x] >> 8;
+ 					dest[x * 3 + 2] = source[x] >> 16;
+@@ -888,7 +892,18 @@
+ 		/* IOSurface stays BGRA32; only the physical panel storage is BGR24. */
+ 		if (fPixelBytes == 3) {
+ 			uint8_t * dest = fBase + (size_t) y * fRowBytes;
+-			for (int32_t x = cx0; x < cx1; x++) {
++			int32_t x = cx0;
++			if (!fDiff) {
++				for (; cx1 - x >= 4; x += 4) {
++					uint32_t p[4];
++					for (unsigned i = 0; i < 4; i++) {
++						int32_t c = x + i;
++						p[i] = filter ? blend(from[fColumn[c]], from[fColumn[c] + (fColumnWeight[c] != 0)], fColumnWeight[c]) : from[fColumn[c]];
++					}
++					lithium_bgr24_store4(dest + (size_t)x * 3, p[0], p[1], p[2], p[3]);
++				}
++			}
++			for (; x < cx1; x++) {
+ 				uint32_t value = filter ? blend(from[fColumn[x]], from[fColumn[x] + (fColumnWeight[x] != 0)], fColumnWeight[x]) : from[fColumn[x]];
+ 				uint8_t * pixel = dest + (size_t) x * 3;
+ 				if (fDiff && (pixel[0] != (uint8_t) value || pixel[1] != (uint8_t) (value >> 8) || pixel[2] != (uint8_t) (value >> 16))) {
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -3393,8 +3393,9 @@
+ 		ba->commandLine[n++] = *rest;
+ 	}
+ 	if (*rest != 0) {
+-		print("WARNING: the kernel command line is TRUNCATED: %d characters of the payload's cmdline did not fit in the "
+-		    "%d the kernel has; the last argument is cut\n", (uint64_t)str_len(rest), (uint64_t)(BOOT_LINE_LENGTH - 1));
++		print("ERROR: kernel command line exceeds %d bytes; refusing partial arguments (%d bytes remain)\n",
++		    (uint64_t)(BOOT_LINE_LENGTH - 1), (uint64_t)str_len(rest));
++		return 0;
+ 	}
+ 	print("cmdline: %d of %d characters\n", (uint64_t)n, (uint64_t)(BOOT_LINE_LENGTH - 1));
+ 

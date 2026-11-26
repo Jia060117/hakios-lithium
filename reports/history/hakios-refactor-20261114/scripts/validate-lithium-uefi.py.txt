@@ -1,0 +1,274 @@
+"""Execute the QEMU-specific UEFI build and inspect guest RAM via QMP.
+
+Uses the same SEC, DXE, drivers, memory layout and Image shim as hardware.
+Only the virtual GIC addresses differ. This does not verify phone hardware.
+"""
+import argparse
+import hashlib
+import json
+from pathlib import Path
+import socket
+import struct
+import subprocess
+import tempfile
+import time
+import importlib.util
+
+ROOT=Path(__file__).resolve().parents[1]
+OUT=ROOT/'out/uefi/qemu'
+
+def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--strict-alignment',action='store_true',help='Enable original SCTLR.A to expose unaligned accesses after restoration')
+    parser.add_argument('--corrupt-payload',action='store_true',help='Flip one EFI file byte in the QEMU-only ramdisk copy and require rejection')
+    parser.add_argument('--linux-early',action='store_true',help='Execute the real stock Linux head through the pre-MMU checkpoint on virt')
+    parser.add_argument('--linux-early-trap',action='store_true',help='Inject one undefined Linux-head instruction and verify the fatal exception record/rendering')
+    parser.add_argument('--linux-post-mmu',action='store_true',help='Execute the stock MMU transition, verify the high-VA checkpoint and green marker, then stop before BSS clearing')
+    args=parser.parse_args()
+    original_sctlr=0x10c00802 if args.strict_alignment else 0x10c00800
+    assert sum((args.strict_alignment,args.corrupt_payload,args.linux_early,args.linux_early_trap,args.linux_post_mmu))<=1
+    early_mode=args.linux_early or args.linux_early_trap or args.linux_post_mmu
+    report_name='uefi-qemu-linux-post-mmu' if args.linux_post_mmu else 'uefi-qemu-linux-early-trap' if args.linux_early_trap else 'uefi-qemu-linux-early' if args.linux_early else 'uefi-qemu-payload-reject' if args.corrupt_payload else 'uefi-qemu-strict-align' if args.strict_alignment else 'uefi-qemu'
+    report_path=ROOT/f'reports/{report_name}.json'
+    package=json.loads((OUT/'package.json').read_text())
+    assert package['qemu_variant'] and not package['phone_boot_allowed']
+    assert package['return_method']=='restore-stock-observer'
+    fdt=OUT/'input.dtb'
+    # dtb-00 places the property on 4-byte but not 8-byte alignment after
+    # fdtput; dtb-03 provides the complementary alignment in the normal case.
+    dtb_index=0 if args.strict_alignment else 3
+    fdt.write_bytes((ROOT/f'out/journal-probe/dtb-{dtb_index:02d}.dtb').read_bytes())
+    for key,value in [('linux,initrd-start',0x42a00000),('linux,initrd-end',0x44e00000)]:
+        subprocess.run(['fdtput','-t','x',str(fdt),'/chosen',key,hex(value)[2:]],check=True)
+    source=OUT/'harness.S'
+    source.write_text('''
+.text
+.global _start
+_start:
+  msr daifset,#15
+  mov x0,#0x80000000
+  msr hcr_el2,x0
+  msr cptr_el2,xzr
+  mov x0,#3
+  msr cnthctl_el2,x0
+  msr cntvoff_el2,xzr
+  mov x0,#0x3c5
+  msr spsr_el2,x0
+  adr x0,el1
+  msr elr_el2,x0
+  eret
+el1:
+  ldr x17,=0x10c00800
+  msr sctlr_el1,x17
+  ldr x17,=0x80000500
+  msr tcr_el1,x17
+  ldr x17,=0xbbaaccffee440400
+  msr mair_el1,x17
+  ldr x17,=0x92bd3000
+  msr ttbr0_el1,x17
+  msr ttbr1_el1,xzr
+  ldr x17,=0x92a00000
+  msr vbar_el1,x17
+  ldr x17,=0xb1ff000
+  mov sp,x17
+  ldr x17,=0x300000
+  msr cpacr_el1,x17
+  mov x17,#0x1c0
+  msr daif,x17
+  isb
+  mov x0,#0x42800000
+  mov x1,xzr
+  mov x2,xzr
+  mov x3,xzr
+  mov x17,#0x40000000
+  add x17,x17,#0x80,lsl #12
+  br x17
+'''.replace('0x10c00800',hex(original_sctlr)))
+    subprocess.run(['clang','--target=aarch64-none-elf','-c',str(source),'-o',str(OUT/'harness.o')],check=True)
+    subprocess.run(['ld.lld','-Ttext=0x40000000','-o',str(OUT/'harness.elf'),str(OUT/'harness.o')],check=True)
+    with tempfile.TemporaryDirectory(prefix='lithium-qmp-') as tmp:
+        sock=Path(tmp)/'qmp.sock'
+        image=OUT/'Image'
+        assert hashlib.sha256(image.read_bytes()).hexdigest()==package['kernel_image_sha256']
+        if args.linux_post_mmu:
+            blob=bytearray(image.read_bytes())
+            gate_offset=int(package['qemu_mmu_gate_image_offset'],16)
+            assert struct.unpack_from('<I',blob,gate_offset)[0]==0
+            struct.pack_into('<I',blob,gate_offset,1)
+            image=Path(tmp)/'linux-post-mmu-Image'; image.write_bytes(blob)
+        ramdisk=OUT/'handoff-ramdisk.bin'
+        if early_mode:
+            ramdisk=OUT/'linux-early-ramdisk.bin'
+            assert hashlib.sha256(ramdisk.read_bytes()).hexdigest()==package['linux_early_ramdisk_sha256']
+        if args.linux_early_trap:
+            blob=bytearray(ramdisk.read_bytes())
+            struct.pack_into('<I',blob,0x1010,0xffffffff)
+            ramdisk=Path(tmp)/'linux-head-undefined-ramdisk.bin'; ramdisk.write_bytes(blob)
+        if args.corrupt_payload:
+            blob=bytearray(ramdisk.read_bytes())
+            # FAT12 first data cluster belongs to DARWIN14.EFI. Preserve the
+            # volume structures so this exercises the firmware content check.
+            offset=0x2300000+21*512
+            assert blob[offset:offset+2]==b'MZ'
+            blob[offset]^=1
+            ramdisk=Path(tmp)/'corrupt-payload-ramdisk.bin'; ramdisk.write_bytes(blob)
+        command=['qemu-system-aarch64','-machine','virt,virtualization=on,gic-version=3',
+            '-cpu','cortex-a57','-m','2G','-smp','1','-display','none','-serial','none','-nic','none','-no-reboot',
+            '-qmp',f'unix:{sock},server=on,wait=off','-S',
+            '-device',f'loader,file={image},addr=0x40080000,force-raw=on',
+            '-device',f'loader,file={ramdisk},addr=0x42a00000,force-raw=on',
+            '-device',f'loader,file={fdt},addr=0x42800000,force-raw=on',
+            '-kernel',str(OUT/'harness.elf'),
+            '-d','int,guest_errors,unimp','-D',str(OUT/'qemu-guest.log')]
+        with (OUT/'qemu-stderr.log').open('w') as err:
+            proc=subprocess.Popen(command,stderr=err)
+            try:
+                deadline=time.monotonic()+5
+                while not sock.exists() and time.monotonic()<deadline:
+                    if proc.poll() is not None: raise RuntimeError((OUT/'qemu-stderr.log').read_text())
+                    time.sleep(.05)
+                client=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM); client.connect(str(sock))
+                stream=client.makefile('rwb',buffering=0)
+                assert 'QMP' in json.loads(stream.readline())
+                def qmp(name,arguments=None):
+                    data={'execute':name}
+                    if arguments: data['arguments']=arguments
+                    stream.write(json.dumps(data).encode()+b'\n')
+                    while True:
+                        reply=json.loads(stream.readline())
+                        if 'error' in reply: raise RuntimeError(reply)
+                        if 'return' in reply: return reply['return']
+                def hmp(cmd): return qmp('human-monitor-command',{'command-line':cmd})
+                qmp('qmp_capabilities'); qmp('cont')
+                samples=[]
+                saved_entry=None
+                for delay in (3,5,5):
+                    time.sleep(delay)
+                    qmp('stop')
+                    path=OUT/f'info-{len(samples)}.bin'
+                    hmp(f'pmemsave 0x415ff000 4096 "{path}"')
+                    info=path.read_bytes(); fdt_address,=struct.unpack_from('<Q',info)
+                    if saved_entry is None:
+                        saved_entry=dict(zip(('sctlr_el1','tcr_el1','mair_el1','ttbr0_el1','ttbr1_el1',
+                            'vbar_el1','sp','daif','cpacr_el1'),struct.unpack_from('<9Q',info,128)))
+                        assert saved_entry['sctlr_el1']==original_sctlr and saved_entry['sp']==0xb1ff000
+                        assert saved_entry['daif']==0x1c0
+                    stage,=struct.unpack_from('<I',info,16); ticks,=struct.unpack_from('<Q',info,24)
+                    gop_check,=struct.unpack_from('<Q',info,40)
+                    samples.append(dict(stage=stage,ticks=ticks,fdt=hex(fdt_address),gop_selftest_passed=gop_check==1))
+                    (OUT/'registers.txt').write_text(hmp('info registers'))
+                    qmp('cont')
+                qmp('stop')
+                hmp(f'pmemsave 0x84000000 4096 "{OUT}/journal.bin"')
+                hmp(f'pmemsave 0x41300000 1048576 "{OUT}/full-log.bin"')
+                (OUT/'full-log.txt').write_bytes((OUT/'full-log.bin').read_bytes().rstrip(b'\0'))
+                journal=(OUT/'journal.bin').read_bytes()
+                length,=struct.unpack_from('<I',journal,64)
+                ring=journal[128:4096]
+                log=ring[:length] if length<=len(ring) else ring[length%len(ring):]+ring[:length%len(ring)]
+                (OUT/'journal.txt').write_bytes(log)
+                hmp(f'pmemsave 0x83401000 {3240*2040} "{OUT}/framebuffer.bgr"')
+                qmp('cont'); time.sleep(10); qmp('stop')
+                restored=Path(tmp)/'restored-kernel.bin'
+                hmp(f'pmemsave 0x40080000 {0x1ff9000} "{restored}"')
+                (OUT/'restored-kernel.bin').write_bytes(restored.read_bytes())
+                hmp(f'pmemsave 0x42800000 {fdt.stat().st_size} "{OUT}/handoff-fdt.bin"')
+                (OUT/'handoff-registers.txt').write_text(hmp('info registers'))
+                if args.linux_early_trap or args.linux_post_mmu:
+                    hmp(f'pmemsave 0x83401000 {3240*2040} "{OUT}/handoff-framebuffer.bgr"')
+                spec=importlib.util.spec_from_file_location('stock',ROOT/'scripts/extract-stock.py')
+                stock=importlib.util.module_from_spec(spec); spec.loader.exec_module(stock)
+                nodes,_=stock.parse_fdt((OUT/'handoff-fdt.bin').read_bytes())
+                record=nodes['/chosen']['mix1,uefi-journal-v1']
+                copied=(OUT/'restored-kernel.bin').read_bytes()==(OUT/'restored-kernel-expected.bin').read_bytes()
+                journal_stage,=struct.unpack_from('<I',record,512+24)
+                journal_ticks,=struct.unpack_from('<Q',record,512+32)
+                restore_checkpoint,=struct.unpack_from('<I',record,512+80)
+                services_off,=struct.unpack_from('<I',record,512+84)
+                timer_control,interrupt_group,distributor_control=struct.unpack_from('<QQQ',record,512+88)
+                shutdown_ok=services_off==1 and timer_control&1==0 and interrupt_group&1==0 and distributor_control&3==0
+                handoff_ok=struct.unpack_from('<I',record,24)[0]==1 and record[512:528]==b'MIX1UEFIJOURNAL!'
+                initrd_ok=int.from_bytes(nodes['/chosen']['linux,initrd-start'],'big')==0x44a00000
+                fields=json.loads((ROOT/'reports/journal-probe-build.json').read_text())['fields']
+                restored_entry=dict(zip(fields,struct.unpack_from('<'+'Q'*len(fields),record,64)))
+                assert record[4608:4624]==b'MIX1EL1ENTRYv001', 'Saved state missing; inspect out/uefi/qemu/handoff-registers.txt'
+                copied_entry=dict(zip(saved_entry,struct.unpack_from('<9Q',record,4624)))
+                assert copied_entry==saved_entry,'Same-boot saved state was not preserved'
+                payload_flags,payload_hash=struct.unpack_from('<QQ',record,4624+9*8)
+                copy_compare_ok=bool(payload_flags&8)
+                payload_ok=payload_flags&7==7 and payload_hash==int(package['ram_payload']['loader_fnv64'],16)
+                rejected=payload_flags&7==1 and payload_hash!=int(package['ram_payload']['loader_fnv64'],16)
+                payload_case_ok=rejected if args.corrupt_payload else payload_ok
+                early_checkpoint,early_vector=struct.unpack_from('<II',record,4712)
+                early_esr,early_elr,early_far=struct.unpack_from('<QQQ',record,4720)
+                exception_rendered=struct.unpack_from('<I',record,4744)[0]==1
+                post_sctlr,post_pc=struct.unpack_from('<QQ',record,4752)
+                post_ok=bool(post_sctlr&1) and post_pc==int(package['linux_post_mmu_hook_virtual_address'],16)
+                green_pixels_ok=None
+                if args.linux_post_mmu:
+                    pixels=(OUT/'handoff-framebuffer.bgr').read_bytes()
+                    def cell_is(index,color):
+                        x=60+index*110
+                        return all(pixels[(y*1080+x)*3:(y*1080+x+80)*3]==color*80 for y in range(1890,1920))
+                    green_pixels_ok=cell_is(8,b'\0\xff\0') and all(cell_is(i,b'\0\xff\xff') for i in range(8))
+                exception_pixels_ok=None
+                if args.linux_early_trap:
+                    pixels=(OUT/'handoff-framebuffer.bgr').read_bytes()
+                    at=lambda x,y:pixels[(y*1080+x)*3:(y*1080+x)*3+3]
+                    # The first digit is zero: its top row has two red middle
+                    # columns, black corners and a black spacing column.
+                    exception_pixels_ok=all(at(x,y)==color for x,y,color in (
+                        (60,1770,b'\0\0\0'),(64,1770,b'\0\0\xff'),
+                        (68,1770,b'\0\0\xff'),(72,1770,b'\0\0\0'),
+                        (76,1770,b'\0\0\0'),(60+8*110,1890,b'\0\0\xff')))
+                early_ok=(early_checkpoint==9 and early_vector==0 and post_ok and green_pixels_ok) if args.linux_post_mmu else (early_checkpoint==3 and early_vector==5 and early_esr>>26==0 and early_elr==0x40081010 and exception_rendered) if args.linux_early_trap else (early_checkpoint==8 and early_vector==0) if args.linux_early else (early_checkpoint==0 and early_vector==0)
+                if args.linux_early_trap: early_ok=early_ok and exception_pixels_ok
+                entry_state_ok=all(restored_entry[key]==value for key,value in saved_entry.items())
+                entry_state_ok=entry_state_ok and [restored_entry[f'x{i}'] for i in range(4)]==[0x42800000,0,0,0]
+                qmp('quit'); proc.wait(timeout=5)
+                record_offset=(OUT/'handoff-fdt.bin').read_bytes().index(b'MIX1JOURNALPROB1')
+                report=dict(schema=1,fd_sha256=package['fd_sha256'],strict_alignment=args.strict_alignment,
+                    intentionally_corrupted_payload=args.corrupt_payload,
+                    linux_early_head_executed=early_mode,injected_linux_undefined_instruction=args.linux_early_trap,
+                    linux_post_mmu_case=args.linux_post_mmu,
+                    loaded_kernel_image_sha256=hashlib.sha256(image.read_bytes()).hexdigest(),
+                    loaded_ramdisk_sha256=hashlib.sha256(ramdisk.read_bytes()).hexdigest(),
+                    dtb_index=dtb_index,record_alignment_mod8=record_offset%8,
+                    image_sha256=package['image_sha256'],samples=samples,
+                    bds_entered=any(s['stage']>=5 for s in samples),
+                    timer_events_incremented=all(s['stage']==6 for s in samples) and samples[-1]['ticks']>samples[0]['ticks']>0,
+                    limitation='Virtual GIC/timer and CPU; hardware watchdog write omitted in QEMU variant. Does not validate the phone display or GIC.',
+                    command=command)
+                report['gop_selftest_passed']=all(s['gop_selftest_passed'] for s in samples)
+                report.update(stock_kernel_restored_byte_for_byte=None if early_mode else copied,
+                    kernel_matches_input_at_observation=copied,
+                    linux_early_checkpoint=early_checkpoint,linux_early_vector_slot=early_vector,
+                    linux_early_esr=hex(early_esr),linux_early_elr=hex(early_elr),linux_early_far=hex(early_far),
+                    linux_exception_rendered=exception_rendered,linux_early_case_passed=early_ok,
+                    linux_exception_pixels_verified=exception_pixels_ok,
+                    linux_post_mmu_sctlr_el1=hex(post_sctlr),linux_post_mmu_pc=hex(post_pc),
+                    linux_post_mmu_execution_verified=bool(args.linux_post_mmu and early_checkpoint==9 and post_ok),
+                    linux_post_mmu_green_pixels_verified=green_pixels_ok,
+                    copy_comparison_scope='Executing CPU compares all words before Linux mutates boot globals; post-execution image equality checked only in non-Linux cases',
+                    handoff_collector_passed=handoff_ok,
+                    handoff_journal_stage=journal_stage,handoff_journal_ticks=journal_ticks,stock_initrd_relocated=initrd_ok,
+                    restore_checkpoint=restore_checkpoint,exit_boot_services_verified=services_off==1,
+                    timer_control_after_exit=hex(timer_control),interrupt_group_after_exit=hex(interrupt_group),
+                    distributor_control_after_exit=hex(distributor_control),timer_and_gic_shutdown_verified=shutdown_ok,
+                    original_el1_state_restored=entry_state_ok,
+                    ram_payload_flags=payload_flags&7,ram_payload_read_hash=hex(payload_hash),
+                    executing_cpu_stock_copy_comparison_passed=copy_compare_ok,
+                    fat_file_read_and_darwinboot_started=payload_ok,
+                    invalid_payload_rejected=rejected if args.corrupt_payload else None,
+                    same_boot_entry_state_record_verified=copied_entry==saved_entry,
+                    saved_el1_entry={key:hex(value) for key,value in saved_entry.items()})
+                report['all_passed']=all((report['bds_entered'],report['timer_events_incremented'],report['gop_selftest_passed'],
+                    copied or early_mode,handoff_ok,initrd_ok,journal_stage==7,journal_ticks==20,restore_checkpoint==10,shutdown_ok,entry_state_ok,payload_case_ok,copy_compare_ok,early_ok))
+                report_path.write_text(json.dumps(report,indent=2)+'\n')
+                print(json.dumps(report,indent=2))
+                if not report['all_passed']: print(log.decode(errors='replace')[-6000:])
+                if not report['all_passed']: raise SystemExit(1)
+            finally:
+                if proc.poll() is None: proc.kill(); proc.wait(timeout=5)
+
+if __name__=='__main__': main()

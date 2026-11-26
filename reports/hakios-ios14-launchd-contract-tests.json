@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "source_sha256": "b3bc18b9397ca2ec906c933ce70f3cb1dc9c4e7cbbc8b5571c007496d799e596",
+  "test_source_sha256": "85dc9ed0fdf0873e156fed517ff6f3945e903bd3b1ff7b74adcad9b8b5221c56",
+  "actual_snapshot_parser_exercised": true,
+  "checks": [
+    "PASS PID1 requires its own complete row, not another launchd process",
+    "PASS original service names require complete basenames, not suffixes or arguments",
+    "PASS headers, malformed PIDs and diagnostic markers cannot fabricate process presence",
+    "PASS snapshot parser respects tabs, CRLF and final nonterminated row"
+  ],
+  "cases": 13,
+  "sanitizer": "address,undefined",
+  "hardware_verified": false,
+  "service_api_verified": false
+}

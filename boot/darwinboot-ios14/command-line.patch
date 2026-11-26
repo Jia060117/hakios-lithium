@@ -1,0 +1,12 @@
+diff --git a/DarwinBootPkg/Driver/DarwinBoot.c b/DarwinBootPkg/Driver/DarwinBoot.c
+--- a/DarwinBootPkg/Driver/DarwinBoot.c
++++ b/DarwinBootPkg/Driver/DarwinBoot.c
+@@ -810,7 +810,7 @@
+   UINTN                           Stride;
+   UINT32                          Version;
+   UINTN                           Attempt;
+-  CHAR8                           CommandLine[1024];
++  CHAR8                           CommandLine[sizeof (((DARWIN_BOOT_ARGS *)0)->CommandLine)];
+   UINT64                          Video[6];
+   LAYOUT                          Layout;
+   UINTN                           ExcludedOffset;

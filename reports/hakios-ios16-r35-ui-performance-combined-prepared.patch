@@ -1,0 +1,365 @@
+diff --git a/AGENTS.md b/AGENTS.md
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -1,3 +1,5 @@
++2026-11-20 R35三项合并包已准备、预检等待：用户反馈lite仍点不动并要求前述选项一起试；已说明lite原含applog_ui_quiet1/ui_lite1，本包仅新增cpus3，bootcpu1不变。同冻结内核/根APFS、无重编译，实际整包读回通过；镜像bfc3a041b7d81f33582dae04ba9894c53b3b44f16e1b5f70ba10b1672500370d。唯一一次只读fastboot devices返回0但枚举空，未到身份/电量、无新USB/boot/复位/分区/ADB/QEMU/重试；61/30不变，启动未消费。保留旧lite与空枚举记录；用户手动返回Fastboot确认后，复用冻结包建立新独立预检尝试，不自动查询。三核/流畅度未验证，未启用8996未适配调频，UFS自动返回仍关。见reports/hakios-ios16-r35-ui-performance-combined-prepared.md/json及reports/local/20261120-r35-ui-perf-combined-approved/。
++
+ 2026-11-20 R35 lite单次上机运行中：用户要求“试试看？”后，18:07:16.936822+08:00 Fastboot接受冻结lite镜像fda8fd7a18b8f0468c7be483e3080a30a2b9aee97d862fefc077f4c99eced9d3一次，五项只读预检通过；正常Data及辅助功能偏好写入已说明。actualaffinity1/bootcpu1/cpus1，MIDR512f2011/SCTLR34d4593d/I-C-M均1，整数2472us/memcpy3485MBps；非慢核或实时MHz结论。ui_lite1执行日志已见，SB main_queue_enter相对constructor71445ms，触摸IDe7/至少4200报告无read/report错误。18:09:28快照1932帧/446148字节连续前缀独立重放一致、gap/dup/残帧/lost0，USB仍采集，无最终timer/drain或用户流畅度反馈。quiet+lite同时启用，不做单变量归因；三核未启动，未改频率/电压/缓存策略。无刷分区/ADB/Android/Recovery/QEMU/启动后设备查询或重试，计数61/30。保持同次运行和USB，等待桌面/后台卡片/返回桌面对比；不自动新启动。R20/R32/R33/R34/R35冻结与原索引保留。见reports/hakios-ios16-device-r35-ui-perf-lite.md/json。
+ 
+ 2026-11-20 R35两路主机修订完成：用户已确认R34应用内可用、触摸位置/滑动/长按正常，桌面/后台卡片严重卡。Huygens完成默认关闭applog_ui_quiet，精确抑制两UI进程额外DT_MODE回显；Einstein补逐核MIDR/SCTLR I/C/M及affinity/logical_match，不写缓存/PLL/电压且不宣称调频修好；Poincare完成同内核quiet/lite/cpu3打包。实际HakiOS增量编译链接、540个新增逻辑检查及3实际整包逐层读回通过，未重复历史总回归/未重建未改固件用户态。内核86f36fdf4e047e0f2da18138a39629e584975e4c6689036946ae71195bd924aa；quiet镜像bb8eae118bde5e877510b6ea17ba96e866378eb1e42d29a7320ff67059718511，lite fda8fd7a18b8f0468c7be483e3080a30a2b9aee97d862fefc077f4c99eced9d3，cpu3 74db47b0879e3148f0d3a438dd22cc197f62d96d89d8ae12cf280810c9761475。lite复用ui_lite1、会持久化减少透明/动态偏好，省略不恢复，ui_lite0可关闭；cpu3仅诊断、慢核收益未验证，四核仍受residentUFS限制。无新手机/USB/分区/boot/ADB/QEMU操作，60/29不变；R20/R32/R33/R34冻结和原索引保持。旧USB接收PID23680已不在，原capturing状态保留；18826帧/4120429字节独立重放一致无传输缺口，未获timer/drain，手机终态未查询，不宣称仍实时采集。候选效果未上机；保持当前R34，待用户选择切Fastboot测试一个配置。见reports/hakios-ios16-r35-ui-performance-prepared.md/json。
+diff --git a/project.json b/project.json
+--- a/project.json
++++ b/project.json
+@@ -67,7 +67,7 @@
+   "active_workspace": "/home/jia/ios-mix1-build/hakios-lithium-ios16",
+   "source_lock_path": "upstreams.lock.json",
+   "source_audit_report": "reports/hakios-p0-audit.md",
+-  "current_device_status": "R35lite SB mainqueue in saved USB; visible screen/response not yet user-confirmed",
++  "current_device_status": "Combined preflight returned emptyFastboot; no boot issued; prior R35lite user reports startup unresponsive",
+   "device_state": {
+     "last_observation_baseline": "ios16_r20_display_hakios",
+     "live_state_requeried": true,
+@@ -172,19 +172,19 @@
+     "large_tasks_sequential": true
+   },
+   "work_status": {
+-    "status": "ios16_r35_lite_main_loop_visual_comparison_pending",
++    "status": "ios16_r35_combined_ready_waiting_fastboot",
+     "phase2_approved": true,
+     "device_operations_performed": true,
+     "device_boots_performed": true,
+     "partition_writes_performed": true,
+     "hakios_temporary_boot_count": 61,
+     "backup_branch": "archive/ios14-r31-20261116",
+-    "next_step": "Keep same run/USB; user compares home/app-switcher and return-to-home response, no new boot",
++    "next_step": "User manually returns Fastboot; reuse frozencombined image in a new independent preflight attempt, no rebuild/retry until user confirms",
+     "phase3_approved": true,
+     "auxiliary_stock_reader_boots_accepted": 4,
+     "ios16_boots_performed": 30,
+     "auxiliary_stock_reader_adb_runtime_observations": 3,
+-    "latest_evidence_recorded_at": "2026-11-20T18:09:28.280892+08:00",
++    "latest_evidence_recorded_at": "2026-11-20T18:13:45.505848+08:00",
+     "latest_host_report": "reports/hakios-ios16-r35-ui-performance-prepared.md",
+     "r5_backup_branch": "archive/ios16-r5-20261117",
+     "r6_backup_branch": "archive/ios16-r6-20261117",
+@@ -198,7 +198,7 @@
+     "latest_device_report": "reports/hakios-ios16-device-r35-ui-perf-lite.md",
+     "current_turn_new_kernel_builds": false,
+     "current_turn_device_queries": true,
+-    "current_turn_device_boots": true,
++    "current_turn_device_boots": false,
+     "current_turn_partition_writes": false
+   },
+   "active_workspace_report": "reports/hakios-workspace.json",
+@@ -206,7 +206,7 @@
+   "refactor_report": "reports/hakios-project-refactor.md",
+   "test_package_report": "reports/hakios-test-package.json",
+   "p0_closure_report": "reports/hakios-p0-closure.json",
+-  "current_report": "reports/hakios-ios16-device-r35-ui-perf-lite.json",
++  "current_report": "reports/hakios-ios16-r35-ui-performance-combined-prepared.json",
+   "latest_diagnosis_report": "reports/hakios-ios16-r34-input-performance.md",
+   "repeat_ready_report": null,
+   "platform_observation_workflow": {
+@@ -1811,5 +1811,44 @@
+       "visible_ui_response_user_confirmed": false,
+       "performance_improvement_verified": false
+     }
++  },
++  "r35_combined": {
++    "schema": 1,
++    "recorded_at": "2026-11-20T18:12:46.799310+08:00",
++    "revision": "R35-ui-perf-combined",
++    "image_path": "artifacts/hakios/lithium-ios16/phase4-r35-ui-perf-combined/lithium-hakios-ios16-r35-ui-perf-combined.img",
++    "image_sha256": "bfc3a041b7d81f33582dae04ba9894c53b3b44f16e1b5f70ba10b1672500370d",
++    "kernel_sha256": "86f36fdf4e047e0f2da18138a39629e584975e4c6689036946ae71195bd924aa",
++    "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1",
++    "source_sha256": {
++      "ports/hakios-lithium/patches/0025-lithium-ui-performance.patch": "ce830f467bf797de9b8a8ac1a6bbc3b8a703e67bf1dea029ca8b7b1f91b423bc",
++      "ports/hakios-lithium/diagnostics/cpu-sanity.inc": "55ae44db12b14b4b3a8b9c4e4592f2c4d97be2e640ae509ea5d82020628005a9",
++      "scripts/build-hakios-ui-perf-r35.py": "fddec49243316b73388f37f026fd1e783e7cbb68469854485ca2ba9658ba0f0a",
++      "scripts/package-hakios-ui-perf-r35.py": "ed3a3054fcf4d6f70b6a17feef31454d694e7a9450c689d6f4ff4d808148352f",
++      "reports/local/run-ui-perf-r35-build.ps1": "d5fe2ba0a739b452fe3da91701b9610526e07dd0371f48dcab3ea49a4a0c70d7",
++      "scripts/package-hakios-ui-perf-combined.py": "998e1d89f47155677b03c0e43511d303c88dc8f6b1cd736f2973923b80dab575"
++    },
++    "host_package_ready": true,
++    "hardware_verified": false,
++    "normal_Data_writes": true,
++    "ui_lite_preferences_may_persist": true,
++    "cpus": 3,
++    "bootcpu": 1,
++    "frequency_or_voltage_writes": false,
++    "no_new_kernel_build": true,
++    "requested_interpretation": "Combine the three previously listed profiles: UIquiet and UIlite already enabled in last run; cpus3 is the new variable.",
++    "existing_same_kernel_three_core_speed_unverified": true,
++    "preflight": {
++      "outcome": "devices_empty_stop_no_boot",
++      "commands": 1,
++      "boot_issued": false,
++      "attempt_consumed": false,
++      "evidence": "reports/local/20261120-r35-ui-perf-combined-approved"
++    },
++    "report": "reports/hakios-ios16-r35-ui-performance-combined-prepared.md",
++    "boot_totals": {
++      "hakios": 61,
++      "ios16": 30
++    }
+   }
+ }
+diff --git a/scripts/package-hakios-ui-perf-combined.py b/scripts/package-hakios-ui-perf-combined.py
+--- /dev/null
++++ b/scripts/package-hakios-ui-perf-combined.py
+@@ -0,0 +1,47 @@
++#!/usr/bin/env python3
++"""Combine the three existing R35 UI/CPU options, without rebuilding the kernel."""
++import importlib.util
++import json
++from pathlib import Path
++import sys
++
++sys.dont_write_bytecode = True
++ROOT = Path(__file__).resolve().parents[1]
++
++
++def main():
++    spec = importlib.util.spec_from_file_location(
++        'r35_ui_profiles', ROOT/'scripts/package-hakios-ui-perf-r35.py')
++    profiles = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(profiles)
++    live = profiles.load_live()
++    frozen, version = profiles.frozen_contract(live)
++    base = ROOT/'artifacts/hakios/lithium-ios16/phase4-r35-ui-perf/quiet'
++    kernel, root = base/'hakios-kernel', base/'root.apfs'
++    output = ROOT/'artifacts/hakios/lithium-ios16/phase4-r35-ui-perf-combined'
++    live.require(not output.exists(), 'Combined output exists; retain it and stop')
++    kernel_sha = '86f36fdf4e047e0f2da18138a39629e584975e4c6689036946ae71195bd924aa'
++    live.require(live.digest(kernel.read_bytes()) == kernel_sha, 'Frozen R35 kernel differs')
++    live.require(live.digest(root.read_bytes()) == profiles.ROOT_SHA, 'Frozen R35 root differs')
++    plan = profiles.profile_plan(live, frozen, version, 'lite')
++    words = plan['boot_args'].split()
++    live.require(words.count('cpus=1') == 1, 'Unexpected existing CPU arguments')
++    words[words.index('cpus=1')] = 'cpus=3'
++    plan.update(profile='combined', boot_args=' '.join(words), cpus=3,
++                cpu3_diagnostic_only=True,
++                combined_options=['applog_ui_quiet=1', 'ui_lite=1', 'cpus=3'])
++    plan['command_budget'] = live.command_budget(plan['boot_args'], version, 'ufs')
++    contract = profiles.package_one(live, frozen, plan, kernel, root, output, kernel_sha)
++    live.require(contract['boot_topology']['cpus'] == 3 and
++                 all(word in contract['cmdline'].split() for word in plan['combined_options']),
++                 'Combined package arguments differ')
++    print(json.dumps(dict(image=str(output/contract['image']['path']),
++                          image_sha256=contract['image']['sha256'],
++                          kernel_sha256=kernel_sha,
++                          cmdline=contract['cmdline'],
++                          budget=plan['command_budget'],
++                          hardware_verified=False, device_operations=0), indent=2))
++
++
++if __name__ == '__main__':
++    main()
+diff --git a/reports/local/run-ios16-r35-ui-perf-combined.py b/reports/local/run-ios16-r35-ui-perf-combined.py
+--- /dev/null
++++ b/reports/local/run-ios16-r35-ui-perf-combined.py
+@@ -0,0 +1,137 @@
++"""One authorized R35 combined desktop boot; retain USB logs without device polling."""
++from datetime import datetime
++import hashlib
++import json
++from pathlib import Path
++import re
++import shutil
++import subprocess
++import time
++
++ROOT = Path('F:/IOS-MIX1')
++LOCAL = ROOT/'reports/local/20261120-r35-ui-perf-combined-approved'
++PACKAGE = ROOT/'artifacts/hakios/lithium-ios16/phase4-r35-ui-perf-combined'
++GUARD = ROOT/'reports/local/ios16-r35-ui-perf-combined-boot-intent.json'
++FASTBOOT = Path('C:/platform-tools/fastboot.exe')
++USB_PYTHON = Path('E:/IOS-MIX1-artifacts/host-usb-venv/Scripts/python.exe')
++IMAGE_SHA = 'bfc3a041b7d81f33582dae04ba9894c53b3b44f16e1b5f70ba10b1672500370d'
++CAPTURE_SHA = 'd5a9aecdd3c5ac728b233628d9ae810a598a35ba05d9068d0db3ed70fde3791c'
++now = lambda: datetime.now().astimezone().isoformat()
++sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
++read = lambda p: json.loads(p.read_text(encoding='utf-8'))
++
++
++def save(path, data):
++    path.write_text(json.dumps(data, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
++
++
++def require(ok, message):
++    if not ok:
++        raise RuntimeError(message)
++
++
++def command(argv, timeout=20):
++    path = LOCAL/'commands.json'
++    rows = read(path) if path.exists() else []
++    row = dict(started_at=now(), argv=list(map(str, argv)))
++    rows.append(row)
++    save(path, rows)
++    try:
++        proc = subprocess.run(row['argv'], capture_output=True, text=True,
++            encoding='utf-8', errors='replace', timeout=timeout)
++        row.update(finished_at=now(), returncode=proc.returncode,
++                   stdout=proc.stdout, stderr=proc.stderr)
++    except Exception as exc:
++        row.update(finished_at=now(), exception=str(exc))
++        save(path, rows)
++        raise
++    save(path, rows)
++    require(proc.returncode == 0, 'Device command failed; no retry')
++    return proc.stdout+proc.stderr
++
++
++def boot():
++    require(not GUARD.exists() and not LOCAL.exists(), 'R35 combined attempt already exists; stop')
++    c = read(PACKAGE/'contract.json')
++    prepared = read(ROOT/'reports/hakios-ios16-r35-ui-performance-combined-prepared.json')
++    require(c['passed'] and c['profile'] == 'combined' and
++        c['image']['sha256'] == IMAGE_SHA and c['normal_boot_may_write_userdata'] and
++        not c['return_fastboot'], 'Wrong R35 combined profile')
++    image = PACKAGE/c['image']['path']
++    require(sha(image) == IMAGE_SHA and image.stat().st_size == c['image']['bytes'], 'Image differs')
++    for name, item in c['components'].items():
++        require(sha(PACKAGE/name) == item['sha256'], 'Frozen component differs: '+name)
++    for name, digest in prepared['source_sha256'].items():
++        require(sha(ROOT/name) == digest, 'Prepared source differs: '+name)
++    require(c['cmdline'] == prepared['boot_args'], 'Boot arguments differ')
++    require(sha(ROOT/'scripts/capture-hakios-usb.py') == CAPTURE_SHA, 'Receiver differs')
++    require(FASTBOOT.is_file() and USB_PYTHON.is_file(), 'Host tools missing')
++    LOCAL.mkdir()
++    state = dict(schema=1, revision='R35-ui-perf-combined',
++        authorization='User: 下一步把另外两个参数也加上试试; interpreted as combining previously listed quiet/lite/cpu3 and explained before this attempt',
++        scope='One temporary R35 combined (cpus3+UIquiet+UIlite) UFS desktop boot, existing R20 root/Data/display and R34 touch, '
++              'UI quiet and ui_lite1 (persistent accessibility preferences), GPIO89/QUP6 reports, USB capture; normal Data writes allowed',
++        image_sha256=IMAGE_SHA, payload_boot_args=c['cmdline'],
++        temporary_boot_issued=False, partition_commands=0, firmware_downloads=0,
++        adb_commands=0, qemu=False, automatic_retry=False,
++        normal_boot_may_write_userdata=True, automatic_fastboot_enabled=False,
++        kernel_timer_seconds=10800, usb_wait_seconds=180, usb_capture_seconds=12600,
++        started_at=now())
++    save(LOCAL/'authorization.json', state)
++    save(LOCAL/'result.json', state)
++    target = read(ROOT/'reports/local/hakios-device-target.json')
++    try:
++        lines = command([FASTBOOT, 'devices']).strip().splitlines()
++        require([s.split() for s in lines] == [[target['serial'], 'fastboot']], 'Target absent/mismatched; stop')
++
++        def query(key):
++            text = command([FASTBOOT, '-s', target['serial'], 'getvar', key])
++            match = re.search(re.escape(key)+r':\s*([^\r\n]+)', text)
++            require(match is not None, 'Missing field '+key)
++            return match[1].strip()
++
++        require(query('product') == target['product'], 'Product mismatch')
++        text = command([FASTBOOT, '-s', target['serial'], 'oem', 'device-info'])
++        require(re.search(r'Device unlocked:\s*true', text, re.I), 'Locked bootloader')
++        require(query('battery-soc-ok').lower() == 'yes', 'Battery not ready')
++        require(int(query('max-download-size'), 16) >= image.stat().st_size, 'Download window too small')
++        state.update(preflight_passed=True, preflight_finished_at=now())
++        private = LOCAL/image.name
++        shutil.copyfile(image, private)
++        require(sha(private) == IMAGE_SHA, 'Private image differs')
++        capture = LOCAL/'capture-host.py'
++        shutil.copyfile(ROOT/'scripts/capture-hakios-usb.py', capture)
++        intent = dict(started_at=now(), image_sha256=IMAGE_SHA, accepted=False, no_retry=True)
++        with GUARD.open('x', encoding='utf-8') as stream:
++            json.dump(intent, stream, indent=2)
++        with (LOCAL/'usb-host.txt').open('x', encoding='utf-8') as log:
++            receiver = subprocess.Popen([str(USB_PYTHON), '-B', '-u', str(capture),
++                '--output', str(LOCAL/'console.log'), '--status', str(LOCAL/'usb-status.json'),
++                '--wait', '180', '--duration', '12600', '--stop-file', str(LOCAL/'stop-usb')],
++                stdout=log, stderr=subprocess.STDOUT, creationflags=subprocess.CREATE_NO_WINDOW)
++        save(LOCAL/'usb-process.json', dict(pid=receiver.pid, started_at=now(), capture_sha256=sha(capture)))
++        for _ in range(30):
++            if (LOCAL/'usb-status.json').exists() or receiver.poll() is not None:
++                break
++            time.sleep(.1)
++        require(receiver.poll() is None and (LOCAL/'usb-status.json').exists(), 'Receiver failed; no boot')
++        state.update(temporary_boot_issued=True, outcome='boot_command_starting')
++        save(LOCAL/'result.json', state)
++        text = command([FASTBOOT, '-s', target['serial'], 'boot', private], timeout=90)
++        require(re.search(r'Booting\s+OKAY', text), 'Boot outcome uncertain; no retry')
++        state.update(command_accepted=True, accepted_at=now(), outcome='boot_accepted_observation_pending',
++                     boot_totals=dict(hakios=62, ios16=31))
++        intent.update(accepted=True, accepted_at=state['accepted_at'])
++        save(GUARD, intent)
++        save(LOCAL/'result.json', state)
++        print('R35 combined desktop image accepted ONCE; USB capture running.')
++    except Exception as exc:
++        state.update(outcome='stopped_no_retry', failure=str(exc), stopped_at=now())
++        save(LOCAL/'result.json', state)
++        if GUARD.exists():
++            (LOCAL/'stop-usb').touch()
++        raise
++
++
++if __name__ == '__main__':
++    boot()
+diff --git a/reports/hakios-ios16-r35-ui-performance-combined-prepared.md b/reports/hakios-ios16-r35-ui-performance-combined-prepared.md
+--- /dev/null
++++ b/reports/hakios-ios16-r35-ui-performance-combined-prepared.md
+@@ -0,0 +1,19 @@
++# R35 三项合并配置：已打包，等待Fastboot
++
++2026-11-20，Asia/Shanghai。用户反馈R35 lite开机仍点不动，要求把前述另外两项也加上试。已说明：本轮lite本来就同时含 `applog_ui_quiet=1 ui_lite=1`；按之前quiet/lite/cpu3三项合并解释，新增变量实际为 `cpus=1 → cpus=3`。
++
++合并镜像已用同一个冻结R35内核和R34 APFS重新打包，完成既有打包器的实际逐层读回；没有重新编译内核、重建用户态或重复历史测试。
++
++- 镜像：`artifacts/hakios/lithium-ios16/phase4-r35-ui-perf-combined/lithium-hakios-ios16-r35-ui-perf-combined.img`
++- SHA-256：`bfc3a041b7d81f33582dae04ba9894c53b3b44f16e1b5f70ba10b1672500370d`
++- 内核SHA-256：`86f36fdf4e047e0f2da18138a39629e584975e4c6689036946ae71195bd924aa`
++- 完整参数及来源：同目录contract.json。本包为 `bootcpu=1 cpus=3`，含 `applog_ui_quiet=1 ui_lite=1`；其余沿用已启动lite包。
++- 维持原UFS/Data写入、R20显示和真实触摸；未启用UFS自动Fastboot，未写PLL、电压或缓存策略。两个历史慢核是否改善仍未验证。
++
++## 本次预检结果
++
++`reports/local/20261120-r35-ui-perf-combined-approved/commands.json` 保存唯一一次只读 `fastboot devices`。返回码0，但枚举列表为空；未进入product/解锁/电量等后续核验，未启动USB新接收器，**没有发boot或消耗新的临时启动次数**。
++
++计数保持HakiOS61/iOS16为30。没有ADB、刷写、分区、复位或自动重试。保留当前lite运行及其原记录，不从空枚举推断线材、电量、手机故障或开关因果。
++
++用户已被提示手动返回Fastboot。下次用户确认进入后，复用此冻结包，在新独立预检记录下完成对应单次尝试；不覆盖当前空枚举证据、不复用已消费的lite启动意图。
+diff --git a/reports/hakios-ios16-r35-ui-performance-combined-prepared.json b/reports/hakios-ios16-r35-ui-performance-combined-prepared.json
+--- /dev/null
++++ b/reports/hakios-ios16-r35-ui-performance-combined-prepared.json
+@@ -0,0 +1,39 @@
++{
++  "schema": 1,
++  "recorded_at": "2026-11-20T18:12:46.799310+08:00",
++  "revision": "R35-ui-perf-combined",
++  "image_path": "artifacts/hakios/lithium-ios16/phase4-r35-ui-perf-combined/lithium-hakios-ios16-r35-ui-perf-combined.img",
++  "image_sha256": "bfc3a041b7d81f33582dae04ba9894c53b3b44f16e1b5f70ba10b1672500370d",
++  "kernel_sha256": "86f36fdf4e047e0f2da18138a39629e584975e4c6689036946ae71195bd924aa",
++  "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1",
++  "source_sha256": {
++    "ports/hakios-lithium/patches/0025-lithium-ui-performance.patch": "ce830f467bf797de9b8a8ac1a6bbc3b8a703e67bf1dea029ca8b7b1f91b423bc",
++    "ports/hakios-lithium/diagnostics/cpu-sanity.inc": "55ae44db12b14b4b3a8b9c4e4592f2c4d97be2e640ae509ea5d82020628005a9",
++    "scripts/build-hakios-ui-perf-r35.py": "fddec49243316b73388f37f026fd1e783e7cbb68469854485ca2ba9658ba0f0a",
++    "scripts/package-hakios-ui-perf-r35.py": "ed3a3054fcf4d6f70b6a17feef31454d694e7a9450c689d6f4ff4d808148352f",
++    "reports/local/run-ui-perf-r35-build.ps1": "d5fe2ba0a739b452fe3da91701b9610526e07dd0371f48dcab3ea49a4a0c70d7",
++    "scripts/package-hakios-ui-perf-combined.py": "998e1d89f47155677b03c0e43511d303c88dc8f6b1cd736f2973923b80dab575"
++  },
++  "host_package_ready": true,
++  "hardware_verified": false,
++  "normal_Data_writes": true,
++  "ui_lite_preferences_may_persist": true,
++  "cpus": 3,
++  "bootcpu": 1,
++  "frequency_or_voltage_writes": false,
++  "no_new_kernel_build": true,
++  "requested_interpretation": "Combine the three previously listed profiles: UIquiet and UIlite already enabled in last run; cpus3 is the new variable.",
++  "existing_same_kernel_three_core_speed_unverified": true,
++  "preflight": {
++    "outcome": "devices_empty_stop_no_boot",
++    "commands": 1,
++    "boot_issued": false,
++    "attempt_consumed": false,
++    "evidence": "reports/local/20261120-r35-ui-perf-combined-approved"
++  },
++  "report": "reports/hakios-ios16-r35-ui-performance-combined-prepared.md",
++  "boot_totals": {
++    "hakios": 61,
++    "ios16": 30
++  }
++}

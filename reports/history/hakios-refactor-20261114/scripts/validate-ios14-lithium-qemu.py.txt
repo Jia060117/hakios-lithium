@@ -1,0 +1,336 @@
+#!/usr/bin/env python3
+"""Track the actual linked lithium XNU through QEMU hardware breakpoints.
+
+Reuses the pinned sailfish ADT, payload and physical-image builders. QEMU
+models the reference's Cortex-A76 with 16K translation, not Qualcomm or a
+working iOS userspace. Each
+checkpoint requires a matching program counter; timeouts are recorded.
+"""
+import argparse
+import hashlib
+import hmac
+import importlib.util
+import json
+from pathlib import Path
+import socket
+import struct
+import subprocess
+import sys
+import time
+import xml.etree.ElementTree as ET
+
+ROOT = Path(__file__).resolve().parents[1]
+REF = ROOT / "upstream/research/ios-sailfish"
+
+
+def module(name, path):
+    spec = importlib.util.spec_from_file_location(name, path)
+    value = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(value)
+    return value
+
+
+class Remote:
+    def __init__(self, sock):
+        self.sock = sock
+
+    def receive(self):
+        while True:
+            char = self.sock.recv(1)
+            if not char:
+                raise ConnectionError("QEMU GDB connection closed")
+            if char == b"$":
+                break
+        data = bytearray()
+        while True:
+            char = self.sock.recv(1)
+            if not char:
+                raise ConnectionError("QEMU GDB connection closed")
+            if char == b"#":
+                break
+            data += char
+        checksum = self.sock.recv(2)
+        if len(checksum) != 2 or int(checksum, 16) != sum(data) & 255:
+            raise ValueError("GDB packet checksum mismatch")
+        self.sock.sendall(b"+")
+        return data.decode()
+
+    def command(self, text):
+        self.send(text)
+        return self.receive()
+
+    def send(self, text):
+        data = text.encode()
+        self.sock.sendall(b"$" + data + b"#" + f"{sum(data) & 255:02x}".encode())
+
+    def resume(self, seconds, diagnostic_log):
+        self.sock.settimeout(0.25)
+        self.send("c")
+        deadline = time.monotonic() + seconds
+        while time.monotonic() < deadline:
+            try:
+                return self.receive(), False
+            except socket.timeout:
+                # Exception loops otherwise produce hundreds of MiB per run.
+                if diagnostic_log.exists() and diagnostic_log.stat().st_size >= 16 * 1024 * 1024:
+                    break
+        self.sock.sendall(b"\x03")
+        self.sock.settimeout(5)
+        return self.receive(), True
+
+    def register(self, number):
+        reply = self.command(f"p{number:x}")
+        if not reply or reply.startswith("E"):
+            raise ValueError(f"cannot read GDB register {number}: {reply}")
+        return int.from_bytes(bytes.fromhex(reply), "little")
+
+    def breakpoint(self, address, add=True):
+        reply = self.command(f"{'Z' if add else 'z'}1,{address:x},4")
+        if reply != "OK":
+            raise ValueError(f"QEMU rejected hardware breakpoint: {reply}")
+
+    def system_registers(self):
+        wanted = {"TCR_EL1", "TTBR0_EL1", "TTBR1_EL1", "SCTLR_EL1", "SCTLR", "MAIR_EL1", "ESR_EL1", "FAR_EL1", "ELR_EL1", "ID_AA64MMFR0_EL1"}
+        registers, next_number = {}, 0
+
+        def feature(name):
+            nonlocal next_number
+            offset, xml = 0, ""
+            while True:
+                reply = self.command(f"qXfer:features:read:{name}:{offset:x},800")
+                if not reply or reply[0] not in "ml":
+                    raise ValueError(f"cannot read GDB feature {name}: {reply[:80]}")
+                xml += reply[1:]
+                if reply[0] == "l":
+                    break
+                offset += len(reply) - 1
+            for entry in ET.fromstring(xml.replace("xi:include", "include")).iter():
+                tag = entry.tag.split("}")[-1]
+                if tag == "include":
+                    feature(entry.attrib["href"])
+                elif tag == "reg":
+                    next_number = int(entry.attrib.get("regnum", next_number))
+                    if entry.attrib["name"].upper() in wanted:
+                        registers[entry.attrib["name"].upper()] = hex(self.register(next_number))
+                    next_number += 1
+        feature("target.xml")
+        return registers
+
+
+def hmac_drbg_first(seed, nonce, count):
+    """Independent NIST HMAC-SHA256 first generation for captured test inputs."""
+    key, value = bytes(32), bytes([1]) * 32
+    material = seed + nonce + b"xnu lithium kernel random"
+    for separator in (b"\0", b"\1"):
+        key = hmac.digest(key, value + separator + material, "sha256")
+        value = hmac.digest(key, value, "sha256")
+    output = b""
+    while len(output) < count:
+        value = hmac.digest(key, value, "sha256")
+        output += value
+    return output[:count]
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--workspace", type=Path, default=Path.home() / "ios-mix1-build/xnu7195-lithium")
+    parser.add_argument("--seconds", type=float, default=12)
+    parser.add_argument("--through-bsd", action="store_true")
+    parser.add_argument("--through-root", action="store_true", help="continue BSD initialization to root-device discovery")
+    args = parser.parse_args()
+    if args.through_root:
+        args.through_bsd = True
+    pin = subprocess.check_output(["git", "-C", REF, "rev-parse", "HEAD"], text=True).strip()
+    if pin != "6f27e41ff249f2680540ebe8ee5ab982c5e641c9":
+        raise SystemExit("sailfish revision mismatch")
+    kernel = args.workspace / "obj/DEVELOPMENT_ARM64_LITHIUM/mach.development.lithium.unstripped"
+    inspect = module("inspect_native", ROOT / "scripts/inspect-native-xnu.py")
+    validation = inspect.inspect(kernel)
+    if "LITHIUM" not in validation["version"]:
+        raise SystemExit("kernel is not the lithium build")
+    build_record = json.loads((ROOT / "reports/ios14-xnu-lithium-kernel.json").read_text())
+    if build_record["exit_code"] != 0 or not any(x["sha256"] == validation["sha256"] for x in build_record["kernel_binaries"]):
+        raise SystemExit("kernel does not match a successful recorded build")
+    out = args.workspace / "qemu"
+    out.mkdir(exist_ok=True)
+    sys.path.insert(0, str(REF / "tools"))
+    adt = module("mkadt_ref", REF / "tools/mkadt.py")
+    pack = module("payload_ref", REF / "tools/mkpayload.py")
+    emulator = module("qemu_ref", REF / "tools/qemu-sweet.py")
+    tree = adt.build(seed=hashlib.sha512(b"lithium QEMU reproducible test seed").digest(), qemu=True)
+    tree.props = [(k, f, v.replace(b"xiaomi,sweet", b"xiaomi,lithium")) for k, f, v in tree.props]
+    for child in tree.children:
+        if any(k == "name" and v == b"cpus\0" for k, _, v in child.props):
+            for cpu in child.children:
+                cpu.props = [(k, f, v.replace(b"qcom,kryo470", b"qcom,kryo")) for k, f, v in cpu.props]
+    adt_file = out / "qemu.adt"
+    adt_file.write_bytes(adt.adt.serialize(tree))
+    payload, payload_info = pack.build(str(kernel), str(adt_file), "debug=0x14e serial=0 cpus=1 keepsyms=1")
+    (out / "payload.bin").write_bytes(payload)
+    physical, image, bootargs, entry = emulator.build_image(payload)
+    (out / "ram.bin").write_bytes(image)
+    (out / "stub.bin").write_bytes(emulator.stub(bootargs, entry))
+    names = subprocess.check_output(["llvm-nm", "--defined-only", kernel], text=True)
+    symbol_addresses = sorted((int(line.split()[0], 16), line.split()[-1]) for line in names.splitlines()
+                              if len(line.split()) >= 3)
+
+    def describe(address):
+        candidates = [(base, name) for base, name in symbol_addresses if base <= address]
+        if not candidates:
+            return dict(address=hex(address))
+        base, name = candidates[-1]
+        return dict(address=hex(address), symbol=name, offset=hex(address - base))
+
+    symbols = {line.split()[-1]: int(line.split()[0], 16) for line in names.splitlines()
+               if len(line.split()) >= 3 and line.split()[-1] in ("_arm_init", "_kernel_bootstrap", "_panic", "common_start", "_sysreg_restore", "_bsd_init", "_read_random", "_prng_ready", "_prng_funcs", "_lithium_prng_init_with_getentropy", "_lithium_prng_generate", "_IOFindBSDRoot")}
+    if not {"_arm_init", "_kernel_bootstrap", "_panic", "common_start", "_sysreg_restore", "_bsd_init"}.issubset(symbols):
+        raise SystemExit("expected initialization and panic symbols are missing")
+    with socket.socket() as reserve:
+        reserve.bind(("127.0.0.1", 0))
+        port = reserve.getsockname()[1]
+    command = ["qemu-system-aarch64", "-M", "virt,gic-version=3", "-cpu", "cortex-a76", "-smp", "1", "-m", "4G",
+               "-nographic", "-serial", f"file:{out}/serial.txt", "-monitor", "none", "-nic", "none", "-no-reboot", "-S",
+               "-gdb", f"tcp:127.0.0.1:{port}", "-d", "int,guest_errors,unimp", "-D", str(out / "qemu.log"),
+               "-device", f"loader,file={out}/ram.bin,addr={physical:#x},force-raw=on",
+               "-device", f"loader,file={out}/stub.bin,addr={emulator.STUB_PA:#x},force-raw=on",
+               "-device", f"loader,addr={emulator.STUB_PA:#x},cpu-num=0"]
+    record = dict(kernel_sha256=validation["sha256"], kernel_file_validation=validation,
+                  reference_commit=pin, payload=payload_info, qemu_command=command, checkpoints=[],
+                  hardware_boot_verified=False, ios_userspace_started=False)
+    with (out / "process.log").open("w") as log:
+        process = subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT)
+        sock = None
+        try:
+            deadline = time.monotonic() + 8
+            while time.monotonic() < deadline and process.poll() is None:
+                try:
+                    sock = socket.create_connection(("127.0.0.1", port), timeout=1)
+                    break
+                except OSError:
+                    time.sleep(0.1)
+            if sock is None:
+                raise RuntimeError(f"QEMU did not expose GDB: exit={process.poll()}")
+            sock.settimeout(5)
+            remote = Remote(sock)
+            remote.command("qSupported")
+            remote.breakpoint(symbols["_panic"])
+            delta = physical - int(payload_info["virt_base"], 16)
+            checkpoints = [("XNU physical entry", entry), ("bootstrap tables", symbols["common_start"] + delta),
+                           ("arm_init", symbols["_arm_init"]), ("kernel_bootstrap", symbols["_kernel_bootstrap"])]
+            if args.through_bsd:
+                if "_lithium_prng_init_with_getentropy" in symbols:
+                    checkpoints += [("PRNG initialization", symbols["_lithium_prng_init_with_getentropy"]),
+                                    ("PRNG first generation", symbols["_lithium_prng_generate"])]
+                checkpoints.append(("kernel random use", symbols["_read_random"]))
+                checkpoints.append(("bsd_init", symbols["_bsd_init"]))
+            if args.through_root:
+                checkpoints.append(("root-device discovery", symbols["_IOFindBSDRoot"]))
+            for label, address in checkpoints:
+                remote.breakpoint(address)
+                stop, timed_out = remote.resume(args.seconds, out / "qemu.log")
+                pc = remote.register(32)
+                item = dict(name=label, expected_pc=hex(address), actual_pc=hex(pc), stop_packet=stop,
+                            timeout=timed_out, reached=not timed_out and pc == address)
+                record["checkpoints"].append(item)
+                print(json.dumps(item), flush=True)
+                remote.breakpoint(address, add=False)
+                if item["reached"] and label == "PRNG initialization":
+                    seed = bytes.fromhex(remote.command(f"m{remote.register(3):x},{remote.register(2):x}"))
+                    nonce = bytes.fromhex(remote.command(f"m{remote.register(5):x},{remote.register(4):x}"))
+                    record["prng_test_inputs"] = dict(seed=seed.hex(), nonce=nonce.hex(),
+                        scope="QEMU-only captured seed; never a hardware entropy input")
+                if item["reached"] and label == "PRNG first generation":
+                    count, destination, return_pc = remote.register(2), remote.register(3), remote.register(30)
+                    if not 0 < count <= 256:
+                        raise ValueError(f"unexpected PRNG test request size: {count}")
+                    remote.breakpoint(return_pc)
+                    _, expired = remote.resume(args.seconds, out / "qemu.log")
+                    if expired or remote.register(32) != return_pc:
+                        raise ValueError("PRNG did not return to its caller")
+                    remote.breakpoint(return_pc, add=False)
+                    actual = bytes.fromhex(remote.command(f"m{destination:x},{count:x}"))
+                    expected = hmac_drbg_first(seed, nonce, count)
+                    record["prng_output_validation"] = dict(bytes=count, actual=actual.hex(),
+                                                            expected=expected.hex(), passed=actual == expected)
+                    if actual != expected:
+                        raise ValueError("kernel HMAC DRBG differs from the independent reference")
+                if item["reached"] and label == "kernel random use":
+                    record["prng_snapshot"] = dict(ready=remote.command(f"m{symbols['_prng_ready']:x},4"),
+                                                   functions=remote.command(f"m{symbols['_prng_funcs']:x},30"))
+                if item["reached"] and label == "bootstrap tables":
+                    registers = {f"x{i}": remote.register(i) for i in (22, 23, 24, 25)}
+                    root = registers["x25"]
+                    root0 = bytes.fromhex(remote.command(f"m{root:x},40"))
+                    root1 = bytes.fromhex(remote.command(f"m{root + 0x4000:x},40"))
+                    tcr = bytes.fromhex(remote.command(f"m{symbols['_sysreg_restore'] + delta:x},8"))
+                    snapshot = dict(registers={k: hex(v) for k, v in registers.items()},
+                                    tcr=hex(int.from_bytes(tcr, "little")),
+                                    root0=[hex(x) for x in struct.unpack("<8Q", root0)],
+                                    root1=[hex(x) for x in struct.unpack("<8Q", root1)])
+                    for kind, cursor, roots in (("identity", physical, root0), ("kernel", int(payload_info["entry"], 16), root1)):
+                        table = struct.unpack("<8Q", roots)[(cursor >> 36) & 7] & 0x0000ffffffffc000
+                        index = (cursor >> 25) & 0x7ff
+                        snapshot[kind + "_entry"] = remote.command(f"m{table + index * 8:x},8")
+                    record["bootstrap_snapshot"] = snapshot
+                if not item["reached"]:
+                    record["stopped_registers"] = {f"x{i}": hex(remote.register(i)) for i in range(31)}
+                    frames, frame = [describe(pc), describe(remote.register(30))], remote.register(29)
+                    visited = set()
+                    for _ in range(12):
+                        if frame in visited or frame % 16 or frame < 0xffff000000000000:
+                            break
+                        visited.add(frame)
+                        raw = remote.command(f"m{frame:x},10")
+                        if raw.startswith("E"):
+                            break
+                        frame, caller = struct.unpack("<QQ", bytes.fromhex(raw))
+                        frames.append(describe(caller))
+                    record["stopped_frames"] = frames
+                    if pc == symbols["_panic"]:
+                        pointer = remote.register(0)
+                        raw = remote.command(f"m{pointer:x},200")
+                        if not raw.startswith("E"):
+                            record["panic_format"] = bytes.fromhex(raw).split(b"\0", 1)[0].decode(errors="replace")
+                    record["stopped_pc"] = hex(pc)
+                    break
+            record["system_registers"] = remote.system_registers()
+            record["initialization_checkpoints_passed"] = len(record["checkpoints"]) >= 4 and all(x["reached"] for x in record["checkpoints"][:4])
+            record["selected_checkpoints_passed"] = len(record["checkpoints"]) == len(checkpoints) and all(x["reached"] for x in record["checkpoints"])
+            record["bsd_initialization_reached"] = any(x["name"] == "bsd_init" and x["reached"] for x in record["checkpoints"])
+            record["root_device_discovery_reached"] = any(x["name"] == "root-device discovery" and x["reached"] for x in record["checkpoints"])
+        except Exception as error:
+            record["error"] = repr(error)
+            record["initialization_checkpoints_passed"] = False
+        finally:
+            if sock:
+                sock.close()
+            process.terminate()
+            try:
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait()
+    record["qemu_log"] = str(out / "qemu.log")
+    if (out / "qemu.log").exists():
+        with (out / "qemu.log").open(errors="replace") as diagnostic:
+            lines = diagnostic.read().splitlines()
+            record["first_diagnostics"] = lines[:30]
+            # Timer IRQs can fill the beginning of the log before the first
+            # fatal exception; preserve its evidence instead of hiding it.
+            record["fault_diagnostics"] = []
+            for index, line in enumerate(lines):
+                if "Taking exception" in line and "[IRQ]" not in line:
+                    record["fault_diagnostics"].append(lines[index:index + 7])
+                    if len(record["fault_diagnostics"]) == 4:
+                        break
+            record["irq_count"] = sum("Taking exception" in line and "[IRQ]" in line for line in lines)
+    report = ROOT / ("reports/ios14-xnu-lithium-qemu-root.json" if args.through_root else
+                     "reports/ios14-xnu-lithium-qemu-bsd.json" if args.through_bsd else "reports/ios14-xnu-lithium-qemu.json")
+    report.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+    (ROOT / "reports/ios14-xnu-lithium-validation.json").write_text(json.dumps(validation, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps({k: v for k, v in record.items() if k in ("error", "panic_format", "stopped_pc", "initialization_checkpoints_passed", "bsd_initialization_reached")}), flush=True)
+    return 0 if record.get("selected_checkpoints_passed") else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,2346 @@
+diff --git a/maintenance/hakios-lithium/peripherals/gpu-submit-test.c b/maintenance/hakios-lithium/peripherals/gpu-submit-test.c
+index f5fc3ac..e694d2a 100644
+--- a/maintenance/hakios-lithium/peripherals/gpu-submit-test.c
++++ b/maintenance/hakios-lithium/peripherals/gpu-submit-test.c
+@@ -4,6 +4,13 @@
+ #include <stdio.h>
+ 
+ #define UNTOUCHED UINT32_C(0xfeedface)
++#define FENCE_IOVA UINT64_C(0x0000000100000040)
++
++static void
++configure_iova(struct lithium_gpu_mock *mock)
++{
++    assert(lithium_gpu_mock_configure_iova(mock, FENCE_IOVA, 8, 40));
++}
+ 
+ static void
+ test_geometry_and_capacity(void)
+@@ -24,9 +31,10 @@ test_geometry_and_capacity(void)
+     assert(mock.state == LITHIUM_GPU_MOCK_DETACHED);
+ 
+     assert(lithium_gpu_mock_attach(&mock, LITHIUM_GPU_A530_V5, ring, 4));
++    configure_iova(&mock);
+     assert(!lithium_gpu_mock_attach(&mock, LITHIUM_GPU_A530_V5, ring, 8));
+     assert(lithium_gpu_mock_free_words(&mock) == 3);
+-    assert(lithium_gpu_mock_submit(&mock, 0, 1, &fence) ==
++    assert(lithium_gpu_mock_submit(&mock, 0, 1, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_NO_SPACE);
+     assert(fence == UNTOUCHED && mock.state == LITHIUM_GPU_MOCK_IDLE);
+     for (size_t i = 0; i < 4; ++i) {
+@@ -36,6 +44,78 @@ test_geometry_and_capacity(void)
+     assert(lithium_gpu_mock_release(&mock) && mock.ring == NULL);
+ }
+ 
++static void
++test_exact_packet_boundary_and_iova(void)
++{
++    struct lithium_gpu_mock mock = {0};
++    uint32_t ring[8];
++    uint32_t fence = UNTOUCHED;
++    for (size_t i = 0; i < 8; ++i)
++        ring[i] = UNTOUCHED;
++    assert(lithium_gpu_mock_attach(&mock, LITHIUM_GPU_A530_V5, ring, 8));
++    configure_iova(&mock);
++    mock.read = 2;
++    mock.write = 4; /* Exactly five writable words remain in this ring. */
++    assert(lithium_gpu_mock_free_words(&mock) == LITHIUM_GPU_MOCK_PACKET_WORDS);
++    assert(lithium_gpu_mock_submit(&mock, 0, 10, FENCE_IOVA + 4, &fence) ==
++        LITHIUM_GPU_MOCK_OK);
++    assert(fence == 1 && mock.write == 1 && mock.read == 2);
++    assert(lithium_gpu_mock_free_words(&mock) == 0);
++    assert(ring[4] == UINT32_C(0x70460004) &&
++        ring[5] == UINT32_C(0x80000004) &&
++        ring[6] == (uint32_t)(FENCE_IOVA + 4) && ring[7] == 1 && ring[0] == 1);
++
++    struct lithium_gpu_mock boundary = {0};
++    uint32_t boundary_ring[8];
++    for (size_t i = 0; i < 8; ++i)
++        boundary_ring[i] = UNTOUCHED;
++    assert(lithium_gpu_mock_attach(&boundary, LITHIUM_GPU_A530_V5,
++        boundary_ring, 8));
++    configure_iova(&boundary);
++    fence = UNTOUCHED;
++    assert(lithium_gpu_mock_submit(&boundary, 0, 10, FENCE_IOVA + 8,
++        &fence) == LITHIUM_GPU_MOCK_INVALID);
++    assert(lithium_gpu_mock_submit(&boundary, 0, 10, FENCE_IOVA + 1,
++        &fence) == LITHIUM_GPU_MOCK_INVALID);
++    assert(lithium_gpu_mock_submit(&boundary, 0, 10, FENCE_IOVA - 4,
++        &fence) == LITHIUM_GPU_MOCK_INVALID);
++    assert(fence == UNTOUCHED && boundary.write == 0 &&
++        boundary.state == LITHIUM_GPU_MOCK_IDLE);
++    for (size_t i = 0; i < 8; ++i)
++        assert(boundary_ring[i] == UNTOUCHED);
++
++    struct lithium_gpu_mock invalid = {0};
++    uint32_t invalid_ring[8] = {0};
++    assert(lithium_gpu_mock_attach(&invalid, LITHIUM_GPU_A530_V5,
++        invalid_ring, 8));
++    assert(!lithium_gpu_mock_configure_iova(&invalid, FENCE_IOVA, 0, 40));
++    assert(!lithium_gpu_mock_configure_iova(&invalid, UINT64_MAX - 3, 8, 64));
++    assert(!lithium_gpu_mock_configure_iova(&invalid, UINT64_C(0xfffffffc),
++        8, 32));
++}
++
++static void
++test_malformed_ring_fails_closed(void)
++{
++    struct lithium_gpu_mock mock = {0};
++    uint32_t ring[8];
++    uint32_t fence = UNTOUCHED;
++    for (size_t i = 0; i < 8; ++i)
++        ring[i] = UNTOUCHED;
++    assert(lithium_gpu_mock_attach(&mock, LITHIUM_GPU_A530_V5, ring, 8));
++    configure_iova(&mock);
++    mock.write = mock.capacity;
++    assert(lithium_gpu_mock_submit(&mock, 0, 10, FENCE_IOVA, &fence) ==
++        LITHIUM_GPU_MOCK_INVALID);
++    assert(mock.state == LITHIUM_GPU_MOCK_SOFTWARE_FALLBACK);
++    assert(mock.write == mock.capacity && mock.read == 0 &&
++        mock.pending_fence == 0 && fence == UNTOUCHED);
++    assert(!lithium_gpu_mock_quiesce(&mock, true, true));
++    assert(!lithium_gpu_mock_recover(&mock, true, true, true));
++    for (size_t i = 0; i < 8; ++i)
++        assert(ring[i] == UNTOUCHED);
++}
++
+ static void
+ test_packet_wrap_irq_and_poll(void)
+ {
+@@ -53,12 +133,13 @@ test_packet_wrap_irq_and_poll(void)
+         ring[i] = UNTOUCHED;
+     }
+     assert(lithium_gpu_mock_attach(&mock, LITHIUM_GPU_A530_V5, ring, 8));
++    configure_iova(&mock);
+     assert(lithium_gpu_mock_free_words(&mock) == 7);
+-    assert(lithium_gpu_mock_submit(&mock, 20, 10, &fence) ==
++    assert(lithium_gpu_mock_submit(&mock, 20, 10, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_OK);
+     assert(fence == 1 && mock.write == 5 && mock.read == 0);
+     assert(lithium_gpu_mock_free_words(&mock) == 2);
+-    assert(lithium_gpu_mock_submit(&mock, 21, 10, &fence) ==
++    assert(lithium_gpu_mock_submit(&mock, 21, 10, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_BUSY);
+     for (size_t i = 0; i < 8; ++i) {
+         assert(ring[i] == first[i]);
+@@ -79,7 +160,7 @@ test_packet_wrap_irq_and_poll(void)
+     assert(!lithium_gpu_mock_retire(&mock, fence));
+     assert(!lithium_gpu_mock_release(&mock));
+ 
+-    assert(lithium_gpu_mock_submit(&mock, 23, 10, &fence) ==
++    assert(lithium_gpu_mock_submit(&mock, 23, 10, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_OK);
+     assert(fence == 2 && mock.write == 2 && mock.read == 5);
+     for (size_t i = 0; i < 8; ++i) {
+@@ -91,7 +172,7 @@ test_packet_wrap_irq_and_poll(void)
+     assert(mock.state == LITHIUM_GPU_MOCK_COMPLETE_POLL);
+     assert(lithium_gpu_mock_retire(&mock, fence));
+     assert(lithium_gpu_mock_quiesce(&mock, true, true));
+-    assert(lithium_gpu_mock_submit(&mock, 34, 10, &fence) ==
++    assert(lithium_gpu_mock_submit(&mock, 34, 10, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_BUSY);
+     assert(lithium_gpu_mock_release(&mock));
+ }
+@@ -104,7 +185,8 @@ test_watchdog_and_quiescence(void)
+     uint32_t fence;
+ 
+     assert(lithium_gpu_mock_attach(&mock, LITHIUM_GPU_A530_V5, ring, 8));
+-    assert(lithium_gpu_mock_submit(&mock, 100, 5, &fence) ==
++    configure_iova(&mock);
++    assert(lithium_gpu_mock_submit(&mock, 100, 5, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_OK);
+     assert(lithium_gpu_mock_sample(&mock, 104, 0, true));
+     assert(mock.state == LITHIUM_GPU_MOCK_PENDING);
+@@ -116,15 +198,31 @@ test_watchdog_and_quiescence(void)
+     assert(!lithium_gpu_mock_quiesce(&mock, true, false));
+     assert(!lithium_gpu_mock_release(&mock));
+     assert(mock.ring == ring && mock.pending_fence == fence && mock.read == 0);
++    assert(!lithium_gpu_mock_recover(&mock, false, true, true));
++    assert(mock.state == LITHIUM_GPU_MOCK_SOFTWARE_FALLBACK &&
++        mock.pending_fence == fence && mock.write == 5);
++    assert(lithium_gpu_mock_submit(&mock, 106, 5, FENCE_IOVA, &fence) ==
++        LITHIUM_GPU_MOCK_BUSY);
++    assert(!lithium_gpu_mock_recover(&mock, true, true, false));
++    assert(mock.state == LITHIUM_GPU_MOCK_SOFTWARE_FALLBACK);
++    assert(lithium_gpu_mock_recover(&mock, true, true, true));
++    assert(mock.state == LITHIUM_GPU_MOCK_IDLE && mock.read == 0 &&
++        mock.write == 0 && mock.pending_fence == 0);
++    assert(lithium_gpu_mock_submit(&mock, 107, 5, FENCE_IOVA, &fence) ==
++        LITHIUM_GPU_MOCK_OK);
++    assert(fence == 2);
++    assert(lithium_gpu_mock_sample(&mock, 108, fence, false));
++    assert(lithium_gpu_mock_retire(&mock, fence));
+     assert(lithium_gpu_mock_quiesce(&mock, true, true));
+     assert(mock.pending_fence == 0 && mock.read == mock.write);
+     assert(!lithium_gpu_mock_sample(&mock, 107, fence, true));
+     assert(lithium_gpu_mock_release(&mock));
+ 
+     assert(lithium_gpu_mock_attach(&mock, LITHIUM_GPU_A530_V5, ring, 8));
+-    assert(lithium_gpu_mock_submit(&mock, 1, 1, &fence) ==
++    configure_iova(&mock);
++    assert(lithium_gpu_mock_submit(&mock, 1, 1, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_OK);
+-    assert(fence == 2); /* A stale sample from the previous attachment. */
++    assert(fence == 3); /* A stale sample from the previous attachment. */
+     assert(lithium_gpu_mock_sample(&mock, 1, 1, true));
+     assert(mock.state == LITHIUM_GPU_MOCK_PENDING);
+     assert(lithium_gpu_mock_sample(&mock, 3, fence, true));
+@@ -133,7 +231,8 @@ test_watchdog_and_quiescence(void)
+     assert(lithium_gpu_mock_release(&mock));
+ 
+     assert(lithium_gpu_mock_attach(&mock, LITHIUM_GPU_A530_V5, ring, 8));
+-    assert(lithium_gpu_mock_submit(&mock, 1, 1, &fence) ==
++    configure_iova(&mock);
++    assert(lithium_gpu_mock_submit(&mock, 1, 1, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_OK);
+     assert(!lithium_gpu_mock_quiesce(&mock, false, true));
+     assert(lithium_gpu_mock_quiesce(&mock, true, true));
+@@ -149,26 +248,28 @@ test_time_and_fence_limits(void)
+     uint32_t ring[8] = {UNTOUCHED};
+ 
+     assert(lithium_gpu_mock_attach(&mock, LITHIUM_GPU_A530_V5, ring, 8));
+-    assert(lithium_gpu_mock_submit(&mock, 0, 0, &fence) ==
++    configure_iova(&mock);
++    assert(lithium_gpu_mock_submit(&mock, 0, 0, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_INVALID);
+-    assert(lithium_gpu_mock_submit(&mock, 0, 1, NULL) ==
++    assert(lithium_gpu_mock_submit(&mock, 0, 1, FENCE_IOVA, NULL) ==
+         LITHIUM_GPU_MOCK_INVALID);
+     assert(lithium_gpu_mock_submit(&mock, 0, LITHIUM_GPU_MOCK_MAX_TIMEOUT_US + 1,
+-        &fence) == LITHIUM_GPU_MOCK_INVALID);
+-    assert(lithium_gpu_mock_submit(&mock, UINT64_MAX, 1, &fence) ==
++        FENCE_IOVA, &fence) == LITHIUM_GPU_MOCK_INVALID);
++    assert(lithium_gpu_mock_submit(&mock, UINT64_MAX, 1, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_INVALID);
+     assert(ring[0] == UNTOUCHED && fence == UNTOUCHED && mock.write == 0);
+-    assert(lithium_gpu_mock_submit(&mock, UINT64_MAX - 1, 1, &fence) ==
++    assert(lithium_gpu_mock_submit(&mock, UINT64_MAX - 1, 1, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_OK);
+     assert(fence == UINT32_MAX && ring[4] == UINT32_MAX);
+     assert(lithium_gpu_mock_sample(&mock, UINT64_MAX, fence, false));
+     assert(lithium_gpu_mock_retire(&mock, fence));
+-    assert(lithium_gpu_mock_submit(&mock, UINT64_MAX - 2, 1, &fence) ==
++    assert(lithium_gpu_mock_submit(&mock, UINT64_MAX - 2, 1, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_INVALID);
+     assert(lithium_gpu_mock_quiesce(&mock, true, true));
+     assert(lithium_gpu_mock_release(&mock));
+     assert(lithium_gpu_mock_attach(&mock, LITHIUM_GPU_A530_V5, ring, 8));
+-    assert(lithium_gpu_mock_submit(&mock, 0, 1, &fence) ==
++    configure_iova(&mock);
++    assert(lithium_gpu_mock_submit(&mock, 0, 1, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_FENCE_EXHAUSTED);
+     assert(mock.state == LITHIUM_GPU_MOCK_IDLE && mock.write == 0);
+     assert(lithium_gpu_mock_quiesce(&mock, true, true));
+@@ -179,9 +280,11 @@ int
+ main(void)
+ {
+     test_geometry_and_capacity();
++    test_exact_packet_boundary_and_iova();
++    test_malformed_ring_fails_closed();
+     test_packet_wrap_irq_and_poll();
+     test_watchdog_and_quiescence();
+     test_time_and_fence_limits();
+-    puts("B4 A530 v5 GPU mock: 4 test groups passed");
++    puts("B4 A530 v5 GPU mock: 6 test groups passed");
+     return 0;
+ }
+diff --git a/maintenance/hakios-lithium/peripherals/gpu-submit.h b/maintenance/hakios-lithium/peripherals/gpu-submit.h
+index f069611..12e8c34 100644
+--- a/maintenance/hakios-lithium/peripherals/gpu-submit.h
++++ b/maintenance/hakios-lithium/peripherals/gpu-submit.h
+@@ -18,6 +18,8 @@ enum lithium_gpu_mock_state {
+     LITHIUM_GPU_MOCK_COMPLETE_POLL,
+     LITHIUM_GPU_MOCK_WATCHDOG,
+     LITHIUM_GPU_MOCK_QUIESCED,
++    /* Permanently blocks GPU submission until external recovery is proven. */
++    LITHIUM_GPU_MOCK_SOFTWARE_FALLBACK,
+ };
+ 
+ enum lithium_gpu_mock_result {
+@@ -41,9 +43,66 @@ struct lithium_gpu_mock {
+     uint32_t pending_fence;
+     uint64_t last_us;
+     uint64_t deadline_us;
++    uint64_t iova_base;
++    uint64_t iova_last;
++    unsigned iova_bits;
++    bool iova_configured;
+     enum lithium_gpu_mock_state state;
+ };
+ 
++static inline bool
++lithium_gpu_mock_iova_span(uint64_t base, uint64_t bytes, unsigned bits,
++    uint64_t *last)
++{
++    if (last == NULL || bits == 0 || bits > 64 || bytes == 0 ||
++        bytes - 1 > UINT64_MAX - base) {
++        return false;
++    }
++    const uint64_t end = base + bytes - 1;
++    if (bits < 64 && (end >> bits) != 0) {
++        return false;
++    }
++    *last = end;
++    return true;
++}
++
++/* Configure only aperture bounds; this does not prove mapping or ownership. */
++static inline bool
++lithium_gpu_mock_configure_iova(struct lithium_gpu_mock *mock, uint64_t base,
++    uint64_t bytes, unsigned bits)
++{
++    uint64_t last;
++    if (mock->state != LITHIUM_GPU_MOCK_IDLE || mock->iova_configured ||
++        mock->read != mock->write ||
++        !lithium_gpu_mock_iova_span(base, bytes, bits, &last)) {
++        return false;
++    }
++    mock->iova_base = base;
++    mock->iova_last = last;
++    mock->iova_bits = bits;
++    mock->iova_configured = true;
++    return true;
++}
++
++static inline bool
++lithium_gpu_mock_iova_slot_valid(const struct lithium_gpu_mock *mock,
++    uint64_t address)
++{
++    return mock->iova_configured && (address & UINT64_C(3)) == 0 &&
++        address >= mock->iova_base && address <= mock->iova_last &&
++        mock->iova_last - address >= sizeof(uint32_t) - 1 &&
++        (mock->iova_bits == 64 || (address >> mock->iova_bits) == 0);
++}
++
++static inline bool
++lithium_gpu_mock_ring_valid(const struct lithium_gpu_mock *mock)
++{
++    return mock->ring != NULL && mock->capacity >= 2 &&
++        mock->capacity <= LITHIUM_GPU_MOCK_MAX_RING_WORDS &&
++        (mock->capacity & (mock->capacity - 1)) == 0 &&
++        mock->read < mock->capacity && mock->write < mock->capacity;
++}
++
+ static inline bool
+ lithium_gpu_mock_attach(struct lithium_gpu_mock *mock, uint32_t chip_id,
+     uint32_t *ring, size_t capacity)
+@@ -64,7 +123,8 @@ static inline size_t
+ lithium_gpu_mock_free_words(const struct lithium_gpu_mock *mock)
+ {
+     if (mock->state == LITHIUM_GPU_MOCK_DETACHED ||
+-        mock->state == LITHIUM_GPU_MOCK_QUIESCED) {
++        mock->state == LITHIUM_GPU_MOCK_QUIESCED ||
++        !lithium_gpu_mock_ring_valid(mock)) {
+         return 0;
+     }
+     /* Reserve one word to distinguish full from empty. */
+@@ -75,14 +135,19 @@ lithium_gpu_mock_free_words(const struct lithium_gpu_mock *mock)
+ 
+ static inline enum lithium_gpu_mock_result
+ lithium_gpu_mock_submit(struct lithium_gpu_mock *mock, uint64_t now_us,
+-    uint64_t timeout_us, uint32_t *fence)
++    uint64_t timeout_us, uint64_t fence_iova, uint32_t *fence)
+ {
+     if (mock->state != LITHIUM_GPU_MOCK_IDLE) {
+         return LITHIUM_GPU_MOCK_BUSY;
+     }
++    if (!lithium_gpu_mock_ring_valid(mock)) {
++        mock->state = LITHIUM_GPU_MOCK_SOFTWARE_FALLBACK;
++        return LITHIUM_GPU_MOCK_INVALID;
++    }
+     if (fence == NULL || now_us < mock->last_us || timeout_us == 0 ||
+         timeout_us > LITHIUM_GPU_MOCK_MAX_TIMEOUT_US ||
+-        now_us > UINT64_MAX - timeout_us) {
++        now_us > UINT64_MAX - timeout_us ||
++        !lithium_gpu_mock_iova_slot_valid(mock, fence_iova)) {
+         return LITHIUM_GPU_MOCK_INVALID;
+     }
+     if (lithium_gpu_mock_free_words(mock) < LITHIUM_GPU_MOCK_PACKET_WORDS) {
+@@ -97,11 +162,12 @@ lithium_gpu_mock_submit(struct lithium_gpu_mock *mock, uint64_t now_us,
+      * drivers/gpu/drm/msm/adreno/a5xx_gpu.c:219-227 and
+      * adreno_gpu.h:637-664. Encode only the
+      * CP_EVENT_WRITE/CACHE_FLUSH_TS fence packet with IRQ requested.
+-     * The two address words are a fixed mock tag, with no backing mapping.
++     * The address words contain the caller's candidate IOVA. This CPU-only
++     * model checks aperture bounds and alignment, but has no backing mapping.
+      */
+     const uint32_t packet[LITHIUM_GPU_MOCK_PACKET_WORDS] = {
+         UINT32_C(0x70460004), UINT32_C(0x80000004),
+-        UINT32_C(0x00000040), UINT32_C(0x00000001),
++        (uint32_t)fence_iova, (uint32_t)(fence_iova >> 32),
+         next,
+     };
+     const size_t mask = mock->capacity - 1;
+@@ -167,6 +233,7 @@ lithium_gpu_mock_quiesce(struct lithium_gpu_mock *mock, bool engine_idle,
+     bool irq_drained)
+ {
+     if (!engine_idle || !irq_drained ||
++        !lithium_gpu_mock_ring_valid(mock) ||
+         (mock->state != LITHIUM_GPU_MOCK_IDLE &&
+         mock->state != LITHIUM_GPU_MOCK_PENDING &&
+         mock->state != LITHIUM_GPU_MOCK_WATCHDOG)) {
+@@ -179,6 +246,36 @@ lithium_gpu_mock_quiesce(struct lithium_gpu_mock *mock, bool engine_idle,
+     return true;
+ }
+ 
++/*
++ * Reset acknowledgements and idle/IRQ proofs are synthetic test inputs. A
++ * failed or incomplete recovery latches software-only fallback and retains
++ * the ring; it never certifies that real DMA has stopped.
++ */
++static inline bool
++lithium_gpu_mock_recover(struct lithium_gpu_mock *mock, bool reset_ack,
++    bool engine_idle, bool irq_drained)
++{
++    if (mock->state != LITHIUM_GPU_MOCK_WATCHDOG &&
++        mock->state != LITHIUM_GPU_MOCK_SOFTWARE_FALLBACK) {
++        return false;
++    }
++    if (!reset_ack || !engine_idle || !irq_drained ||
++        !lithium_gpu_mock_ring_valid(mock)) {
++        mock->state = LITHIUM_GPU_MOCK_SOFTWARE_FALLBACK;
++        return false;
++    }
++    /* Treat acknowledged reset as a fresh empty-ring boundary. */
++    for (size_t i = 0; i < mock->capacity; ++i) {
++        mock->ring[i] = 0;
++    }
++    mock->read = 0;
++    mock->write = 0;
++    mock->pending_fence = 0;
++    mock->deadline_us = 0;
++    mock->state = LITHIUM_GPU_MOCK_IDLE;
++    return true;
++}
++
+ static inline bool
+ lithium_gpu_mock_release(struct lithium_gpu_mock *mock)
+ {
+diff --git a/maintenance/hakios-lithium/peripherals/touch-digitizer-test.c b/maintenance/hakios-lithium/peripherals/touch-digitizer-test.c
+index d68facd..df8723f 100644
+--- a/maintenance/hakios-lithium/peripherals/touch-digitizer-test.c
++++ b/maintenance/hakios-lithium/peripherals/touch-digitizer-test.c
+@@ -14,6 +14,15 @@ expect_near(double observed, double expected)
+     assert(observed > expected - 1e-10 && observed < expected + 1e-10);
+ }
+ 
++static void
++expect_shared_queue_normalization(double observed, uint32_t queue_value)
++{
++    const double expected = (double)queue_value / 65535.0;
++    /* The HakiOS sample ABI quantizes normalized coordinates to 16 bits. */
++    assert(observed > expected - (1.0 / 65535.0) &&
++        observed < expected + (1.0 / 65535.0));
++}
++
+ static void
+ test_mapping(void)
+ {
+@@ -28,15 +37,31 @@ test_mapping(void)
+     struct lithium_digitizer_point point;
+     for (size_t r = 0; r < 4; ++r) {
+         viewport.clockwise = rotations[r];
++        const struct lithium_touch_geometry shared_geometry = {
++            .width = viewport.display_x_max + 1,
++            .height = viewport.display_y_max + 1,
++            .left = viewport.left, .top = viewport.top,
++            .right = viewport.right, .bottom = viewport.bottom,
++            .rotation = (unsigned)viewport.clockwise
++        };
+         for (size_t i = 0; i < 4; ++i) {
+             const size_t j = (i + r) % 4;
+             assert(lithium_digitizer_map_point(&viewport, corners[i][0], corners[i][1], &point));
+             assert(point.display_x == display[j][0] && point.display_y == display[j][1]);
+             expect_near(point.x, display[j][0] / 1000.0);
+             expect_near(point.y, display[j][1] / 2000.0);
++            uint32_t queue_x, queue_y;
++            assert(lithium_touch_queue_map(&shared_geometry, corners[i][0], corners[i][1],
++                &queue_x, &queue_y));
++            expect_shared_queue_normalization(point.x, queue_x);
++            expect_shared_queue_normalization(point.y, queue_y);
+         }
+         assert(lithium_digitizer_map_point(&viewport, 270, 1530, &point));
+         assert(point.display_x == interior[r][0] && point.display_y == interior[r][1]);
++        uint32_t queue_x, queue_y;
++        assert(lithium_touch_queue_map(&shared_geometry, 270, 1530, &queue_x, &queue_y));
++        expect_shared_queue_normalization(point.x, queue_x);
++        expect_shared_queue_normalization(point.y, queue_y);
+     }
+     assert(lithium_digitizer_map_point(&full, 1080, 2040, &point));
+     assert(point.x == 1 && point.y == 1);
+diff --git a/maintenance/hakios-lithium/peripherals/touch-digitizer.h b/maintenance/hakios-lithium/peripherals/touch-digitizer.h
+index 3af76fe..43e4cd9 100644
+--- a/maintenance/hakios-lithium/peripherals/touch-digitizer.h
++++ b/maintenance/hakios-lithium/peripherals/touch-digitizer.h
+@@ -1,7 +1,7 @@
+ #ifndef LITHIUM_TOUCH_DIGITIZER_H
+ #define LITHIUM_TOUCH_DIGITIZER_H
+ 
+-#include "touch-frame.h"
++#include "touch-queue.h"
+ 
+ /* Event values from HakiOS userland/src/inject.c:620-647,814-845. */
+ enum {
+@@ -39,26 +39,22 @@ lithium_digitizer_map_point(const struct lithium_digitizer_viewport *viewport,
+     uint16_t raw_x, uint16_t raw_y, struct lithium_digitizer_point *point)
+ {
+     if (viewport == NULL || point == NULL ||
+-        raw_x > LITHIUM_TOUCH_X_MAX || raw_y > LITHIUM_TOUCH_Y_MAX ||
+-        viewport->left >= viewport->right || viewport->top >= viewport->bottom ||
+-        viewport->right > viewport->display_x_max ||
+-        viewport->bottom > viewport->display_y_max) {
++        viewport->display_x_max == UINT32_MAX || viewport->display_y_max == UINT32_MAX) {
+         return false;
+     }
+-
+-    const double u = (double)raw_x / LITHIUM_TOUCH_X_MAX;
+-    const double v = (double)raw_y / LITHIUM_TOUCH_Y_MAX;
+-    double x, y;
+-    switch (viewport->clockwise) {
+-    case LITHIUM_DIGITIZER_ROTATE_0:   x = u;     y = v;     break;
+-    case LITHIUM_DIGITIZER_ROTATE_90:  x = 1-v;   y = u;     break;
+-    case LITHIUM_DIGITIZER_ROTATE_180: x = 1-u;   y = 1-v;   break;
+-    case LITHIUM_DIGITIZER_ROTATE_270: x = v;     y = 1-u;   break;
+-    default: return false;
+-    }
+-
+-    const double display_x = viewport->left + x * (viewport->right - viewport->left);
+-    const double display_y = viewport->top + y * (viewport->bottom - viewport->top);
++    const struct lithium_touch_geometry geometry = {
++        .width = viewport->display_x_max + 1,
++        .height = viewport->display_y_max + 1,
++        .left = viewport->left, .top = viewport->top,
++        .right = viewport->right, .bottom = viewport->bottom,
++        .rotation = (unsigned)viewport->clockwise
++    };
++    struct lithium_touch_mapped_fraction mapped;
++    if (!lithium_touch_map_fraction(&geometry, raw_x, raw_y, &mapped)) return false;
++    const double display_x = ((double)mapped.x_numerator / mapped.x_denominator) *
++        viewport->display_x_max;
++    const double display_y = ((double)mapped.y_numerator / mapped.y_denominator) *
++        viewport->display_y_max;
+     *point = (struct lithium_digitizer_point){
+         .x = display_x / viewport->display_x_max,
+         .y = display_y / viewport->display_y_max,
+diff --git a/maintenance/hakios-lithium/peripherals/touch-queue.h b/maintenance/hakios-lithium/peripherals/touch-queue.h
+index 3c6f79e..0f4cbd7 100644
+--- a/maintenance/hakios-lithium/peripherals/touch-queue.h
++++ b/maintenance/hakios-lithium/peripherals/touch-queue.h
+@@ -12,6 +12,13 @@ struct lithium_touch_geometry {
+     unsigned rotation;              /* clockwise: 0/90/180/270 */
+ };
+ 
++/* Exact normalized coordinate before conversion to the HakiOS 16-bit ABI.
++ * The queue and digitizer adapters share this one transform and geometry. */
++struct lithium_touch_mapped_fraction {
++    uint64_t x_numerator, x_denominator;
++    uint64_t y_numerator, y_denominator;
++};
++
+ struct lithium_touch_queue_event { uint32_t type, finger, x, y; };
+ struct lithium_touch_queue_batch {
+     size_t count;
+@@ -24,10 +31,10 @@ struct lithium_touch_queue_state {
+ };
+ 
+ static inline bool
+-lithium_touch_queue_map(const struct lithium_touch_geometry *g,
+-    uint16_t raw_x, uint16_t raw_y, uint32_t *x, uint32_t *y)
++lithium_touch_map_fraction(const struct lithium_touch_geometry *g,
++    uint16_t raw_x, uint16_t raw_y, struct lithium_touch_mapped_fraction *mapped)
+ {
+-    if (!g || !x || !y || g->width < 2 || g->height < 2 ||
++    if (!g || !mapped || g->width < 2 || g->height < 2 ||
+         g->left >= g->right || g->top >= g->bottom ||
+         g->right >= g->width || g->bottom >= g->height ||
+         raw_x > LITHIUM_TOUCH_X_MAX || raw_y > LITHIUM_TOUCH_Y_MAX) return false;
+@@ -43,16 +50,26 @@ lithium_touch_queue_map(const struct lithium_touch_geometry *g,
+         ux = LITHIUM_TOUCH_Y_MAX; vy = LITHIUM_TOUCH_X_MAX; break;
+     default: return false;
+     }
+-    /* The fractional render position is retained until normalization.
+-     * Multiplying by 65535 only after division keeps uint64_t bounded for
+-     * every uint32_t geometry without prematurely rounding a render pixel. */
+-    const uint64_t xn = (uint64_t)g->left * ux + (uint64_t)u * (g->right - g->left);
+-    const uint64_t yn = (uint64_t)g->top * vy + (uint64_t)v * (g->bottom - g->top);
+-    const uint64_t xd = (uint64_t)(g->width - 1) * ux;
+-    const uint64_t yd = (uint64_t)(g->height - 1) * vy;
+-    /* xn <= xd <= UINT32_MAX * 2040; thus xn*65535 fits uint64_t. */
+-    *x = (uint32_t)((xn * 65535 + xd / 2) / xd);
+-    *y = (uint32_t)((yn * 65535 + yd / 2) / yd);
++    mapped->x_numerator = (uint64_t)g->left * ux + (uint64_t)u * (g->right - g->left);
++    mapped->y_numerator = (uint64_t)g->top * vy + (uint64_t)v * (g->bottom - g->top);
++    mapped->x_denominator = (uint64_t)(g->width - 1) * ux;
++    mapped->y_denominator = (uint64_t)(g->height - 1) * vy;
++    return true;
++}
++
++static inline bool
++lithium_touch_queue_map(const struct lithium_touch_geometry *g,
++    uint16_t raw_x, uint16_t raw_y, uint32_t *x, uint32_t *y)
++{
++    if (!x || !y) return false;
++    struct lithium_touch_mapped_fraction mapped;
++    if (!lithium_touch_map_fraction(g, raw_x, raw_y, &mapped)) return false;
++    /* Keep the fractional position until normalization; the largest product
++     * is bounded by UINT32_MAX * 2040 * 65535 and fits uint64_t. */
++    *x = (uint32_t)((mapped.x_numerator * 65535 + mapped.x_denominator / 2) /
++        mapped.x_denominator);
++    *y = (uint32_t)((mapped.y_numerator * 65535 + mapped.y_denominator / 2) /
++        mapped.y_denominator);
+     return true;
+ }
+ 
+diff --git a/maintenance/hakios-lithium/peripherals-next/qup-combined.h b/maintenance/hakios-lithium/peripherals-next/qup-combined.h
+new file mode 100644
+index 0000000..0000000
+--- /dev/null
++++ b/maintenance/hakios-lithium/peripherals-next/qup-combined.h
+@@ -0,0 +1,219 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Sequencing adapted from Linux i2c-qup.c:
++ * Copyright (c) 2009-2013, 2016-2018, The Linux Foundation. All rights reserved.
++ * Copyright (c) 2014, Sony Mobile Communications AB.
++ */
++#ifndef LITHIUM_QUP_COMBINED_H
++#define LITHIUM_QUP_COMBINED_H
++#include "../peripherals/qup-transfer.h"
++#include "../peripherals/touch-i2c.h"
++
++/* Independent host-only candidate. No production registration or board setup.
++ * Linux v6.12 commit adc218676eef25575469234709c2d87185ca223a,
++ * drivers/i2c/busses/i2c-qup.c blob d480162a4d3941042cb59eb69aec0e816276761a.
++ * Only 7-bit START/W/one register/repeated START/R/STOP, 1..32 RX bytes.
++ * Caller must satisfy ALL lqt_io attestations, including exclusive ownership,
++ * throughout cleanup; callbacks must be bounded and ordered. No retries.
++ */
++#define LQC_CONFIG_RUN UINT32_C(0x80000000)
++
++/* Two FIFO subtransfers, NOT three contiguous words: first consumes 5 bytes
++ * (padding in word[1] is not transmitted), second consumes 4 bytes.
++ * Linux set_tags:542..586, write_blk_data:1252..1282, conf_xfer:1368..1413. */
++static inline bool
++lqc_pack(uint8_t address, uint8_t reg, size_t len, uint32_t *words,
++         size_t capacity, size_t *count)
++{
++    if (address > 0x7f || !len || len > LQT_MAX_BYTES || !words ||
++        !count || capacity < 3) return false;
++    const uint32_t staged[3] = {
++        UINT32_C(0x01820081) | (uint32_t)(address << 1) << 8,
++        reg, (uint32_t)len << 24 | UINT32_C(0x00870081) |
++             (uint32_t)((address << 1) | 1u) << 8
++    };
++    memcpy(words, staged, sizeof(staged));
++    *count = 3;
++    return true;
++}
++
++/* Linux IRQ FIFO completion:330..372. RX service means the complete bounded
++ * FIFO is available; discard two RX tag bytes without inventing their values.
++ * OUT_SERVICE is sufficient for FIFO writes; OUTPUT_DONE can lag. */
++static inline enum lqt_status
++lqc_wait_phase(const struct lqt_budget *b, struct lqt_outcome *r,
++               uint8_t *staged, size_t len)
++{
++    const struct lqt_io *io = b ? b->io : NULL;
++    if (!lqt_ready(io)) return LQT_PLATFORM_UNVERIFIED;
++    if (len > LQT_MAX_BYTES || (len && !staged)) return LQT_INVALID;
++    for (uint32_t n = 0; n < io->max_polls; ++n) {
++        uint32_t op, word;
++        if (lqt_expired(b)) return LQT_TRANSFER_TIMEOUT;
++        enum lqt_status s = lqt_check_errors(io, r, NULL);
++        if (s != LQT_OK) return s;
++        if (!io->read32(io->cookie, LQT_OPERATIONAL, &op)) return LQT_MMIO_ERROR;
++        if ((op & LQT_OUT_SERVICE) &&
++            !io->write32(io->cookie, LQT_OPERATIONAL, LQT_OUT_SERVICE))
++            return LQT_MMIO_ERROR;
++        if (op & LQT_IN_SERVICE) {
++            if (!io->write32(io->cookie, LQT_OPERATIONAL, LQT_IN_SERVICE))
++                return LQT_MMIO_ERROR;
++            if (len) {
++                for (size_t i = 0; i < len + 2u; i += 4u) {
++                    if (lqt_expired(b)) return LQT_TRANSFER_TIMEOUT;
++                    if (!io->read32(io->cookie, LQT_IN_FIFO, &word))
++                        return LQT_MMIO_ERROR;
++                    for (size_t j = 0; j < 4 && i + j < len + 2u; ++j)
++                        if (i + j >= 2u)
++                            staged[i + j - 2u] = (uint8_t)(word >> (8u * j));
++                }
++                return LQT_OK;
++            }
++        }
++        if (!len && (op & (LQT_OUT_SERVICE | LQT_OUT_DONE))) return LQT_OK;
++        io->delay_us(io->cookie, 1);
++    }
++    return LQT_TRANSFER_TIMEOUT;
++}
++
++/* Deadline uses the touch callback's nonwrapping absolute microsecond clock.
++ * Local timeout and poll caps also apply. Cleanup gets a fresh local timeout
++ * capped by the ORIGINAL absolute deadline, never an extension of that deadline.
++ * If cleanup != LQT_OK, controller/bus state is UNVERIFIED: caller must quarantine
++ * ownership until platform recovery verifies it. At/after deadline no hardware
++ * cleanup is attempted. A reset timeout is not safe-release evidence.
++ * Output commits only after RX, final idle, reset AND deadline verification.
++ * A failed call can have target-side register-pointer effects; no rollback.
++ * data must cover capacity bytes and must not alias io or its callback state. */
++static inline struct lqt_outcome
++lqc_read_register(const struct lqt_io *io, uint8_t address, uint8_t reg,
++                  uint8_t *data, size_t capacity, size_t len, uint64_t deadline)
++{
++    struct lqt_outcome r = {LQT_INVALID, LQT_OK, 0, 0};
++    uint32_t tx[3], mode;
++    size_t count;
++    uint8_t staged[LQT_MAX_BYTES] = {0};
++    struct lqt_io bounded;
++    struct lqt_budget b;
++    const uint32_t sizes[3] = {4, 16, 32};
++    if (!io || !data || capacity < len ||
++        !lqc_pack(address, reg, len, tx, 3, &count) ||
++        !io->read32 || !io->write32 || !io->time_us || !io->delay_us ||
++        !io->timeout_us || io->timeout_us > 1000000u ||
++        !io->max_polls || io->max_polls > 256u) return r;
++    if (io->verified != LQT_ALL_VERIFIED) {
++        r.status = LQT_PLATFORM_UNVERIFIED; return r; /* zero callbacks */
++    }
++    bounded = *io;
++    b.io = &bounded;
++    b.start = io->time_us(io->cookie);
++    if (b.start >= deadline) { r.status = LQT_TRANSFER_TIMEOUT; return r; }
++    if (deadline - b.start < bounded.timeout_us)
++        bounded.timeout_us = (uint32_t)(deadline - b.start);
++#define LQC_TRY(expr) do { r.status = (expr); if (r.status != LQT_OK) goto cleanup; } while (0)
++#define LQC_WRITE(reg_, val_) do { if (lqt_expired(&b)) { r.status = LQT_TRANSFER_TIMEOUT; goto cleanup; } if (!io->write32(io->cookie, (reg_), (val_))) { r.status = LQT_MMIO_ERROR; goto cleanup; } } while (0)
++    LQC_WRITE(LQT_SW_RESET, 1);
++    LQC_TRY(lqt_wait_state(&b, 3, 0));
++    if (!io->read32(io->cookie, LQT_IO_MODE, &mode)) {
++        r.status = LQT_MMIO_ERROR; goto cleanup;
++    }
++    /* Discover both capacities, reject reserved encodings before any FIFO IO. */
++    if ((mode & 3u) == 3u || ((mode >> 5) & 3u) == 3u ||
++        5u > sizes[mode & 3u] * (2u << ((mode >> 2) & 7u)) ||
++        len + 2u > sizes[(mode >> 5) & 3u] * (2u << ((mode >> 7) & 7u))) {
++        r.status = LQT_FIFO_TOO_SMALL; goto cleanup;
++    }
++    LQC_WRITE(LQT_CONFIG, 0x207);
++    LQC_WRITE(LQT_MASTER_GEN, 1);
++    LQC_TRY(lqt_wait_state(&b, LQT_MASTER, LQT_MASTER));
++    LQC_TRY(lqt_wait_idle(&b, &r));
++    LQC_WRITE(LQT_MX_OUTPUT_CNT, 0);
++    LQC_WRITE(LQT_MX_INPUT_CNT, 0);
++    LQC_WRITE(LQT_IO_MODE, 0xc000);
++    LQC_WRITE(LQT_MX_WRITE_CNT, 5);
++    LQC_WRITE(LQT_CONFIG, 0x287); /* NO_INPUT for register-pointer write */
++    LQC_TRY(lqt_change_state(&b, 1));
++    LQC_WRITE(LQT_CLK_CTL, io->clk_ctl);
++    LQC_TRY(lqt_change_state(&b, 3));
++    LQC_WRITE(LQT_OUT_FIFO, tx[0]);
++    LQC_WRITE(LQT_OUT_FIFO, tx[1]);
++    LQC_TRY(lqt_change_state(&b, 1));
++    LQC_TRY(lqc_wait_phase(&b, &r, NULL, 0));
++    /* Do NOT wait for idle/reset here: DATAWR has deliberately retained bus. */
++    LQC_TRY(lqt_change_state(&b, 3));
++    LQC_WRITE(LQT_MX_WRITE_CNT, LQC_CONFIG_RUN | 4u);
++    LQC_WRITE(LQT_MX_READ_CNT, LQC_CONFIG_RUN | (uint32_t)(len + 2u));
++    LQC_WRITE(LQT_CONFIG, 0x207);
++    LQC_WRITE(LQT_OUT_FIFO, tx[2]);
++    LQC_TRY(lqt_change_state(&b, 1));
++    LQC_TRY(lqc_wait_phase(&b, &r, staged, len));
++    LQC_TRY(lqt_wait_idle(&b, &r));
++cleanup:
++    b.start = io->time_us(io->cookie);
++    bounded.timeout_us = io->timeout_us;
++    if (b.start >= deadline) {
++        r.cleanup = LQT_STATE_TIMEOUT;
++    } else {
++        if (deadline - b.start < bounded.timeout_us)
++            bounded.timeout_us = (uint32_t)(deadline - b.start);
++        if (r.status == LQT_OK) r.cleanup = lqt_change_state(&b, 0);
++        else if (!io->write32(io->cookie, LQT_SW_RESET, 1)) r.cleanup = LQT_MMIO_ERROR;
++        else r.cleanup = lqt_wait_state(&b, 3, 0);
++        /* Reset is not evidence that the electrical bus is free. In particular
++         * the touch layer may retry a NACK only after this idle check succeeds. */
++        if (r.cleanup == LQT_OK) {
++            struct lqt_outcome clean = {LQT_OK, LQT_OK, 0, 0};
++            r.cleanup = lqt_wait_idle(&b, &clean);
++            r.bus_error |= clean.bus_error; r.core_error |= clean.core_error;
++        }
++        if (r.cleanup == LQT_OK && io->time_us(io->cookie) >= deadline)
++            r.cleanup = LQT_STATE_TIMEOUT;
++    }
++    if (r.status == LQT_OK && r.cleanup != LQT_OK) r.status = LQT_CLEANUP_FAILED;
++    if (r.status == LQT_OK) memcpy(data, staged, len);
++#undef LQC_TRY
++#undef LQC_WRITE
++    return r;
++}
++
++/* Platform supplies claim/release/now; initialize this structure to zero, then
++ * set io. Only set claimed after actual ownership verification. The touch layer
++ * always invokes release even on errors: that callback MUST inspect poisoned.
++ * When poisoned, retain/quarantine platform ownership instead of making it
++ * available to another user. Only platform recovery with verified idle/reset
++ * and renewed attestations can explicitly clear poison; no automatic recovery
++ * or safe-release claim is provided here. last preserves the exact outcome. */
++struct lqc_touch_adapter {
++    const struct lqt_io *io;
++    bool claimed, poisoned;
++    struct lqt_outcome last;
++};
++static inline bool
++lqc_touch_release_allowed(const struct lqc_touch_adapter *a)
++{ return a && a->claimed && !a->poisoned; }
++static inline struct lithium_touch_i2c_completion
++lqc_touch_write_read(void *context, uint8_t address, uint8_t reg, uint8_t *data,
++                     size_t len, uint64_t deadline)
++{
++    struct lqc_touch_adapter *a = context;
++    struct lithium_touch_i2c_completion c = {LITHIUM_TOUCH_I2C_INVALID, 0, 0};
++    if (!a) return c;
++    if (a->poisoned) { c.status = LITHIUM_TOUCH_I2C_IO_ERROR; return c; }
++    if (!a->claimed) { c.status = LITHIUM_TOUCH_I2C_NOT_OWNED; return c; }
++    struct lqt_outcome r = lqc_read_register(a->io, address, reg, data, len, len, deadline);
++    a->last = r;
++    if (r.cleanup != LQT_OK) {
++        a->poisoned = true; c.status = LITHIUM_TOUCH_I2C_IO_ERROR;
++    }
++    else switch (r.status) {
++    case LQT_OK: c.status = LITHIUM_TOUCH_I2C_OK; c.written = 1; c.read = len; break;
++    case LQT_INVALID: break;
++    case LQT_PLATFORM_UNVERIFIED: c.status = LITHIUM_TOUCH_I2C_NOT_OWNED; break;
++    case LQT_NACK_ERROR: c.status = LITHIUM_TOUCH_I2C_NACK; break;
++    case LQT_STATE_TIMEOUT: case LQT_TRANSFER_TIMEOUT:
++        c.status = LITHIUM_TOUCH_I2C_TIMEOUT; break;
++    default: c.status = LITHIUM_TOUCH_I2C_IO_ERROR; break;
++    }
++    return c;
++}
++#endif
+diff --git a/maintenance/hakios-lithium/peripherals-next/qup-combined-test.c b/maintenance/hakios-lithium/peripherals-next/qup-combined-test.c
+new file mode 100644
+index 0000000..0000000
+--- /dev/null
++++ b/maintenance/hakios-lithium/peripherals-next/qup-combined-test.c
+@@ -0,0 +1,353 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++#include "qup-combined.h"
++#include <assert.h>
++#include <stdio.h>
++
++/* Independent stateful FIFO model: consumes only programmed counts, enforces
++ * RESET/RUN/PAUSE and config-during-run, retains BUS_ACTIVE between messages. */
++struct fake {
++    uint32_t state, mode, config, wc, rc, fifo[3], rx[9], flags;
++    uint8_t stream[9], reg;
++    size_t calls, fail_at, times, delays, resets, transitions, tx, rxpos;
++    size_t phase, stream_len, staged_words, transactions, reads[8];
++    uint64_t now;
++    uint32_t bus_error, core_error, reject_state;
++    bool freeze, invalid, no_master, no_done, stuck, cleanup_bad, reset_bad;
++    bool active, master, backward, late, fail_second, stale_read_count, phase2_nack;
++};
++static bool rd(void *p, uint32_t off, uint32_t *v)
++{
++    struct fake *f = p;
++    if (++f->calls == f->fail_at) return false;
++    switch (off) {
++    case LQT_STATE:
++        *v = (f->invalid || (f->cleanup_bad && f->resets > 1)) ? 0 :
++            LQT_STATE_VALID | (f->master ? LQT_MASTER : 0) | f->state; break;
++    case LQT_IO_MODE: *v = f->mode; break;
++    case LQT_I2C_STATUS:
++        *v = (f->active || f->stuck ? LQT_BUS_ACTIVE : 0) |
++            (f->phase && (!f->phase2_nack || f->phase == 2) ? f->bus_error : 0); break;
++    case LQT_ERROR_FLAGS: *v = f->phase ? f->core_error : 0; break;
++    case LQT_OPERATIONAL: *v = f->no_done ? 0 : f->flags; break;
++    case LQT_IN_FIFO:
++        assert(f->phase == 2 && f->state == 1 && f->rxpos < (f->rc + 3u) / 4u);
++        *v = f->rx[f->rxpos++];
++        if (f->rxpos == (f->rc + 3u) / 4u) f->active = false;
++        break;
++    default: assert(0);
++    }
++    return true;
++}
++static void consume(struct fake *f)
++{
++    if (!f->staged_words) return;
++    assert(f->phase < 2);
++    if (!f->phase) {
++        assert(f->wc == 5 && f->config == 0x287 && f->staged_words == 2);
++        if (f->stale_read_count) assert(f->rc == UINT32_C(0x12345678));
++        f->reg = (uint8_t)f->fifo[1];
++        f->active = true;
++    } else {
++        assert(f->wc == 4 && f->config == 0x207 && f->staged_words == 1);
++        assert(f->rc >= 3 && f->rc <= 34 && f->active);
++        assert(f->transactions < 8);
++        f->reads[f->transactions++] = f->rc - 2;
++        memset(f->rx, 0, sizeof(f->rx));
++        /* Deliberately arbitrary tag bytes: Linux skips, does not validate. */
++        for (size_t i = 0; i < f->rc; ++i) {
++            uint8_t x = i < 2 ? 0xee : (uint8_t)(f->reg + i - 2);
++            f->rx[i / 4] |= (uint32_t)x << (8 * (i % 4));
++        }
++    }
++    for (size_t i = 0; i < f->wc; ++i) {
++        assert(f->stream_len < sizeof(f->stream));
++        f->stream[f->stream_len++] = (uint8_t)(f->fifo[i / 4] >> (8 * (i % 4)));
++    }
++    ++f->phase;
++    f->flags = LQT_OUT_SERVICE | (f->phase == 2 ? LQT_IN_SERVICE : 0);
++    f->staged_words = 0;
++}
++static bool wr(void *p, uint32_t off, uint32_t v)
++{
++    struct fake *f = p;
++    if (++f->calls == f->fail_at) return false;
++    switch (off) {
++    case LQT_SW_RESET:
++        assert(v == 1);
++        if (f->reset_bad && f->resets) return false;
++        ++f->resets; f->phase = f->rxpos = f->staged_words = f->stream_len = 0;
++        f->state = 0; f->master = f->active = false; f->flags = 0; break;
++    case LQT_STATE:
++        assert(v == 0 || v == 1 || v == 3);
++        ++f->transitions;
++        if (f->reject_state == v + 1) break;
++        if (!v) {
++            assert(!f->active);
++            ++f->resets; f->state = 0;
++            if (f->late) f->now = 10000;
++        } else { f->state = v; if (v == 1) consume(f); }
++        break;
++    case LQT_MASTER_GEN: assert(v == 1 && f->state == 0); f->master = !f->no_master; break;
++    case LQT_IO_MODE: assert(v == 0xc000 && f->state == 0); break;
++    case LQT_CONFIG: f->config = v; break;
++    case LQT_MX_OUTPUT_CNT: case LQT_MX_INPUT_CNT: assert(!v && !f->state); break;
++    case LQT_MX_WRITE_CNT:
++        if (f->phase) assert(f->phase == 1 && f->state == 3 && (v & LQC_CONFIG_RUN));
++        else assert(f->state == 0 && !(v & LQC_CONFIG_RUN));
++        f->wc = v & ~LQC_CONFIG_RUN; break;
++    case LQT_MX_READ_CNT:
++        assert(f->phase == 1 && f->state == 3 && (v & LQC_CONFIG_RUN));
++        f->rc = v & ~LQC_CONFIG_RUN; break;
++    case LQT_CLK_CTL: assert(f->state == 1 && !f->phase && v == 0x35d); break;
++    case LQT_OUT_FIFO:
++        assert(f->state == 3 && f->staged_words < 3);
++        f->fifo[f->staged_words++] = v; ++f->tx; break;
++    case LQT_OPERATIONAL:
++        assert(v == LQT_OUT_SERVICE || v == LQT_IN_SERVICE); f->flags &= ~v; break;
++    case LQT_I2C_STATUS: assert(v && !(v & ~LQT_BUS_ERRORS)); f->bus_error &= ~v; break;
++    case LQT_ERROR_FLAGS: assert(v && !(v & ~LQT_CORE_ERRORS)); f->core_error &= ~v; break;
++    default: assert(0);
++    }
++    return true;
++}
++static uint64_t tm(void *p) { struct fake *f = p; ++f->times; return f->now; }
++static void delay(void *p, uint32_t n)
++{
++    struct fake *f = p; assert(n == 1); ++f->delays;
++    if (!f->freeze) f->now = f->backward ? f->now - n : f->now + n;
++}
++static struct lqt_io setup(struct fake *f)
++{
++    memset(f, 0, sizeof(*f));
++    f->mode = 1u | 1u << 2 | 1u << 5 | 1u << 7; /* both 64 bytes */
++    return (struct lqt_io){f, rd, wr, tm, delay, LQT_ALL_VERIFIED, 0x35d, 100, 8};
++}
++static struct lqt_outcome run(struct lqt_io *io, uint8_t *out, size_t n)
++{ return lqc_read_register(io, 0x38, 0xa3, out, 32, n, 10000); }
++static void unchanged(const uint8_t *out, size_t n)
++{ for (size_t i = 0; i < n; ++i) assert(out[i] == 0x5a); }
++static void lengths(void)
++{
++    for (size_t n = 1; n <= 32; ++n) {
++        struct fake f; struct lqt_io io = setup(&f); uint8_t out[34];
++        memset(out, 0x5a, sizeof(out));
++        struct lqt_outcome r = run(&io, out + 1, n);
++        assert(r.status == LQT_OK && r.cleanup == LQT_OK);
++        assert(out[0] == 0x5a && out[n + 1] == 0x5a);
++        for (size_t i = 0; i < n; ++i) assert(out[i + 1] == (uint8_t)(0xa3 + i));
++        const uint8_t stream[9] = {0x81,0x70,0x82,1,0xa3,0x81,0x71,0x87,(uint8_t)n};
++        assert(f.stream_len == 9 && !memcmp(f.stream, stream, 9));
++        assert(f.tx == 3 && f.phase == 2 && f.resets == 2 && !f.active);
++        assert(f.rc == n + 2 && f.wc == 4 && f.calls < 100);
++    }
++}
++static void invalid(void)
++{
++    struct fake f; struct lqt_io io = setup(&f); uint8_t out[32];
++    uint32_t words[4], old[4]; size_t count = 99;
++    memset(out, 0x5a, sizeof(out)); memset(words, 0x5a, sizeof(words));
++    memcpy(old, words, sizeof(old));
++    assert(!lqc_pack(0x38,0,1,words,2,&count));
++    assert(!lqc_pack(0x80,0,1,words,4,&count));
++    assert(!lqc_pack(0,0,0,words,4,&count));
++    assert(!lqc_pack(0,0,SIZE_MAX,words,4,&count));
++    assert(!lqc_pack(0,0,1,NULL,4,&count));
++    assert(!lqc_pack(0,0,1,words,4,NULL));
++    assert(count == 99 && !memcmp(words,old,sizeof(old)));
++    assert(lqc_pack(0x7f,0xff,32,words,3,&count));
++    assert(count == 3 && words[0] == 0x0182fe81 && words[1] == 0xff &&
++           words[2] == 0x2087ff81 && words[3] == old[3]);
++    for (unsigned bit = 1; bit <= 128; bit <<= 1) {
++        io.verified = LQT_ALL_VERIFIED ^ bit;
++        assert(run(&io,out,1).status == LQT_PLATFORM_UNVERIFIED);
++        assert(!f.calls && !f.times && !f.delays);
++    }
++    io.verified = LQT_ALL_VERIFIED;
++    assert(run(&io,out,0).status == LQT_INVALID);
++    assert(run(&io,out,33).status == LQT_INVALID);
++    assert(run(&io,NULL,1).status == LQT_INVALID);
++    assert(lqc_read_register(&io,0x38,0,out,1,2,10000).status == LQT_INVALID);
++    assert(lqc_read_register(&io,0x80,0,out,32,1,10000).status == LQT_INVALID);
++    assert(run(NULL,out,1).status == LQT_INVALID);
++    for (unsigned k = 0; k < 8; ++k) {
++        struct lqt_io bad = io;
++        switch(k) { case 0: bad.read32=NULL; break; case 1: bad.write32=NULL; break;
++        case 2: bad.time_us=NULL; break; case 3: bad.delay_us=NULL; break;
++        case 4: bad.timeout_us=0; break; case 5: bad.timeout_us=1000001; break;
++        case 6: bad.max_polls=0; break; case 7: bad.max_polls=257; break; }
++        assert(run(&bad,out,1).status == LQT_INVALID);
++    }
++    assert(!f.calls && !f.times && !f.delays); unchanged(out,32);
++    assert(lqc_read_register(&io,0x38,0,out,32,1,0).status == LQT_TRANSFER_TIMEOUT);
++    assert(!f.calls && !f.delays);
++}
++static void faults(void)
++{
++    /* Sweep every successful-path MMIO call for every length, including final
++     * cleanup state/idle calls. This catches partial RX and cleanup publication. */
++    size_t swept = 0;
++    for (size_t n = 1; n <= 32; ++n) {
++        struct fake base; struct lqt_io io = setup(&base); uint8_t out[32];
++        assert(run(&io,out,n).status == LQT_OK);
++        for (size_t fail = 1; fail <= base.calls; ++fail) {
++            struct fake f; io=setup(&f); f.fail_at=fail; memset(out,0x5a,32);
++            struct lqt_outcome r=run(&io,out,n);
++            assert(r.status != LQT_OK && f.calls < 150); unchanged(out,32); ++swept;
++        }
++    }
++    for (unsigned k=0;k<14;++k) {
++        struct fake f; struct lqt_io io=setup(&f); uint8_t out[32];
++        memset(out,0x5a,32);
++        switch(k) {
++        case 0: f.bus_error=LQT_NACK; break;
++        case 1: f.bus_error=0x10; break; case 2: f.core_error=4; break;
++        case 3: f.no_done=true; break; case 4: f.invalid=true; break;
++        case 5: f.no_master=true; break; case 6: f.stuck=true; break;
++        case 7: f.freeze=true; f.no_done=true; break;
++        case 8: f.reject_state=2; break; case 9: f.reject_state=4; break;
++        case 10: f.cleanup_bad=true; break;
++        case 11: f.no_done=true; f.reset_bad=true; break;
++        case 12: f.no_done=true; f.backward=true; break;
++        case 13: f.late=true; break;
++        }
++        struct lqt_outcome r=run(&io,out,32);
++        assert(r.status!=LQT_OK && f.calls<180 && f.delays<32); unchanged(out,32);
++        if(k==0) assert(r.status==LQT_NACK_ERROR && r.cleanup==LQT_OK);
++        if(k==3 || k==7) assert(r.status==LQT_TRANSFER_TIMEOUT);
++        if(k==10 || k==13) assert(r.status==LQT_CLEANUP_FAILED);
++        if(k==11) assert(r.status==LQT_TRANSFER_TIMEOUT && r.cleanup==LQT_MMIO_ERROR);
++    }
++    for (unsigned k=0;k<3;++k) {
++        struct fake f; struct lqt_io io=setup(&f); uint8_t out[32];
++        memset(out,0x5a,32); f.mode=k==0 ? 0 : k==1 ? 3 : 3u<<5;
++        assert(run(&io,out,32).status==LQT_FIFO_TOO_SMALL && !f.tx); unchanged(out,32);
++    }
++    printf("MMIO failure sweep: %zu cases (all lengths 1..32)\n",swept);
++}
++struct adapter_test { struct lqc_touch_adapter adapter; struct fake *f; unsigned claims,releases; };
++static uint64_t anow(void *p) { return tm(((struct adapter_test *)p)->f); }
++static enum lithium_touch_i2c_status claim(void *p,uint32_t base,uint64_t deadline)
++{
++    struct adapter_test *a=p; assert(base==LITHIUM_TOUCH_I2C_QUP_BASE && anow(p)<deadline);
++    ++a->claims; a->adapter.claimed=true; return LITHIUM_TOUCH_I2C_OK;
++}
++static void release(void *p)
++{
++    struct adapter_test *a=p; ++a->releases;
++    if(lqc_touch_release_allowed(&a->adapter)) a->adapter.claimed=false;
++}
++static struct lithium_touch_i2c_completion abridge(void *p,uint8_t addr,uint8_t reg,
++                                                  uint8_t *out,size_t n,uint64_t d)
++{
++    struct adapter_test *a=p;
++    if(a->f->fail_second && a->f->transactions==1) a->f->no_done=true;
++    return lqc_touch_write_read(&a->adapter,addr,reg,out,n,d);
++}
++static void adapter(void)
++{
++    const struct lithium_touch_i2c_ops ops={anow,claim,abridge,release};
++    for(unsigned fail=0;fail<2;++fail) {
++        struct fake f; struct lqt_io io=setup(&f); f.fail_second=fail!=0;
++        struct adapter_test a={.adapter={.io=&io},.f=&f};
++        struct lithium_touch_i2c_report report; memset(&report,0x5a,sizeof(report));
++        assert(lqc_touch_write_read(&a.adapter,0x38,0,report.bytes,32,10000).status==
++               LITHIUM_TOUCH_I2C_NOT_OWNED && !f.calls && !f.times);
++        enum lithium_touch_i2c_status s=lithium_touch_i2c_read_report(&ops,&a,10000,&report);
++        assert(a.claims==1 && a.releases==1 && !a.adapter.claimed);
++        if(!fail) {
++            assert(s==LITHIUM_TOUCH_I2C_OK && f.transactions==2 && f.reads[0]==32 && f.reads[1]==31);
++            for(size_t i=0;i<63;++i) assert(report.bytes[i]==i);
++        } else { assert(s!=LITHIUM_TOUCH_I2C_OK); unchanged(report.bytes,63); }
++    }
++    struct fake f; struct lqt_io io=setup(&f); uint8_t out[32]; memset(out,0x5a,32);
++    struct lqc_touch_adapter a={.io=&io,.claimed=true}; f.bus_error=LQT_NACK; f.stuck=true;
++    assert(lqc_touch_write_read(&a,0x38,0,out,32,10000).status==LITHIUM_TOUCH_I2C_IO_ERROR);
++    assert(a.poisoned && !lqc_touch_release_allowed(&a));
++    size_t calls=f.calls, times=f.times;
++    assert(lqc_touch_write_read(&a,0x38,0,out,32,10000).status==LITHIUM_TOUCH_I2C_IO_ERROR);
++    assert(f.calls==calls && f.times==times);
++    unchanged(out,32);
++}
++static void cleanup_edges(void)
++{
++    uint8_t out[32];
++    struct fake f; struct lqt_io io=setup(&f);
++    f.stale_read_count=true; f.rc=UINT32_C(0x12345678);
++    assert(run(&io,out,32).status==LQT_OK && f.rc==34);
++    for(unsigned k=0;k<4;++k) {
++        io=setup(&f); memset(out,0x5a,32);
++        struct lqc_touch_adapter a={.io=&io,.claimed=true};
++        if(k==0) { f.no_done=true; io.timeout_us=100; }
++        if(k==1) { f.cleanup_bad=true; f.freeze=true; }
++        if(k==2) { f.bus_error=LQT_NACK; f.reset_bad=true; }
++        if(k==3) f.late=true;
++        uint64_t deadline=k==0 ? 2 : 10000;
++        struct lithium_touch_i2c_completion c=lqc_touch_write_read(&a,0x38,0,out,32,deadline);
++        assert(c.status==LITHIUM_TOUCH_I2C_IO_ERROR && !c.written && !c.read);
++        assert(a.poisoned && a.claimed && !lqc_touch_release_allowed(&a));
++        assert(a.last.cleanup!=LQT_OK); unchanged(out,32);
++        if(k==0) assert(f.now==deadline && f.resets==1); /* no post-deadline reset */
++        size_t calls=f.calls,times=f.times,delays=f.delays;
++        c=lqc_touch_write_read(&a,0x38,0,out,32,UINT64_MAX);
++        assert(c.status==LITHIUM_TOUCH_I2C_IO_ERROR && f.calls==calls &&
++               f.times==times && f.delays==delays);
++    }
++    for(unsigned k=0;k<2;++k) {
++        io=setup(&f); f.bus_error=k ? 0x10 : LQT_NACK; f.phase2_nack=true;
++        memset(out,0x5a,32);
++        struct lqt_outcome r=run(&io,out,32);
++        assert(r.status==(k ? LQT_CONTROLLER_ERROR : LQT_NACK_ERROR) && r.cleanup==LQT_OK);
++        unchanged(out,32);
++    }
++    /* W1C and reset-on-error callbacks also get individual failure injection. */
++    size_t swept=0;
++    for(unsigned k=0;k<3;++k) {
++        struct fake base; io=setup(&base);
++        if(k==0) base.bus_error=LQT_NACK;
++        if(k==1) base.core_error=4;
++        if(k==2) base.no_done=true;
++        assert(run(&io,out,32).status!=LQT_OK);
++        for(size_t fail=1;fail<=base.calls;++fail) {
++            io=setup(&f); f.fail_at=fail; memset(out,0x5a,32);
++            if(k==0) f.bus_error=LQT_NACK;
++            if(k==1) f.core_error=4;
++            if(k==2) f.no_done=true;
++            assert(run(&io,out,32).status!=LQT_OK && f.calls<180);
++            unchanged(out,32); ++swept;
++        }
++    }
++    /* Exact minimum RX capacity and one byte over; first phase ignores stale RX. */
++    for(unsigned over=0;over<2;++over) {
++        io=setup(&f); f.mode=0; memset(out,0x5a,32);
++        assert(run(&io,out,6+over).status==(over ? LQT_FIFO_TOO_SMALL : LQT_OK));
++        if(over) unchanged(out,32);
++    }
++    {
++        /* The enclosing touch layer always calls release on deadline failure.
++         * Its platform callback must quarantine rather than relinquish poison. */
++        io=setup(&f); f.no_done=true;
++        struct adapter_test a={.adapter={.io=&io},.f=&f};
++        const struct lithium_touch_i2c_ops ops={anow,claim,abridge,release};
++        struct lithium_touch_i2c_report report; memset(&report,0x5a,sizeof(report));
++        assert(lithium_touch_i2c_read_report(&ops,&a,2,&report)==LITHIUM_TOUCH_I2C_TIMEOUT);
++        assert(a.releases==1 && a.adapter.claimed && a.adapter.poisoned && f.resets==1);
++        assert(a.adapter.last.cleanup==LQT_STATE_TIMEOUT); unchanged(report.bytes,63);
++    }
++    {
++        /* A cleared NACK with confirmed cleanup may retry the whole report. */
++        io=setup(&f); f.bus_error=LQT_NACK;
++        struct adapter_test a={.adapter={.io=&io},.f=&f};
++        const struct lithium_touch_i2c_ops ops={anow,claim,abridge,release};
++        struct lithium_touch_i2c_report report;
++        assert(lithium_touch_i2c_read_report(&ops,&a,10000,&report)==LITHIUM_TOUCH_I2C_OK);
++        assert(a.claims==1 && a.releases==1 && !a.adapter.poisoned && !a.adapter.claimed);
++        for(size_t i=0;i<63;++i) assert(report.bytes[i]==i);
++    }
++    printf("Error-path MMIO sweep: %zu cases; deadline poison/stale RX count PASS\n",swept);
++}
++int main(void)
++{
++    lengths(); invalid(); faults(); adapter(); cleanup_edges();
++    puts("PASS: combined FIFO lengths/tags/gates/capacity/faults/cleanup/32+31 adapter");
++    return 0;
++}
+diff --git a/maintenance/hakios-lithium/peripherals-next/touch-delivery.h b/maintenance/hakios-lithium/peripherals-next/touch-delivery.h
+new file mode 100644
+index 0000000..0000000
+--- /dev/null
++++ b/maintenance/hakios-lithium/peripherals-next/touch-delivery.h
+@@ -0,0 +1,183 @@
++#ifndef LITHIUM_TOUCH_DELIVERY_H
++#define LITHIUM_TOUCH_DELIVERY_H
++
++#include "../peripherals/touch-queue.h"
++
++/* Host-tested protocol only: no physical queue, IOHID, clock or lock is bound.
++ * Zero-initialize once, then serialize ALL calls on one producer executor.
++ * busy rejects callback recursion; it is NOT a cross-thread synchronization
++ * primitive. Do not copy, reinitialize or directly mutate a live object.
++ * Geometry is fixed for the stream; the immutable queue helper owns all maps.
++ */
++enum lithium_touch_delivery_result {
++    LITHIUM_DELIVERY_OK,
++    LITHIUM_DELIVERY_INVALID,
++    LITHIUM_DELIVERY_ORDER,
++    LITHIUM_DELIVERY_PENDING,
++    LITHIUM_DELIVERY_NO_PENDING,
++    LITHIUM_DELIVERY_BUSY,
++    LITHIUM_DELIVERY_UNAVAILABLE,
++    LITHIUM_DELIVERY_REJECTED,
++    LITHIUM_DELIVERY_POISONED
++};
++
++enum lithium_touch_submit_result {
++    /* Exactly zero records/metadata became visible; retry is safe. */
++    LITHIUM_SUBMIT_REJECT_ALL = 0,
++    /* All records AND their batch identity were atomically accepted. */
++    LITHIUM_SUBMIT_ACCEPT_ALL = 1,
++    /* Partial, timed-out or otherwise uncertain publication: NEVER retry. */
++    LITHIUM_SUBMIT_UNCERTAIN = 2
++};
++
++struct lithium_touch_delivery_batch {
++    uint64_t sequence;      /* Producer acquisition sequence, nonzero, no wrap. */
++    uint64_t monotonic_ns;  /* Producer monotonic clock, nonzero, no wrap. */
++    struct lithium_touch_queue_batch queue;
++};
++
++enum { LITHIUM_TOUCH_ATOMIC_ADAPTER_V1 = 1 };
++struct lithium_touch_delivery_adapter {
++    unsigned atomic_abi;
++    void *context;
++    /* Synchronous, bounded; borrowed batch valid only during this callback.
++     * Copy it before returning ACCEPT_ALL. Never retain the pointer.
++     * Implement real reserve/copy/publish of the WHOLE batch, not a loop of
++     * best-effort posts. REJECT_ALL must have no externally visible effect.
++     * Retry carries identical sequence/time/events/finger/stroke allocation.
++     * Return ACCEPT_ALL only once, or from an adapter's exact duplicate
++     * receipt; never republish a previously accepted batch. Unknown returns
++     * are treated as UNCERTAIN. ABI declaration is a contract, not proof. */
++    enum lithium_touch_submit_result (*submit)(void *context,
++        const struct lithium_touch_delivery_batch *batch);
++    /* Optional recovery fence, NOT a queue-only reset. ACCEPT_ALL certifies
++     * that through_sequence and all older in-flight work cannot appear later,
++     * and downstream HID contacts have been released/reset and acknowledged.
++     * Must use a real adapter/consumer handshake. No such implementation is
++     * supplied here. Repeated calls for one fence must be idempotent. Any
++     * other result leaves the object poisoned; never infer a reset locally. */
++    enum lithium_touch_submit_result (*resync)(void *context,
++        uint64_t through_sequence);
++};
++
++struct lithium_touch_delivery {
++    struct lithium_touch_queue_state committed;
++    struct lithium_touch_queue_state candidate;
++    struct lithium_touch_delivery_batch batch;
++    struct lithium_touch_geometry geometry;
++    struct lithium_touch_delivery_adapter adapter;
++    uint64_t reserved_sequence, reserved_ns;
++    bool initialized, pending, busy, poisoned;
++};
++
++static inline enum lithium_touch_delivery_result
++lithium_touch_delivery_init(struct lithium_touch_delivery *d,
++    const struct lithium_touch_geometry *geometry,
++    const struct lithium_touch_delivery_adapter *adapter)
++{
++    uint32_t x, y;
++    if (!d) return LITHIUM_DELIVERY_INVALID;
++    if (d->busy) return LITHIUM_DELIVERY_BUSY;
++    if (d->initialized) return LITHIUM_DELIVERY_INVALID;
++    if (!adapter || adapter->atomic_abi != LITHIUM_TOUCH_ATOMIC_ADAPTER_V1 ||
++        !adapter->submit) return LITHIUM_DELIVERY_UNAVAILABLE;
++    if (!lithium_touch_queue_map(geometry, 0, 0, &x, &y))
++        return LITHIUM_DELIVERY_INVALID;
++    d->geometry = *geometry;
++    d->adapter = *adapter;
++    d->initialized = true;
++    return LITHIUM_DELIVERY_OK;
++}
++
++/* One pending frame maximum, at most 20 events; no allocation or retry loop.
++ * Caller stamps acquisition sequence and time from one monotonic source;
++ * both must strictly exceed the last PREPARED frame, including rejected ones.
++ * Malformed frames reserve neither stamp nor identities; report actual source
++ * loss separately with frame=NULL,length=0,lost=true and newer stamps.
++ * A pending frame cannot be superseded (even by loss): stop acquisition or
++ * record loss, resolve this batch, then prepare that explicit loss. Missing
++ * controller IDs/UP are handled by the immutable decoder.
++ * Candidate changes, identity allocation and releases are private until ALL
++ * accepted. Empty/stationary frames still require an atomic metadata receipt.
++ */
++static inline enum lithium_touch_delivery_result
++lithium_touch_delivery_prepare(struct lithium_touch_delivery *d,
++    uint64_t sequence, uint64_t monotonic_ns, const uint8_t *frame,
++    size_t length, bool lost)
++{
++    if (!d) return LITHIUM_DELIVERY_INVALID;
++    if (d->busy) return LITHIUM_DELIVERY_BUSY;
++    if (!d->initialized) return LITHIUM_DELIVERY_UNAVAILABLE;
++    if (d->poisoned) return LITHIUM_DELIVERY_POISONED;
++    if (d->pending) return LITHIUM_DELIVERY_PENDING;
++    if (sequence <= d->reserved_sequence || monotonic_ns <= d->reserved_ns)
++        return LITHIUM_DELIVERY_ORDER;
++    struct lithium_touch_queue_state next = d->committed;
++    struct lithium_touch_delivery_batch batch = {
++        .sequence = sequence, .monotonic_ns = monotonic_ns
++    };
++    if (!lithium_touch_queue_frame(&next, &d->geometry, frame, length, lost,
++            &batch.queue)) return LITHIUM_DELIVERY_INVALID;
++    d->candidate = next;
++    d->batch = batch;
++    d->reserved_sequence = sequence;
++    d->reserved_ns = monotonic_ns;
++    d->pending = true;
++    return LITHIUM_DELIVERY_OK;
++}
++
++/* Call again only after explicit zero-publication rejection. No restamping or
++ * reparsing on retry. Queue acceptance is NOT end HID consumer acknowledgment.
++ * No end-to-end exactly-once claim without sink idempotence and receipts,
++ * and no persistence guarantee across producer crash or reinitialization.
++ */
++static inline enum lithium_touch_delivery_result
++lithium_touch_delivery_submit(struct lithium_touch_delivery *d)
++{
++    if (!d) return LITHIUM_DELIVERY_INVALID;
++    if (d->busy) return LITHIUM_DELIVERY_BUSY;
++    if (!d->initialized) return LITHIUM_DELIVERY_UNAVAILABLE;
++    if (d->poisoned) return LITHIUM_DELIVERY_POISONED;
++    if (!d->pending) return LITHIUM_DELIVERY_NO_PENDING;
++    d->busy = true;
++    const enum lithium_touch_submit_result result =
++        d->adapter.submit(d->adapter.context, &d->batch);
++    d->busy = false;
++    if (result == LITHIUM_SUBMIT_REJECT_ALL) return LITHIUM_DELIVERY_REJECTED;
++    if (result != LITHIUM_SUBMIT_ACCEPT_ALL) {
++        d->poisoned = true;
++        return LITHIUM_DELIVERY_POISONED;
++    }
++    d->committed = d->candidate;
++    d->pending = false;
++    return LITHIUM_DELIVERY_OK;
++}
++
++/* Partial/uncertain delivery has no rollback. Keep the failed batch for audit;
++ * block all new work/replay until an actual downstream recovery fence succeeds.
++ * Preserve sequence/time high-water marks and burn candidate stroke identities
++ * even when partially visible; next frame rejoins with fresh stroke identities.
++ */
++static inline enum lithium_touch_delivery_result
++lithium_touch_delivery_resync(struct lithium_touch_delivery *d)
++{
++    if (!d) return LITHIUM_DELIVERY_INVALID;
++    if (d->busy) return LITHIUM_DELIVERY_BUSY;
++    if (!d->initialized) return LITHIUM_DELIVERY_UNAVAILABLE;
++    if (!d->poisoned) return LITHIUM_DELIVERY_INVALID;
++    if (!d->adapter.resync) return LITHIUM_DELIVERY_UNAVAILABLE;
++    d->busy = true;
++    const enum lithium_touch_submit_result result =
++        d->adapter.resync(d->adapter.context, d->reserved_sequence);
++    d->busy = false;
++    if (result != LITHIUM_SUBMIT_ACCEPT_ALL) return LITHIUM_DELIVERY_POISONED;
++    struct lithium_touch_queue_state clean = {0};
++    clean.frames.last_identity = d->candidate.frames.last_identity;
++    d->committed = clean;
++    d->candidate = clean;
++    d->pending = false;
++    d->poisoned = false;
++    return LITHIUM_DELIVERY_OK;
++}
++
++#endif
+diff --git a/maintenance/hakios-lithium/peripherals-next/touch-delivery-test.c b/maintenance/hakios-lithium/peripherals-next/touch-delivery-test.c
+new file mode 100644
+index 0000000..0000000
+--- /dev/null
++++ b/maintenance/hakios-lithium/peripherals-next/touch-delivery-test.c
+@@ -0,0 +1,334 @@
++#include <assert.h>
++#include <stdio.h>
++#include <string.h>
++#include "touch-delivery.h"
++
++static const struct lithium_touch_geometry geometry = {750, 1334, 0, 0, 749, 1333, 0};
++enum fake_mode { NORMAL, REENTER, PARTIAL, UNKNOWN, REJECT };
++struct fake_queue {
++    struct lithium_touch_delivery *producer;
++    struct lithium_touch_delivery_batch seen, accepted;
++    size_t capacity, attempts, accepts, published;
++    uint64_t last_sequence, last_ns, fence;
++    enum fake_mode mode;
++    enum lithium_touch_submit_result reset_result;
++    unsigned reset_calls;
++};
++
++static void empty(uint8_t *frame) { memset(frame, 0xff, LITHIUM_TOUCH_FRAME_BYTES); }
++static void finger(uint8_t *frame, unsigned i, unsigned id, unsigned event,
++    unsigned x, unsigned y)
++{
++    assert(i < LITHIUM_TOUCH_MAX_CONTACTS);
++    uint8_t *p = frame + 3 + 6 * i;
++    p[0] = (uint8_t)((event << 6) | (x >> 8)); p[1] = (uint8_t)x;
++    p[2] = (uint8_t)((id << 4) | (y >> 8)); p[3] = (uint8_t)y;
++    p[4] = 0; p[5] = 1;
++}
++
++static void check_busy(struct lithium_touch_delivery *d)
++{
++    assert(lithium_touch_delivery_prepare(d, 999, 999, NULL, 0, true) == LITHIUM_DELIVERY_BUSY);
++    assert(lithium_touch_delivery_submit(d) == LITHIUM_DELIVERY_BUSY);
++    assert(lithium_touch_delivery_resync(d) == LITHIUM_DELIVERY_BUSY);
++    assert(lithium_touch_delivery_init(d, &geometry, NULL) == LITHIUM_DELIVERY_BUSY);
++}
++
++/* Synthetic bounded reservation model, not the upstream queue implementation. */
++static enum lithium_touch_submit_result submit(void *context,
++    const struct lithium_touch_delivery_batch *batch)
++{
++    struct fake_queue *q = context;
++    ++q->attempts;
++    q->seen = *batch;
++    assert(batch->queue.count <= 2 * LITHIUM_TOUCH_MAX_CONTACTS);
++    if (q->mode == REENTER) {
++        assert(q->producer->pending && q->producer->busy);
++        assert(q->producer->committed.frames.last_identity <
++            q->producer->candidate.frames.last_identity);
++        check_busy(q->producer);
++    }
++    if (q->mode == UNKNOWN) return (enum lithium_touch_submit_result)99;
++    if (q->mode == REJECT) return LITHIUM_SUBMIT_REJECT_ALL;
++    if (q->mode == PARTIAL) {
++        assert(batch->queue.count > 1);
++        ++q->published; /* Deliberate adapter contract violation/uncertainty. */
++        return LITHIUM_SUBMIT_UNCERTAIN;
++    }
++    if (batch->queue.count > q->capacity) return LITHIUM_SUBMIT_REJECT_ALL;
++    assert(batch->sequence > q->last_sequence && batch->monotonic_ns > q->last_ns);
++    q->capacity -= batch->queue.count;
++    q->published += batch->queue.count;
++    ++q->accepts;
++    q->last_sequence = batch->sequence; q->last_ns = batch->monotonic_ns;
++    q->accepted = *batch;
++    return LITHIUM_SUBMIT_ACCEPT_ALL;
++}
++
++static enum lithium_touch_submit_result resync(void *context, uint64_t fence)
++{
++    struct fake_queue *q = context;
++    ++q->reset_calls; q->fence = fence;
++    check_busy(q->producer);
++    return q->reset_result; /* Synthetic downstream fence acknowledgment only. */
++}
++
++static void init(struct lithium_touch_delivery *d, struct fake_queue *q)
++{
++    q->producer = d; q->capacity = 1000;
++    const struct lithium_touch_delivery_adapter a = {
++        LITHIUM_TOUCH_ATOMIC_ADAPTER_V1, q, submit, resync
++    };
++    assert(lithium_touch_delivery_init(d, &geometry, &a) == LITHIUM_DELIVERY_OK);
++}
++
++static void send(struct lithium_touch_delivery *d, uint64_t n, uint8_t *frame)
++{
++    assert(lithium_touch_delivery_prepare(d, n, n * 100, frame,
++        LITHIUM_TOUCH_FRAME_BYTES, false) == LITHIUM_DELIVERY_OK);
++    assert(lithium_touch_delivery_submit(d) == LITHIUM_DELIVERY_OK);
++}
++
++static void down_move_up(void)
++{
++    struct lithium_touch_delivery d = {0}; struct fake_queue q = {0};
++    uint8_t f[LITHIUM_TOUCH_FRAME_BYTES]; init(&d, &q); empty(f);
++    finger(f, 0, 14, 0, 1080, 2040);
++    assert(lithium_touch_delivery_prepare(&d, 1, 100, f, sizeof(f), false) == LITHIUM_DELIVERY_OK);
++    assert(d.committed.frames.active_count == 0 && d.committed.frames.last_identity == 0);
++    assert(d.candidate.frames.active_count == 1 && d.candidate.frames.last_identity == 1);
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_OK);
++    assert(q.accepted.sequence == 1 && q.accepted.monotonic_ns == 100);
++    assert(q.accepted.queue.count == 1 && q.accepted.queue.events[0].type == 1);
++    assert(q.accepted.queue.events[0].x == 65535 && q.accepted.queue.events[0].y == 65535);
++    const uint64_t identity = d.committed.frames.active[0].identity;
++    finger(f, 0, 14, 2, 540, 1020); send(&d, 2, f);
++    assert(q.accepted.queue.events[0].type == 2 && q.accepted.queue.events[0].finger == 0);
++    assert(q.accepted.queue.events[0].x == 32768 && q.accepted.queue.events[0].y == 32768);
++    assert(d.committed.frames.active[0].identity == identity);
++    finger(f, 0, 14, 1, 0, 0); send(&d, 3, f);
++    assert(q.accepted.queue.events[0].type == 3 && q.accepted.queue.events[0].x == 32768);
++    assert(d.committed.frames.active_count == 0 && d.committed.slots[0] == 0);
++    finger(f, 0, 14, 0, 0, 0); send(&d, 4, f);
++    assert(d.committed.frames.active[0].identity > identity);
++}
++
++static void multi_and_retry(void)
++{
++    struct lithium_touch_delivery d = {0}; struct fake_queue q = {0};
++    uint8_t f[LITHIUM_TOUCH_FRAME_BYTES]; init(&d, &q); empty(f);
++    for (unsigned i = 0; i < 10; ++i) finger(f, i, i + 5, 0, i * 100, i * 200);
++    send(&d, 1, f);
++    assert(d.committed.frames.active_count == 10 && q.accepted.queue.count == 10);
++    for (unsigned i = 0; i < 10; ++i) assert(d.committed.slots[i] == i + 1);
++    assert(lithium_touch_delivery_prepare(&d, 2, 200, f, sizeof(f), false) == LITHIUM_DELIVERY_OK);
++    assert(d.batch.queue.count == 20 && d.candidate.frames.last_identity == 20);
++    const struct lithium_touch_delivery_batch pending = d.batch;
++    const struct lithium_touch_queue_state candidate = d.candidate, committed = d.committed;
++    for (unsigned i = 0; i < 10; ++i) {
++        assert(d.batch.queue.events[i].type == 3 && d.batch.queue.events[i + 10].type == 1);
++        assert(d.batch.queue.events[i].finger == i && d.batch.queue.events[i + 10].finger == i);
++    }
++    /* N-1 free records: not even the release prefix may become visible. */
++    q.capacity = 19;
++    for (unsigned i = 0; i < 3; ++i) {
++        assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_REJECTED);
++        assert(q.accepts == 1 && q.published == 10);
++        assert(!memcmp(&d.batch, &pending, sizeof(pending)));
++        assert(!memcmp(&d.candidate, &candidate, sizeof(candidate)));
++        assert(!memcmp(&d.committed, &committed, sizeof(committed)));
++        assert(lithium_touch_delivery_prepare(&d, 3, 300, NULL, 0, true) == LITHIUM_DELIVERY_PENDING);
++    }
++    /* Changing the source buffer after prepare cannot change the retry. */
++    memset(f, 0, sizeof(f)); q.capacity = 20;
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_OK);
++    assert(!memcmp(&q.accepted, &pending, sizeof(pending)));
++    assert(d.committed.frames.last_identity == 20 && q.published == 30);
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_NO_PENDING);
++    assert(q.attempts == 5);
++}
++
++static void loss_once(void)
++{
++    struct lithium_touch_delivery d = {0}; struct fake_queue q = {0};
++    uint8_t f[LITHIUM_TOUCH_FRAME_BYTES]; init(&d, &q); empty(f);
++    finger(f, 0, 2, 0, 300, 400); finger(f, 1, 3, 0, 500, 600); send(&d, 1, f);
++    assert(lithium_touch_delivery_prepare(&d, 4, 400, NULL, 0, true) == LITHIUM_DELIVERY_OK);
++    assert(d.batch.queue.stream_lost && d.batch.queue.count == 2);
++    q.capacity = 0;
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_REJECTED);
++    assert(d.committed.frames.active_count == 2 && q.published == 2);
++    q.capacity = 2; assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_OK);
++    assert(q.published == 4 && d.committed.frames.active_count == 0);
++    assert(q.accepted.queue.events[0].type == 3 && q.accepted.queue.events[1].type == 3);
++    assert(lithium_touch_delivery_prepare(&d, 5, 500, NULL, 0, true) == LITHIUM_DELIVERY_OK);
++    assert(d.batch.queue.count == 0);
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_OK && q.published == 4);
++    finger(f, 0, 2, 2, 300, 400); finger(f, 1, 3, 2, 500, 600);
++    q.capacity = 2; send(&d, 6, f); assert(d.committed.frames.last_identity == 4);
++    empty(f); q.capacity = 2; send(&d, 7, f); /* Missing IDs release too. */
++    assert(q.accepted.queue.count == 2 && d.committed.frames.active_count == 0);
++}
++
++static void order_and_empty(void)
++{
++    struct lithium_touch_delivery d = {0}; struct fake_queue q = {0};
++    uint8_t f[LITHIUM_TOUCH_FRAME_BYTES]; init(&d, &q); empty(f);
++    assert(lithium_touch_delivery_prepare(&d, 0, 1, f, sizeof(f), false) == LITHIUM_DELIVERY_ORDER);
++    assert(lithium_touch_delivery_prepare(&d, 1, 0, f, sizeof(f), false) == LITHIUM_DELIVERY_ORDER);
++    send(&d, 2, f); assert(q.accepted.queue.count == 0 && q.accepts == 1);
++    assert(lithium_touch_delivery_prepare(&d, 2, 300, f, sizeof(f), false) == LITHIUM_DELIVERY_ORDER);
++    assert(lithium_touch_delivery_prepare(&d, 1, 300, f, sizeof(f), false) == LITHIUM_DELIVERY_ORDER);
++    assert(lithium_touch_delivery_prepare(&d, 3, 200, f, sizeof(f), false) == LITHIUM_DELIVERY_ORDER);
++    assert(lithium_touch_delivery_prepare(&d, 3, 199, f, sizeof(f), false) == LITHIUM_DELIVERY_ORDER);
++    assert(q.attempts == 1 && !d.pending);
++    finger(f, 0, 0, 0, 100, 100); send(&d, 3, f);
++    finger(f, 0, 0, 2, 100, 100);
++    q.capacity = 0; q.mode = REJECT;
++    assert(lithium_touch_delivery_prepare(&d, 4, 400, f, sizeof(f), false) == LITHIUM_DELIVERY_OK);
++    assert(d.batch.queue.count == 0);
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_REJECTED);
++    assert(d.pending && d.committed.frames.active[0].phase == LITHIUM_TOUCH_BEGIN);
++    q.mode = NORMAL;
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_OK);
++    assert(q.accepted.queue.count == 0 && d.committed.frames.active_count == 1);
++    assert(d.committed.frames.last_identity == 1);
++    assert(lithium_touch_delivery_prepare(&d, UINT64_MAX, UINT64_MAX, f, sizeof(f), false) == LITHIUM_DELIVERY_OK);
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_OK);
++    assert(lithium_touch_delivery_prepare(&d, 1, 1, f, sizeof(f), false) == LITHIUM_DELIVERY_ORDER);
++    /* Test-only injection of allocator exhaustion; production state is opaque
++     * by contract and must never be modified this way by an adapter. */
++    struct lithium_touch_delivery exhausted = {0}; struct fake_queue eq = {0};
++    init(&exhausted, &eq); exhausted.committed.frames.last_identity = UINT64_MAX;
++    finger(f, 0, 0, 0, 100, 100);
++    assert(lithium_touch_delivery_prepare(&exhausted, 1, 1, f, sizeof(f), false) == LITHIUM_DELIVERY_INVALID);
++    assert(!exhausted.pending && exhausted.reserved_sequence == 0 && eq.attempts == 0);
++    assert(exhausted.committed.frames.last_identity == UINT64_MAX);
++}
++
++static void malformed(void)
++{
++    struct lithium_touch_delivery d = {0}; struct fake_queue q = {0};
++    uint8_t f[LITHIUM_TOUCH_FRAME_BYTES]; init(&d, &q); empty(f);
++    finger(f, 0, 1, 0, 100, 100); send(&d, 1, f);
++    const struct lithium_touch_delivery old = d;
++    assert(lithium_touch_delivery_prepare(&d, 2, 200, f, 62, false) == LITHIUM_DELIVERY_INVALID);
++    assert(lithium_touch_delivery_prepare(&d, 2, 200, NULL, 63, false) == LITHIUM_DELIVERY_INVALID);
++    assert(lithium_touch_delivery_prepare(&d, 2, 200, f, 63, true) == LITHIUM_DELIVERY_INVALID);
++    assert(lithium_touch_delivery_prepare(&d, 2, 200, NULL, 1, true) == LITHIUM_DELIVERY_INVALID);
++    finger(f, 1, 1, 2, 200, 200);
++    assert(lithium_touch_delivery_prepare(&d, 2, 200, f, 63, false) == LITHIUM_DELIVERY_INVALID);
++    empty(f); finger(f, 0, 1, 3, 200, 200);
++    assert(lithium_touch_delivery_prepare(&d, 2, 200, f, 63, false) == LITHIUM_DELIVERY_INVALID);
++    finger(f, 0, 1, 1, 1081, 2040);
++    assert(lithium_touch_delivery_prepare(&d, 2, 200, f, 63, false) == LITHIUM_DELIVERY_INVALID);
++    finger(f, 0, 1, 2, 1080, 2041);
++    assert(lithium_touch_delivery_prepare(&d, 2, 200, f, 63, false) == LITHIUM_DELIVERY_INVALID);
++    assert(!memcmp(&d, &old, sizeof(d)) && q.attempts == 1);
++    /* Malformation does not silently synthesize UP or consume the stamp. */
++    assert(lithium_touch_delivery_prepare(&d, 2, 200, NULL, 0, true) == LITHIUM_DELIVERY_OK);
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_OK);
++    assert(q.accepted.queue.count == 1 && q.accepted.queue.events[0].type == 3);
++}
++
++static void rotations(void)
++{
++    for (unsigned r = 0; r < 360; r += 90) {
++        struct lithium_touch_delivery d = {0}; struct fake_queue q = {0};
++        struct lithium_touch_geometry g = geometry; g.rotation = r;
++        q.producer = &d; q.capacity = 20;
++        const struct lithium_touch_delivery_adapter a = {1, &q, submit, resync};
++        assert(lithium_touch_delivery_init(&d, &g, &a) == LITHIUM_DELIVERY_OK);
++        uint8_t f[LITHIUM_TOUCH_FRAME_BYTES]; empty(f); finger(f, 0, 0, 0, 0, 0);
++        send(&d, 1, f);
++        assert(q.accepted.queue.events[0].x == ((r == 90 || r == 180) ? 65535u : 0u));
++        assert(q.accepted.queue.events[0].y == ((r == 180 || r == 270) ? 65535u : 0u));
++        finger(f, 0, 0, 2, 540, 1020); send(&d, 2, f);
++        assert(q.accepted.queue.events[0].x == 32768 && q.accepted.queue.events[0].y == 32768);
++    }
++    struct lithium_touch_delivery d = {0}; struct fake_queue q = {0};
++    struct lithium_touch_geometry g = geometry; g.left = 100; g.right = 649;
++    q.producer = &d; q.capacity = 1;
++    const struct lithium_touch_delivery_adapter a = {1, &q, submit, NULL};
++    assert(lithium_touch_delivery_init(&d, &g, &a) == LITHIUM_DELIVERY_OK);
++    uint8_t f[LITHIUM_TOUCH_FRAME_BYTES]; empty(f); finger(f, 0, 0, 0, 0, 0);
++    send(&d, 1, f); uint32_t x, y;
++    assert(lithium_touch_queue_map(&g, 0, 0, &x, &y));
++    assert(q.accepted.queue.events[0].x == x && q.accepted.queue.events[0].y == y);
++}
++
++static void reentrancy_and_unavailable(void)
++{
++    struct lithium_touch_delivery d = {0}; struct fake_queue q = {0};
++    struct lithium_touch_delivery_adapter a = {0};
++    assert(lithium_touch_delivery_init(&d, &geometry, NULL) == LITHIUM_DELIVERY_UNAVAILABLE);
++    assert(lithium_touch_delivery_init(&d, &geometry, &a) == LITHIUM_DELIVERY_UNAVAILABLE);
++    a.atomic_abi = 1;
++    assert(lithium_touch_delivery_init(&d, &geometry, &a) == LITHIUM_DELIVERY_UNAVAILABLE);
++    a.submit = submit; a.atomic_abi = 2;
++    assert(lithium_touch_delivery_init(&d, &geometry, &a) == LITHIUM_DELIVERY_UNAVAILABLE);
++    assert(lithium_touch_delivery_prepare(&d, 1, 1, NULL, 0, true) == LITHIUM_DELIVERY_UNAVAILABLE);
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_UNAVAILABLE);
++    assert(lithium_touch_delivery_resync(&d) == LITHIUM_DELIVERY_UNAVAILABLE);
++    a.atomic_abi = 1;
++    struct lithium_touch_geometry bad = geometry; bad.rotation = 45;
++    assert(lithium_touch_delivery_init(&d, &bad, &a) == LITHIUM_DELIVERY_INVALID);
++    assert(!d.initialized && q.attempts == 0);
++    init(&d, &q); q.mode = REENTER;
++    uint8_t f[LITHIUM_TOUCH_FRAME_BYTES]; empty(f); finger(f, 0, 0, 0, 0, 0);
++    send(&d, 1, f); assert(q.attempts == 1 && q.accepts == 1 && !d.busy);
++    assert(lithium_touch_delivery_init(&d, &geometry, &a) == LITHIUM_DELIVERY_INVALID);
++    assert(lithium_touch_delivery_prepare(NULL, 1, 1, NULL, 0, true) == LITHIUM_DELIVERY_INVALID);
++    assert(lithium_touch_delivery_submit(NULL) == LITHIUM_DELIVERY_INVALID);
++    assert(lithium_touch_delivery_resync(NULL) == LITHIUM_DELIVERY_INVALID);
++    assert(lithium_touch_delivery_init(NULL, NULL, NULL) == LITHIUM_DELIVERY_INVALID);
++}
++
++static void poison_and_resync(void)
++{
++    struct lithium_touch_delivery d = {0}; struct fake_queue q = {0};
++    uint8_t f[LITHIUM_TOUCH_FRAME_BYTES]; init(&d, &q); empty(f);
++    finger(f, 0, 0, 0, 100, 100); finger(f, 1, 1, 0, 200, 200);
++    assert(lithium_touch_delivery_prepare(&d, 1, 100, f, sizeof(f), false) == LITHIUM_DELIVERY_OK);
++    q.mode = PARTIAL;
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_POISONED);
++    assert(q.published == 1 && d.committed.frames.active_count == 0 && d.pending);
++    assert(lithium_touch_delivery_submit(&d) == LITHIUM_DELIVERY_POISONED);
++    assert(lithium_touch_delivery_prepare(&d, 2, 200, NULL, 0, true) == LITHIUM_DELIVERY_POISONED);
++    assert(q.attempts == 1);
++    assert(lithium_touch_delivery_resync(&d) == LITHIUM_DELIVERY_POISONED);
++    assert(q.reset_calls == 1 && q.fence == 1 && d.poisoned);
++    q.reset_result = LITHIUM_SUBMIT_UNCERTAIN;
++    assert(lithium_touch_delivery_resync(&d) == LITHIUM_DELIVERY_POISONED);
++    q.reset_result = LITHIUM_SUBMIT_ACCEPT_ALL;
++    assert(lithium_touch_delivery_resync(&d) == LITHIUM_DELIVERY_OK);
++    assert(!d.poisoned && !d.pending && d.committed.frames.last_identity == 2);
++    assert(d.reserved_sequence == 1 && d.reserved_ns == 100);
++    assert(lithium_touch_delivery_prepare(&d, 1, 100, f, sizeof(f), false) == LITHIUM_DELIVERY_ORDER);
++    q.mode = NORMAL; send(&d, 2, f);
++    assert(d.committed.frames.active[0].identity == 3 && d.committed.frames.last_identity == 4);
++    assert(lithium_touch_delivery_resync(&d) == LITHIUM_DELIVERY_INVALID);
++    /* An unknown callback result also poisons, with no optional recovery hook. */
++    struct lithium_touch_delivery other = {0}; struct fake_queue oq = {0};
++    const struct lithium_touch_delivery_adapter a = {1, &oq, submit, NULL};
++    assert(lithium_touch_delivery_init(&other, &geometry, &a) == LITHIUM_DELIVERY_OK);
++    oq.mode = UNKNOWN;
++    assert(lithium_touch_delivery_prepare(&other, 1, 1, f, sizeof(f), false) == LITHIUM_DELIVERY_OK);
++    assert(lithium_touch_delivery_submit(&other) == LITHIUM_DELIVERY_POISONED);
++    assert(lithium_touch_delivery_resync(&other) == LITHIUM_DELIVERY_UNAVAILABLE);
++    assert(lithium_touch_delivery_submit(&other) == LITHIUM_DELIVERY_POISONED && oq.attempts == 1);
++}
++
++int main(void)
++{
++    down_move_up(); puts("PASS down/move/up, private state, timestamps, identity reuse prevention");
++    multi_and_retry(); puts("PASS 10 contacts/20 events, saturation, exact retry, no partial prefix");
++    loss_once(); puts("PASS explicit loss, rejected release retry, repeated loss, missing-ID release");
++    order_and_empty(); puts("PASS duplicate/decreasing sequence/time, empty/stationary, no wrap");
++    malformed(); puts("PASS malformed length/null/loss/IDs/events/coordinates, no mutation");
++    rotations(); puts("PASS immutable geometry: four rotations, midpoint, viewport");
++    reentrancy_and_unavailable(); puts("PASS callback recursion, absent atomic adapter, invalid API inputs");
++    poison_and_resync(); puts("PASS partial/unknown poison, no replay, failed/successful recovery fence");
++    puts("PASS 8 synthetic touch delivery groups; no physical queue or IOHID connected");
++    return 0;
++}
+diff --git a/maintenance/hakios-lithium/peripherals-next/irq-affinity-audit.h b/maintenance/hakios-lithium/peripherals-next/irq-affinity-audit.h
+new file mode 100644
+index 0000000..0000000
+--- /dev/null
++++ b/maintenance/hakios-lithium/peripherals-next/irq-affinity-audit.h
+@@ -0,0 +1,104 @@
++#ifndef LITHIUM_IRQ_AFFINITY_AUDIT_H
++#define LITHIUM_IRQ_AFFINITY_AUDIT_H
++
++#include <stdbool.h>
++#include <stddef.h>
++#include <stdint.h>
++
++/* MPIDR Aff3[39:32] plus Aff2:Aff0[23:0], excluding all non-affinity bits. */
++#define LITHIUM_AUDIT_MPIDR_AFFINITY_MASK UINT64_C(0x000000ff00ffffff)
++
++#define LITHIUM_AUDIT_IROUTER_IRM       UINT64_C(0x0000000080000000)
++#define LITHIUM_AUDIT_EXPECTED_AFFINITY UINT64_C(0x0000000000000001)
++#define LITHIUM_AUDIT_SPI_INTID_BASE   UINT32_C(32)
++#define LITHIUM_AUDIT_SPI_INTID_MAX    UINT32_C(1019)
++#define LITHIUM_AUDIT_SPI_NUMBER_MAX   (LITHIUM_AUDIT_SPI_INTID_MAX - LITHIUM_AUDIT_SPI_INTID_BASE)
++#define LITHIUM_AUDIT_TYPER_ITLINES_MASK UINT32_C(0x1f)
++
++/* Inputs are observations for validation only; this API performs no MMIO. */
++struct lithium_irq_affinity_candidate {
++    uint32_t spi_number;       /* DT GIC SPI number, before the +32 INTID bias. */
++    uint32_t intid;
++    uint32_t gicd_typer;
++    uint32_t xnu_cpu_count;    /* This fixed policy requires exactly one XNU CPU. */
++    uint64_t target_mpidr;     /* Raw MPIDR_EL1, not pre-masked. */
++    uint64_t route_value;      /* Proposed IROUTER value, not a register read. */
++    bool target_online;
++};
++
++enum lithium_irq_affinity_result {
++    LITHIUM_IRQ_AFFINITY_OK,
++    LITHIUM_IRQ_AFFINITY_BAD_ARGUMENT,
++    LITHIUM_IRQ_AFFINITY_BAD_CPU_COUNT,
++    LITHIUM_IRQ_AFFINITY_TARGET_OFFLINE,
++    LITHIUM_IRQ_AFFINITY_BAD_TARGET_AFFINITY,
++    LITHIUM_IRQ_AFFINITY_ROUTE_IRM_SET,
++    LITHIUM_IRQ_AFFINITY_ROUTE_RESERVED_BITS,
++    LITHIUM_IRQ_AFFINITY_BAD_ROUTE_AFFINITY,
++    LITHIUM_IRQ_AFFINITY_SPI_OUT_OF_RANGE,
++    LITHIUM_IRQ_AFFINITY_INTID_MISMATCH,
++    LITHIUM_IRQ_AFFINITY_INTID_OUT_OF_RANGE,
++    LITHIUM_IRQ_AFFINITY_NOT_SUPPORTED_BY_TYPER
++};
++
++/*
++ * Validate the fixed lithium single-core route contract before a future
++ * attach implementation touches hardware. The raw MPIDR is reduced with the
++ * architectural affinity-field mask; the route word must contain exactly
++ * affinity 0x1: IRM and every reserved bit
++ * must be clear. GICD_TYPER.ITLinesNumber is an upper bound, further capped
++ * at the architectural standard-SPI INTID ceiling 1019.
++ */
++static inline enum lithium_irq_affinity_result
++lithium_irq_affinity_audit(const struct lithium_irq_affinity_candidate *candidate)
++{
++    if (candidate == NULL) {
++        return LITHIUM_IRQ_AFFINITY_BAD_ARGUMENT;
++    }
++    if (candidate->xnu_cpu_count != 1) {
++        return LITHIUM_IRQ_AFFINITY_BAD_CPU_COUNT;
++    }
++    if (!candidate->target_online) {
++        return LITHIUM_IRQ_AFFINITY_TARGET_OFFLINE;
++    }
++    if ((candidate->target_mpidr & LITHIUM_AUDIT_MPIDR_AFFINITY_MASK) !=
++        LITHIUM_AUDIT_EXPECTED_AFFINITY) {
++        return LITHIUM_IRQ_AFFINITY_BAD_TARGET_AFFINITY;
++    }
++    if ((candidate->route_value & LITHIUM_AUDIT_IROUTER_IRM) != 0) {
++        return LITHIUM_IRQ_AFFINITY_ROUTE_IRM_SET;
++    }
++    if ((candidate->route_value &
++        ~(LITHIUM_AUDIT_MPIDR_AFFINITY_MASK | LITHIUM_AUDIT_IROUTER_IRM)) != 0) {
++        return LITHIUM_IRQ_AFFINITY_ROUTE_RESERVED_BITS;
++    }
++    if ((candidate->route_value & LITHIUM_AUDIT_MPIDR_AFFINITY_MASK) !=
++        LITHIUM_AUDIT_EXPECTED_AFFINITY) {
++        return LITHIUM_IRQ_AFFINITY_BAD_ROUTE_AFFINITY;
++    }
++    if (candidate->spi_number > LITHIUM_AUDIT_SPI_NUMBER_MAX) {
++        return LITHIUM_IRQ_AFFINITY_SPI_OUT_OF_RANGE;
++    }
++
++    const uint32_t expected_intid =
++        candidate->spi_number + LITHIUM_AUDIT_SPI_INTID_BASE;
++    if (candidate->intid < LITHIUM_AUDIT_SPI_INTID_BASE ||
++        candidate->intid > LITHIUM_AUDIT_SPI_INTID_MAX) {
++        return LITHIUM_IRQ_AFFINITY_INTID_OUT_OF_RANGE;
++    }
++    if (candidate->intid != expected_intid) {
++        return LITHIUM_IRQ_AFFINITY_INTID_MISMATCH;
++    }
++
++    const uint32_t itlines =
++        candidate->gicd_typer & LITHIUM_AUDIT_TYPER_ITLINES_MASK;
++    const uint32_t max_intid_by_typer = (itlines + 1u) * 32u - 1u;
++    const uint32_t max_intid = max_intid_by_typer < LITHIUM_AUDIT_SPI_INTID_MAX
++        ? max_intid_by_typer : LITHIUM_AUDIT_SPI_INTID_MAX;
++    if (candidate->intid > max_intid) {
++        return LITHIUM_IRQ_AFFINITY_NOT_SUPPORTED_BY_TYPER;
++    }
++    return LITHIUM_IRQ_AFFINITY_OK;
++}
++
++#endif
+diff --git a/maintenance/hakios-lithium/peripherals-next/irq-affinity-audit-test.c b/maintenance/hakios-lithium/peripherals-next/irq-affinity-audit-test.c
+new file mode 100644
+index 0000000..0000000
+--- /dev/null
++++ b/maintenance/hakios-lithium/peripherals-next/irq-affinity-audit-test.c
+@@ -0,0 +1,128 @@
++#include "irq-affinity-audit.h"
++
++#include <assert.h>
++#include <stdio.h>
++
++static struct lithium_irq_affinity_candidate
++valid_candidate(uint32_t spi_number)
++{
++    return (struct lithium_irq_affinity_candidate){
++        .spi_number = spi_number,
++        .intid = spi_number + LITHIUM_AUDIT_SPI_INTID_BASE,
++        .gicd_typer = LITHIUM_AUDIT_TYPER_ITLINES_MASK,
++        .xnu_cpu_count = 1,
++        .target_mpidr = UINT64_C(0x80000001),
++        .route_value = LITHIUM_AUDIT_EXPECTED_AFFINITY,
++        .target_online = true
++    };
++}
++
++static void
++test_exact_masks_and_board_routes(void)
++{
++    assert(LITHIUM_AUDIT_MPIDR_AFFINITY_MASK == UINT64_C(0x000000ff00ffffff));
++    assert((UINT64_C(0x80000001) & LITHIUM_AUDIT_MPIDR_AFFINITY_MASK) == 1);
++    assert(lithium_irq_affinity_audit(&(struct lithium_irq_affinity_candidate){
++        .spi_number = 208, .intid = 240, .gicd_typer = 31, .xnu_cpu_count = 1,
++        .target_mpidr = UINT64_C(0x80000001), .route_value = 1, .target_online = true
++    }) == LITHIUM_IRQ_AFFINITY_OK);
++    assert(lithium_irq_affinity_audit(&(struct lithium_irq_affinity_candidate){
++        .spi_number = 300, .intid = 332, .gicd_typer = 31, .xnu_cpu_count = 1,
++        .target_mpidr = UINT64_C(0x80000001), .route_value = 1, .target_online = true
++    }) == LITHIUM_IRQ_AFFINITY_OK);
++}
++
++static void
++test_every_standard_spi_mapping(void)
++{
++    unsigned accepted = 0;
++    for (uint32_t spi = 0; spi <= LITHIUM_AUDIT_SPI_NUMBER_MAX; ++spi) {
++        struct lithium_irq_affinity_candidate candidate = valid_candidate(spi);
++        assert(lithium_irq_affinity_audit(&candidate) == LITHIUM_IRQ_AFFINITY_OK);
++        ++accepted;
++    }
++    assert(accepted == 988);
++}
++
++static void
++test_single_core_online_and_affinity_rejections(void)
++{
++    struct lithium_irq_affinity_candidate candidate = valid_candidate(208);
++    candidate.xnu_cpu_count = 2;
++    assert(lithium_irq_affinity_audit(&candidate) == LITHIUM_IRQ_AFFINITY_BAD_CPU_COUNT);
++
++    candidate = valid_candidate(208);
++    candidate.target_online = false;
++    assert(lithium_irq_affinity_audit(&candidate) == LITHIUM_IRQ_AFFINITY_TARGET_OFFLINE);
++
++    candidate = valid_candidate(208);
++    candidate.target_mpidr = UINT64_C(0x80000101);
++    assert(lithium_irq_affinity_audit(&candidate) == LITHIUM_IRQ_AFFINITY_BAD_TARGET_AFFINITY);
++
++    candidate = valid_candidate(208);
++    candidate.route_value = UINT64_C(0x100);
++    assert(lithium_irq_affinity_audit(&candidate) == LITHIUM_IRQ_AFFINITY_BAD_ROUTE_AFFINITY);
++}
++
++static void
++test_affinity_and_irouter_invalid_encodings(void)
++{
++    struct lithium_irq_affinity_candidate candidate = valid_candidate(208);
++    candidate.target_mpidr = UINT64_C(0x0000000100000001); /* Aff3 is not phys 1. */
++    assert(lithium_irq_affinity_audit(&candidate) == LITHIUM_IRQ_AFFINITY_BAD_TARGET_AFFINITY);
++
++    candidate = valid_candidate(208);
++    candidate.route_value |= LITHIUM_AUDIT_IROUTER_IRM;
++    assert(lithium_irq_affinity_audit(&candidate) == LITHIUM_IRQ_AFFINITY_ROUTE_IRM_SET);
++
++    candidate = valid_candidate(208);
++    candidate.route_value |= UINT64_C(1) << 24;
++    assert(lithium_irq_affinity_audit(&candidate) == LITHIUM_IRQ_AFFINITY_ROUTE_RESERVED_BITS);
++    candidate.route_value = UINT64_C(1) | (UINT64_C(1) << 63);
++    assert(lithium_irq_affinity_audit(&candidate) == LITHIUM_IRQ_AFFINITY_ROUTE_RESERVED_BITS);
++}
++
++static void
++test_intid_and_typer_boundaries(void)
++{
++    struct lithium_irq_affinity_candidate candidate = valid_candidate(208);
++    candidate.intid = 241;
++    assert(lithium_irq_affinity_audit(&candidate) == LITHIUM_IRQ_AFFINITY_INTID_MISMATCH);
++    candidate.intid = 1020;
++    assert(lithium_irq_affinity_audit(&candidate) == LITHIUM_IRQ_AFFINITY_INTID_OUT_OF_RANGE);
++    candidate.intid = 31;
++    assert(lithium_irq_affinity_audit(&candidate) == LITHIUM_IRQ_AFFINITY_INTID_OUT_OF_RANGE);
++
++    candidate = valid_candidate(988);
++    assert(lithium_irq_affinity_audit(&candidate) == LITHIUM_IRQ_AFFINITY_SPI_OUT_OF_RANGE);
++    candidate = valid_candidate(UINT32_MAX);
++    assert(lithium_irq_affinity_audit(&candidate) == LITHIUM_IRQ_AFFINITY_SPI_OUT_OF_RANGE);
++
++    candidate = valid_candidate(191); /* INTID 223: last in TYPER ITLinesNumber=6. */
++    candidate.gicd_typer = 6;
++    assert(lithium_irq_affinity_audit(&candidate) == LITHIUM_IRQ_AFFINITY_OK);
++    candidate = valid_candidate(192); /* INTID 224 lies beyond that TYPER bound. */
++    candidate.gicd_typer = 6;
++    assert(lithium_irq_affinity_audit(&candidate) == LITHIUM_IRQ_AFFINITY_NOT_SUPPORTED_BY_TYPER);
++
++    candidate = valid_candidate(0); /* ITLinesNumber=0 implements no standard SPI. */
++    candidate.gicd_typer = 0;
++    assert(lithium_irq_affinity_audit(&candidate) == LITHIUM_IRQ_AFFINITY_NOT_SUPPORTED_BY_TYPER);
++
++    candidate = valid_candidate(987); /* Architectural standard SPI ceiling: INTID 1019. */
++    candidate.gicd_typer = UINT32_C(0xa5ffffe0) | 31u;
++    assert(lithium_irq_affinity_audit(&candidate) == LITHIUM_IRQ_AFFINITY_OK);
++}
++
++int
++main(void)
++{
++    assert(lithium_irq_affinity_audit(NULL) == LITHIUM_IRQ_AFFINITY_BAD_ARGUMENT);
++    test_exact_masks_and_board_routes();
++    test_every_standard_spi_mapping();
++    test_single_core_online_and_affinity_rejections();
++    test_affinity_and_irouter_invalid_encodings();
++    test_intid_and_typer_boundaries();
++    puts("irq-affinity-audit: 988 SPI mappings, fixed affinity, reserved-bit, offline, and TYPER boundaries passed");
++    return 0;
++}
+diff --git a/maintenance/hakios-lithium/peripherals-next/a5xx-fence-packet.h b/maintenance/hakios-lithium/peripherals-next/a5xx-fence-packet.h
+new file mode 100644
+index 0000000..0000000
+--- /dev/null
++++ b/maintenance/hakios-lithium/peripherals-next/a5xx-fence-packet.h
+@@ -0,0 +1,86 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++#ifndef LITHIUM_A5XX_FENCE_PACKET_H
++#define LITHIUM_A5XX_FENCE_PACKET_H
++
++#include <stddef.h>
++#include <stdint.h>
++#include <string.h>
++
++/*
++ * Host-testable A5xx CP_EVENT_WRITE/CACHE_FLUSH_TS packet encoder.
++ *
++ * The caller supplies an already mapped fence GPU IOVA within the active
++ * device aperture. This codec checks the Linux msm/adreno fence-slot minimum
++ * and 32-bit store alignment; it does not establish mapping, ownership,
++ * cache visibility, ring readiness, or any hardware state.
++ *
++ * Source basis: Linux v6.12 adc218676eef25575469234709c2d87185ca223a,
++ * drivers/gpu/drm/msm/adreno/a5xx_gpu.c:219-227; adreno_gpu.h:637-664;
++ * registers/adreno/adreno_pm4.xml:14-17,302,1614-1634.
++ */
++enum { A5XX_FENCE_PACKET_WORDS = 5 };
++
++enum a5xx_fence_packet_result {
++    A5XX_FENCE_PACKET_OK = 0,
++    A5XX_FENCE_PACKET_INVALID_ARGUMENT,
++    A5XX_FENCE_PACKET_INVALID_IOVA,
++    A5XX_FENCE_PACKET_NO_SPACE
++};
++
++#define A5XX_FENCE_PACKET_MIN_IOVA UINT64_C(0x01000000)
++#define A5XX_FENCE_PACKET_TYPE7 UINT32_C(0x70000000)
++#define A5XX_FENCE_PACKET_OPCODE_CP_EVENT_WRITE UINT32_C(0x46)
++#define A5XX_FENCE_PACKET_EVENT_CACHE_FLUSH_TS UINT32_C(0x04)
++#define A5XX_FENCE_PACKET_IRQ UINT32_C(0x80000000)
++
++/* Linux PM4_PARITY: 1 for even parity, 0 for odd parity. */
++static inline uint32_t
++a5xx_fence_packet_pm4_parity(uint32_t value)
++{
++    const uint32_t folded = value ^ (value >> 4) ^ (value >> 8) ^
++        (value >> 12) ^ (value >> 16) ^ (value >> 20) ^
++        (value >> 24) ^ (value >> 28);
++
++    return (UINT32_C(0x9669) >> (folded & UINT32_C(0x0f))) & UINT32_C(1);
++}
++
++/*
++ * Emit atomically: on any error, out_words is unchanged. capacity is in
++ * uint32_t words and must cover the type-7 header plus four payload words.
++ * seq is the raw 32-bit fence value; zero is representable and is not
++ * reserved by the pinned Linux fence sequence path.
++ *
++ * The CP_EVENT_WRITE packet has two complete 32-bit address payload words,
++ * so encoding itself accepts the full uint64_t wire address. The actual
++ * IOMMU aperture is dynamic and must be enforced by the mapping owner.
++ */
++static inline enum a5xx_fence_packet_result
++a5xx_fence_packet_encode(uint64_t fence_gpu_iova, uint32_t seq,
++    uint32_t *out_words, size_t capacity)
++{
++    if (out_words == NULL)
++        return A5XX_FENCE_PACKET_INVALID_ARGUMENT;
++    if (fence_gpu_iova < A5XX_FENCE_PACKET_MIN_IOVA ||
++        (fence_gpu_iova & UINT64_C(3)) != 0)
++        return A5XX_FENCE_PACKET_INVALID_IOVA;
++    if (capacity < A5XX_FENCE_PACKET_WORDS)
++        return A5XX_FENCE_PACKET_NO_SPACE;
++
++    const uint32_t count = UINT32_C(4);
++    const uint32_t opcode = A5XX_FENCE_PACKET_OPCODE_CP_EVENT_WRITE;
++    const uint32_t staged[A5XX_FENCE_PACKET_WORDS] = {
++        A5XX_FENCE_PACKET_TYPE7 | count |
++            (a5xx_fence_packet_pm4_parity(count) << 15) |
++            (opcode << 16) |
++            (a5xx_fence_packet_pm4_parity(opcode) << 23),
++        A5XX_FENCE_PACKET_EVENT_CACHE_FLUSH_TS | A5XX_FENCE_PACKET_IRQ,
++        (uint32_t)fence_gpu_iova,
++        (uint32_t)(fence_gpu_iova >> 32),
++        seq
++    };
++
++    memcpy(out_words, staged, sizeof(staged));
++    return A5XX_FENCE_PACKET_OK;
++}
++
++#endif
+diff --git a/maintenance/hakios-lithium/peripherals-next/a5xx-fence-packet-test.c b/maintenance/hakios-lithium/peripherals-next/a5xx-fence-packet-test.c
+new file mode 100644
+index 0000000..0000000
+--- /dev/null
++++ b/maintenance/hakios-lithium/peripherals-next/a5xx-fence-packet-test.c
+@@ -0,0 +1,124 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++#include "a5xx-fence-packet.h"
++
++#include <stdio.h>
++
++#define SENTINEL UINT32_C(0xfeedface)
++#define CHECK(condition) do { \
++    if (!(condition)) { \
++        fprintf(stderr, "FAIL %s:%d: %s\n", __FILE__, __LINE__, #condition); \
++        return 1; \
++    } \
++} while (0)
++
++/* Independent reference: count set bits directly rather than using the
++ * nibble-fold/table expression used by the production encoder. */
++static uint32_t
++golden_even_parity(uint32_t value)
++{
++    unsigned ones = 0;
++    while (value != 0) {
++        ones += value & UINT32_C(1);
++        value >>= 1;
++    }
++    return (ones & 1u) ? UINT32_C(0) : UINT32_C(1);
++}
++
++static uint32_t
++golden_type7_header(uint32_t opcode, uint32_t payload_words)
++{
++    return UINT32_C(0x70000000) | payload_words |
++        (golden_even_parity(payload_words) << 15) |
++        (opcode << 16) | (golden_even_parity(opcode) << 23);
++}
++
++static int
++expect_packet(uint64_t iova, uint32_t seq, size_t capacity)
++{
++    uint32_t actual[A5XX_FENCE_PACKET_WORDS + 2] = {
++        SENTINEL, SENTINEL, SENTINEL, SENTINEL, SENTINEL, SENTINEL, SENTINEL
++    };
++    const uint32_t golden[A5XX_FENCE_PACKET_WORDS] = {
++        golden_type7_header(UINT32_C(0x46), UINT32_C(4)),
++        UINT32_C(0x80000004),
++        (uint32_t)iova,
++        (uint32_t)(iova >> 32),
++        seq
++    };
++
++    CHECK(golden[0] == UINT32_C(0x70460004));
++    CHECK(a5xx_fence_packet_encode(iova, seq, actual, capacity) ==
++        A5XX_FENCE_PACKET_OK);
++    for (size_t i = 0; i < A5XX_FENCE_PACKET_WORDS; ++i)
++        CHECK(actual[i] == golden[i]);
++    for (size_t i = A5XX_FENCE_PACKET_WORDS; i <
++        A5XX_FENCE_PACKET_WORDS + 2; ++i)
++        CHECK(actual[i] == SENTINEL);
++    return 0;
++}
++
++static int
++test_golden_and_sequence_boundaries(void)
++{
++    CHECK(expect_packet(UINT64_C(0x123456789abcdef0), UINT32_C(0),
++        A5XX_FENCE_PACKET_WORDS) == 0);
++    CHECK(expect_packet(A5XX_FENCE_PACKET_MIN_IOVA, UINT32_MAX,
++        A5XX_FENCE_PACKET_WORDS + 2) == 0);
++    /* The packet carries two address dwords; aperture validation belongs to
++     * the caller that owns the IOMMU mapping, not this wire encoder. */
++    CHECK(expect_packet(UINT64_C(0xfffffffffffffffc), UINT32_C(0x80000000),
++        A5XX_FENCE_PACKET_WORDS) == 0);
++    return 0;
++}
++
++static int
++test_iova_alignment_and_linux_minimum(void)
++{
++    uint32_t words[A5XX_FENCE_PACKET_WORDS + 1];
++    for (size_t i = 0; i < A5XX_FENCE_PACKET_WORDS + 1; ++i)
++        words[i] = SENTINEL;
++
++    CHECK(a5xx_fence_packet_encode(A5XX_FENCE_PACKET_MIN_IOVA - 4, 1,
++        words, A5XX_FENCE_PACKET_WORDS) == A5XX_FENCE_PACKET_INVALID_IOVA);
++    CHECK(a5xx_fence_packet_encode(A5XX_FENCE_PACKET_MIN_IOVA + 1, 1,
++        words, A5XX_FENCE_PACKET_WORDS) == A5XX_FENCE_PACKET_INVALID_IOVA);
++    CHECK(a5xx_fence_packet_encode(A5XX_FENCE_PACKET_MIN_IOVA + 2, 1,
++        words, A5XX_FENCE_PACKET_WORDS) == A5XX_FENCE_PACKET_INVALID_IOVA);
++    CHECK(a5xx_fence_packet_encode(A5XX_FENCE_PACKET_MIN_IOVA + 3, 1,
++        words, A5XX_FENCE_PACKET_WORDS) == A5XX_FENCE_PACKET_INVALID_IOVA);
++    for (size_t i = 0; i < A5XX_FENCE_PACKET_WORDS + 1; ++i)
++        CHECK(words[i] == SENTINEL);
++    return 0;
++}
++
++static int
++test_capacity_and_failure_transaction(void)
++{
++    uint32_t words[A5XX_FENCE_PACKET_WORDS + 1];
++    for (size_t i = 0; i < A5XX_FENCE_PACKET_WORDS + 1; ++i)
++        words[i] = SENTINEL;
++
++    CHECK(a5xx_fence_packet_encode(A5XX_FENCE_PACKET_MIN_IOVA, 0, NULL,
++        A5XX_FENCE_PACKET_WORDS) == A5XX_FENCE_PACKET_INVALID_ARGUMENT);
++    for (size_t capacity = 0; capacity < A5XX_FENCE_PACKET_WORDS; ++capacity) {
++        CHECK(a5xx_fence_packet_encode(A5XX_FENCE_PACKET_MIN_IOVA, 0, words,
++            capacity) == A5XX_FENCE_PACKET_NO_SPACE);
++        for (size_t i = 0; i < A5XX_FENCE_PACKET_WORDS + 1; ++i)
++            CHECK(words[i] == SENTINEL);
++    }
++    CHECK(a5xx_fence_packet_encode(A5XX_FENCE_PACKET_MIN_IOVA - 4, 7, words,
++        A5XX_FENCE_PACKET_WORDS) == A5XX_FENCE_PACKET_INVALID_IOVA);
++    for (size_t i = 0; i < A5XX_FENCE_PACKET_WORDS + 1; ++i)
++        CHECK(words[i] == SENTINEL);
++    return 0;
++}
++
++int
++main(void)
++{
++    CHECK(test_golden_and_sequence_boundaries() == 0);
++    CHECK(test_iova_alignment_and_linux_minimum() == 0);
++    CHECK(test_capacity_and_failure_transaction() == 0);
++    puts("PASS: A5xx CP_EVENT_WRITE fence packet golden/boundary/transaction tests");
++    return 0;
++}
+diff --git a/scripts/test-hakios-lithium-peripherals-next.py b/scripts/test-hakios-lithium-peripherals-next.py
+new file mode 100644
+index 0000000..0000000
+--- /dev/null
++++ b/scripts/test-hakios-lithium-peripherals-next.py
+@@ -0,0 +1,134 @@
++#!/usr/bin/env python3
++"""Test isolated touch follow-ups without changing frozen R19 evidence or hardware."""
++
++import argparse
++from contextlib import nullcontext
++import hashlib
++import json
++import os
++from pathlib import Path
++import subprocess
++import sys
++import tempfile
++import time
++
++ROOT = Path(__file__).resolve().parents[1]
++SOURCE = ROOT / 'maintenance/hakios-lithium/peripherals-next'
++CONTRACT = ROOT / 'artifacts/hakios/lithium-ios16/phase4-r19/contract.json'
++CONTRACT_SHA = 'ab5fcf8c87d5a604da1a881e6e44628ec700eb1ff655fcbf3cb2ebe257162904'
++SUITES = ('qup-combined', 'touch-delivery', 'irq-affinity-audit', 'a5xx-fence-packet')
++
++
++def digest(path):
++    return hashlib.sha256(path.read_bytes()).hexdigest()
++
++
++def frozen_check():
++    if digest(CONTRACT) != CONTRACT_SHA:
++        raise RuntimeError('Frozen R19 contract changed; do not refresh it for these tests')
++    contract = json.loads(CONTRACT.read_text(encoding='utf-8'))
++    for name, expected in contract['evidence_sha256'].items():
++        if digest(ROOT / name) != expected:
++            raise RuntimeError('Frozen R19 live evidence changed: ' + name)
++    size = 0
++    for name, entry in contract['evidence_snapshots'].items():
++        live, saved = (ROOT / name).read_bytes(), (ROOT / entry['path']).read_bytes()
++        if live != saved or hashlib.sha256(saved).hexdigest() != entry['sha256']:
++            raise RuntimeError('Frozen R19 snapshot differs: ' + name)
++        size += len(saved)
++    for name, expected in contract['inputs']['port_files'].items():
++        if digest(ROOT / 'ports/hakios-lithium' / name) != expected:
++            raise RuntimeError('Frozen R19 port source changed: ' + name)
++    if digest(ROOT / contract['image_path']) != contract['image_sha256']:
++        raise RuntimeError('Frozen R19 image changed')
++    baseline = ROOT / 'artifacts/hakios/lithium-ios16/baseline-desktop-r15.img'
++    if digest(baseline) != 'ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55':
++        raise RuntimeError('Desktop R15 baseline changed')
++    return {'live_evidence': len(contract['evidence_sha256']),
++            'snapshots': len(contract['evidence_snapshots']),
++            'snapshot_bytes': size, 'port_files': len(contract['inputs']['port_files']),
++            'r15_and_r19_images_unchanged': True}
++
++
++def sources(selected):
++    files = [SOURCE / (suite + suffix) for suite in selected
++             for suffix in ('.h', '-test.c')]
++    previous = ROOT / 'reports/overnight-20261118/accepted-host-tests/passed.json'
++    names = json.loads(previous.read_text(encoding='utf-8'))['source_sha256']
++    files += [ROOT / name for name in names]
++    files += [Path(__file__).resolve()]
++    return {p.relative_to(ROOT).as_posix(): digest(p) for p in files}
++
++
++def run(argv, timeout, env):
++    started = time.monotonic()
++    result = subprocess.run(argv, capture_output=True, text=True, timeout=timeout, env=env)
++    print(result.stdout, end='', flush=True)
++    if result.stderr:
++        print(result.stderr, end='', file=sys.stderr, flush=True)
++    return {'argv': argv, 'exit_code': result.returncode, 'stdout': result.stdout,
++            'stderr': result.stderr, 'elapsed_seconds': time.monotonic() - started}
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('--compiler', default='clang')
++    parser.add_argument('--suite', choices=SUITES, action='append')
++    parser.add_argument('--skip-existing', action='store_true',
++                        help='Run only the selected new suites; not a full regression')
++    parser.add_argument('--build-dir', type=Path, help='New directory for retained local evidence')
++    args = parser.parse_args()
++    selected = args.suite or list(SUITES)
++    before = frozen_check()
++    for suite in selected:
++        if not (SOURCE / (suite + '-test.c')).is_file():
++            parser.error('Missing test source: ' + suite)
++    original = sources(selected)
++    if args.build_dir:
++        output = args.build_dir.resolve()
++        output.mkdir(parents=True, exist_ok=False)
++        destination = nullcontext(output)
++    else:
++        destination = tempfile.TemporaryDirectory(prefix='lithium-touch-next-')
++    env = {**os.environ, 'ASAN_OPTIONS': 'halt_on_error=1',
++           'UBSAN_OPTIONS': 'halt_on_error=1:print_stacktrace=1',
++           'PYTHONDONTWRITEBYTECODE': '1'}
++    with destination as directory:
++        output = Path(directory)
++        checks = []
++        if not args.skip_existing:
++            print('RUN existing 14 peripheral suites', flush=True)
++            checks.append(run([sys.executable, '-B', str(ROOT / 'scripts/test-hakios-lithium-peripherals.py'),
++                               '--compiler', args.compiler, '--build-dir', str(output / 'previous')],
++                              300, env))
++        for suite in selected:
++            binary = output / (suite + '-test')
++            print('BUILD ' + suite, flush=True)
++            build = run([args.compiler, '-std=c11', '-pedantic', '-Wall', '-Wextra', '-Werror',
++                         '-g', '-O1', '-fno-omit-frame-pointer', '-fsanitize=address,undefined',
++                         str(SOURCE / (suite + '-test.c')), '-o', str(binary)], 60, env)
++            checks.append(build)
++            if build['exit_code'] == 0:
++                test = run([str(binary)], 30, env)
++                test.update(suite=suite, binary_sha256=digest(binary))
++                checks.append(test)
++        after = frozen_check()
++        if original != sources(selected):
++            raise RuntimeError('Sources changed during tests; no pass evidence published')
++        passed = all(c['exit_code'] == 0 for c in checks) and before == after
++        evidence = {'scope': 'isolated host-only QUP, touch delivery, IRQ affinity policy, and A5xx packet models; no hardware',
++                    'passed': passed, 'full_existing_regression': not args.skip_existing,
++                    'new_suites': selected, 'checks': checks, 'source_sha256': original,
++                    'frozen_before': before, 'frozen_after': after,
++                    'production_kernel_integration': False, 'device_operations': False,
++                    'physical_touch_verified': False, 'gpu_hardware_verified': False}
++        if args.build_dir:
++            (output / ('passed.json' if passed else 'failed.json')).write_text(
++                json.dumps(evidence, indent=2) + chr(10), encoding='utf-8')
++        print(('PASS' if passed else 'FAIL') + ': isolated next-phase host tests; R19 frozen inputs preserved')
++        if not passed:
++            raise SystemExit(1)
++
++
++if __name__ == '__main__':
++    main()
+diff --git a/reports/overnight-20261118/R21-phase2-host.md b/reports/overnight-20261118/R21-phase2-host.md
+new file mode 100644
+index 0000000..0000000
+--- /dev/null
++++ b/reports/overnight-20261118/R21-phase2-host.md
+@@ -0,0 +1,28 @@
++# R21 阶段 2：隔离主机模型与测试
++
++日期：2026-11-18。范围：只做源代码模型、主机测试和证据导出。没有查询、启动或刷写手机；没有 ADB/Fastboot 设备命令、userdata/分区操作或 QEMU。R15/R19 启动镜像保持原样。
++
++## 交付
++
++- `maintenance/hakios-lithium/peripherals/touch-queue.h` 新增唯一的有理数坐标变换 `lithium_touch_map_fraction()`。队列和独立 digitizer adapter 共用同一份旋转、viewport 与物理/逻辑 geometry；`touch-digitizer-test.c` 加入与 16-bit HakiOS queue ABI 量化精度一致的交叉检查。该测试使用合成输入，不证明面板校准或真实触摸。
++- `maintenance/hakios-lithium/peripherals-next/` 包含四个主机侧原型：QUP 组合传输候选、整帧触摸交付状态模型、SPI affinity 审计模型、A5xx fence packet 编码模型。它们没有接入活动内核，也没有设备 MMIO、GPIO、I²C、IRQ、GPU DMA 或 IOHID 后端。
++- `maintenance/hakios-lithium/peripherals/gpu-submit.h` 与对应测试增加 IOVA aperture 边界/对齐、五字 ring 容量、畸形 ring fail-closed、watchdog recovery 条件覆盖。`SOFTWARE_FALLBACK` 是主机模型状态；并不实现实际 GPU reset 或屏幕回退。
++- `scripts/test-hakios-lithium-peripherals-next.py` 一条命令运行已有 14 套与新增 4 套 ASan/UBSan 主机测试，并校验 R19 冻结合同、149 项证据快照与 R15/R19 镜像哈希。
++
++## 验证
++
++命令：
++
++```text
++wsl.exe -d Ubuntu --exec python3 /mnt/f/IOS-MIX1/scripts/test-hakios-lithium-peripherals-next.py --build-dir /mnt/f/IOS-MIX1/artifacts/hakios/lithium-ios16/overnight-next-20261118/peripheral-tests-r4
++```
++
++结果：退出码 0，14/14 既有套件与 4/4 新增套件通过，C11 `-pedantic -Wall -Wextra -Werror`，ASan 与 UBSan。新增覆盖包括 QUP 所有长度 1–32 的 MMIO 故障注入、触摸批次拒收/重试/失流、988 个 SPI offset/亲和性边界和 A5xx fence packet golden/boundary vectors。完整命令、逐项 stdout/退出码/二进制哈希及源码 SHA256 在 `artifacts/hakios/lithium-ios16/overnight-next-20261118/peripheral-tests-r4/passed.json`。测试执行前后均核验 R19 的 149 项快照和输入哈希不变，以及 `r15_and_r19_images_unchanged=true`。
++
++R15 桌面基线实文件 SHA256 仍为 `ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55`；R19 候选实文件仍为 `2f74a8da0fe182d39c66a86db398f9816067cb05cce8a6a774398700ed38f60a`。未替换或覆盖任一镜像。
++
++## 未完成/不得据此上机启用
++
++R19 内核 hook 目前仅为默认关闭的 admission 诊断；没有触摸控制器/ QUP/TLMM/电源/IRQ 后端，没有物理 digitizer producer；GPU stage 0/1 也没有安全 MMIO、电源、时钟、SMMUv2、固件/PAS 或真实 fence/IRQ 后端。因此 `touch=1`、`touch_poll=1`、`gpu_stage=0/1` 不能当作可工作的硬件测试选项。现有 C helper 和 mock suite 不组成可刷写的功能镜像；本阶段没有构建新启动包。
++
++回退：源码仅通过 `R21-phase2-host.patch` 提供独立差异；可不应用该补丁保留 R15/R19 镜像与工作树。ASan/UBSan ELF 留在本机 ignored artifact 目录，不进入补丁。

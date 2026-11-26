@@ -1,0 +1,31 @@
+[CmdletBinding()]
+param(
+    [ValidateSet('kernel', 'root-transfer', 'native-package')]
+    [string]$Task = 'kernel'
+)
+
+$ErrorActionPreference = 'Stop'
+$projectRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
+$linuxRoot = (& wsl.exe -d Ubuntu -u jia --exec wslpath -u $projectRoot).Trim()
+if ($LASTEXITCODE -ne 0) { throw 'Cannot resolve project path in Ubuntu' }
+$probe = & wsl.exe -d Ubuntu -u jia --exec python3 -c 'import json,os; print(json.dumps(dict(cpus=os.cpu_count(),memory=os.sysconf("SC_PHYS_PAGES")*os.sysconf("SC_PAGE_SIZE"))))'
+if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect Ubuntu resource limits' }
+$limits = $probe | ConvertFrom-Json
+if ($limits.memory -gt 8GB -or $limits.cpus -gt 4) {
+    throw 'WSL limits are not active. Apply .wslconfig and run wsl --shutdown first.'
+}
+$unit = 'ios14-' + $Task + '-' + (Get-Date -Format 'yyyyMMdd-HHmmss')
+$arguments = @('-d', 'Ubuntu', '-u', 'root', '--exec', 'systemd-run',
+    "--unit=$unit", '--wait', '--pipe', '--collect',
+    '-p', 'MemoryMax=6G', '-p', 'MemoryHigh=5G', '-p', 'MemorySwapMax=1G',
+    '-p', 'CPUQuota=200%', '-p', 'TasksMax=256', '-p', 'User=jia',
+    '-p', "WorkingDirectory=$linuxRoot", '/usr/bin/python3')
+if ($Task -eq 'kernel') {
+    $arguments += @("$linuxRoot/scripts/build-ios14-xnu.py", 'kernel', '--machine', 'LITHIUM', '--jobs', '2')
+} elseif ($Task -eq 'native-package') {
+    $arguments += @("$linuxRoot/scripts/prepare-ios14-native-package.py")
+} else {
+    $arguments += @("$linuxRoot/scripts/prepare-ios14-root-transfer.py", '--resume')
+}
+& wsl.exe @arguments
+exit $LASTEXITCODE

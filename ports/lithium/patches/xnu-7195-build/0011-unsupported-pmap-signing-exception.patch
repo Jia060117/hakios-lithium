@@ -1,0 +1,23 @@
+From: ios14-lithium
+Subject: [build] reject unsupported per-pmap signing exceptions
+
+The public generic ARM pmap omits pmap_cs_allow_invalid and reserves the
+private code-signing fields. Without PMAP_CS, report KERN_NOT_SUPPORTED.
+This does not grant W+X or silently claim that a signing exception succeeded.
+Enabling a real PMAP_CS provider remains necessary for this feature.
+
+diff --git a/osfmk/vm/vm_map.c b/osfmk/vm/vm_map.c
+--- a/osfmk/vm/vm_map.c
++++ b/osfmk/vm/vm_map.c
+@@ -20180,7 +20180,11 @@
+ vm_map_cs_wx_enable(
+ 	vm_map_t map)
+ {
++#if PMAP_CS
+ 	return pmap_cs_allow_invalid(vm_map_pmap(map));
++#else
++	return KERN_NOT_SUPPORTED;
++#endif
+ }
+ 
+ void

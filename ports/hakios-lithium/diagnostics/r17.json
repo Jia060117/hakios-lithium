@@ -1,0 +1,55 @@
+{
+  "revision": 17,
+  "base_revision": 16,
+  "before_sha256": {
+    "userland/src/inject_sb.c": "816ae1a4fcd29aaa07e8d07d363922392c869f2a9a9a8689f75ecbf74d3fbe13",
+    "devices/lithium/diagnostics/display-userspace.inc": "22bc03d980837cd18f96a950533aa74ec8ac477932e4fcf3d8e8aa79dfe8e097"
+  },
+  "after_sha256": {
+    "userland/src/inject_sb.c": "ddf7251c0d0062c8a6a9c4da0ab8eba6c538c6da0e315a2cef1fd1fe92a583d8",
+    "devices/lithium/diagnostics/display-userspace-r17.inc": "e0b1b6d6171aacc84aed6131e781df4656a3b279f42338b19cc132900e82bae4"
+  },
+  "patch": "patches/0017-lithium-native-display-profile.patch",
+  "source_chain": {
+    "r16_port_contract_sha256": "2bf3b847575d8660f907912c2c8709691ef6d137ad686cc3db94ebd02fee0630",
+    "r16_frozen_contract_sha256": "f5349451d7c069c14584476bfeefe20a454b584fe57906103b7da7558765c5f6",
+    "r16_image_sha256": "bd466615ab19ccd44eb23ec87273a23a499681d954d64e6b88c23676ffb8f94b",
+    "r16_display_overlay_sha256": "22bc03d980837cd18f96a950533aa74ec8ac477932e4fcf3d8e8aa79dfe8e097"
+  },
+  "backup_branch": "archive/ios16-r16-failed-before-r17-20261118",
+  "backup_archive": "E:/IOS-MIX1-artifacts/ios16-d22ap/r16-before-r17-20261118/dirty-source.zip",
+  "backup_sha256": "af64f09da6ac23e2d08b87a20da446a9211a3647bac4f6de580d689477426003",
+  "render": [
+    1125,
+    2436
+  ],
+  "native_scale": 3,
+  "artwork_subtype": 2436,
+  "logical_points": [
+    375,
+    812
+  ],
+  "panel": [
+    1080,
+    2040
+  ],
+  "panel_stride": 3240,
+  "panel_format": "BGR24",
+  "surface_format": "BGRA32",
+  "expected_statusbar_profile": [
+    3,
+    2436
+  ],
+  "payload_from_r16": "bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=750 fbheight=1334 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1",
+  "payload_boot_args": "bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1125 fbheight=2436 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1",
+  "only_boot_argument_changes": [
+    "fbwidth=750->1125",
+    "fbheight=1334->2436"
+  ],
+  "cpu_ufs_ram_hfs_policy_unchanged": true,
+  "userdata_reinstall_required": false,
+  "hardware_verified": false,
+  "dock_verified": false,
+  "labels_verified": false,
+  "bounds_verified": false
+}

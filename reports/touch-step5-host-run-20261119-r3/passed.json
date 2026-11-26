@@ -1,0 +1,247 @@
+{
+  "scope": "isolated host-only QUP, touch delivery, IRQ affinity policy, and A5xx packet models; no hardware",
+  "passed": true,
+  "full_existing_regression": true,
+  "new_suites": [
+    "qup-combined",
+    "touch-delivery",
+    "irq-affinity-audit",
+    "a5xx-fence-packet",
+    "ft5x46-frame"
+  ],
+  "checks": [
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "/mnt/f/IOS-MIX1/scripts/test-hakios-lithium-peripherals.py",
+        "--compiler",
+        "clang",
+        "--build-dir",
+        "/mnt/f/IOS-MIX1/reports/touch-step5-host-run-20261119-r3/previous"
+      ],
+      "exit_code": 0,
+      "stdout": "BUILD boot-options-test.c\nPASS boot options: defaults, probe/phase 0, touch dependencies and malformed overrides\nBUILD gpu-firmware-test.c\nPASS A530 firmware views: PM4/PFP metadata, FW2 spans and BO bounds\nBUILD gpu-iova-test.c\ngpu-iova: 3 test groups passed\nBUILD gpu-probe-test.c\nPASS GPU probe model: gates, exact ID, partial acquisition, deadlines and cleanup\nBUILD gpu-submit-test.c\nB4 A530 v5 GPU mock: 6 test groups passed\nBUILD irq-route-test.c\nirq-route: all 988 standard SPI offsets and failure cases passed\nBUILD kernel-admission-test.c\nPASS production kernel admission: default-off, malformed, CPU contract, allocation, unavailable stages\nBUILD qup-i2c-test.c\nqup-i2c: 65792 encoding plans; all 32 prerequisite combinations, NULLs, bounds, state matrix and error atomicity passed (host tag model only)\nBUILD qup-transfer-test.c\nPASS injected fault at all 42 MMIO calls (write)\nPASS injected fault at all 37 MMIO calls (read)\nPASS qup-transfer: packing, 64 transfers, gates, every MMIO fault, bounded errors/cleanup\nBUILD touch-digitizer-test.c\nPASS lithium digitizer coordinates, HakiOS event values and atomic validation\nBUILD touch-frame-test.c\nPASS lithium touch frame decoding, multitouch lifecycle and atomic rejection\nBUILD touch-i2c-test.c\nPASS touch I2C: safe release, NACK, entry failure, timeout, cleanup uncertainty, quarantine and idempotent isolation\nBUILD touch-irq-test.c\ntouch-irq: 16 deterministic host-policy groups passed (read races, storm recovery, transactional deadlines, poll ownership)\nBUILD touch-queue-test.c\nPASS touch queue adapter: geometry, rotations, 10 slots, ID reuse, loss, atomic reject\nPASS 14 peripheral test suites (ASan and UBSan)\n",
+      "stderr": "",
+      "elapsed_seconds": 49.727640469
+    },
+    {
+      "argv": [
+        "clang",
+        "-std=c11",
+        "-pedantic",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-g",
+        "-O1",
+        "-fno-omit-frame-pointer",
+        "-fsanitize=address,undefined",
+        "/mnt/f/IOS-MIX1/maintenance/hakios-lithium/peripherals-next/qup-combined-test.c",
+        "-o",
+        "/mnt/f/IOS-MIX1/reports/touch-step5-host-run-20261119-r3/qup-combined-test"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "elapsed_seconds": 3.7400688520000003
+    },
+    {
+      "argv": [
+        "/mnt/f/IOS-MIX1/reports/touch-step5-host-run-20261119-r3/qup-combined-test"
+      ],
+      "exit_code": 0,
+      "stdout": "MMIO failure sweep: 1792 cases (all lengths 1..32)\nError-path MMIO sweep: 117 cases; deadline poison/stale RX count PASS\nNo-reset probe: 54 MMIO and 54 hard-deadline injection points; clean entry, quarantine and split poll PASS\nR21 admission: absent/static/stages, malformed args, CPU/8 resource gates, no reset/retry PASS\nPASS: combined FIFO lengths/tags/gates/capacity/faults/cleanup/32+31 adapter\n",
+      "stderr": "",
+      "elapsed_seconds": 0.021200147000001834,
+      "suite": "qup-combined",
+      "binary_sha256": "af24ba1e336832098357e41193bed01479988a2715c4d27f7552c2b25de038e6"
+    },
+    {
+      "argv": [
+        "clang",
+        "-std=c11",
+        "-pedantic",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-g",
+        "-O1",
+        "-fno-omit-frame-pointer",
+        "-fsanitize=address,undefined",
+        "/mnt/f/IOS-MIX1/maintenance/hakios-lithium/peripherals-next/touch-delivery-test.c",
+        "-o",
+        "/mnt/f/IOS-MIX1/reports/touch-step5-host-run-20261119-r3/touch-delivery-test"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "elapsed_seconds": 3.3363607399999964
+    },
+    {
+      "argv": [
+        "/mnt/f/IOS-MIX1/reports/touch-step5-host-run-20261119-r3/touch-delivery-test"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS down/move/up, private state, timestamps, identity reuse prevention\nPASS 10 contacts/20 events, saturation, exact retry, no partial prefix\nPASS explicit loss, rejected release retry, repeated loss, missing-ID release\nPASS duplicate/decreasing sequence/time, empty/stationary, no wrap\nPASS malformed length/null/loss/IDs/events/coordinates, no mutation\nPASS immutable geometry: four rotations, midpoint, viewport\nPASS callback recursion, absent atomic adapter, invalid API inputs\nPASS partial/unknown poison, no replay, failed/successful recovery fence\nPASS 8 synthetic touch delivery groups; no physical queue or IOHID connected\n",
+      "stderr": "",
+      "elapsed_seconds": 0.01659420600000061,
+      "suite": "touch-delivery",
+      "binary_sha256": "119840581ccd0cb3af953cefed66e93bf8b0136ce6272cb53dcfca98f92be991"
+    },
+    {
+      "argv": [
+        "clang",
+        "-std=c11",
+        "-pedantic",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-g",
+        "-O1",
+        "-fno-omit-frame-pointer",
+        "-fsanitize=address,undefined",
+        "/mnt/f/IOS-MIX1/maintenance/hakios-lithium/peripherals-next/irq-affinity-audit-test.c",
+        "-o",
+        "/mnt/f/IOS-MIX1/reports/touch-step5-host-run-20261119-r3/irq-affinity-audit-test"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "elapsed_seconds": 3.0414914509999917
+    },
+    {
+      "argv": [
+        "/mnt/f/IOS-MIX1/reports/touch-step5-host-run-20261119-r3/irq-affinity-audit-test"
+      ],
+      "exit_code": 0,
+      "stdout": "irq-affinity-audit: 988 SPI mappings, fixed affinity, reserved-bit, offline, and TYPER boundaries passed\n",
+      "stderr": "",
+      "elapsed_seconds": 0.015643550000007167,
+      "suite": "irq-affinity-audit",
+      "binary_sha256": "74eaf58165f8ff286e68561f01caedda9da4d31d3a1375dfaf861131bd797e12"
+    },
+    {
+      "argv": [
+        "clang",
+        "-std=c11",
+        "-pedantic",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-g",
+        "-O1",
+        "-fno-omit-frame-pointer",
+        "-fsanitize=address,undefined",
+        "/mnt/f/IOS-MIX1/maintenance/hakios-lithium/peripherals-next/a5xx-fence-packet-test.c",
+        "-o",
+        "/mnt/f/IOS-MIX1/reports/touch-step5-host-run-20261119-r3/a5xx-fence-packet-test"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "elapsed_seconds": 3.0409592090000075
+    },
+    {
+      "argv": [
+        "/mnt/f/IOS-MIX1/reports/touch-step5-host-run-20261119-r3/a5xx-fence-packet-test"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: A5xx CP_EVENT_WRITE fence packet golden/boundary/transaction tests\n",
+      "stderr": "",
+      "elapsed_seconds": 0.015774788999991074,
+      "suite": "a5xx-fence-packet",
+      "binary_sha256": "718b8001b7030157a0c14da48fdf184aa35813ff8ec58a63f7fd3d6607f6bdf7"
+    },
+    {
+      "argv": [
+        "clang",
+        "-std=c11",
+        "-pedantic",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-g",
+        "-O1",
+        "-fno-omit-frame-pointer",
+        "-fsanitize=address,undefined",
+        "/mnt/f/IOS-MIX1/maintenance/hakios-lithium/peripherals-next/ft5x46-frame-test.c",
+        "-o",
+        "/mnt/f/IOS-MIX1/reports/touch-step5-host-run-20261119-r3/ft5x46-frame-test"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "elapsed_seconds": 3.172569674000002
+    },
+    {
+      "argv": [
+        "/mnt/f/IOS-MIX1/reports/touch-step5-host-run-20261119-r3/ft5x46-frame-test"
+      ],
+      "exit_code": 0,
+      "stdout": "FT5x46 host parser/state tests: PASS (5 groups)\n",
+      "stderr": "",
+      "elapsed_seconds": 0.015881155000002423,
+      "suite": "ft5x46-frame",
+      "binary_sha256": "66bfd564fc830fdff0f4c63ccec6f5382b7bacc7603d8794ec2246612ce114bf"
+    }
+  ],
+  "source_sha256": {
+    "maintenance/hakios-lithium/peripherals-next/qup-combined.h": "a6ab106c0f4ebbae72fe7c052f9718dec6941390ed1d6e1d505b5812868b0934",
+    "maintenance/hakios-lithium/peripherals-next/qup-combined-test.c": "16e6d82a06e6fd9ea911a6c283d4ad40f68f4c59fa0352d4bc272e123b9e9fc0",
+    "maintenance/hakios-lithium/peripherals-next/touch-delivery.h": "50d2f058e65746ebea5f747fa7c01d043ca7c460f18bd5c71d390d2899448fdd",
+    "maintenance/hakios-lithium/peripherals-next/touch-delivery-test.c": "3949053f58ccb128b404ae6c355bd6faf99dfea745cf475674398cdbfdffcbf1",
+    "maintenance/hakios-lithium/peripherals-next/irq-affinity-audit.h": "6c795c961da8a5a1c74599747be83a302ef84facf74bdfd0dcb3ce20592285be",
+    "maintenance/hakios-lithium/peripherals-next/irq-affinity-audit-test.c": "cf348cae799b2ccfa6432c00a9bc8af38f7c2fa8aeb30eb1ba7dc4af8a55f61b",
+    "maintenance/hakios-lithium/peripherals-next/a5xx-fence-packet.h": "ad01ffcac5399b809514706690cde509f91ad400828765c5bdeeef1f0d01fdec",
+    "maintenance/hakios-lithium/peripherals-next/a5xx-fence-packet-test.c": "6cae3c5ece00e9044000341656b171d4516daebc6bc9d28631dc538f7e265b5d",
+    "maintenance/hakios-lithium/peripherals-next/ft5x46-frame.h": "d7be11873d91c440f0f0ff25859bc6686524f66cee90f040b27b051f33a39566",
+    "maintenance/hakios-lithium/peripherals-next/ft5x46-frame-test.c": "ed49d017a68669585bdbad4b208a83b89ac98c71ac5c364da5dee4e9fbd78245",
+    "maintenance/hakios-lithium/peripherals/boot-options-test.c": "e39fca4a286c1fdd2007d7e340dde93a223bd58d78bf9062dbc7179c6078537e",
+    "maintenance/hakios-lithium/peripherals/boot-options.h": "ac90cb237620e9ecd2572aacb8491a486bb2857d3872272f84e8a0ce36443e7e",
+    "maintenance/hakios-lithium/peripherals/gpu-firmware-test.c": "e69a1310d230b26c7444c49aff29b7073bffd57d28cb1dd005d1ab4b4ce420f9",
+    "maintenance/hakios-lithium/peripherals/gpu-firmware.h": "f6990423236b27f9866906551a0550be155526bd23070da6a0d915603142f367",
+    "maintenance/hakios-lithium/peripherals/gpu-iova-test.c": "0a53908cff3afa4a97bd2c96bc2921abb21bf99b3563361cf956d1465621e95e",
+    "maintenance/hakios-lithium/peripherals/gpu-iova.h": "8b4a6007aa9115179c2c178f9078e67db68560e4e322ef5f23adb13b64ab15be",
+    "maintenance/hakios-lithium/peripherals/gpu-probe-test.c": "af45668f42ab2851d153a46ae62cb16517ec3c43a292e6b7e40848efb09c24a7",
+    "maintenance/hakios-lithium/peripherals/gpu-probe.h": "7a840211d610c11ef76abe915d6d43b633aafd6e778f2e19102c5f694f9750aa",
+    "maintenance/hakios-lithium/peripherals/gpu-submit-test.c": "52e08f76e66a2b35b1adabdec426a8c16290345ba50a9e0eadfa4f674430633a",
+    "maintenance/hakios-lithium/peripherals/gpu-submit.h": "6c7818d5786976e4b4e9963d97c4f71a4ac5b34a51530a416e272fd49ea07610",
+    "maintenance/hakios-lithium/peripherals/irq-route-test.c": "ead7f5943d5c8fb226a6f529ffe5b7ba9db9011ddbd745ca51983cd6ed856251",
+    "maintenance/hakios-lithium/peripherals/irq-route.h": "91fccc6d0f6b8a1b89df6300c37ab2ac830de168ecd495891897db7ac0f9cba4",
+    "maintenance/hakios-lithium/peripherals/kernel-admission-test.c": "d2404f18991f586be4c1c17e4f02704ae057794e43a94d8cde7b5714020c9ffa",
+    "maintenance/hakios-lithium/peripherals/qup-i2c-test.c": "83efe3035f3ee391f8f6e644f131b1b0d17c3a2c5db4fe9e35c19cb513c818c9",
+    "maintenance/hakios-lithium/peripherals/qup-i2c.h": "4d0b735e45cd65e9a9037b168ab8e554e413e036ff52f2fc758217f835b4cb3e",
+    "maintenance/hakios-lithium/peripherals/qup-transfer-test.c": "c4e23a0e4f4d49a10902f3bed79c42b8ba4581c1b6eef7d2929be408e15556ae",
+    "maintenance/hakios-lithium/peripherals/qup-transfer.h": "0ccffd2a7b55d8522d8afe99674f440f7c3b0596bef858627579bd713c828680",
+    "maintenance/hakios-lithium/peripherals/touch-digitizer-test.c": "7ef0a84ae320dd8b3b7ad9542e6d8a3864fb84bf653ece6c3ac03968f59e4144",
+    "maintenance/hakios-lithium/peripherals/touch-digitizer.h": "551d9acfab746388ba2c153f02f2d01e0b9977b04201a0d9833e9f950861fa49",
+    "maintenance/hakios-lithium/peripherals/touch-frame-test.c": "35cdbaf840ab08d3aa1008304eb63836efa03a97ff93907db660ae70c297fb9c",
+    "maintenance/hakios-lithium/peripherals/touch-frame.h": "2c336fb8e5283432ec2e7d043b1a9fd6c328ea3a3b8e2ce45fa43c7f0ce85a93",
+    "maintenance/hakios-lithium/peripherals/touch-i2c-test.c": "c9524eb09f211bb86824b3bd10cf8934b972422d69a78bdce950183aa51ab390",
+    "maintenance/hakios-lithium/peripherals/touch-i2c.h": "b5e302f3136829e9855dfb704a1e61a9fbab62118d8b1f30721bde79f3e33683",
+    "maintenance/hakios-lithium/peripherals/touch-irq-test.c": "dafe9ce37f6fdfb12576c2d82c9b5e1f7aa4e103d5fe1c3abaf0e53bad7ee3e9",
+    "maintenance/hakios-lithium/peripherals/touch-irq.h": "84c1b2f8272d5a1e1f9b945653d7747c1aaa96fe65ff2fc46ed1f8fa75800ff2",
+    "maintenance/hakios-lithium/peripherals/touch-queue-test.c": "1815574f6909afaf5d61d622a11cb376a651ffa2f93eae46fae3068e5accfb7f",
+    "maintenance/hakios-lithium/peripherals/touch-queue.h": "b5d8ff529dc180c80930b4d891d27a37849f8b9973e9e4b84fd2cb8efd6dcc06",
+    "ports/hakios-lithium/peripherals/kernel.inc": "b7ca2079f6f76cbeb288e54adf123f86ba57a5cdfeb8198ce716aa8df74e0ac9",
+    "ports/hakios-lithium/peripherals/boot-options.h": "ac90cb237620e9ecd2572aacb8491a486bb2857d3872272f84e8a0ce36443e7e",
+    "scripts/test-hakios-lithium-peripherals-next.py": "bea3e9b18564f9065826623e15722afc07e593653ed5dc05f89c8bdcd2535c8b"
+  },
+  "frozen_before": {
+    "r20_image_sha256": "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82",
+    "r20_display_acceptance": true,
+    "r15_image_sha256": "ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55",
+    "frozen_baselines_unchanged": true
+  },
+  "frozen_after": {
+    "r20_image_sha256": "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82",
+    "r20_display_acceptance": true,
+    "r15_image_sha256": "ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55",
+    "frozen_baselines_unchanged": true
+  },
+  "production_kernel_integration": false,
+  "device_operations": false,
+  "physical_touch_verified": false,
+  "gpu_hardware_verified": false
+}

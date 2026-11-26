@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+[Defines]
+  INF_VERSION = 0x00010005
+  BASE_NAME = LithiumHwResetSystemLib
+  FILE_GUID = 8FCB8720-58AE-4318-8D0D-DAD3005A12E0
+  MODULE_TYPE = BASE
+  VERSION_STRING = 0.1
+  LIBRARY_CLASS = HwResetSystemLib
+[Sources]
+  ResetSystem.c
+[Packages]
+  MdePkg/MdePkg.dec
+  ArmPkg/ArmPkg.dec
+[LibraryClasses]
+  ArmSmcLib
+  BaseMemoryLib

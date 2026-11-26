@@ -1,0 +1,1271 @@
+{
+  "prepared_at": "2026-11-16T01:48:47.976522+08:00",
+  "revision": "ios14-launchd-handoff",
+  "baseline": {
+    "project": "HakiOS",
+    "path": "upstream/hakios-xnu-kernel",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2",
+    "apple_xnu_commit": "c54f35ca767986246321eb901baf8f5ff7923f6a"
+  },
+  "inputs": {
+    "manifest_sha256": "74eea00ef1618302cacc96a5b1eef7eefec61f90ee605cd86a334fa1e1e6c108",
+    "baseline_commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "port_files": {
+      "README.md": "7a0f152aba2645d428379132a251b9856fd88fbf1513ded03d1277e3a836feab",
+      "compatibility/ios14-exit-observation.json": "65ed3f28da396af839f5edf097a356b88629576457237f77385262c51fddd483",
+      "compatibility/ios14-exit-observation.patch": "dd99a2b1600c641349f4af13fca6defdf141e5d2dc058de81ecf7d8b2582738d",
+      "compatibility/ios14-mach-msg.json": "77421f31ab52974f5cedbf51d4b3f1848bded04a2f64f3a59708a418afe571c4",
+      "compatibility/ios14-mach-msg.patch": "968af6abd8833f42f9995c0ac0cffda53e03bc816b8fbbeaaca6e5cd8b518617",
+      "compatibility/ios14-shared-region.json": "16d2402e87421a2beba402eea2f449146f1f802aa2956d22a788108c707ec6c4",
+      "compatibility/ios14-shared-region.patch": "084b24c90a018a802b74f0ce5c7f70a3d9352d3ea5b23d7af878c78650bd9cb0",
+      "compatibility/shared-region-438.c": "3b41216c6e60fb7461ce9aac23a654c24aa35b838be98c2574be8bfc8d11ee33",
+      "configs/lithium.config": "33643553f07be73783f7ba9ecb64b7536737f977b0d066cac1867bee83fa390c",
+      "configs/lithium_defconfig": "62f5f403f1e20c7e4208db67746c0893004ce68d27754783685413e2a7abb4b4",
+      "device.conf": "62dc6ffd3ddbbbc39499a6c449b2772709317861c44a82f4a1f8153114e30c0d",
+      "firmware/BootShim.S": "515ea9fbd0d6ea6c25c1263ff6617685329b21221e448463cc5da28ee7119275",
+      "firmware/lithiumPkg/Drivers/LithiumBdsDxe/LithiumBdsDxe.c": "895ac85895dabb68d2adacc777b2d190e71a03c315bef8a6c510857d340f7b55",
+      "firmware/lithiumPkg/Drivers/LithiumBdsDxe/LithiumBdsDxe.inf": "7b17adb01009433db8d0db175aaedf396527c1754f2c100f9d447b984c06ce7b",
+      "firmware/lithiumPkg/Drivers/LithiumConsoleDxe/LithiumConsoleDxe.c": "b28ae43f47d0cad75d9d82fb1a298001adc0631e2054c8eb82cc99cfa5b9536f",
+      "firmware/lithiumPkg/Drivers/LithiumConsoleDxe/LithiumConsoleDxe.inf": "2a3c9ecd86a9faa535051763a3df823d2987a56a2cee321d3ee3ff8fe7de32db",
+      "firmware/lithiumPkg/Drivers/LithiumDisplayDxe/LithiumDisplayDxe.c": "a14ccb750dbc3540c8ee6ac6c4ecfa2e6a62a7b47167975137a8eecb898d6b0d",
+      "firmware/lithiumPkg/Drivers/LithiumDisplayDxe/LithiumDisplayDxe.inf": "fcbd74ef65e07eb0959dda2ae8afc6a290d1f10abb5edfc56aedcb5287ff209f",
+      "firmware/lithiumPkg/Drivers/LithiumRamDiskDxe/LithiumRamDiskDxe.c": "e9f44650ebdc5715267207434cfe59da2fbf85d01ddb387bc9712c0714bdd5d1",
+      "firmware/lithiumPkg/Drivers/LithiumRamDiskDxe/LithiumRamDiskDxe.inf": "e29c22e6249107d4ab7f5630a7db95d9f159118bf6be7a55da4d191a7376cf00",
+      "firmware/lithiumPkg/Drivers/LithiumUfsDxe/LithiumUfsDxe.c": "6da17e38da8a2e3faa92dfdbb3056ead21c0fb1e762fbea683e2307b59f7859e",
+      "firmware/lithiumPkg/Drivers/LithiumUfsDxe/LithiumUfsDxe.inf": "c66b9546faa058c48c2645d6cb2cda2d1aae9cc1297b0813a96b1948794d69cd",
+      "firmware/lithiumPkg/Drivers/LithiumUfsDxe/WarmUfs.inc": "640a081b042cd28731dea304c7eb78302a5af116626391e3593b9e790dcfe305",
+      "firmware/lithiumPkg/Drivers/LithiumUfsDxe/storage-provenance.json": "a7696a7fbee2d8e2b825dde2da3f99679af5c72783515839ae924f713c1f2452",
+      "firmware/lithiumPkg/Include/Lithium.h": "960b5694e0231b5ff748b92fabeec2ae53c1e52e3124a2aa689c8e15359eb1df",
+      "firmware/lithiumPkg/Include/Payload.h": "a866c2ffe52c5e87ce433958f109b52d2a9be606084fd58b93d1fe30f19e0569",
+      "firmware/lithiumPkg/Library/MemoryMapLib/MemoryMap.c": "5c94cab01b00a46020290cf73cf16a107774f6280b24d5180567b66f235ff191",
+      "firmware/lithiumPkg/Library/MemoryMapLib/MemoryMapLib.inf": "0f881749820ae85cef060cd6f06d091b25978322f95834adfea26d92bda072b0",
+      "firmware/lithiumPkg/Library/PlatformPeiLib/PlatformPei.c": "55d5f1832b99dead4a15986e4c1ab82a2a96e67878c0e40475d3e8efe519706e",
+      "firmware/lithiumPkg/Library/PlatformPeiLib/PlatformPeiLib.inf": "d2f98dba25535195880ff5168f7ccf3e14cfef0415471f88d2b9e770a66ffe2c",
+      "firmware/lithiumPkg/Library/PlatformSecLib/PlatformAssembly.S": "e2a289ceadffb7cdc2625ecadbc12ff33ce19a31342c227047a7d8047b14eeb8",
+      "firmware/lithiumPkg/Library/PlatformSecLib/PlatformSec.c": "a66dee9b47b00b75bd6c37c86edfcc64dbb38c7ab185886e939763370d0372de",
+      "firmware/lithiumPkg/Library/PlatformSecLib/PlatformSecLib.inf": "1cf5138c484bf3a0389d929132a5f0f6cab96979f9c9186accffda7d3a2d1bd6",
+      "firmware/lithiumPkg/Library/ResetSystemLib/ResetSystem.c": "53c6ee09a80e3a1c364cafcac9ab9a8da501aff5efd38ea5975c049403d8a08e",
+      "firmware/lithiumPkg/Library/ResetSystemLib/ResetSystemLib.inf": "2093985b7a97612cc7c8025da54d0fd30a6606fcd5454e99d2ab015edab8ff69",
+      "firmware/lithiumPkg/Library/SerialPortLib/SerialPort.c": "967ea8f9326df0d24ca305c47d861ee99a4bfb9a7c38250b4133f97f63adfa25",
+      "firmware/lithiumPkg/Library/SerialPortLib/SerialPortLib.inf": "f769922bd94c2c9f9e0dbd67dab9b93ea444acfe548f2094b71af6485acd7429",
+      "firmware/lithiumPkg/lithium.dsc": "0318dfa842b1a5d24a66fb749bb6230392d2ef2c3fafaf4e282b622cbd88916d",
+      "firmware/lithiumPkg/lithium.fdf": "5c41783fcbc813819d915d4ab35189047f6cd57e9d869a05e84c73094672eebb",
+      "firmware/lithiumPkg/lithiumPkg.dec": "bb17cadd803d8e49adfdf7236b872e56a60865df55fb22a50292cd8e22e54c86",
+      "patches/0001-msm8996-platform-loader.json": "30fb76f90e2edd59f8eef0548c006b50327adee0fe9514ec675cd2c911d9a3dd",
+      "patches/0001-msm8996-platform-loader.patch": "4c9dddf9e46e0477455eded85c5dde11ee3f13cc67fcaadf2fa80957016076a1",
+      "patches/0002-msm8996-platform-observation.json": "210db0f40a0bf9faf3f16a048fbea8d0b1b8bb6e2c82044666886a0ddeb3499a",
+      "patches/0002-msm8996-platform-observation.patch": "367f25fedb32b8c35f7c49c74e790743fd91cf579b56b11705ff06002ceb631f",
+      "patches/0003-msm8996-retained-result.json": "cbe0fd8f5eed18808bd98519ce01a86337a16bb7fba7c718c5c812eb124e2057",
+      "patches/0003-msm8996-retained-result.patch": "e3af19156deab7db251fbbae52c07e1bd567b6787cfe68dd0a0aaabdb97eddd8",
+      "patches/0004-msm8996-storage-test.json": "8f5fc9f6ecc15236d342ead46f7fa938693f441e834f1ae96f42f562e1352d85",
+      "patches/0004-msm8996-storage-test.patch": "d21bd06b1acc56b6946478d99d6db9e4dc4a9efd07700865a54d89edced75785",
+      "patches/0005-msm8996-pid1-fault-observation.json": "53cea613e0119b2d95728576abd3cec083031b9cc4378737fe7fd5706133ad99",
+      "patches/0005-msm8996-pid1-fault-observation.patch": "0c31bff5a5002e097f0fe04044261f15385570f8364b845187df6c8cac002fe4",
+      "patches/0006-msm8996-ufs-buffer-map.json": "566471800bacfc5044b739ebba84ab9a22e26a0f653871d12d47d4dd1c5777ce",
+      "patches/0006-msm8996-ufs-buffer-map.patch": "02820d9df49a235c21831a47a3e62225963c7cb5e9026fc6919653cebce517cd",
+      "patches/0007-lithium-ios14-dynamic.json": "633bbb9fddc29b275604cd4d0fac9aacd5b104d219ed86613e2279fa7e026e86",
+      "patches/0007-lithium-ios14-dynamic.patch": "7d8a7f245228a7097237f639940d9157d7bcdfc0697d28875b2132ab0fff359c",
+      "patches/0008-lithium-d20ap-identity.json": "147d845ec3b335a0c1709c1270461014ca73e5e35b081ec35358a4ad66f51f1c",
+      "patches/0008-lithium-d20ap-identity.patch": "84dd117e0da6bef45c10a3aa0a00071b685778093fbaf0776e1a0fc3b83354e9",
+      "patches/0009-lithium-exit-summary.json": "590cd23e9d944e3418acec66638c542ce18636742cc8f5fe3df3b4440f0e23a6",
+      "patches/0009-lithium-exit-summary.patch": "0ce6a628802a005776c5cd34396b1576ea9c22812b8cbb755b9e9f433f034992",
+      "patches/0010-lithium-mach14-summary.json": "c899ec9bbffa61f51c1c3f8f321889ef52fb78a097ad6db75fd18f20cfcf7bbd",
+      "patches/0010-lithium-mach14-summary.patch": "6518c332aa9eaf89e5d710fd65aa39d89d51dbdd03a4855d81317974c374441c",
+      "patches/0011-lithium-df-trace-summary.json": "b118c18fdf2c0d698c8178b6be86e0e7ab9b3d5afe391474197ed322e9db4fe9",
+      "patches/0011-lithium-df-trace-summary.patch": "419c391e80deb22e4afa1083b0c09e651182f8005c3846f91c716e7a90905cee",
+      "patches/0012-lithium-ios14-launchd.json": "adceefb5e6f93f222721ad8a99a2dfde9d21df1de8b80747cdac49c2d88a56b3",
+      "patches/0012-lithium-ios14-launchd.patch": "e4b873b3e29dcf0c0c5b83e9ad7c7489a5ba9ab100e6bfb7465b1c1d3199d936",
+      "patches/0013-lithium-launchd-stdio-summary.json": "24fb7d68b0c8c898c94853c8f56ed8af8b02bb85801648367adc06dca2f0927a",
+      "patches/0013-lithium-launchd-stdio-summary.patch": "3e35be83990be91357919998f4fd38db624fdc17fb42976f6e4f405936cb49db",
+      "patches/0014-lithium-launchd-handoff.json": "371e2c924e67cde328e5ebca8218b8098f902f3d03397e7976fef742ed8ac22d",
+      "patches/0014-lithium-launchd-handoff.patch": "b4be07bb728f1a3682426b2717e7d75b52448bf3178b5e6396d80ec82031c533",
+      "soc/configs/msm8996.config": "51c6e8236d3786659132f9bcfc0837c38f4d9d220c24ad4f41e28e6fbb00090a",
+      "soc/soc.conf": "8fff4048551a2f60e89a21387687c3b1616272242cc86f76ddfa673bae91c4e9",
+      "tests/ios14_dynamic.h": "5e9b441bc464f5a3ad091ad0b4f1254c438008711c85e4dfab6385604f595b31",
+      "tests/ios14_launchd.h": "8f7dd5dcfa42d90d009f2bb8c1fb3a64deecfa137a84955846917352f74744af",
+      "tests/shared-region-438-host.c": "6af60695801db5d340505e42e0300f29f0b3c76a9a9fe7b1a4c08fd6e51c5be0",
+      "tests/storage_probe.c": "2cb581eb51967e48d497027998df23eb1c61e996c5627e0b679ac6e3d5b89cb9"
+    }
+  },
+  "image_path": "artifacts/hakios/p2-ios14-launchd-handoff-ready/lithium-hakios-test.img",
+  "image_sha256": "d1f3af4e79baef473cb1308cd52e7604ca92a62231f38ea18f80b9057ee6f4fa",
+  "kernel_sha256": "648320e505088c834eff8c8c0cb17b4ee29ba6d96a4c7da8aba1554fbe063748",
+  "loader_sha256": "86ef4b3480818e32b87c31b9b49a36cc2d14ae6439f5b377ac79eeefd55d93b9",
+  "ramdisk_sha256": "b7936ab44f372bc891eb4ddf6bfa16bdcd26dadff840cacfcac2cd7272d02c07",
+  "init_sha256": "4a879fd4c5544e22016de48dc1045d1e39dc1dbb9086e47395db11766821958b",
+  "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=2 lithium_storage_test=1 systrace=2 systrace_name=launchd loader_return_after=120 lithium_ios14_test=1 lithium_launchd_test=1 applog=1 applog_name=launchd",
+  "static_package_verified": true,
+  "embedded_package_verified": true,
+  "evidence_sha256": {
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/lithium-hakios-test.img": "d1f3af4e79baef473cb1308cd52e7604ca92a62231f38ea18f80b9057ee6f4fa",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/Image": "964576328afb591300d776db0b4c9f95cd1a15dd30afff1c4acf0121b4eb034b",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/payload.bin": "156764426001869b0ab6434785a6a64f53b2fa8289a52cdb6af64fb35a2d2bcd",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/lithium.fd": "87235b3e93b4351e86418ceaf45f74ecdca173f6d5d52faaa1df422e4d0d5a0f",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/loader.fat": "cae178c443a49217161313789c539240f03b1024b3e043b86e81c1e99a6e5a14",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/ios14-dynamic-root.apfs": "b7936ab44f372bc891eb4ddf6bfa16bdcd26dadff840cacfcac2cd7272d02c07",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/ios14-init": "4a879fd4c5544e22016de48dc1045d1e39dc1dbb9086e47395db11766821958b",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/ios14_dynamic_expected.h": "7671eb0fe7150717a97acb8ca3ac6c51651d84158b43f3a350854eb4a0e7d7a0",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/ios14-init-startup-disassembly.txt": "1220458aa91de1f2f4be9c82d3d9b3c37f8ddb3681f830c1002c55d5b3a34685",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/LithiumUfsDxe.efi": "a7cd79e6cedd51f3bb3e296c00e67a07ddd2b7a2d71a7eca5dfd4036fef7932e",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/PartitionDxe.efi": "47c80136020880698634e4f97ff5f3767c7f1b4542b4c9c1ed7ae06ca3017d3d",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/LithiumBdsDxe.efi": "6274e889b2703b9b834c3afde214267f9fa98b047b04349f3ee94ccbea968c13",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/firmware-build-report.txt": "190bcfae27812cf53707d2c3d0858a6c82269a7e9dd4e48f6e82ec346b88ff50",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/firmware-build.log": "c75465ca2b2513e1e1ff3de2a104deb4371efbbdc3c5c4984fae3066aa994194",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/kernel-build.log": "fefb92cfff12bd82fa866b898e51ccd161f997b6a5838951600aaa25cdf023fd",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/hakios-kernel": "648320e505088c834eff8c8c0cb17b4ee29ba6d96a4c7da8aba1554fbe063748",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/loader.efi": "86ef4b3480818e32b87c31b9b49a36cc2d14ae6439f5b377ac79eeefd55d93b9",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/upstream/xnuloader/loader.c": "316d6d315c747b58c350618295633dac3cd93dc6d3c94e32387615e77c5b5365",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/upstream/xnuloader/identity.h": "71874512c290ec24d799173f2aa10131c6f61573d598c0e281252e373c5b6630",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/upstream/xnuloader/mkidentity.py": "ae6cebdcfa22994661211e0bc35fd14770484173f951ceef6a65e9b84ad3ff99",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/upstream/xnuloader/mkpayload.py": "936d9f0ddb3215b34026f348146e750fb19a11888423e1fd58ded94589510518",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/upstream/userland/src/init.c": "9ef9e8107529cee4b19a08c453de9aa55cd540c89a2dc7b66ea977f7da07b08a",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/upstream/userland/libmini/mini.c": "4aafe4461e79a503336fc149c263d96fef7d5e9d28eaf7375ce968f838c4aa68",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/upstream/userland/libmini/mini.h": "7f633455ab782794b11e2daa04480fe27bd8d8eb4f470e1e7bcbfc77246f09cb",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/upstream/userland/libmini/start.S": "75024af4f60a89ff82269a7076be303bcb50779f9f1d4ef504231bcf4ea1012c",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/upstream/userland/build.sh": "99abf1be776d4edec86e13f05a06c623fbb4974ad208c4a270eddb752c55577c",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/upstream/userland/mkjobs.py": "75a79f8ba1e3abd22608058337584f0c4b70a6fafc410c7e8c9622fb9180bea9",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/upstream/sysimage/mkvarskel.py": "ea6191dfe4daee9817dad9bd81c358900093af1c626a87e950912965fbd584db",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/upstream/sysimage/select-system.py": "1224e46719be478a2ee3c1319d8e41bb6438300b36a90fa66445ed0377122d37",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/upstream/.config": "b55547a05bbadf7b5ba37209a7f3ce1facc80622897552bd794c59fd2498d054",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/ramroot/LaunchDaemons/com.apple.cfprefsd.xpc.daemon.plist": "904d6412c712171a62b70a1ece3d30abede990bee1783b363870e1c1a1ea5d51",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/ramroot/LaunchDaemons/com.apple.notifyd.plist": "b421f94737b90e54d81c0bb81c00f72fa6fa82d3828a9c8295b50579565af287",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/ramroot/LaunchDaemons/com.hakios.lithium.launchd-observer.plist": "6bdca7c72858fe82c74f29f67d8964b295025aeed6c1e830cd6fe42b207cd8f5",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/ramroot/etc/rc": "85326c883f8ec55c7a35c0d9e09e9d1ca1342bd64fcb5203224e3a927fa31880",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/ramroot/etc/var.skel": "62d1ca16801338ac60c01805344cfa5cdd027656520dce8043e0802d7fa835f8",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/ramroot/sbin/launchd": "4a879fd4c5544e22016de48dc1045d1e39dc1dbb9086e47395db11766821958b",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/ramroot/xpc/extensions.plist": "6e418fd746d8415f72546fce51f1bc8f58566c1d5c022b41aa00e9dd28c3aa62",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/ramroot/xpc/extensions.plist.sig": "41e6d8f76eef54208c1981007950fd450f6c748262dc967ab6bc828c77a17b9e",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/ios14-var.slt": "8ab3c9bbb09f98deaf17985d58e1a7e03fe942b75acd18d6aef980b5e6072aa3",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/README.md": "7a0f152aba2645d428379132a251b9856fd88fbf1513ded03d1277e3a836feab",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/compatibility/ios14-exit-observation.json": "65ed3f28da396af839f5edf097a356b88629576457237f77385262c51fddd483",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/compatibility/ios14-exit-observation.patch": "dd99a2b1600c641349f4af13fca6defdf141e5d2dc058de81ecf7d8b2582738d",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/compatibility/ios14-mach-msg.json": "77421f31ab52974f5cedbf51d4b3f1848bded04a2f64f3a59708a418afe571c4",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/compatibility/ios14-mach-msg.patch": "968af6abd8833f42f9995c0ac0cffda53e03bc816b8fbbeaaca6e5cd8b518617",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/compatibility/ios14-shared-region.json": "16d2402e87421a2beba402eea2f449146f1f802aa2956d22a788108c707ec6c4",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/compatibility/ios14-shared-region.patch": "084b24c90a018a802b74f0ce5c7f70a3d9352d3ea5b23d7af878c78650bd9cb0",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/compatibility/shared-region-438.c": "3b41216c6e60fb7461ce9aac23a654c24aa35b838be98c2574be8bfc8d11ee33",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/configs/lithium.config": "33643553f07be73783f7ba9ecb64b7536737f977b0d066cac1867bee83fa390c",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/configs/lithium_defconfig": "62f5f403f1e20c7e4208db67746c0893004ce68d27754783685413e2a7abb4b4",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/device.conf": "62dc6ffd3ddbbbc39499a6c449b2772709317861c44a82f4a1f8153114e30c0d",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/BootShim.S": "515ea9fbd0d6ea6c25c1263ff6617685329b21221e448463cc5da28ee7119275",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Drivers/LithiumBdsDxe/LithiumBdsDxe.c": "895ac85895dabb68d2adacc777b2d190e71a03c315bef8a6c510857d340f7b55",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Drivers/LithiumBdsDxe/LithiumBdsDxe.inf": "7b17adb01009433db8d0db175aaedf396527c1754f2c100f9d447b984c06ce7b",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Drivers/LithiumConsoleDxe/LithiumConsoleDxe.c": "b28ae43f47d0cad75d9d82fb1a298001adc0631e2054c8eb82cc99cfa5b9536f",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Drivers/LithiumConsoleDxe/LithiumConsoleDxe.inf": "2a3c9ecd86a9faa535051763a3df823d2987a56a2cee321d3ee3ff8fe7de32db",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Drivers/LithiumDisplayDxe/LithiumDisplayDxe.c": "a14ccb750dbc3540c8ee6ac6c4ecfa2e6a62a7b47167975137a8eecb898d6b0d",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Drivers/LithiumDisplayDxe/LithiumDisplayDxe.inf": "fcbd74ef65e07eb0959dda2ae8afc6a290d1f10abb5edfc56aedcb5287ff209f",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Drivers/LithiumRamDiskDxe/LithiumRamDiskDxe.c": "e9f44650ebdc5715267207434cfe59da2fbf85d01ddb387bc9712c0714bdd5d1",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Drivers/LithiumRamDiskDxe/LithiumRamDiskDxe.inf": "e29c22e6249107d4ab7f5630a7db95d9f159118bf6be7a55da4d191a7376cf00",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Drivers/LithiumUfsDxe/LithiumUfsDxe.c": "6da17e38da8a2e3faa92dfdbb3056ead21c0fb1e762fbea683e2307b59f7859e",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Drivers/LithiumUfsDxe/LithiumUfsDxe.inf": "c66b9546faa058c48c2645d6cb2cda2d1aae9cc1297b0813a96b1948794d69cd",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Drivers/LithiumUfsDxe/WarmUfs.inc": "640a081b042cd28731dea304c7eb78302a5af116626391e3593b9e790dcfe305",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Drivers/LithiumUfsDxe/storage-provenance.json": "a7696a7fbee2d8e2b825dde2da3f99679af5c72783515839ae924f713c1f2452",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Include/Lithium.h": "960b5694e0231b5ff748b92fabeec2ae53c1e52e3124a2aa689c8e15359eb1df",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Include/Payload.h": "a866c2ffe52c5e87ce433958f109b52d2a9be606084fd58b93d1fe30f19e0569",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Library/MemoryMapLib/MemoryMap.c": "5c94cab01b00a46020290cf73cf16a107774f6280b24d5180567b66f235ff191",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Library/MemoryMapLib/MemoryMapLib.inf": "0f881749820ae85cef060cd6f06d091b25978322f95834adfea26d92bda072b0",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Library/PlatformPeiLib/PlatformPei.c": "55d5f1832b99dead4a15986e4c1ab82a2a96e67878c0e40475d3e8efe519706e",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Library/PlatformPeiLib/PlatformPeiLib.inf": "d2f98dba25535195880ff5168f7ccf3e14cfef0415471f88d2b9e770a66ffe2c",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Library/PlatformSecLib/PlatformAssembly.S": "e2a289ceadffb7cdc2625ecadbc12ff33ce19a31342c227047a7d8047b14eeb8",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Library/PlatformSecLib/PlatformSec.c": "a66dee9b47b00b75bd6c37c86edfcc64dbb38c7ab185886e939763370d0372de",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Library/PlatformSecLib/PlatformSecLib.inf": "1cf5138c484bf3a0389d929132a5f0f6cab96979f9c9186accffda7d3a2d1bd6",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Library/ResetSystemLib/ResetSystem.c": "53c6ee09a80e3a1c364cafcac9ab9a8da501aff5efd38ea5975c049403d8a08e",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Library/ResetSystemLib/ResetSystemLib.inf": "2093985b7a97612cc7c8025da54d0fd30a6606fcd5454e99d2ab015edab8ff69",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Library/SerialPortLib/SerialPort.c": "967ea8f9326df0d24ca305c47d861ee99a4bfb9a7c38250b4133f97f63adfa25",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/Library/SerialPortLib/SerialPortLib.inf": "f769922bd94c2c9f9e0dbd67dab9b93ea444acfe548f2094b71af6485acd7429",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/lithium.dsc": "0318dfa842b1a5d24a66fb749bb6230392d2ef2c3fafaf4e282b622cbd88916d",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/lithium.fdf": "5c41783fcbc813819d915d4ab35189047f6cd57e9d869a05e84c73094672eebb",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/firmware/lithiumPkg/lithiumPkg.dec": "bb17cadd803d8e49adfdf7236b872e56a60865df55fb22a50292cd8e22e54c86",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0001-msm8996-platform-loader.json": "30fb76f90e2edd59f8eef0548c006b50327adee0fe9514ec675cd2c911d9a3dd",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0001-msm8996-platform-loader.patch": "4c9dddf9e46e0477455eded85c5dde11ee3f13cc67fcaadf2fa80957016076a1",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0002-msm8996-platform-observation.json": "210db0f40a0bf9faf3f16a048fbea8d0b1b8bb6e2c82044666886a0ddeb3499a",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0002-msm8996-platform-observation.patch": "367f25fedb32b8c35f7c49c74e790743fd91cf579b56b11705ff06002ceb631f",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0003-msm8996-retained-result.json": "cbe0fd8f5eed18808bd98519ce01a86337a16bb7fba7c718c5c812eb124e2057",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0003-msm8996-retained-result.patch": "e3af19156deab7db251fbbae52c07e1bd567b6787cfe68dd0a0aaabdb97eddd8",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0004-msm8996-storage-test.json": "8f5fc9f6ecc15236d342ead46f7fa938693f441e834f1ae96f42f562e1352d85",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0004-msm8996-storage-test.patch": "d21bd06b1acc56b6946478d99d6db9e4dc4a9efd07700865a54d89edced75785",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0005-msm8996-pid1-fault-observation.json": "53cea613e0119b2d95728576abd3cec083031b9cc4378737fe7fd5706133ad99",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0005-msm8996-pid1-fault-observation.patch": "0c31bff5a5002e097f0fe04044261f15385570f8364b845187df6c8cac002fe4",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0006-msm8996-ufs-buffer-map.json": "566471800bacfc5044b739ebba84ab9a22e26a0f653871d12d47d4dd1c5777ce",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0006-msm8996-ufs-buffer-map.patch": "02820d9df49a235c21831a47a3e62225963c7cb5e9026fc6919653cebce517cd",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0007-lithium-ios14-dynamic.json": "633bbb9fddc29b275604cd4d0fac9aacd5b104d219ed86613e2279fa7e026e86",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0007-lithium-ios14-dynamic.patch": "7d8a7f245228a7097237f639940d9157d7bcdfc0697d28875b2132ab0fff359c",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0008-lithium-d20ap-identity.json": "147d845ec3b335a0c1709c1270461014ca73e5e35b081ec35358a4ad66f51f1c",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0008-lithium-d20ap-identity.patch": "84dd117e0da6bef45c10a3aa0a00071b685778093fbaf0776e1a0fc3b83354e9",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0009-lithium-exit-summary.json": "590cd23e9d944e3418acec66638c542ce18636742cc8f5fe3df3b4440f0e23a6",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0009-lithium-exit-summary.patch": "0ce6a628802a005776c5cd34396b1576ea9c22812b8cbb755b9e9f433f034992",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0010-lithium-mach14-summary.json": "c899ec9bbffa61f51c1c3f8f321889ef52fb78a097ad6db75fd18f20cfcf7bbd",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0010-lithium-mach14-summary.patch": "6518c332aa9eaf89e5d710fd65aa39d89d51dbdd03a4855d81317974c374441c",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0011-lithium-df-trace-summary.json": "b118c18fdf2c0d698c8178b6be86e0e7ab9b3d5afe391474197ed322e9db4fe9",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0011-lithium-df-trace-summary.patch": "419c391e80deb22e4afa1083b0c09e651182f8005c3846f91c716e7a90905cee",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0012-lithium-ios14-launchd.json": "adceefb5e6f93f222721ad8a99a2dfde9d21df1de8b80747cdac49c2d88a56b3",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0012-lithium-ios14-launchd.patch": "e4b873b3e29dcf0c0c5b83e9ad7c7489a5ba9ab100e6bfb7465b1c1d3199d936",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0013-lithium-launchd-stdio-summary.json": "24fb7d68b0c8c898c94853c8f56ed8af8b02bb85801648367adc06dca2f0927a",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0013-lithium-launchd-stdio-summary.patch": "3e35be83990be91357919998f4fd38db624fdc17fb42976f6e4f405936cb49db",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0014-lithium-launchd-handoff.json": "371e2c924e67cde328e5ebca8218b8098f902f3d03397e7976fef742ed8ac22d",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/patches/0014-lithium-launchd-handoff.patch": "b4be07bb728f1a3682426b2717e7d75b52448bf3178b5e6396d80ec82031c533",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/soc/configs/msm8996.config": "51c6e8236d3786659132f9bcfc0837c38f4d9d220c24ad4f41e28e6fbb00090a",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/soc/soc.conf": "8fff4048551a2f60e89a21387687c3b1616272242cc86f76ddfa673bae91c4e9",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/tests/ios14_dynamic.h": "5e9b441bc464f5a3ad091ad0b4f1254c438008711c85e4dfab6385604f595b31",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/tests/ios14_launchd.h": "8f7dd5dcfa42d90d009f2bb8c1fb3a64deecfa137a84955846917352f74744af",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/tests/shared-region-438-host.c": "6af60695801db5d340505e42e0300f29f0b3c76a9a9fe7b1a4c08fd6e51c5be0",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/port/tests/storage_probe.c": "2cb581eb51967e48d497027998df23eb1c61e996c5627e0b679ac6e3d5b89cb9",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/AGENTS.md": "71e2dc99f571b4e91b28abbcc6d6d46fdfcd45fb8682dccc211c6befb5351ae8",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/config/hakios-lithium.json": "74eea00ef1618302cacc96a5b1eef7eefec61f90ee605cd86a334fa1e1e6c108",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/upstreams.lock.json": "fa9292b3805469775de9207db8e10a195810a6234081865ebf08338887740c79",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/scripts/hakios.py": "d4ce6cc01ca9eae13d249e9e59111710baf45a1fc97bc8818c51e79c59f9ff7d",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/scripts/hakios-dependencies.py": "88396a6e5da746e9bea9c23f2346fe582689fe253159b52bc3db5d976c5fb0b1",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/scripts/build-hakios-support.py": "faa770a50154ea56f8882787fa34d398134550c150a4931e0386fc6b87c5c682",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/scripts/build-hakios-ios14-dynamic.py": "c41be5c115c7473068cb79a3f8d591d0cbede662eb89ad858c21d40620c2c800",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/scripts/prepare-hakios-ios14-launchd.py": "48011078e7f0778f2a4a2c06e9de1ddb140df72a418c7017e43db5064d306d3c",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/scripts/build-hakios-ios14-launchd-layout.py": "cc5230182eed83ae717a89d8dde7558124d15b837b55e42d5df514126e999f5e",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/scripts/prepare-hakios-launchd-stdio.py": "019eebba23b89c7a39df6a5d3889f693541feda63f767d12b8dcc011b9ed994a",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/scripts/test-hakios-launchd-stdio.py": "742f1e9f030a26ad5813f450d150f2af2090db2fe39a66d7b612f6217c626170",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/scripts/prepare-hakios-launchd-handoff.py": "d9aa32f8d8f0a607a547c17fa56daa0e630be6e38a326a66b2c2bf6c857015a6",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/scripts/audit-hakios-ios14-version.py": "e5560768a9097e0dcd197fbdf6a847df518588370449ec6f6d38d7d6f37eb112",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/config/hakios-resources.json": "9fc90cc6dcbe5250b823d3dceb9ae60f388ac31758a960a14898a90ec0a50986",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/reports/local/r27-upstream-refs.json": "20980d87346600c1300944a0a523a2de66c6284c4691e006a460e07502f2c6d1",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/scripts/test-hakios-ios14-launchd.py": "5ea8a27d27f36bd2be63bdb6ab2207d4dc3c95895625d163b698c857197b22f8",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/scripts/test-hakios-ios14-dynamic.py": "7164e1bbd3ae8fab359435853861b3c2c2f213600857631436cdda7454950017",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/scripts/test-hakios-launchd-exec.py": "b0b247e89201fc38ec8f2cc91f2b2ee5e0fb94febead286e29a59e5a5eb5f092",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/scripts/test-hakios-fault-summary.py": "75f56e1b8d386aad61a5bb5bc8035cceb68b4d5e8a02ec5fb73b7bc9f50fc03d",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/scripts/package-hakios-lithium.py": "4acda56494f7b5c7713791286e5e3b6f0c68780aa1e5abcb07379b639f363765",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/scripts/boot-hakios-lithium.py": "d532be10a985df714aaf47a812a5ee2242096231b7edc644147b8dad0a80a6d5",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/scripts/close-hakios-p0.py": "90241657186bf52253642463f35d77219e37eabb19556f6c25f3088e25465a89",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/scripts/run-wsl-limited.ps1": "d4e26cc639e4e96d057ca6703c2335c3aac4b2a32771f845d1cc51781f69d46f",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/reports/local/freeze-hakios-launchd-handoff.py": "bbf0c0357f85ea222a2c627998f027dc2b93a1e820e15fbe36eded8227379685",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/reports/local/boot-hakios-r27.py": "e8a138fa398cf52dad51941c34b3dc32d347deed65956ebfc5512cb6863496ac",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-source-audit.json": "829639717e5789fd0afd66b9c825db27addd90d9caf65353411b2ebe503379b4",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-config-check.json": "319d2e581e566abc1c68c50ba4c597e15f2ef9c51ef796e80141e164c52391e2",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-workspace.json": "1a1960f64c94d55bf23e4fe5dd216ede4fa58b8eb1df19d202f5d34208dd0273",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-dependencies.json": "94ce266d01554dce65f0b35f2325602906aba298596cace0b3a5ef94a79c372c",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-support-build.json": "36936ad99f7c0fa256529c34c62ec8df527730136412f99fc74703d9aba6b020",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-kernel-build.json": "29a1d0e51fc1db23fec544654e8c435eea355ada628548b31805f195e574f5c3",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-p0-closure.json": "b8ba0c8a38e6847604566b3356ba260f430baa469b04733cf539add5604e3bd5",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-test-package.json": "a0d5ec2fff22176af0d5704c3661e8364adf25829a13a9964472ada92f1bd4c4",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-ios14-dynamic-build.json": "9f745c57b086f5f8d05929af16addd0fa5ed494f12bf11f95234930af04dc6bc",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-ios14-shared-region-integration.json": "34622b86251ac4f29cdca7a4f7c9f292fdaebd5264d08f98e7b276242ec53207",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-ios14-mach-msg-integration.json": "982b6f068826ff2fa6b4b4067dc780b0ebc8bccaba5e23335842c7fef255835b",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-ios14-dynamic-contract-tests.json": "c833e71d6128705b37d0393ab945b0e0d9b5d690c7b038d4b249c123288a78f3",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-ios14-launchd-contract-tests.json": "1d9492b761701760069d4d0f077ca48dd1bd140fc4d59f14ef825f4d99f335fd",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-fault-summary-tests.json": "710131cfff5cf30fe39f60c1a9477feb995d817a13318e61ba8e2a3ad88ea2b7",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-launchd-stdio-tests.json": "e264cc4b6c97b41669527703619ea684196f38166726b1a5f39a0db34b822acf",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-launchd-exec-tests.json": "f0aa8ff28fbe275cee45a337c310edd4ae4daca6365cc4b17bdbbe924de98397",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-launchd-stdio-preparation.json": "332184edf955f0f4537d07df22ea6122d6edb8c061cc9890af0e82967019a8ad",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-device-r25.json": "409566c28eeba64812a7c6f5739a8645ba32fb9f59e31d03a9c2d1dcf3a020a4",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-device-r26.json": "ad6912b9af454f6e28a9f36784539feae1b05e7711ca9329fbf1a892a1c55a67",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-ios14-version-alignment.json": "b8769da418f6b91f7d7d6fe6db3de603c51d09f19d94a75ffff97f1d60bf0fbd",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/wsl-resource-limits.json": "b51915d2d9e626242afe976518e366ee3fd64f98b6e0dc51c763d2bab1ac85d9",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-ufs-buffer-map-tests.json": "2cae3a3b66f7dbf4c61d890f8713a0b22be5ea5f1f0773bdc721e7e72fd9e761",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-storage-transport-tests.json": "78fea15a9b6672759c05877082d680add372ac5cd200d2074c34c7adb2607c4a",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-bds-volume-tests.json": "ee1d568de65c1bead88a029c2767bcfbee38c4029f8a12085d68d9b9b0183442",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-ios14-boundary.json": "8959a8da5f8f753096286b95e0538b9161daedad6192760830a30469e1f4510e",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-sdk-cache.json": "6f0cc6b348df32eec2fa9782ca7d69db119d12c6c6225342e42563ac261b668d",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-firmware-sources.json": "dd0aa6ba619a5cb9f75d8de93a5aa5af86791ddc5688953bf5034d7c2af49b8c",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-device-r24.json": "032d98cbda193e287b7aff17149e26d10d99cdabce1f1fadda0ce2dc54e6e3e8",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-p1-closure.json": "87f3198b9f98e708c0f2c0a6b23e855a07f0fed5999412820a2af276a1db113f",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-p2-storage-closure.json": "c08c05eeaa6545075eb003efa73a442c76503c423d6cc6104db654a3b443810a",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-p2-dynamic-closure.json": "81fa5d13975fa7eab2f4e622d68bfbaecd3446c1b82cba6068ed8ba08b99fb2c",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/hakios-hfs-journal-repair.json": "f9a102450e727f6d1be8fbb7cbeb2db40de25892368666cbc93a75ecd3c7a672",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/ios14-local-inputs.json": "2e48f39b4f3c5665c67e2d4a6543c3ea232ee0342f76ab0948bda9540b3a0c98",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/ios14-root-files.json": "ab28eee2008adb513d175f823320d7b0e2d04152a5c93bc73674082985947877",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/ios14-hfs-root.json": "7ef42346367a43509dbe916a148172f1926200dc7801cf6e94f5b7191bdb8599",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/partition-map.json": "732581f68275c26ba38a8f4034c0ffbec3866f810da0297635bd4528bf9a1acc",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/live-memory.json": "38cc2d64f1b8b2f760492a78cbdd9f8916b9dd6f7041a641f7c11f4aafd9414d",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/reports/entry-state.json": "4faff15eaa69e219f8d70e95ac4b49f409ae701d7540637e2c29ccaa409bcdc2",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/reports/hakios-ios14-version-alignment.md": "ab22392207b1598388f74ceae260173d64e67a1d4e985567770c7b766300d3d2",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/reports/hakios-system-image-route-audit.json": "5bec64a23fdeaf6746341609fd162e429cf53ce540af645e0c7ec085140f764d",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/reports/hakios-system-image-route-audit.md": "c7276e02e3e07f8ec0d77905808a59b2a4b4e442dfbf856de2571b55dc42b218",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/reports/wsl-resource-limits.md": "6abca26c27a14cbbbc72c9369d2db6a57a2ca0894521ce01c870d208cf429c9b",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/project/reports/local/verify-hakios-refactor.py": "b188a3cda6c0ca343b8062536a7f5d516e1b019bbace06bf4ef7c4f30c309d1d",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/host/wslconfig-after.ini": "08accfb6a2235fa2b3ab2a3ec270ce46ed42daf8446c7a77b7b1081c70708e8c",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/sources/host/wslconfig-before.ini": "a7710ff63aa22a8cd692e29e158e650829393ce0e1fe832c1a5a1b9064304d88",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/checks/kernel-disassembly.txt": "44b7a7ceb9e3cab528b749b87291967022438a9be0120eb84fe4842659a44839",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/checks/loader-disassembly.txt": "fe4ebb693bd43320b9aa76580e5b196c93759bc4f98dbd8be1d901a742a6f3df",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/checks/ios14-init-disassembly.txt": "48c1660df01df2a483cd19fa31d7df74e193095d165a0187b46b905660604877",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/checks/LithiumUfsDxe-disassembly.txt": "f0458bd6665d3585ce1ada572bb32b78407d38fbdf6aaf328ae57c37485f4ae5",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/checks/PartitionDxe-disassembly.txt": "6f3b14f60bcd0834db81497a03a4eab9b61886530a34ae0eb87e5a8c89e4ba82",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/checks/LithiumBdsDxe-disassembly.txt": "5ae624994cafdff2e0c56003cccfbcbced6f7339e8537986158c52b50ae2457c",
+    "artifacts/hakios/p2-ios14-launchd-handoff-ready/checks/embedded-package.json": "15be9c973a0be786f96e0140ba05fc08b1230944013ca4603ba7f20297e31be3"
+  },
+  "device_boot_count_at_preparation": 26,
+  "shared_region_boundary_checks": 7,
+  "child_runner_checks": 10,
+  "retained_summary_checks": 13,
+  "mach_msg_boundary_checks": 18,
+  "launchd_parser_cases": 13,
+  "launchd_layout": {
+    "metadata_manifest_sha256": "ce4dc27edf99ad111dccbc90b6e6263b240d694775f03ed7f927ec5f4ee72b4f",
+    "listing_sha256": "8ab3c9bbb09f98deaf17985d58e1a7e03fe942b75acd18d6aef980b5e6072aa3",
+    "skeleton_sha256": "62d1ca16801338ac60c01805344cfa5cdd027656520dce8043e0802d7fa835f8",
+    "skeleton_directories": 95,
+    "skeleton_bytes": 4101,
+    "upstream_generators": {
+      "sysimage/mkvarskel.py": "ea6191dfe4daee9817dad9bd81c358900093af1c626a87e950912965fbd584db",
+      "userland/mkjobs.py": "75a79f8ba1e3abd22608058337584f0c4b70a6fafc410c7e8c9622fb9180bea9"
+    },
+    "original_jobs": {
+      "com.apple.notifyd": {
+        "plist_sha256": "fd09ea79ebd0f1dfe384d4e32254fa402c274516212aa22dc1a0e9577bbf0123",
+        "program": "/usr/sbin/notifyd",
+        "program_sha256": "cb1c219e44d69ac279a10318fdd0c6ff34c81e985e0ac92e00c882e970e90cef",
+        "generated_sha256": "b421f94737b90e54d81c0bb81c00f72fa6fa82d3828a9c8295b50579565af287",
+        "changes": [
+          "upstream console/os_log routing",
+          "RunAtLoad=true for bounded process-presence test"
+        ]
+      },
+      "com.apple.cfprefsd.xpc.daemon": {
+        "plist_sha256": "16aa60c1effb6b7e7775712582bf4572c56ca1a25d1aca322eb822b03a06189f",
+        "program": "/usr/sbin/cfprefsd",
+        "program_sha256": "2b447b3be1fd8dbb0113db7f7b708f4824f4db6870d9c4f597496ee37d713a90",
+        "generated_sha256": "904d6412c712171a62b70a1ece3d30abede990bee1783b363870e1c1a1ea5d51",
+        "changes": [
+          "upstream console/os_log routing",
+          "RunAtLoad=true for bounded process-presence test"
+        ]
+      }
+    },
+    "observer_job": {
+      "Label": "com.hakios.lithium.launchd-observer",
+      "RunAtLoad": true,
+      "ProgramArguments": [
+        "/private/preboot/sbin/launchd",
+        "--lithium-launchd-observer"
+      ],
+      "StandardOutPath": "/dev/console",
+      "StandardErrorPath": "/dev/console"
+    },
+    "selected_jobs": 3,
+    "root_readonly": true,
+    "data_filesystem": "upstream ramfs; ephemeral",
+    "persistent_userdata_writes": false,
+    "timezone_cycle_removed": true,
+    "original_launchd_modified": false,
+    "launchctl_available": false,
+    "acceptance": "Real launchd PID1 executes observer; original PS sees PID1, notifyd, cfprefsd; orderly return",
+    "service_api_behavior_verified": false,
+    "hardware_verified": false
+  },
+  "original_programs": {
+    "usr/lib/dyld": {
+      "bytes": 733616,
+      "sha256": "54fd7d7f710554dc976dddcdb0902fe7a779d37634c0ffc343b6febca61e6c2b",
+      "cpu_subtype": 0,
+      "filetype": 7,
+      "uuid": "e68adca952203dc9bb4df12eefc90ad0",
+      "build_version": {
+        "platform": 2,
+        "minos": "0xe0800",
+        "sdk": "0xe0800"
+      },
+      "dylib_imports": [],
+      "fnv64": "30d75a79560d7677"
+    },
+    "bin/df": {
+      "bytes": 51456,
+      "sha256": "8531b140c0cf977b40076a0875a21707500bfb3dd9b0f5515c37d131816354f2",
+      "cpu_subtype": 0,
+      "filetype": 2,
+      "uuid": "67128100bc0f3debb6123dcdf55fff52",
+      "build_version": {
+        "platform": 2,
+        "minos": "0xe0800",
+        "sdk": "0xe0800"
+      },
+      "dylib_imports": [
+        "/usr/lib/libutil.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "fnv64": "b3b8038038378d92"
+    },
+    "sbin/mount": {
+      "bytes": 73712,
+      "sha256": "b5434cb2c6a61915ca7ccab08792fd8dd5d18dbe01fd14d24823a3cb91777a33",
+      "cpu_subtype": 0,
+      "filetype": 2,
+      "uuid": "92445b161ae4331496095864314e24e9",
+      "build_version": {
+        "platform": 2,
+        "minos": "0xe0800",
+        "sdk": "0xe0800"
+      },
+      "dylib_imports": [
+        "/System/Library/PrivateFrameworks/MediaKit.framework/MediaKit",
+        "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+        "/System/Library/PrivateFrameworks/APFS.framework/APFS",
+        "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "fnv64": "7a21f04378294716"
+    },
+    "sbin/launchd": {
+      "bytes": 403488,
+      "sha256": "cb34041d66dfbeee006ac0f69e4f217b223ad2a7df6046c9f28f317786cf951d",
+      "cpu_subtype": 0,
+      "filetype": 2,
+      "uuid": "c7001fffd43d3903bad2b29938898a9d",
+      "build_version": {
+        "platform": 2,
+        "minos": "0xe0800",
+        "sdk": "0xe0800"
+      },
+      "dylib_imports": [
+        "/usr/lib/libSystem.B.dylib",
+        "/usr/lib/libobjc.A.dylib"
+      ],
+      "fnv64": "1a468883bb725db5"
+    },
+    "bin/ps": {
+      "bytes": 71184,
+      "sha256": "1e292a631b337365a4c691c29f79bf54e362d9b99a94b13417ea738258d5a180",
+      "cpu_subtype": 0,
+      "filetype": 2,
+      "uuid": "802036c53ecd362a9f84e6f2a9bbcfae",
+      "build_version": {
+        "platform": 2,
+        "minos": "0xe0800",
+        "sdk": "0xe0800"
+      },
+      "dylib_imports": [
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "fnv64": "f35f8ad386bb02fb"
+    }
+  },
+  "original_cache": {
+    "bytes": 2218328064,
+    "sha256": "9399e59e7ecd8501154b2b371375a3104734bfc1b5c78188d11bd56b9c0db2ea",
+    "header_fnv64": "da482ec9b906e258"
+  },
+  "loader_identity": {
+    "target": "iPhone10,1 / D20AP",
+    "source_sha256": "1827dfc68e87b822c43e86781872caa6a5d490efc5145a2a60feba0e2bd54b93",
+    "generator_sha256": "ae6cebdcfa22994661211e0bc35fd14770484173f951ceef6a65e9b84ad3ff99",
+    "header_sha256": "71874512c290ec24d799173f2aa10131c6f61573d598c0e281252e373c5b6630",
+    "placeholder": false
+  },
+  "kernel_byte_identical_with_R24": true,
+  "stdio_boundary_checks": 8,
+  "exec_boundary_cases": 4,
+  "stdio_contract": {
+    "baseline": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "patch_sha256": "b4be07bb728f1a3682426b2717e7d75b52448bf3178b5e6396d80ec82031c533",
+    "device_test_only": true,
+    "kernel_policies_changed": false,
+    "apple_binaries_modified": false,
+    "generic_services_replaced": false,
+    "upstream_rc_exec_preserved": true,
+    "descriptor_steps": [
+      "open",
+      "dup0",
+      "dup1",
+      "close",
+      "tty"
+    ],
+    "exec_attempt_and_failure_retained": true,
+    "actual_target_mmioctl_errno": 19,
+    "nonterminal_errno_allowed": [
+      19,
+      25
+    ],
+    "hardware_verified": false
+  },
+  "version_alignment_audit": {
+    "recorded_at": "2026-11-15T17:44:32.302277+00:00",
+    "baseline": {
+      "project": "HakiOS",
+      "path": "upstream/hakios-xnu-kernel",
+      "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+      "xnu_version": "8796.121.2",
+      "apple_xnu_commit": "c54f35ca767986246321eb901baf8f5ff7923f6a"
+    },
+    "remote_refs": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438\tHEAD\n63fc2b4633bac3af8e57dadab9f5a8d4cb940438\trefs/heads/main",
+    "upstream_sources": {
+      "userland/src/init.c": "564e948ac7aa9ecab0da54b932df184f357efbd35d76dbe8591b3cf5c149c157",
+      "userland/libmini/mini.c": "4aafe4461e79a503336fc149c263d96fef7d5e9d28eaf7375ce968f838c4aa68",
+      "userland/libmini/mini.h": "7f633455ab782794b11e2daa04480fe27bd8d8eb4f470e1e7bcbfc77246f09cb",
+      "userland/libmini/start.S": "75024af4f60a89ff82269a7076be303bcb50779f9f1d4ef504231bcf4ea1012c",
+      "userland/mkjobs.py": "75a79f8ba1e3abd22608058337584f0c4b70a6fafc410c7e8c9622fb9180bea9",
+      "sysimage/mkvarskel.py": "ea6191dfe4daee9817dad9bd81c358900093af1c626a87e950912965fbd584db",
+      "sysimage/select-system.py": "1224e46719be478a2ee3c1319d8e41bb6438300b36a90fa66445ed0377122d37",
+      "sysimage/unpack.sh": "e28c513b054a379c374c4c8e9715c671fce0f36e5cb2dbcda9df2abeeaacc5fc",
+      "userland/build.sh": "48500c2b0602d7b5d71e9c63369851d9fe39ec76a4edc83b4f8775c34896ded3",
+      "xnuloader/loader.c": "8796088683fcd6f2a28232e1623e4915cb2e1fe1ab10c6ce78a3a613c8440099"
+    },
+    "reference_ipsw_manifest_sha256": "7dd041dc7ac05f2e1f041013024f9062b8166d916c708ff8b46aca5e089e091f",
+    "reference_components": [
+      {
+        "component": "OS",
+        "member": "096-04088-077.dmg",
+        "bytes": 4728546953,
+        "sha256": "64354ba3475d3c34d6fc531f75585a7b24af0fdb7a3a8a2bdf95c7f351a3f290",
+        "zip_crc_verified": true
+      },
+      {
+        "component": "Cryptex1,SystemOS",
+        "member": "096-04666-078.dmg",
+        "bytes": 2726297600,
+        "sha256": "2279bf443856fcb6a3f00b1fa06a32ba02a66fdf6ab6b12019462c7498aafdd3",
+        "zip_crc_verified": true
+      }
+    ],
+    "original_system_versions": {
+      "14.8": {
+        "BuildID": "0C7AAC00-11BE-11EC-BD5B-D1A2FCD51755",
+        "ProductBuildVersion": "18H17",
+        "ProductCopyright": "1983-2021 Apple Inc.",
+        "ProductName": "iPhone OS",
+        "ProductVersion": "14.8",
+        "SystemImageID": "685372C6-3C8C-4DD3-B562-7CD5DBE5C1AE"
+      },
+      "16.5": {
+        "BuildID": "FFEC7764-F0B1-11ED-B719-7ADF6D06363D",
+        "ProductBuildVersion": "20F66",
+        "ProductCopyright": "1983-2023 Apple Inc.",
+        "ProductName": "iPhone OS",
+        "ProductVersion": "16.5",
+        "SystemImageID": "6B192A83-67BB-4A64-844A-C38510C88973"
+      }
+    },
+    "original_binaries": {
+      "sbin/launchd": {
+        "14.8": {
+          "bytes": 403488,
+          "sha256": "cb34041d66dfbeee006ac0f69e4f217b223ad2a7df6046c9f28f317786cf951d",
+          "cpu_subtype": 0,
+          "filetype": 2,
+          "uuid": "c7001fffd43d3903bad2b29938898a9d",
+          "build_version": {
+            "platform": 2,
+            "minos": "0xe0800",
+            "sdk": "0xe0800"
+          },
+          "dylib_imports": [
+            "/usr/lib/libSystem.B.dylib",
+            "/usr/lib/libobjc.A.dylib"
+          ]
+        },
+        "16.5": {
+          "bytes": 525088,
+          "sha256": "4c61512d19b9a55a6ddad27e23b88fc5008fbf77d0c0b5e6bdd7c7d90cef3e06",
+          "cpu_subtype": 0,
+          "filetype": 2,
+          "uuid": "babc0c9dbf6e35138ba8c8e876f3119a",
+          "build_version": {
+            "platform": 2,
+            "minos": "0x100500",
+            "sdk": "0x100500"
+          },
+          "dylib_imports": [
+            "/usr/lib/libSystem.B.dylib",
+            "/usr/lib/libobjc.A.dylib"
+          ]
+        }
+      },
+      "usr/lib/dyld": {
+        "14.8": {
+          "bytes": 733616,
+          "sha256": "54fd7d7f710554dc976dddcdb0902fe7a779d37634c0ffc343b6febca61e6c2b",
+          "cpu_subtype": 0,
+          "filetype": 7,
+          "uuid": "e68adca952203dc9bb4df12eefc90ad0",
+          "build_version": {
+            "platform": 2,
+            "minos": "0xe0800",
+            "sdk": "0xe0800"
+          },
+          "dylib_imports": []
+        },
+        "16.5": {
+          "bytes": 922912,
+          "sha256": "a453aa234fc9bd440dc4e55bd2e18f9a7eb2bc3fd7ef319d8714a664bc55bf5c",
+          "cpu_subtype": 0,
+          "filetype": 7,
+          "uuid": "57d51d047ac8335b95aa734c226e2e9e",
+          "build_version": {
+            "platform": 2,
+            "minos": "0x100500",
+            "sdk": "0x100500"
+          },
+          "dylib_imports": []
+        }
+      },
+      "usr/sbin/notifyd": {
+        "14.8": {
+          "bytes": 109328,
+          "sha256": "cb1c219e44d69ac279a10318fdd0c6ff34c81e985e0ac92e00c882e970e90cef",
+          "cpu_subtype": 0,
+          "filetype": 2,
+          "uuid": "6dcee85847133600886a8642d11e6700",
+          "build_version": {
+            "platform": 2,
+            "minos": "0xe0800",
+            "sdk": "0xe0800"
+          },
+          "dylib_imports": [
+            "/usr/lib/libbsm.0.dylib",
+            "/usr/lib/libSystem.B.dylib"
+          ]
+        },
+        "16.5": {
+          "bytes": 128704,
+          "sha256": "819c8ec6b3bee5cd2f1dcbe0b2b698418c411b4c126f2f97cbdae932c1972907",
+          "cpu_subtype": 0,
+          "filetype": 2,
+          "uuid": "965f207d436a3ff39a15f16676cf1fa3",
+          "build_version": {
+            "platform": 2,
+            "minos": "0x100500",
+            "sdk": "0x100500"
+          },
+          "dylib_imports": [
+            "/usr/lib/libbsm.0.dylib",
+            "/usr/lib/libSystem.B.dylib"
+          ]
+        }
+      },
+      "usr/sbin/cfprefsd": {
+        "14.8": {
+          "bytes": 51376,
+          "sha256": "2b447b3be1fd8dbb0113db7f7b708f4824f4db6870d9c4f597496ee37d713a90",
+          "cpu_subtype": 0,
+          "filetype": 2,
+          "uuid": "05cbe68942ae343ca1e56baf08f95ee2",
+          "build_version": {
+            "platform": 2,
+            "minos": "0xe0800",
+            "sdk": "0xe0800"
+          },
+          "dylib_imports": [
+            "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+            "/usr/lib/libSystem.B.dylib"
+          ]
+        },
+        "16.5": {
+          "bytes": 53232,
+          "sha256": "05e6c217284c2e4f669243fe24296f3ba9abb53a750c9d3860348b0b43c978e2",
+          "cpu_subtype": 0,
+          "filetype": 2,
+          "uuid": "0bdebd06838e379fa25673743d32f1d7",
+          "build_version": {
+            "platform": 2,
+            "minos": "0x100500",
+            "sdk": "0x100500"
+          },
+          "dylib_imports": [
+            "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+            "/usr/lib/libSystem.B.dylib"
+          ]
+        }
+      },
+      "bin/ps": {
+        "14.8": {
+          "bytes": 71184,
+          "sha256": "1e292a631b337365a4c691c29f79bf54e362d9b99a94b13417ea738258d5a180",
+          "cpu_subtype": 0,
+          "filetype": 2,
+          "uuid": "802036c53ecd362a9f84e6f2a9bbcfae",
+          "build_version": {
+            "platform": 2,
+            "minos": "0xe0800",
+            "sdk": "0xe0800"
+          },
+          "dylib_imports": [
+            "/usr/lib/libSystem.B.dylib"
+          ]
+        },
+        "16.5": {
+          "bytes": 88752,
+          "sha256": "d540b229ae8b01260fe01280a3495c4c5abf09a4e23340123c0599bc4e355efc",
+          "cpu_subtype": 0,
+          "filetype": 2,
+          "uuid": "b9990ede05ec378aa665cca217f341df",
+          "build_version": {
+            "platform": 2,
+            "minos": "0x100500",
+            "sdk": "0x100500"
+          },
+          "dylib_imports": [
+            "/usr/lib/libSystem.B.dylib"
+          ]
+        }
+      },
+      "usr/libexec/backboardd": {
+        "14.8": {
+          "bytes": 1103024,
+          "sha256": "c4badef4ba5c9052c10bb1c5f4425111829b7cb3b9a18e800b444fc3da9feff2",
+          "cpu_subtype": 0,
+          "filetype": 2,
+          "uuid": "217ad9be7700338d83cc1de7b4ce7f44",
+          "build_version": {
+            "platform": 2,
+            "minos": "0xe0800",
+            "sdk": "0xe0800"
+          },
+          "dylib_imports": [
+            "/System/Library/PrivateFrameworks/StudyLog.framework/StudyLog",
+            "/usr/appleinternal/lib/liblinkguard.dylib",
+            "/System/Library/PrivateFrameworks/ButtonResolver.framework/ButtonResolver",
+            "/System/Library/PrivateFrameworks/Haptics.framework/Haptics",
+            "/System/Library/PrivateFrameworks/BiometricKit.framework/BiometricKit",
+            "/usr/lib/libsp.dylib",
+            "/System/Library/PrivateFrameworks/CrashReporterSupport.framework/CrashReporterSupport",
+            "/usr/lib/liblockdown.dylib",
+            "/System/Library/PrivateFrameworks/IOMobileFramebuffer.framework/IOMobileFramebuffer",
+            "/System/Library/PrivateFrameworks/HangTracer.framework/HangTracer",
+            "/System/Library/PrivateFrameworks/WatchdogClient.framework/WatchdogClient",
+            "/System/Library/PrivateFrameworks/CoreAccessories.framework/CoreAccessories",
+            "/System/Library/Frameworks/QuartzCore.framework/QuartzCore",
+            "/System/Library/PrivateFrameworks/BackBoardHIDEventFoundation.framework/BackBoardHIDEventFoundation",
+            "/System/Library/PrivateFrameworks/BackBoardHIDEventProcessors.framework/BackBoardHIDEventProcessors",
+            "/System/Library/PrivateFrameworks/RunningBoardServices.framework/RunningBoardServices",
+            "/System/Library/PrivateFrameworks/BoardServices.framework/BoardServices",
+            "/System/Library/Frameworks/Metal.framework/Metal",
+            "/System/Library/PrivateFrameworks/AssertionServices.framework/AssertionServices",
+            "/System/Library/PrivateFrameworks/AggregateDictionary.framework/AggregateDictionary",
+            "/System/Library/Frameworks/AVFoundation.framework/AVFoundation",
+            "/System/Library/PrivateFrameworks/BackBoardServices.framework/BackBoardServices",
+            "/System/Library/PrivateFrameworks/BaseBoard.framework/BaseBoard",
+            "/System/Library/PrivateFrameworks/CoreBrightness.framework/CoreBrightness",
+            "/System/Library/PrivateFrameworks/CoreAnalytics.framework/CoreAnalytics",
+            "/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics",
+            "/System/Library/Frameworks/CoreMotion.framework/CoreMotion",
+            "/System/Library/Frameworks/CoreText.framework/CoreText",
+            "/System/Library/PrivateFrameworks/DataMigration.framework/DataMigration",
+            "/System/Library/Frameworks/Foundation.framework/Foundation",
+            "/System/Library/PrivateFrameworks/GraphicsServices.framework/GraphicsServices",
+            "/System/Library/Frameworks/ImageIO.framework/ImageIO",
+            "/System/Library/Frameworks/CoreServices.framework/CoreServices",
+            "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+            "/System/Library/Frameworks/IOSurface.framework/IOSurface",
+            "/usr/lib/libAccessibility.dylib",
+            "/usr/lib/libMobileGestalt.dylib",
+            "/System/Library/PrivateFrameworks/ProgressUI.framework/ProgressUI",
+            "/System/Library/Frameworks/Security.framework/Security",
+            "/System/Library/Frameworks/SystemConfiguration.framework/SystemConfiguration",
+            "/usr/lib/libobjc.A.dylib",
+            "/usr/lib/libc++.1.dylib",
+            "/usr/lib/libSystem.B.dylib",
+            "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+            "/System/Library/PrivateFrameworks/SoftLinking.framework/SoftLinking"
+          ]
+        },
+        "16.5": {
+          "bytes": 1182960,
+          "sha256": "686f26a6a7b749fd0ae30acca704022da8cb6f85b5c39a0e0e09e25ffd00d273",
+          "cpu_subtype": 0,
+          "filetype": 2,
+          "uuid": "e81fd7fd034f3195a4f53c692536e5aa",
+          "build_version": {
+            "platform": 2,
+            "minos": "0x100500",
+            "sdk": "0x100500"
+          },
+          "dylib_imports": [
+            "/System/Library/PrivateFrameworks/StudyLog.framework/StudyLog",
+            "/usr/appleinternal/lib/liblinkguard.dylib",
+            "/System/Library/PrivateFrameworks/ButtonResolver.framework/ButtonResolver",
+            "/System/Library/PrivateFrameworks/Haptics.framework/Haptics",
+            "/System/Library/PrivateFrameworks/BiometricKit.framework/BiometricKit",
+            "/System/Library/PrivateFrameworks/CarKit.framework/CarKit",
+            "/usr/lib/libsp.dylib",
+            "/System/Library/PrivateFrameworks/CrashReporterSupport.framework/CrashReporterSupport",
+            "/usr/lib/liblockdown.dylib",
+            "/System/Library/PrivateFrameworks/IOMobileFramebuffer.framework/IOMobileFramebuffer",
+            "/System/Library/PrivateFrameworks/HangTracer.framework/HangTracer",
+            "/System/Library/PrivateFrameworks/WatchdogClient.framework/WatchdogClient",
+            "/System/Library/PrivateFrameworks/CoreAccessories.framework/CoreAccessories",
+            "/System/Library/PrivateFrameworks/SystemWake.framework/SystemWake",
+            "/System/Library/PrivateFrameworks/RunningBoardServices.framework/RunningBoardServices",
+            "/System/Library/Frameworks/QuartzCore.framework/QuartzCore",
+            "/System/Library/PrivateFrameworks/BackBoardHIDEventFoundation.framework/BackBoardHIDEventFoundation",
+            "/System/Library/PrivateFrameworks/BackBoardHIDEventProcessors.framework/BackBoardHIDEventProcessors",
+            "/System/Library/PrivateFrameworks/BoardServices.framework/BoardServices",
+            "/System/Library/Frameworks/Metal.framework/Metal",
+            "/System/Library/PrivateFrameworks/AggregateDictionary.framework/AggregateDictionary",
+            "/System/Library/Frameworks/AVFoundation.framework/AVFoundation",
+            "/System/Library/PrivateFrameworks/BackBoardServices.framework/BackBoardServices",
+            "/System/Library/PrivateFrameworks/BaseBoard.framework/BaseBoard",
+            "/System/Library/PrivateFrameworks/CoreBrightness.framework/CoreBrightness",
+            "/System/Library/PrivateFrameworks/CoreAnalytics.framework/CoreAnalytics",
+            "/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics",
+            "/System/Library/Frameworks/CoreMotion.framework/CoreMotion",
+            "/System/Library/Frameworks/CoreText.framework/CoreText",
+            "/System/Library/PrivateFrameworks/DataMigration.framework/DataMigration",
+            "/System/Library/Frameworks/Foundation.framework/Foundation",
+            "/System/Library/PrivateFrameworks/GraphicsServices.framework/GraphicsServices",
+            "/System/Library/Frameworks/ImageIO.framework/ImageIO",
+            "/System/Library/Frameworks/CoreServices.framework/CoreServices",
+            "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+            "/System/Library/Frameworks/IOSurface.framework/IOSurface",
+            "/usr/lib/libAccessibility.dylib",
+            "/usr/lib/libMobileGestalt.dylib",
+            "/System/Library/PrivateFrameworks/ProgressUI.framework/ProgressUI",
+            "/System/Library/Frameworks/Security.framework/Security",
+            "/System/Library/Frameworks/SystemConfiguration.framework/SystemConfiguration",
+            "/usr/lib/libobjc.A.dylib",
+            "/usr/lib/libc++.1.dylib",
+            "/usr/lib/libSystem.B.dylib",
+            "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+            "/System/Library/PrivateFrameworks/SoftLinking.framework/SoftLinking"
+          ]
+        }
+      },
+      "System/Library/CoreServices/SpringBoard.app/SpringBoard": {
+        "14.8": {
+          "bytes": 96112,
+          "sha256": "262a9325b9a4e88d17167275fa7c494f2228bf3cb0f4cedcff3717ca2a5b9e37",
+          "cpu_subtype": 0,
+          "filetype": 2,
+          "uuid": "898b91c8962c36e685e507a97ac6e67d",
+          "build_version": {
+            "platform": 2,
+            "minos": "0xe0800",
+            "sdk": "0xe0800"
+          },
+          "dylib_imports": [
+            "/System/Library/PrivateFrameworks/SpringBoard.framework/SpringBoard",
+            "/System/Library/Frameworks/Foundation.framework/Foundation",
+            "/usr/lib/libobjc.A.dylib",
+            "/usr/lib/libSystem.B.dylib"
+          ]
+        },
+        "16.5": {
+          "bytes": 112048,
+          "sha256": "7926a1ba0b115cf45102b2c3d8e4eb7bc9c84bcf70b573d2a798690d9148059c",
+          "cpu_subtype": 0,
+          "filetype": 2,
+          "uuid": "40ec75f076c13deb85f139369b09e9d5",
+          "build_version": {
+            "platform": 2,
+            "minos": "0x100500",
+            "sdk": "0x100500"
+          },
+          "dylib_imports": [
+            "/System/Library/PrivateFrameworks/SpringBoard.framework/SpringBoard",
+            "/System/Library/Frameworks/Foundation.framework/Foundation",
+            "/usr/lib/libobjc.A.dylib",
+            "/usr/lib/libSystem.B.dylib"
+          ]
+        }
+      }
+    },
+    "original_job_comparison": {
+      "com.apple.notifyd": {
+        "14.8": {
+          "sha256": "fd09ea79ebd0f1dfe384d4e32254fa402c274516212aa22dc1a0e9577bbf0123",
+          "keys": [
+            "EnablePressuredExit",
+            "EnableTransactions",
+            "EnvironmentVariables",
+            "Label",
+            "MachServices",
+            "POSIXSpawnType",
+            "ProgramArguments",
+            "PublishesEvents"
+          ],
+          "program": "/usr/sbin/notifyd",
+          "MachServices": {
+            "com.apple.system.notification_center": true
+          },
+          "RunAtLoad": null,
+          "UserName": null
+        },
+        "16.5": {
+          "sha256": "627b24feb59a493a50f488bc62ec9e878c333757d4ddb7786a977650ed9b1a05",
+          "keys": [
+            "EnablePressuredExit",
+            "EnableTransactions",
+            "EnvironmentVariables",
+            "Label",
+            "LimitLoadToSessionType",
+            "MachServices",
+            "POSIXSpawnType",
+            "ProgramArguments",
+            "PublishesEvents"
+          ],
+          "program": "/usr/sbin/notifyd",
+          "MachServices": {
+            "com.apple.system.notification_center": true
+          },
+          "RunAtLoad": null,
+          "UserName": null
+        },
+        "keys_only_14": [],
+        "keys_only_16": [
+          "LimitLoadToSessionType"
+        ]
+      },
+      "com.apple.cfprefsd.xpc.daemon": {
+        "14.8": {
+          "sha256": "16aa60c1effb6b7e7775712582bf4572c56ca1a25d1aca322eb822b03a06189f",
+          "keys": [
+            "EnableTransactions",
+            "HardResourceLimits",
+            "Label",
+            "MachServices",
+            "POSIXSpawnType",
+            "ProgramArguments",
+            "SoftResourceLimits"
+          ],
+          "program": "/usr/sbin/cfprefsd",
+          "MachServices": {
+            "com.apple.cfprefsd.daemon": true
+          },
+          "RunAtLoad": null,
+          "UserName": null
+        },
+        "16.5": {
+          "sha256": "16aa60c1effb6b7e7775712582bf4572c56ca1a25d1aca322eb822b03a06189f",
+          "keys": [
+            "EnableTransactions",
+            "HardResourceLimits",
+            "Label",
+            "MachServices",
+            "POSIXSpawnType",
+            "ProgramArguments",
+            "SoftResourceLimits"
+          ],
+          "program": "/usr/sbin/cfprefsd",
+          "MachServices": {
+            "com.apple.cfprefsd.daemon": true
+          },
+          "RunAtLoad": null,
+          "UserName": null
+        },
+        "keys_only_14": [],
+        "keys_only_16": []
+      }
+    },
+    "cache_layout": {
+      "14.8": [
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64",
+          "bytes": 2218328064,
+          "header": "64796c645f763120202061726d363400"
+        }
+      ],
+      "16.5": [
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64",
+          "bytes": 393216,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.01",
+          "bytes": 114589696,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.02",
+          "bytes": 98304,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.03",
+          "bytes": 115736576,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.04",
+          "bytes": 180224,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.05",
+          "bytes": 114475008,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.06",
+          "bytes": 376832,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.07",
+          "bytes": 115408896,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.08",
+          "bytes": 278528,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.09",
+          "bytes": 115572736,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.10",
+          "bytes": 409600,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.11",
+          "bytes": 115769344,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.12",
+          "bytes": 393216,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.13",
+          "bytes": 107954176,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.14",
+          "bytes": 409600,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.15",
+          "bytes": 115081216,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.16",
+          "bytes": 458752,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.17",
+          "bytes": 97419264,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.18",
+          "bytes": 376832,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.19",
+          "bytes": 115916800,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.20",
+          "bytes": 294912,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.21",
+          "bytes": 113721344,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.22",
+          "bytes": 491520,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.23",
+          "bytes": 115621888,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.24",
+          "bytes": 491520,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.25",
+          "bytes": 76529664,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.26",
+          "bytes": 229376,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.27.dylddata",
+          "bytes": 189300736,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.28.dyldlinkedit",
+          "bytes": 19906560,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.29",
+          "bytes": 114573312,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.30",
+          "bytes": 491520,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.31",
+          "bytes": 115703808,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.32",
+          "bytes": 606208,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.33",
+          "bytes": 113115136,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.34",
+          "bytes": 704512,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.35",
+          "bytes": 115834880,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.36",
+          "bytes": 475136,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.37",
+          "bytes": 115851264,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.38",
+          "bytes": 540672,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.39",
+          "bytes": 62521344,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.40",
+          "bytes": 458752,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.41.dylddata",
+          "bytes": 99794944,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.42.dyldlinkedit",
+          "bytes": 333955072,
+          "header": "64796c645f763120202061726d363400"
+        },
+        {
+          "path": "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64.symbols",
+          "bytes": 591855616,
+          "header": "64796c645f763120202061726d363400"
+        }
+      ]
+    },
+    "original14_launchd_disassembly_sha256": "148c327813c1c258af5d5f4f859361736ca8cdcae0c8d5f7ee280ad65137ca6c",
+    "original14_launchd_contract": {
+      "mapped_strings": {
+        "0x10004c983": "rd=md0",
+        "0x10004c98a": "Restore",
+        "0x10004c992": "Ramdisk",
+        "0x10004c99a": "RamDisk",
+        "0x100043217": "%s cannot be run directly.\n"
+      },
+      "indirect_stubs": [
+        "0x000000010003d02c   160 _exit",
+        "0x000000010003d1ac   192 _getpid",
+        "0x000000010003d29c   213 _isatty",
+        "0x00000001000543b8   160 _exit",
+        "0x00000001000544b8   192 _getpid",
+        "0x0000000100054558   213 _isatty"
+      ],
+      "terminal_stdout_test": "0x10001079c: fd1;0x1000107a0: isatty;0x1000107fc:exit78",
+      "md0_boot_branch": "0x10003751c-0x100037574",
+      "upstream_FLASHBOOT_retains_rd_md0": true,
+      "boot_branch_runtime_not_yet_verified": true
+    },
+    "upstream_remote_query": {
+      "refs": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438\tHEAD\n63fc2b4633bac3af8e57dadab9f5a8d4cb940438\trefs/heads/main",
+      "source": "https://github.com/oosexgang/hakios-xnu-kernel.git",
+      "queried_at": "2026-11-15T17:41:31.9374529Z"
+    },
+    "evidence_scope": "Original image/metadata/MachO comparison and pinned upstream read-only audit; imports and headers do not prove ABI compatibility",
+    "storage": "Existing UFS/HFSX on-demand root; no partition or filesystem migration",
+    "image_only_compatibility_sufficient": false,
+    "differences": [
+      {
+        "area": "cache/layout",
+        "action": "Keep original18H17 cache inside root; no16.5 Cryptex staging",
+        "layer": "image/deployment"
+      },
+      {
+        "area": "Data/timezone",
+        "action": "Use original18H17 metadata with upstream mkvarskel; retain existing timezone-cycle fix",
+        "layer": "image/deployment"
+      },
+      {
+        "area": "launchd/jobs",
+        "action": "Generate selected original18H17 plists using upstream mkjobs; no16.5 executable substitution",
+        "layer": "image/deployment"
+      },
+      {
+        "area": "PID1 descriptors",
+        "action": "Correct ENOTTY-only diagnostic to target ENODEV19/nonterminal behavior; retain step errno",
+        "layer": "HakiOS init device branch"
+      },
+      {
+        "area": "rd=md0 after UFS switch",
+        "action": "Retain upstream FLASHBOOT contract; verify original14 branch before boot",
+        "layer": "loader/init contract"
+      },
+      {
+        "area": "dyld shared_region438",
+        "action": "Keep previously integrated original18H17 mapping compatibility",
+        "layer": "bounded HakiOS kernel compatibility; R24 exercised"
+      },
+      {
+        "area": "legacy mach_msg",
+        "action": "Keep exact14.8 legacy entry compatibility already exercised by R24",
+        "layer": "bounded HakiOS kernel compatibility"
+      },
+      {
+        "area": "private services/IOKit/graphics",
+        "action": "Not proven by input comparison; evaluate named missing interfaces as observed, retain A530 review limits",
+        "layer": "future version/device integration"
+      }
+    ],
+    "new_kernel_compiled": false,
+    "device_boots": false,
+    "partition_writes": false,
+    "ios14_complete_compatibility_verified": false,
+    "qemu_used": false
+  },
+  "acceptance": [
+    "Original HFSX root switch and upstream ramfs data initialization succeed",
+    "Original launchd execs PID1; BEFORE_EXEC alone does not pass",
+    "A real launchd job runs the observer and original PS shows PID1/notifyd/cfprefsd",
+    "LAUNCHRESULT PASS and orderly timed return; end summary retained"
+  ],
+  "kernel_test_seconds": 120,
+  "bootloader_hold_seconds": 25,
+  "manual_stopwatch_required": false,
+  "intermediate_photos_required": false,
+  "hardware_verified": false,
+  "launchd_runtime_verified": false,
+  "temporary_boot_issued": false,
+  "partition_writes_performed": false,
+  "qemu_used": false,
+  "limitations": [
+    "Process presence is not full Mach service/API acceptance",
+    "No persistent Data/graphics/touch/SpringBoard acceptance",
+    "Runtime root uses original volume plus verified8KiB journal delta"
+  ]
+}

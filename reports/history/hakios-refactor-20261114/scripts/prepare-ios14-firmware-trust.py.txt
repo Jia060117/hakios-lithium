@@ -1,0 +1,56 @@
+"""Pin and parse the IPSW StaticTrustCache; generate board-only membership data."""
+import difflib, hashlib, importlib.util, json, plistlib, struct
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+PATCH=ROOT/'ports/lithium/patches/xnu-7195/0025-lithium-firmware-trust.patch'
+TC_SHA='38cfec2c89fa5c186aee2c02e143b9ac449cf18f9e925d60a03c4db45c4b7118'
+MAN_SHA='bccabec682b7fbc080cf4e853b125b4f3c38228bef7dfbf6c87c4da6c5bec65e'
+
+def module(name,path):
+    spec=importlib.util.spec_from_file_location(name,path);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);return m
+
+def parse_cache():
+    folder=ROOT/'artifacts/research/ios14-local-d20ap'
+    tc=(folder/'018-62062-016.dmg.trustcache').read_bytes();manifest=(folder/'BuildManifest.plist').read_bytes()
+    assert hashlib.sha256(tc).hexdigest()==TC_SHA and hashlib.sha256(manifest).hexdigest()==MAN_SHA
+    man=plistlib.loads(manifest);assert man['ProductVersion']=='14.8' and man['ProductBuildVersion']=='18H17'
+    identity=next(x for x in man['BuildIdentities'] if x['Info']['DeviceClass']=='d20ap' and x['Info']['RestoreBehavior']=='Erase')
+    entry=identity['Manifest']['StaticTrustCache'];assert Path(entry['Info']['Path']).name=='018-62062-016.dmg.trustcache'
+    assert hashlib.sha384(tc).digest()==entry['Digest']
+    inspect=module('local_ios',ROOT/'scripts/inspect-local-ios14.py');dec=module('decoder',ROOT/'scripts/decode-ios14.py')
+    raw,compression=inspect.unwrap(tc,dec);assert compression=='none'
+    version=struct.unpack_from('<I',raw)[0];count=struct.unpack_from('<I',raw,20)[0]
+    assert version==1 and count==2181 and len(raw)==24+22*count
+    entries=[raw[24+22*i:46+22*i] for i in range(count)]
+    # Firmware contains two repeated identical records. Reject conflicting
+    # algorithm/flag records for one hash, but preserve the original bytes.
+    assert entries==sorted(entries) and len({e[:20] for e in entries})==len(set(entries))
+    assert all(e[20] in (1,2) and e[21] in (0,1,2) for e in entries)
+    return entries,dict(firmware='14.8 / 18H17 / D20AP',cache_sha256=TC_SHA,manifest_sha256=MAN_SHA,
+        manifest_sha384_matched=True,manifest_signature_chain_verified=False,version=version,entries=count,
+        ordinary_entries=sum(e[21]==0 for e in entries),duplicate_identical_entries=count-len(set(entries)),uuid=raw[4:20].hex(),
+        trust_basis='Fixed project IPSW input; exact CDHash and algorithm membership, no path-based trust',
+        unsupported_special_flags=[1,2],entitlement_overrides=False)
+
+def main():
+    entries,report=parse_cache()
+    header='/* Generated from pinned iOS14.8 D20AP StaticTrustCache. */\n'
+    header+='static const uint8_t lithium_firmware_trust_entries[][22] = {\n'
+    header+=''.join('    {'+','.join(f'0x{b:02x}' for b in e)+'},\n' for e in entries)+'};\n'
+    helper=module('baseline',ROOT/'scripts/prepare-ios14-native-alias-probe.py');edits={}
+    for path,append in [('bsd/conf/files','\nbsd/kern/lithium_firmware_trust.c\t\tstandard\n'),
+                        ('bsd/conf/Makefile.template','\nlithium_firmware_trust.o_CFLAGS_ADD += -mgeneral-regs-only\n')]:
+        old=helper.baseline(path,PATCH);edits[path]=(old,old+append)
+    edits['bsd/kern/lithium_firmware_trust.c']=('',(ROOT/'ports/lithium/native/lithium_firmware_trust.c').read_text())
+    edits['bsd/kern/lithium_firmware_trust_data.h']=('',header)
+    patch='Subject: lithium: pinned iOS14 firmware CDHash platform identity\n\n'
+    for path,(old,new) in edits.items():
+        patch+=f'diff --git a/{path} b/{path}\n'
+        if not old:patch+='new file mode 100644\n'
+        patch+=''.join(difflib.unified_diff(old.splitlines(True),new.splitlines(True),fromfile='a/'+path if old else '/dev/null',tofile='b/'+path))
+    PATCH.write_text(patch)
+    report.update(patch_sha256=hashlib.sha256(patch.encode()).hexdigest(),generated_data_sha256=hashlib.sha256(header.encode()).hexdigest())
+    (ROOT/'reports/ios14-firmware-trust-inputs.json').write_text(json.dumps(report,indent=2)+'\n')
+    print(json.dumps(report,indent=2))
+
+if __name__=='__main__':main()

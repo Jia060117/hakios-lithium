@@ -1,0 +1,11 @@
+--- a/userland/src/inject_sb.c
++++ b/userland/src/inject_sb.c
+@@ -1031,7 +1031,7 @@
+  * next boot, and the lock screen shows the same picture.
+  */
+ typedef struct { double x, y, width, height; } hk_rect;
+-#include "../../devices/lithium/diagnostics/display-userspace.inc"
++#include "../../devices/lithium/diagnostics/display-userspace-r17.inc"
+ 
+ static bool wallpaper_hide_only;        /* wallpaper_freeze=2: no picture, the wallpaper hidden (what it costs, measured) */
+ static const void *wallpaper_frozen_key = &wallpaper_frozen_key;

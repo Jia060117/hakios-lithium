@@ -1,0 +1,17 @@
+From: ios14-lithium
+Subject: [build] include the commpage API used by the iOS persona path
+
+The public source uses COMM_PAGE_READ but does not include its defining header.
+
+diff --git a/bsd/kern/kern_persona.c b/bsd/kern/kern_persona.c
+--- a/bsd/kern/kern_persona.c
++++ b/bsd/kern/kern_persona.c
+@@ -47,6 +47,8 @@
+ #include <sys/kauth.h>
+ #include <sys/proc_info.h>
+ #include <sys/resourcevar.h>
++#include <sys/commpage.h>
++#include <machine/cpu_capabilities.h>
+ 
+ #include <os/log.h>
+ #define pna_err(fmt, ...) \

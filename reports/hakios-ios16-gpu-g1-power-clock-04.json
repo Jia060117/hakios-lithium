@@ -1,0 +1,134 @@
+{
+  "schema": "lithium-gpu-g1-power-clock-runtime-v1",
+  "passed": false,
+  "hardware_stage_passed": false,
+  "lifecycle_passed": false,
+  "observation_status": "incomplete_stage_auto_return_not_observed",
+  "failure_reason": "combined_terminal_record_missing",
+  "analyzed_at": "2026-11-25T19:21:20.758946+00:00",
+  "normal_timer_and_transport_passed": false,
+  "power_clock_stage_passed": null,
+  "trust_requested": true,
+  "trust_register_experiment_passed": null,
+  "trust_rows": [],
+  "g2_cp_nonsecure_verified": false,
+  "accepted_at": "2026-11-26T03:02:56.564974+08:00",
+  "image_sha256": "e1e7580d71370df01c3be7e6a4362b8a32ad15dc230932a9ae052a71e8f254b2",
+  "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_sanity=1 cpu_perf_fixed=1 cpu_perf_hz=614400000 cpu_thermal_diag=1 cpu_inherited_supply_r39=1 gpu_stage=1 gpu_probe=1 gpu_wd=1 lithium_log_retry=1 gpu_power_clock=1 gpu_trust_zero=1",
+  "rows": {
+    "begin": [
+      {
+        "logical": "0",
+        "affinity": "0x1",
+        "total_us": "200000",
+        "gpu_writes": "0",
+        "rpm_votes": "0",
+        "mx_writes": "0"
+      }
+    ],
+    "end": [],
+    "s1": {
+      "end": []
+    }
+  },
+  "terminal_observations": {
+    "rows": {
+      "combined_begin": [
+        {
+          "logical": "0",
+          "affinity": "0x1",
+          "total_us": "200000",
+          "gpu_writes": "0",
+          "rpm_votes": "0",
+          "mx_writes": "0"
+        }
+      ],
+      "combined_end": [],
+      "trust_end": []
+    },
+    "normal_timer_marker_observed": false,
+    "stop_temperature_rows": 0,
+    "source_loss_record_observed": false,
+    "panic_text_observed": false
+  },
+  "independent_mx_plan": null,
+  "independent_s1_plan": null,
+  "independent_s1_digital": null,
+  "same_boot_s1_voltage_bound_met": null,
+  "hardware_chip_id": null,
+  "vbif_version_raw": null,
+  "gpu_clock_configuration_hz": null,
+  "gpu_clock_measured_hz": null,
+  "cp_or_gpu_submission_verified": false,
+  "metal_acceleration_verified": false,
+  "usb": {
+    "raw_bytes": 60536,
+    "console_bytes": 53624,
+    "frames": 216,
+    "raw_sha256": "22b98a72159b412ae9f39736379ec2df68b54a5bc89b1e1cf31e1b889f9fd19d",
+    "console_sha256": "81a504c356be9766d50fd1014e11abb34ee5f50f515be7261959c7c78982ad45",
+    "first_offset": 0,
+    "final_offset": 53624,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "incomplete_frame_bytes": 0,
+    "device_lost_max": 0,
+    "frames_reporting_device_loss": 0,
+    "independent_parser_agrees_with_frozen_receiver": true,
+    "frozen_redecode_equals_complete_console": true,
+    "transport_verified": true,
+    "kernel_banner_offset": 0,
+    "timer_offset": -1,
+    "normal_return_offset": -1,
+    "drain_success": false,
+    "drain_records": [],
+    "emitted_kernel_stream_through_timer_verified": false,
+    "all_firmware_daemon_and_original_printf_logs_complete": false,
+    "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
+  },
+  "receiver": {
+    "started_at": "2026-11-26T03:02:55.231799+08:00",
+    "enumerated": true,
+    "frames": 216,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "status": "host_capture_complete",
+    "output": "F:\\IOS-MIX1\\evidence\\gpu-metal-20261123\\package\\runs\\gpu-g1-power-clock-04\\console.log",
+    "device_commands_sent": false,
+    "candidate_seen": true,
+    "identity_verified": true,
+    "descriptor_errors": 0,
+    "descriptor_error_samples": [],
+    "configuration_verified": true,
+    "console_bytes": 53624,
+    "finished_at": "2026-11-26T03:07:00.478603+08:00"
+  },
+  "return_verification": {
+    "started_at": "2026-11-26T03:06:59.736719+08:00",
+    "elapsed_seconds": 243.16974,
+    "devices_query_count": 1,
+    "product_query_count": 0,
+    "device_rows": [],
+    "same_serial_fastboot": false,
+    "observed_product": null,
+    "product_verified": false,
+    "passed": false,
+    "retry": false,
+    "attempt_id": "gpu-g1-power-clock-04",
+    "phase": "g1-power-clock",
+    "failure": "expected sole Fastboot target not found; product query skipped",
+    "capture_stop_requested": true,
+    "finished_at": "2026-11-26T03:07:00.206167+08:00"
+  },
+  "original_console_modified": false,
+  "original_console_sha256": "81a504c356be9766d50fd1014e11abb34ee5f50f515be7261959c7c78982ad45",
+  "limitation": "No combined terminal record: actual TRUST access, cleanup, timer return, and retained-screen reason are not recoverable from the saved stream.",
+  "user_terminal_observation": {
+    "recorded_at": "2026-11-26T03:21:20.435456+08:00",
+    "source": "user_chat",
+    "message": "卡在总结界面了，没有回到fastboot了",
+    "screen_photo_received": false,
+    "specific_retained_reason": null,
+    "manual_recovery_confirmed": false
+  }
+}

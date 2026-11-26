@@ -1,0 +1,51 @@
+{
+  "revision": 13,
+  "base_revision": 12,
+  "before_sha256": {
+    "drivers/storage/hakios.ufs.c": "b39da558552e0e6d3df843d25aa68885c562463c4d35bf38a1704b723104df90",
+    "xnu/hakios.patch": "91f0d38516751d47988282a82c52b56202a2ba383df65d63336edd28b09637a2",
+    "xnu/hfs/hfs.patch": "edc0a45b25a4c65d04ec5abc8d03d22fe64af105bda62accfde4020b71b40806",
+    "xnu/files/bsd/sys/hakios.fsdiag.h": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "xnu/files/osfmk/arm64/user_exception_trace.c": "5a7a534a370a00ae4de3ea0cb36dfe0565a0e7591f8efd2e630fae2f24c534e1",
+    "userland/src/init.c": "564e948ac7aa9ecab0da54b932df184f357efbd35d76dbe8591b3cf5c149c157"
+  },
+  "after_sha256": {
+    "drivers/storage/hakios.ufs.c": "d3dabab761c7606e305b301d049c190ccc7159015727e34737d8639b54c8f2ee",
+    "xnu/hakios.patch": "5fd6be1fc336f882540bc6667266bace1fb694b5f3e69d988b5b5a2e77e962a0",
+    "xnu/hfs/hfs.patch": "7ff37ad4c6762ea5e4ff69b4d2608e0a23f8eebcc65a757f1d64d01f7acc9f15",
+    "xnu/files/bsd/sys/hakios.fsdiag.h": "ba732bc291033e88d86ced5ada28c4dd9593cddeb754daa533e9287019419c11",
+    "xnu/files/osfmk/arm64/user_exception_trace.c": "882d4eeb970d494d700e177f18d13cb74081624f542f5ae209d5abb1fc0f91f1",
+    "userland/src/init.c": "36c8739398e9225c59a4c2deca31e983b323b7da204154bb02b7235d806e7c7c"
+  },
+  "backup_branch": "archive/ios16-r12-before-r13-20261118",
+  "backup_path": "/mnt/e/IOS-MIX1-artifacts/ios16-d22ap/r12-before-r13-20261118/dirty-source.zip",
+  "backup_sha256": "8c4eeed2fb5bf993bd4093e40693d9323430d644e650210d43030430dc8739f6",
+  "threshold_us": 500000,
+  "interval_us": 250000,
+  "per_op_samples": 24,
+  "total_samples": 512,
+  "slow_reports": 128,
+  "active_slots": 64,
+  "frames": 16,
+  "stage_depth": 16,
+  "stage_categories": 20,
+  "only_data_hfs": true,
+  "userspace_policy_changed": false,
+  "journal_policy_changed": false,
+  "flush_semantics_changed": false,
+  "cpu_clock_changed": false,
+  "cache_policy_changed": false,
+  "phone_query_authorized": false,
+  "boot_authorized": false,
+  "smp_ab": [
+    1,
+    3
+  ],
+  "same_kernel_for_ab": true,
+  "bootcpu": 2,
+  "expected_boot_mpidr": "0x100",
+  "kernel_memory_mib": 2880,
+  "resident_uefi_cpus": 1,
+  "userdata_reinstall_required": false,
+  "hardware_verified": false
+}

@@ -1,0 +1,25 @@
+{
+  "passed": true,
+  "checks": [
+    "PASS actual probe uses read-only block mount and retains actual START/file/PASS lines",
+    "PASS injected ENOTBLK retains actual mount error and FAIL stage 2 without file reads",
+    "PASS writable filesystem flag prevents file checks and retains FAIL stage 3",
+    "PASS corrupt file fixture is rejected and successful unmount does not imply PASS",
+    "PASS actual syscall adapter converts libmini errno after failed read without hashing failed data",
+    "PASS libmini unmount failure retains the original errno and blocks PASS",
+    "PASS repeated short reads through actual syscall adapter preserve all three hashes and EOF"
+  ],
+  "probe_source_sha256": "2cb581eb51967e48d497027998df23eb1c61e996c5627e0b679ac6e3d5b89cb9",
+  "loader_sha256": "d4ba7733ae38836c7aa41884cb65a1c5393e2c2a236fe371ed0fb7b80cbcdd5a",
+  "test_source_sha256": "e7a2a8d4554dbd0ceb5f6988d530c08f3fbe4c8c5fb96c1f14961e780e0bdf20",
+  "actual_diagnostic_and_summary_exercised": true,
+  "syscalls_intercepted": true,
+  "synthetic_file_fixtures": true,
+  "actual_syscall_adapter_exercised": true,
+  "libmini_assembly_entry_intercepted": true,
+  "sanitizer": "address,undefined",
+  "hardware_verified": false,
+  "hfs_mounted": false,
+  "ios14_processes_executed": false,
+  "qemu_used": false
+}

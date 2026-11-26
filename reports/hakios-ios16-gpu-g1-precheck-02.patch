@@ -1,0 +1,2428 @@
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -1,3 +1,5 @@
++2026-11-23 GPU G1前置02真机结案：04:37:46单次RAM24f53f36，98/67；G0状态保持、logical0affinity1采集6fuse×2完整64bit全valid/stable，row633a5b3bb5f3badb39补齐init20/22/25/27、MMSSrev1/bin0/lim0，stock133corner2启动floor535/openloop560mV模型仅主机策略非实测。两S2七field×2共28EXT_READL/4038read32/56poll均error0，GFXSID3/PPID317/APID52/1c09/range0/vsetb8数字1000mV ENABLE0，MXSID1/117/APID127/vset9a数字850mV ENABLE80，MODE40/STEP82，仅数字配置未证settled/RPMbus权限；0PMIC/GPUpowerclock写，未读chipID/GPU/SMMU。180正常timer/4stop/source0/drain1target65140，263帧73605raw/65189console独立逐字节连续0gap/dup/残帧/lost，一行printf前缀交错原样保留不影响关键字段，Pipeerror04:41:18状态保留；04:42:09唯一devices/product核实同机Fastboot，未请求手动恢复/未单独捕获UEFI内部PrepareCommit。Raman实际fuse原序provenance/策略、PasteurS2独立解码，main生命周期/USB/算术复核；CPU峰52.2/52.8/49.3/50.2C非GPU温度。原索引/614/R20/low01/G0/旧冻结保持，无分区/刷写/ADB/QEMU/重试；前置完成非G1上电通过，下一受控GFX供电与MX/RPMbus前提、保持CPU614.4。见reports/hakios-ios16-gpu-g1-precheck-02.md/json。
++
+ 2026-11-23 GPU G1供电/fuse前置主机包冻结：CPU614.4基线，新增默认关gpu_power_diag只允许显式G0/RAM，GFX/MX指定SID3/1S2均1700、7field双遍最多28EXT_READL、六raw64fuse双遍含缺失row63，0PMIC/GPUpowerclock写/未读GPU。历史MMSSrev1/bin0/limitation0缺row63，模型computednull，不猜电压；G1上电未验。实际完整内核7c63f434/RAM镜像24f53f36、逐层读回/最终无UFSFV/FastbootDXE保持、180秒/自动返回10秒主机通过。适配器末读取越预算未标记由mock发现并补postaccess检查，旧01保持不启，新02专项通过；Pasteur核心41419cases186408checks/Ramanfuse6006cases73234checks+317calc/Baconadapter158cases1183442checks/Kepler打包增量7项，main13parser/实际链接/源hash复核。本阶段设备0、97/66/原索引/614/R20/low01/G0旧冻结保持，源码补丁可回退不含vendor固件。依用户GPU计划§0等待一次新前置RAM采集批准；见reports/hakios-ios16-gpu-g1-precheck-prepared.md/json。
+ 
+ 2026-11-23 GPU G0一次RAM真机通过：03:52:07接受61bc8b82，97/66；真实XNU3核、G0 logical0affinity1，9 GCC/GPUCC字段双遍18读全valid/stable、18us、三个16KiBallocation释放，0GPU写/未读GPU或SMMU。CX/GX00222001均PWR_ON0/SW_COLLAPSE1；四GPU分支enable0/off1，BIMC链两字段不等整总线供电/ownership证明，chipID/CP未验。180正常timer/四stop/source0/drain1target57875；235帧65444raw/57924console独立重放连续0gap/dup/残帧/lost，Pipeerror原样保留。03:56:56唯一devices/product核实54223ce9/MSM8996_A8回Fastboot，未请求手动恢复/未捕获固件内部PrepareCommit或目视终屏。CPU614.4配置模型，四CPU TSENS峰51.2/51.8/48.0/48.6C非GPU温度；RAMlookup2非UFS失败。Bacon保存日志/位定义复核、main生命周期/USB独立审计；无分区刷写/改压/固件装载/ADB/QEMU/重试，原索引/614/R20/low01冻结保持。G0结案，下一G1供电/fuse/RPMbus证据后才上电读ID，旧批准不扩到写GPU；见reports/hakios-ios16-gpu-g0-01.md/json。
+--- a/project.json
++++ b/project.json
+@@ -174,20 +174,20 @@
+     "large_tasks_sequential": true
+   },
+   "work_status": {
+-    "status": "gpu_G1_precheck_host_ready_awaiting_approval",
++    "status": "gpu_G1_precheck_complete_left_in_fastboot",
+     "phase2_approved": true,
+     "device_operations_performed": true,
+     "device_boots_performed": true,
+     "partition_writes_performed": true,
+-    "hakios_temporary_boot_count": 97,
++    "hakios_temporary_boot_count": 98,
+     "backup_branch": "archive/ios14-r31-20261116",
+-    "next_step": "One G1 supply/fuse RAM capture, especially row63; then stock133MHz GFX/MX power prerequisites",
++    "next_step": "Prepare source-backed GFX regulator and MX/RPM/bus/clock controlled power-on; CPU614.4baseline unchanged",
+     "phase3_approved": true,
+     "auxiliary_stock_reader_boots_accepted": 4,
+-    "ios16_boots_performed": 66,
++    "ios16_boots_performed": 67,
+     "auxiliary_stock_reader_adb_runtime_observations": 3,
+-    "latest_evidence_recorded_at": "2026-11-22T20:01:41.851288+00:00",
+-    "latest_host_report": "reports/hakios-ios16-gpu-g1-precheck-prepared.md",
++    "latest_evidence_recorded_at": "2026-11-22T20:49:02.904469+00:00",
++    "latest_host_report": "reports/hakios-ios16-gpu-g1-precheck-02.md",
+     "r5_backup_branch": "archive/ios16-r5-20261117",
+     "r6_backup_branch": "archive/ios16-r6-20261117",
+     "r7_backup_branch": "archive/ios16-r7-20261117",
+@@ -3838,12 +3838,12 @@
+     "cpu_baseline_model_hz": 614400000,
+     "cpu_choice": "user_accepted_2026-11-23",
+     "route": "A530 MSM-style kernel ABI then Freedreno Gallium/GLES; fill/blit first; Metal later",
+-    "phase": "G1_prerequisites_host_ready",
++    "phase": "G1_precheck_runtime_complete_power_on_pending",
+     "default_off": true,
+     "device_operations_this_phase": 8,
+     "next_device_approval_required": true,
+     "hardware_stage_passed": "G0_readonly_clock_gdsc",
+-    "report": "reports/hakios-ios16-gpu-g1-precheck-prepared.md",
++    "report": "reports/hakios-ios16-gpu-g1-precheck-02.md",
+     "g0_image": "evidence\\gpu-g0-20261123\\package\\g0-01\\lithium-hakios-ios16-gpu-g0-01.img",
+     "g0_image_sha256": "61bc8b8220f54e8a2b0772a694690901b89e48a65b2d52463c8f962ab02c7933",
+     "g0_kernel_sha256": "14635e6dcd3db6ab26226afbdf53f27a6a266d8931e335e91fc229d2b26ea1ff",
+@@ -3870,8 +3870,20 @@
+     "g1_kernel_sha256": "7c63f434fcae955c07299cf135025fb6b349bab854df3e7d8acf2c974ca090e8",
+     "g1_stage1_armed": false,
+     "g1_max_observer_read_commands": 28,
+-    "g1_missing_fuse_row": 63,
+-    "g1_voltage_model_ready": false,
+-    "current_phase_device_operations": 0
++    "g1_missing_fuse_row": null,
++    "g1_voltage_model_ready": true,
++    "current_phase_device_operations": 8,
++    "g1_prerequisite_capture_passed": true,
++    "g1_stock133_startup_open_loop_uv": 560000,
++    "g1_stock133_startup_floor_uv": 535000,
++    "g1_GFX_digital_setpoint_uv": 1000000,
++    "g1_GFX_SW_enable": false,
++    "g1_MX_digital_setpoint_uv": 850000,
++    "g1_MX_SW_enable": true,
++    "g1_supply_analog_or_settled_verified": false,
++    "g1_power_on_passed": false,
++    "g1_chip_id": null,
++    "g1_precheck_auto_fastboot_observed": true,
++    "g1_precheck_authorization_consumed": true
+   }
+ }
+--- /dev/null
++++ b/scripts/analyze-hakios-gpu-g1.py
+@@ -0,0 +1,152 @@
++#!/usr/bin/env python3
++"""Analyze saved G1 precheck02 bytes only. No device operations."""
++from datetime import datetime,timezone
++import hashlib
++import importlib.util
++import json
++from pathlib import Path
++import re
++import sys
++
++sys.dont_write_bytecode=True
++ROOT=Path(__file__).resolve().parents[1]
++RUN=ROOT/"evidence/gpu-g1-20261123/package/runs/gpu-g1-precheck-02"
++OUT=ROOT/"evidence/gpu-g1-20261123/main/runtime-precheck02"
++def load(name,path):
++    spec=importlib.util.spec_from_file_location(name,path)
++    module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
++    return module
++def read(path): return json.loads(path.read_text(encoding="utf-8"))
++def write(path,value):
++    path.parent.mkdir(parents=True,exist_ok=True)
++    path.write_text(json.dumps(value,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
++def sha(data): return hashlib.sha256(data).hexdigest()
++def fields(line): return dict(re.findall(r"([A-Za-z_][A-Za-z_0-9]*)=([^\s]+)",line))
++def segment(line,prefix):
++    at=line.find(prefix)
++    if at<0: return None
++    text=line[at:]
++    return text.split("LITHIUM ",2)[0] if not text.startswith("LITHIUM ") else (
++        text[:text.find("LITHIUM ",8)] if text.find("LITHIUM ",8)>=0 else text)
++
++def main():
++    state=read(RUN/"result.json"); receiver=read(RUN/"usb-status.json")
++    if receiver["status"] in ("capturing","waiting"):
++        raise RuntimeError("receiver still active; final audit deferred")
++    raw=(RUN/"console.frames").read_bytes(); console=(RUN/"console.log").read_bytes()
++    text=console.decode("utf-8",errors="replace")
++    usb=load("g1_usb_audit",ROOT/"scripts/hakios_usb_audit.py").audit(raw,console,RUN/"capture-host.py")
++    write(OUT/"usb-audit.json",usb)
++    row_ids=[39,41,63,64,66,68]
++    field_names=["TYPE","SUBTYPE","RANGE","VSET","MODE","ENABLE","STEP"]
++    offsets=[4,5,0x40,0x41,0x45,0x46,0x61]
++    rails={"GFX_PMI8994_S2":3,"MX_PM8994_S2":1}
++    fuse_rows=[]; observations=[]; routes=[]; begins=[]; ends=[]; temps=[]
++    map_trace=[]; cpu_context=[]; g0_end=[]; interleaved=[]
++    for n,line in enumerate(text.splitlines(),1):
++        if line.count("LITHIUM ")>1: interleaved.append(n)
++        for prefix,destination in (("LITHIUM GPU fuse pass=",fuse_rows),
++            ("LITHIUM GPU supply pass=",observations),("LITHIUM GPU supply route",routes),
++            ("LITHIUM GPU supply begin",begins),("LITHIUM GPU supply end",ends),
++            ("LITHIUM CPU TEMP ",temps),("LITHIUM GPU stage=0 end",g0_end),
++            ("LITHIUM CPU sanity logical=",cpu_context)):
++            s=segment(line,prefix)
++            if s: destination.append(dict(line=n,text=s,fields=fields(s)))
++        for prefix in ("LITHIUM GPU supply map ","LITHIUM GPU supply unmap "):
++            s=segment(line,prefix)
++            if s: map_trace.append(dict(line=n,action="unmap" if " unmap " in s else "map",fields=fields(s)))
++    fuse_pairs={}; rail_pairs={}
++    for r in fuse_rows:
++        f=r["fields"]; key=(int(f["pass"]),int(f["row"]))
++        if key in fuse_pairs: raise ValueError("duplicate fuse record")
++        fuse_pairs[key]=r
++    for r in observations:
++        f=r["fields"]; key=(f["rail"],int(f["pass"]),f["reg"])
++        if key in rail_pairs: raise ValueError("duplicate supply record")
++        rail_pairs[key]=r
++    fuses_passed=len(fuse_pairs)==12
++    for row in row_ids:
++        a=fuse_pairs.get((0,row),{}).get("fields",{}); b=fuse_pairs.get((1,row),{}).get("fields",{})
++        fuses_passed=bool(fuses_passed and a and b and int(a["pa"],0)==int(b["pa"],0)==0x74000+row*8
++            and a["bits"]==b["bits"]=="64" and a["valid"]==b["valid"]=="1" and
++            a["stable"]==b["stable"]=="1" and a["raw"]==b["raw"])
++    decoder=load("g1_setpoint_decode",ROOT/"evidence/gpu-g1-20261123/spmi/decode_digital_setpoint.py")
++    rail_passed=len(rail_pairs)==28; captures=[]; decoded=[]
++    for name,sid in rails.items():
++        capture=dict(rail=name,sid=sid,base=0x1700,fields={},valid_fields=[],stable_fields=[])
++        for field,offset in zip(field_names,offsets):
++            a=rail_pairs.get((name,0,field),{}).get("fields",{}); b=rail_pairs.get((name,1,field),{}).get("fields",{})
++            good=bool(a and b and a["valid"]==b["valid"]=="1" and a["error"]==b["error"]=="0" and
++                a["completed"]==b["completed"]==a["attempted"]==b["attempted"]=="1" and
++                int(a["addr"],0)==int(b["addr"],0)==0x1700+offset and int(a["sid"])==int(b["sid"])==sid
++                and int(a["status"],0)==int(b["status"],0)==1 and a["raw"]==b["raw"])
++            rail_passed=rail_passed and good
++            if good:
++                capture["fields"][field]=int(a["raw"],0)
++                capture["valid_fields"].append(field); capture["stable_fields"].append(field)
++        captures.append(capture); decoded.append(dict(rail=name,**decoder.decode(capture)))
++    active={}; cleanup=True; map_count=unmap_count=0
++    for m in map_trace:
++        f=m["fields"]; allocation=f["allocation"]
++        if m["action"]=="map":
++            map_count+=1
++            if f["valid"]!="1" or allocation in active or int(f["bytes"])!=16384: cleanup=False
++            active[allocation]=f["bytes"]
++        else:
++            unmap_count+=1
++            if active.pop(allocation,None)!=f["bytes"]: cleanup=False
++    cleanup=bool(cleanup and not active and map_count==unmap_count==4)
++    summary=ends[0]["fields"] if len(ends)==1 else {}
++    complete=bool(fuses_passed and rail_passed and cleanup and len(begins)==1 and
++        begins[0]["fields"].get("logical")=="0" and begins[0]["fields"].get("affinity")=="0x1" and
++        summary.get("fuse_stable")=="0x3f" and summary.get("gfx_stable")==summary.get("mx_stable")=="0x7f"
++        and summary.get("gfx_error")==summary.get("mx_error")==summary.get("poisoned")=="0"
++        and summary.get("observer_cmd_writes")=="28" and summary.get("regulator_writes")==summary.get("gpu_writes")=="0")
++    stop=[x for x in temps if x["fields"].get("phase")=="stop"]
++    peaks={}
++    for r in temps:
++        f=r["fields"]
++        if f.get("valid")=="1" and "native_mC" in f:
++            a=f["affinity"]; value=int(f["native_mC"]); peaks[a]=max(peaks.get(a,value),value)
++    drops=[int(x) for x in re.findall(r"writer_contention_dropped_bytes=(\d+)",text)]
++    return_record=read(RUN/"return-verification.json")
++    no_panic=not re.search(r"panic\(cpu |Debugger message:\s*panic",text,re.I)
++    passed=bool(complete and state["command_accepted"] and usb["emitted_kernel_stream_through_timer_verified"] and
++        drops and drops[-1]==0 and return_record["passed"] and no_panic and
++        {x["fields"].get("affinity") for x in stop if x["fields"].get("valid")=="1"}=={"0x0","0x1","0x100","0x101"})
++    # Independent stock corner2 arithmetic from actual row63, without filling
++    # any missing data. This narrow calculation does not authorize power-on.
++    raw63=int(fuse_pairs[(0,63)]["fields"]["raw"],0) if fuses_passed else None
++    init0=((raw63>>55)&31) if raw63 is not None else None
++    model=None
++    if init0 is not None:
++        steps=-(init0&15) if init0&16 else init0&15
++        untrimmed=670000+10000*steps
++        unaged=max(520000,min(670000,((untrimmed-85000+4999)//5000)*5000))
++        floor=max(520000,((unaged-70000+4999)//5000)*5000)
++        model=dict(init0=init0,signed_steps=steps,source_fuse_uv=untrimmed,
++            stock_trim_uv=-85000,unaged_open_loop_uv=unaged,unaged_floor_uv=floor,
++            maximum_startup_aging_uv=15000,stock_startup_open_loop_uv=min(unaged+15000,670000),
++            stock_startup_floor_uv=min(floor+15000,min(unaged+15000,670000)),
++            scope="Independent corner2 arithmetic; formal pinned-policy result checked separately",gpu_write_permission=False)
++    result=dict(schema="hakios-gpu-g1-precheck-saved-runtime-v1",analyzed_at=datetime.now(timezone.utc).isoformat(),
++        attempt="gpu-g1-precheck-02",passed=passed,status="precheck_capture_passed" if passed else "precheck_incomplete",
++        accepted_at=state["accepted_at"],image_sha256=state["image_sha256"],boot_args=state["boot_args"],
++        fuse_capture_passed=fuses_passed,supply_capture_passed=rail_passed,
++        cleanup_observed=cleanup,summary=summary,fuse_rows=fuse_rows,supply_rows=observations,routes=routes,
++        rail_captures=captures,digital_supply_decoded=decoded,independent_stock133_arithmetic=model,
++        usb=usb,receiver_terminal=receiver,return_verification=return_record,
++        source_dropped_bytes=drops[-1] if drops else None,cpu_temperature_peak_native_mC=peaks,
++        stop_temperature_rows=stop,map_trace=map_trace,g0_summary=g0_end,
++        interleaved_printf_line_numbers=interleaved,printf_lines_are_all_atomic=False,
++        no_panic_text_in_collected_stream=no_panic,physical_screen_observed=False,
++        measured_gpu_chip_id=None,gpu_stage1_passed=False,gpu_acceleration_verified=False,
++        regulator_writes=0,gpu_clock_writes=0,spmi_read_commands_observed=28,
++        rail_settled_or_analog_voltage_verified=False,pas13_called=False,
++        next="GFX enable + regulator-settled/RPM/bus/clock prerequisites before GPU domain power-on",
++        input_sha256={p:sha((RUN/p).read_bytes()) for p in (
++            "console.log","console.frames","capture-host.py","result.json","usb-status.json","return-verification.json")})
++    write(OUT/"analysis.json",result)
++    print(json.dumps({k:result[k] for k in ("passed","status","fuse_capture_passed","supply_capture_passed",
++        "cleanup_observed","independent_stock133_arithmetic","digital_supply_decoded")},indent=2))
++if __name__=="__main__": main()
+--- /dev/null
++++ b/reports/hakios-ios16-gpu-g1-precheck-02.md
+@@ -0,0 +1,91 @@
++# A530 G1 前置真机采集 — 2026-11-23
++
++**G1 的供电/fuse 前置采集通过，手机已正常返回 Fastboot。** 六行完整 fuse 两遍有效且一致，GFX/MX 两路 S2 的七字段各两遍、28 个 READ 命令全部完成，无错误。缺失的 row63 已补齐；按固定小米 stock CPR3 规则计算，133 MHz / corner2 的启动 open-loop 模型为 **560 mV**，启动 floor 为535mV。
++
++**GPU 尚未上电、未读取 chip ID。** GFX 当前保存的数字设定是 **1.000 V**，软件使能位为0；MX 数字设定 **0.850 V**，软件使能位为1。这些是实际读回的数字配置，不是模拟电压或供电 settled 验收。不能直接启用 GFX 的遗留1.000V配置，也不据此认定 MX 已满足 corner4/RPM/bus 前置。
++
++## 同次运行证据
++
++04:37:46.086139 +08:00，Fastboot 接受 `24f53f36277df2ccdd4cb2bc5e4226ea5edda403435820ff55a7a586d5b4bc6a` 冻结RAM镜像一次；实际内核为 `7c63f434fcae955c07299cf135025fb6b349bab854df3e7d8acf2c974ca090e8`。五项只读预检通过，USB 接收器先启动。
++
++实际 G0/G1 worker 为 logical0/affinity0x1，XNU 三核运行。CPU 保持614.4MHz配置模型，未建立新的PMU MHz实测。PID1在隔离RAM hold，没有真实Data/UFS或SpringBoard；没有CP命令、固件装载、GPU/SMMU访问、IRQ连接、电压/PMIC寄存器写入。SPMI observer CMD 的28次MMIO写入只请求EXT_READL。没有刷写、分区、ADB、QEMU、启动重试或自动第二轮。
++
++计数为 **HakiOS98 / iOS16 67**。原索引、已验614.4桌面/R20/low01、G0与旧01/当前02冻结字节均保持。
++
++## 两路 S2 真实数字配置
++
++两个 rail 均为TYPE=0x1c、SUBTYPE=0x09，即来源明确的FTSMPS2p5/common布局。两遍raw完全相同：
++
++| 字段 | GFX：PMI8994 S2 / SID3 | MX：PM8994 S2 / SID1 |
++|---|---|---|
++| peripheral / PPID | 0x1700 / 0x317 | 0x1700 / 0x117 |
++| 实际APID / observer地址 | 52 / 0x04da0000 | 127 / 0x04ff8000 |
++| TYPE / SUBTYPE | 0x1c / 0x09 | 0x1c / 0x09 |
++| RANGE / VSET | 0x00 / 0xb8 | 0x00 / 0x9a |
++| MODE | 0x40 | 0x40 |
++| ENABLE | 0x00 | 0x80 |
++| STEP | 0x82 | 0x82 |
++| 由数字编码解算的设定 | 80,000 +184×5,000 = **1,000,000µV** | 80,000 +154×5,000 = **850,000µV** |
++| 数字软件使能 bit7 | 0 | 1 |
++
++所有28个字段数据valid=1、error=0、attempted/completed/status_valid=1、传输STATUS=0x1；每次polls=2，共56次状态轮询。两路独立valid0/valid1/stable均为0x7f，实际version0x20010000、唯一PPID映射各matches1，未出现拒绝、缺失路由、配置或传输错误。
++
++读回4038次32位MMIO与28个READ命令，和两次129-read probe +28×135-read单次事务一致；这项一致性不代替USB独立重放。TYPE/SUBTYPE选择来自固定MiCode QPNP表，ENABLE仅作数字SW位解释；MODE/STEP保留raw，未凭名字推断自动调压、外部控制或settled。
++
++来源：[SPMI独立解码](/F:/IOS-MIX1/evidence/gpu-g1-20261123/spmi/runtime-precheck02/README.md)，固定MiCode `1492c8e4373b7428bb0accc4f4881e97b36508b9`，`qpnp-regulator.c:427–429/932–954/1666–1667/174–175`。
++
++## 本机 fuse 与原厂133MHz模型
++
++| row | 地址 | 双遍相同的raw64 | 原始console行 |
++|---:|---|---|---|
++|39|0x74138|0x401103ea7ab389d6|136 /137|
++|41|0x74148|0xd4c1838e02e761f0|138 /139|
++|63|0x741f8|0x3a5b3bb5f3badb39|140 /141|
++|64|0x74200|0xc1dde74d5f3995ed|142 /143|
++|66|0x74210|0xab0e61ddc60a1d04|144 /145|
++|68|0x74220|0x00700000043ac54b|146 /147|
++
++12个完整64-bit读取均有效且一致，fuse_valid0/valid1/stable=0x3f。解得MMSS CPR revision1/bin0/limitation0/aging raw1；四个initcode为20/22/25/27，对应sign/magnitude -4/-6/-9/-11，SVS/Turbo offsetraw均0。此处MMSS revision与CPU revision不同，未混用。
++
++stock Pro compatible、combo1与speedbin查表保持固定來源。133MHz对应fuse corner0且不需插值：
++
++```text
++Pro reference 670mV + (-4 × 10mV) =630mV
++stock fused trim -85mV             =545mV
++5mV向上舍入与520..670mV限制       =545mV
++启动最大aging +15mV              =560mV open-loop/ceiling
++启动floor                         =535mV
++```
++
++这是**computed stock policy only**：不是实测rail、不是动态CPR闭环目标，不是裸PMIC写值许可。原来缺row63的历史模型继续保留为未就绪；新的同次模型独立保存，不回填历史缺失数据。
++
++原始console实际按row依次打印pass0/pass1，并非先打印整个pass0再打印pass1。旧计算器的跨pass全局行号检查不适用该日志；Raman仅在新的runtime wrapper中验证每个pass行号递增/唯一、两组互不重叠、原始完整字段和双遍一致，再调用旧的固定策略/算术函数。**未重排或改写console**，原计算器及已冻存测试源保持。
++
++[同次模型](/F:/IOS-MIX1/evidence/gpu-g1-20261123/fuses/runtime-precheck02/model-final.json) · [来源与算式复核](/F:/IOS-MIX1/evidence/gpu-g1-20261123/fuses/runtime-precheck02/README.md)。主代理直接从真实row63独立计算，结果与子代理固定策略输出相同。
++
++## 映射、温度与退出
++
++fuse、SPMI core以及两路observer共4次完整16KiB映射/释放，后续summary证实释放调用返回；结果静态保留。末行：fuse_reads12、observer_cmd_writes28、poisoned0、regulator/GPU writes0、settledUNVERIFIED、chip_idUNREAD。G0双遍18项状态继续一致，未越入GPU aperture。
++
++| CPU affinity | 本轮原生采样峰值 | phase=stop |
++|---|---:|---:|
++|0x0（UEFI resident）|52.2°C|49.9°C|
++|0x1（XNU引导核）|52.8°C|46.7°C|
++|0x100|49.3°C|46.1°C|
++|0x101|50.2°C|46.1°C|
++
++这些是CPU TSENS原生值，非GPU温度/校准精度证明。正常180秒timer、四路stop、return_cpu logical0affinity1、source_dropped_bytes0、**drain1 target65140** 均捕获。RAM DATA SYNC lookup error2是没有Data挂载路径，非UFS失败。
++
++独立重放原始USB：**263帧 /73,605原始字节 /65,189console字节**，offset0→65189，缺口/重复/残帧/device-lost均0，冻结receiver重解码逐字节一致。04:41:18接收器保留capture_failed/Pipe error；它不影响已独立核对的正常timer/drain，也不当作自动返回证明。console第152行存在两个printf前缀交错，原字节原样保留；28个关键rail字段及12个fuse字段完整，独立核对未用交错行推算电压。source drop为0不等于所有printf天然整行原子。
++
++**04:42:09**在原窗口内唯一devices/product核验同一`54223ce9 / MSM8996_A8`已Fastboot。不再查询，未请求手动恢复；终屏未目视，UEFI内部Prepare/Commit未单独捕获。USB断开不是该终点证明。
++
++## 分工、下一步与范围
++
++主代理执行单次lifecycle、保存流解析、USB独立重放、原始数值与算术核对；Raman只对保存fuse和固定策略计算；Pasteur只对保存S2数据和固定QPNP表独立解码。子代理不操作设备。本次代码/构建没有再修改，测试没有重复跑。
++
++**G1前置采集完成，完整G1上电/chip-ID仍未完成。** 下一包应先准备指定GFX rail的受控配置/使能与真正settled读回，确认MX RPM corner4/bus vote和共享资源前置，再按来源明确的CX/GX/clamp/时钟序列上电。不能将遗留1.000V直接启用，也不能因计算出560mV就降低共享MX rail或擅自接管CPR。CPU保持614.4MHz。
++
++完成这些前置后才读取`RBBM_CHIP_ID`，目标0x05030004；PAS13/G2和CP/fence仍后续独立步骤。新的写入范围先形成可审查包，再依用户GPU计划§0确认上机。本次没有将前置采集批准扩大为GPU写操作。
++
++[完整结构化结果](/F:/IOS-MIX1/evidence/gpu-g1-20261123/main/runtime-precheck02/analysis.json) · [原始console](/F:/IOS-MIX1/evidence/gpu-g1-20261123/package/runs/gpu-g1-precheck-02/console.log) · [USB独立审计](/F:/IOS-MIX1/evidence/gpu-g1-20261123/main/runtime-precheck02/usb-audit.json)
+--- /dev/null
++++ b/reports/hakios-ios16-gpu-g1-precheck-02.json
+@@ -0,0 +1,1599 @@
++{
++  "schema": "hakios-gpu-g1-precheck-saved-runtime-v1",
++  "analyzed_at": "2026-11-22T20:44:53.662097+00:00",
++  "attempt": "gpu-g1-precheck-02",
++  "passed": true,
++  "status": "precheck_capture_passed",
++  "accepted_at": "2026-11-23T04:37:46.086139+08:00",
++  "image_sha256": "24f53f36277df2ccdd4cb2bc5e4226ea5edda403435820ff55a7a586d5b4bc6a",
++  "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_sanity=1 cpu_perf_fixed=1 cpu_perf_hz=614400000 cpu_thermal_diag=1 cpu_inherited_supply_r39=1 gpu_stage=0 gpu_probe=1 gpu_wd=1 gpu_power_diag=1 lithium_log_retry=1",
++  "fuse_capture_passed": true,
++  "supply_capture_passed": true,
++  "cleanup_observed": true,
++  "summary": {
++    "fuse_valid0": "0x3f",
++    "fuse_valid1": "0x3f",
++    "fuse_stable": "0x3f",
++    "gfx_valid0": "0x7f",
++    "gfx_valid1": "0x7f",
++    "gfx_stable": "0x7f",
++    "gfx_error": "0",
++    "mx_valid0": "0x7f",
++    "mx_valid1": "0x7f",
++    "mx_stable": "0x7f",
++    "mx_error": "0",
++    "reads": "4038",
++    "fuse_reads": "12",
++    "observer_cmd_writes": "28",
++    "poisoned": "0",
++    "gpu_writes": "0",
++    "regulator_writes": "0",
++    "settled": "UNVERIFIED",
++    "chip_id": "UNREAD"
++  },
++  "fuse_rows": [
++    {
++      "line": 136,
++      "text": "LITHIUM GPU fuse pass=0 row=39 pa=0x74138 bits=64 valid=1 raw=0x401103ea7ab389d6 stable=1",
++      "fields": {
++        "pass": "0",
++        "row": "39",
++        "pa": "0x74138",
++        "bits": "64",
++        "valid": "1",
++        "raw": "0x401103ea7ab389d6",
++        "stable": "1"
++      }
++    },
++    {
++      "line": 137,
++      "text": "LITHIUM GPU fuse pass=1 row=39 pa=0x74138 bits=64 valid=1 raw=0x401103ea7ab389d6 stable=1",
++      "fields": {
++        "pass": "1",
++        "row": "39",
++        "pa": "0x74138",
++        "bits": "64",
++        "valid": "1",
++        "raw": "0x401103ea7ab389d6",
++        "stable": "1"
++      }
++    },
++    {
++      "line": 138,
++      "text": "LITHIUM GPU fuse pass=0 row=41 pa=0x74148 bits=64 valid=1 raw=0xd4c1838e02e761f0 stable=1",
++      "fields": {
++        "pass": "0",
++        "row": "41",
++        "pa": "0x74148",
++        "bits": "64",
++        "valid": "1",
++        "raw": "0xd4c1838e02e761f0",
++        "stable": "1"
++      }
++    },
++    {
++      "line": 139,
++      "text": "LITHIUM GPU fuse pass=1 row=41 pa=0x74148 bits=64 valid=1 raw=0xd4c1838e02e761f0 stable=1",
++      "fields": {
++        "pass": "1",
++        "row": "41",
++        "pa": "0x74148",
++        "bits": "64",
++        "valid": "1",
++        "raw": "0xd4c1838e02e761f0",
++        "stable": "1"
++      }
++    },
++    {
++      "line": 140,
++      "text": "LITHIUM GPU fuse pass=0 row=63 pa=0x741f8 bits=64 valid=1 raw=0x3a5b3bb5f3badb39 stable=1",
++      "fields": {
++        "pass": "0",
++        "row": "63",
++        "pa": "0x741f8",
++        "bits": "64",
++        "valid": "1",
++        "raw": "0x3a5b3bb5f3badb39",
++        "stable": "1"
++      }
++    },
++    {
++      "line": 141,
++      "text": "LITHIUM GPU fuse pass=1 row=63 pa=0x741f8 bits=64 valid=1 raw=0x3a5b3bb5f3badb39 stable=1",
++      "fields": {
++        "pass": "1",
++        "row": "63",
++        "pa": "0x741f8",
++        "bits": "64",
++        "valid": "1",
++        "raw": "0x3a5b3bb5f3badb39",
++        "stable": "1"
++      }
++    },
++    {
++      "line": 142,
++      "text": "LITHIUM GPU fuse pass=0 row=64 pa=0x74200 bits=64 valid=1 raw=0xc1dde74d5f3995ed stable=1",
++      "fields": {
++        "pass": "0",
++        "row": "64",
++        "pa": "0x74200",
++        "bits": "64",
++        "valid": "1",
++        "raw": "0xc1dde74d5f3995ed",
++        "stable": "1"
++      }
++    },
++    {
++      "line": 143,
++      "text": "LITHIUM GPU fuse pass=1 row=64 pa=0x74200 bits=64 valid=1 raw=0xc1dde74d5f3995ed stable=1",
++      "fields": {
++        "pass": "1",
++        "row": "64",
++        "pa": "0x74200",
++        "bits": "64",
++        "valid": "1",
++        "raw": "0xc1dde74d5f3995ed",
++        "stable": "1"
++      }
++    },
++    {
++      "line": 144,
++      "text": "LITHIUM GPU fuse pass=0 row=66 pa=0x74210 bits=64 valid=1 raw=0xab0e61ddc60a1d04 stable=1",
++      "fields": {
++        "pass": "0",
++        "row": "66",
++        "pa": "0x74210",
++        "bits": "64",
++        "valid": "1",
++        "raw": "0xab0e61ddc60a1d04",
++        "stable": "1"
++      }
++    },
++    {
++      "line": 145,
++      "text": "LITHIUM GPU fuse pass=1 row=66 pa=0x74210 bits=64 valid=1 raw=0xab0e61ddc60a1d04 stable=1",
++      "fields": {
++        "pass": "1",
++        "row": "66",
++        "pa": "0x74210",
++        "bits": "64",
++        "valid": "1",
++        "raw": "0xab0e61ddc60a1d04",
++        "stable": "1"
++      }
++    },
++    {
++      "line": 146,
++      "text": "LITHIUM GPU fuse pass=0 row=68 pa=0x74220 bits=64 valid=1 raw=0x00700000043ac54b stable=1",
++      "fields": {
++        "pass": "0",
++        "row": "68",
++        "pa": "0x74220",
++        "bits": "64",
++        "valid": "1",
++        "raw": "0x00700000043ac54b",
++        "stable": "1"
++      }
++    },
++    {
++      "line": 147,
++      "text": "LITHIUM GPU fuse pass=1 row=68 pa=0x74220 bits=64 valid=1 raw=0x00700000043ac54b stable=1",
++      "fields": {
++        "pass": "1",
++        "row": "68",
++        "pa": "0x74220",
++        "bits": "64",
++        "valid": "1",
++        "raw": "0x00700000043ac54b",
++        "stable": "1"
++      }
++    }
++  ],
++  "supply_rows": [
++    {
++      "line": 157,
++      "text": "LITHIUM GPU supply pass=0 rail=GFX_PMI8994_S2 sid=3 reg=TYPE addr=0x1704 valid=1 raw=0x1c error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "0",
++        "rail": "GFX_PMI8994_S2",
++        "sid": "3",
++        "reg": "TYPE",
++        "addr": "0x1704",
++        "valid": "1",
++        "raw": "0x1c",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 162,
++      "text": "LITHIUM GPU supply pass=0 rail=GFX_PMI8994_S2 sid=3 reg=SUBTYPE addr=0x1705 valid=1 raw=0x09 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "0",
++        "rail": "GFX_PMI8994_S2",
++        "sid": "3",
++        "reg": "SUBTYPE",
++        "addr": "0x1705",
++        "valid": "1",
++        "raw": "0x09",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 166,
++      "text": "LITHIUM GPU supply pass=0 rail=GFX_PMI8994_S2 sid=3 reg=RANGE addr=0x1740 valid=1 raw=0x00 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "0",
++        "rail": "GFX_PMI8994_S2",
++        "sid": "3",
++        "reg": "RANGE",
++        "addr": "0x1740",
++        "valid": "1",
++        "raw": "0x00",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 169,
++      "text": "LITHIUM GPU supply pass=0 rail=GFX_PMI8994_S2 sid=3 reg=VSET addr=0x1741 valid=1 raw=0xb8 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "0",
++        "rail": "GFX_PMI8994_S2",
++        "sid": "3",
++        "reg": "VSET",
++        "addr": "0x1741",
++        "valid": "1",
++        "raw": "0xb8",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 170,
++      "text": "LITHIUM GPU supply pass=0 rail=GFX_PMI8994_S2 sid=3 reg=MODE addr=0x1745 valid=1 raw=0x40 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "0",
++        "rail": "GFX_PMI8994_S2",
++        "sid": "3",
++        "reg": "MODE",
++        "addr": "0x1745",
++        "valid": "1",
++        "raw": "0x40",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 171,
++      "text": "LITHIUM GPU supply pass=0 rail=GFX_PMI8994_S2 sid=3 reg=ENABLE addr=0x1746 valid=1 raw=0x00 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "0",
++        "rail": "GFX_PMI8994_S2",
++        "sid": "3",
++        "reg": "ENABLE",
++        "addr": "0x1746",
++        "valid": "1",
++        "raw": "0x00",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 173,
++      "text": "LITHIUM GPU supply pass=0 rail=GFX_PMI8994_S2 sid=3 reg=STEP addr=0x1761 valid=1 raw=0x82 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "0",
++        "rail": "GFX_PMI8994_S2",
++        "sid": "3",
++        "reg": "STEP",
++        "addr": "0x1761",
++        "valid": "1",
++        "raw": "0x82",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 175,
++      "text": "LITHIUM GPU supply pass=1 rail=GFX_PMI8994_S2 sid=3 reg=TYPE addr=0x1704 valid=1 raw=0x1c error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "1",
++        "rail": "GFX_PMI8994_S2",
++        "sid": "3",
++        "reg": "TYPE",
++        "addr": "0x1704",
++        "valid": "1",
++        "raw": "0x1c",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 176,
++      "text": "LITHIUM GPU supply pass=1 rail=GFX_PMI8994_S2 sid=3 reg=SUBTYPE addr=0x1705 valid=1 raw=0x09 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "1",
++        "rail": "GFX_PMI8994_S2",
++        "sid": "3",
++        "reg": "SUBTYPE",
++        "addr": "0x1705",
++        "valid": "1",
++        "raw": "0x09",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 177,
++      "text": "LITHIUM GPU supply pass=1 rail=GFX_PMI8994_S2 sid=3 reg=RANGE addr=0x1740 valid=1 raw=0x00 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "1",
++        "rail": "GFX_PMI8994_S2",
++        "sid": "3",
++        "reg": "RANGE",
++        "addr": "0x1740",
++        "valid": "1",
++        "raw": "0x00",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 178,
++      "text": "LITHIUM GPU supply pass=1 rail=GFX_PMI8994_S2 sid=3 reg=VSET addr=0x1741 valid=1 raw=0xb8 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "1",
++        "rail": "GFX_PMI8994_S2",
++        "sid": "3",
++        "reg": "VSET",
++        "addr": "0x1741",
++        "valid": "1",
++        "raw": "0xb8",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 179,
++      "text": "LITHIUM GPU supply pass=1 rail=GFX_PMI8994_S2 sid=3 reg=MODE addr=0x1745 valid=1 raw=0x40 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "1",
++        "rail": "GFX_PMI8994_S2",
++        "sid": "3",
++        "reg": "MODE",
++        "addr": "0x1745",
++        "valid": "1",
++        "raw": "0x40",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 180,
++      "text": "LITHIUM GPU supply pass=1 rail=GFX_PMI8994_S2 sid=3 reg=ENABLE addr=0x1746 valid=1 raw=0x00 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "1",
++        "rail": "GFX_PMI8994_S2",
++        "sid": "3",
++        "reg": "ENABLE",
++        "addr": "0x1746",
++        "valid": "1",
++        "raw": "0x00",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 181,
++      "text": "LITHIUM GPU supply pass=1 rail=GFX_PMI8994_S2 sid=3 reg=STEP addr=0x1761 valid=1 raw=0x82 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "1",
++        "rail": "GFX_PMI8994_S2",
++        "sid": "3",
++        "reg": "STEP",
++        "addr": "0x1761",
++        "valid": "1",
++        "raw": "0x82",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 185,
++      "text": "LITHIUM GPU supply pass=0 rail=MX_PM8994_S2 sid=1 reg=TYPE addr=0x1704 valid=1 raw=0x1c error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "0",
++        "rail": "MX_PM8994_S2",
++        "sid": "1",
++        "reg": "TYPE",
++        "addr": "0x1704",
++        "valid": "1",
++        "raw": "0x1c",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 186,
++      "text": "LITHIUM GPU supply pass=0 rail=MX_PM8994_S2 sid=1 reg=SUBTYPE addr=0x1705 valid=1 raw=0x09 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "0",
++        "rail": "MX_PM8994_S2",
++        "sid": "1",
++        "reg": "SUBTYPE",
++        "addr": "0x1705",
++        "valid": "1",
++        "raw": "0x09",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 187,
++      "text": "LITHIUM GPU supply pass=0 rail=MX_PM8994_S2 sid=1 reg=RANGE addr=0x1740 valid=1 raw=0x00 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "0",
++        "rail": "MX_PM8994_S2",
++        "sid": "1",
++        "reg": "RANGE",
++        "addr": "0x1740",
++        "valid": "1",
++        "raw": "0x00",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 188,
++      "text": "LITHIUM GPU supply pass=0 rail=MX_PM8994_S2 sid=1 reg=VSET addr=0x1741 valid=1 raw=0x9a error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "0",
++        "rail": "MX_PM8994_S2",
++        "sid": "1",
++        "reg": "VSET",
++        "addr": "0x1741",
++        "valid": "1",
++        "raw": "0x9a",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 189,
++      "text": "LITHIUM GPU supply pass=0 rail=MX_PM8994_S2 sid=1 reg=MODE addr=0x1745 valid=1 raw=0x40 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "0",
++        "rail": "MX_PM8994_S2",
++        "sid": "1",
++        "reg": "MODE",
++        "addr": "0x1745",
++        "valid": "1",
++        "raw": "0x40",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 190,
++      "text": "LITHIUM GPU supply pass=0 rail=MX_PM8994_S2 sid=1 reg=ENABLE addr=0x1746 valid=1 raw=0x80 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "0",
++        "rail": "MX_PM8994_S2",
++        "sid": "1",
++        "reg": "ENABLE",
++        "addr": "0x1746",
++        "valid": "1",
++        "raw": "0x80",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 191,
++      "text": "LITHIUM GPU supply pass=0 rail=MX_PM8994_S2 sid=1 reg=STEP addr=0x1761 valid=1 raw=0x82 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "0",
++        "rail": "MX_PM8994_S2",
++        "sid": "1",
++        "reg": "STEP",
++        "addr": "0x1761",
++        "valid": "1",
++        "raw": "0x82",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 195,
++      "text": "LITHIUM GPU supply pass=1 rail=MX_PM8994_S2 sid=1 reg=TYPE addr=0x1704 valid=1 raw=0x1c error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "1",
++        "rail": "MX_PM8994_S2",
++        "sid": "1",
++        "reg": "TYPE",
++        "addr": "0x1704",
++        "valid": "1",
++        "raw": "0x1c",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 196,
++      "text": "LITHIUM GPU supply pass=1 rail=MX_PM8994_S2 sid=1 reg=SUBTYPE addr=0x1705 valid=1 raw=0x09 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "1",
++        "rail": "MX_PM8994_S2",
++        "sid": "1",
++        "reg": "SUBTYPE",
++        "addr": "0x1705",
++        "valid": "1",
++        "raw": "0x09",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 197,
++      "text": "LITHIUM GPU supply pass=1 rail=MX_PM8994_S2 sid=1 reg=RANGE addr=0x1740 valid=1 raw=0x00 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "1",
++        "rail": "MX_PM8994_S2",
++        "sid": "1",
++        "reg": "RANGE",
++        "addr": "0x1740",
++        "valid": "1",
++        "raw": "0x00",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 198,
++      "text": "LITHIUM GPU supply pass=1 rail=MX_PM8994_S2 sid=1 reg=VSET addr=0x1741 valid=1 raw=0x9a error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "1",
++        "rail": "MX_PM8994_S2",
++        "sid": "1",
++        "reg": "VSET",
++        "addr": "0x1741",
++        "valid": "1",
++        "raw": "0x9a",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 199,
++      "text": "LITHIUM GPU supply pass=1 rail=MX_PM8994_S2 sid=1 reg=MODE addr=0x1745 valid=1 raw=0x40 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "1",
++        "rail": "MX_PM8994_S2",
++        "sid": "1",
++        "reg": "MODE",
++        "addr": "0x1745",
++        "valid": "1",
++        "raw": "0x40",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 200,
++      "text": "LITHIUM GPU supply pass=1 rail=MX_PM8994_S2 sid=1 reg=ENABLE addr=0x1746 valid=1 raw=0x80 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "1",
++        "rail": "MX_PM8994_S2",
++        "sid": "1",
++        "reg": "ENABLE",
++        "addr": "0x1746",
++        "valid": "1",
++        "raw": "0x80",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    },
++    {
++      "line": 201,
++      "text": "LITHIUM GPU supply pass=1 rail=MX_PM8994_S2 sid=1 reg=STEP addr=0x1761 valid=1 raw=0x82 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
++      "fields": {
++        "pass": "1",
++        "rail": "MX_PM8994_S2",
++        "sid": "1",
++        "reg": "STEP",
++        "addr": "0x1761",
++        "valid": "1",
++        "raw": "0x82",
++        "error": "0",
++        "phase": "7",
++        "status_valid": "1",
++        "status": "0x1",
++        "attempted": "1",
++        "completed": "1",
++        "polls": "2"
++      }
++    }
++  ],
++  "routes": [
++    {
++      "line": 151,
++      "text": "LITHIUM GPU supply route rail=GFX_PMI8994_S2 sid=3 base=0x1700 error=0 version=0x20010000 apid=52 mapping=0x00031700 matches=1 observer_pa=0x4da0000",
++      "fields": {
++        "rail": "GFX_PMI8994_S2",
++        "sid": "3",
++        "base": "0x1700",
++        "error": "0",
++        "version": "0x20010000",
++        "apid": "52",
++        "mapping": "0x00031700",
++        "matches": "1",
++        "observer_pa": "0x4da0000"
++      }
++    },
++    {
++      "line": 183,
++      "text": "LITHIUM GPU supply route rail=MX_PM8994_S2 sid=1 base=0x1700 error=0 version=0x20010000 apid=127 mapping=0x00011700 matches=1 observer_pa=0x4ff8000",
++      "fields": {
++        "rail": "MX_PM8994_S2",
++        "sid": "1",
++        "base": "0x1700",
++        "error": "0",
++        "version": "0x20010000",
++        "apid": "127",
++        "mapping": "0x00011700",
++        "matches": "1",
++        "observer_pa": "0x4ff8000"
++      }
++    }
++  ],
++  "rail_captures": [
++    {
++      "rail": "GFX_PMI8994_S2",
++      "sid": 3,
++      "base": 5888,
++      "fields": {
++        "TYPE": 28,
++        "SUBTYPE": 9,
++        "RANGE": 0,
++        "VSET": 184,
++        "MODE": 64,
++        "ENABLE": 0,
++        "STEP": 130
++      },
++      "valid_fields": [
++        "TYPE",
++        "SUBTYPE",
++        "RANGE",
++        "VSET",
++        "MODE",
++        "ENABLE",
++        "STEP"
++      ],
++      "stable_fields": [
++        "TYPE",
++        "SUBTYPE",
++        "RANGE",
++        "VSET",
++        "MODE",
++        "ENABLE",
++        "STEP"
++      ]
++    },
++    {
++      "rail": "MX_PM8994_S2",
++      "sid": 1,
++      "base": 5888,
++      "fields": {
++        "TYPE": 28,
++        "SUBTYPE": 9,
++        "RANGE": 0,
++        "VSET": 154,
++        "MODE": 64,
++        "ENABLE": 128,
++        "STEP": 130
++      },
++      "valid_fields": [
++        "TYPE",
++        "SUBTYPE",
++        "RANGE",
++        "VSET",
++        "MODE",
++        "ENABLE",
++        "STEP"
++      ],
++      "stable_fields": [
++        "TYPE",
++        "SUBTYPE",
++        "RANGE",
++        "VSET",
++        "MODE",
++        "ENABLE",
++        "STEP"
++      ]
++    }
++  ],
++  "digital_supply_decoded": [
++    {
++      "rail": "GFX_PMI8994_S2",
++      "decoded": true,
++      "digital_setpoint_uv": 1000000,
++      "analog_voltage_uv": null,
++      "settled_permission": false,
++      "hardware_verified": false,
++      "coherent_cross_field_snapshot_verified": false,
++      "source": "MiCode 1492c8e4373b7428bb0accc4f4881e97b36508b9 qpnp-regulator.c",
++      "error": null,
++      "sid": 3,
++      "base": 5888,
++      "layout": "FTSMPS2p5/common",
++      "register_interpretation": "0x40=range selector; 0x41=8-bit voltage code",
++      "range_selector": 0,
++      "programmable_range_and_grid_valid": true,
++      "preferred_selector_valid": true,
++      "required_bytes_two_pass_stable": true,
++      "digital_sw_enable_bit": false,
++      "mode_raw": 64,
++      "enable_raw": 0,
++      "step_raw": 130
++    },
++    {
++      "rail": "MX_PM8994_S2",
++      "decoded": true,
++      "digital_setpoint_uv": 850000,
++      "analog_voltage_uv": null,
++      "settled_permission": false,
++      "hardware_verified": false,
++      "coherent_cross_field_snapshot_verified": false,
++      "source": "MiCode 1492c8e4373b7428bb0accc4f4881e97b36508b9 qpnp-regulator.c",
++      "error": null,
++      "sid": 1,
++      "base": 5888,
++      "layout": "FTSMPS2p5/common",
++      "register_interpretation": "0x40=range selector; 0x41=8-bit voltage code",
++      "range_selector": 0,
++      "programmable_range_and_grid_valid": true,
++      "preferred_selector_valid": true,
++      "required_bytes_two_pass_stable": true,
++      "digital_sw_enable_bit": true,
++      "mode_raw": 64,
++      "enable_raw": 128,
++      "step_raw": 130
++    }
++  ],
++  "independent_stock133_arithmetic": {
++    "init0": 20,
++    "signed_steps": -4,
++    "source_fuse_uv": 630000,
++    "stock_trim_uv": -85000,
++    "unaged_open_loop_uv": 545000,
++    "unaged_floor_uv": 520000,
++    "maximum_startup_aging_uv": 15000,
++    "stock_startup_open_loop_uv": 560000,
++    "stock_startup_floor_uv": 535000,
++    "scope": "Independent corner2 arithmetic; formal pinned-policy result checked separately",
++    "gpu_write_permission": false
++  },
++  "usb": {
++    "raw_bytes": 73605,
++    "console_bytes": 65189,
++    "frames": 263,
++    "raw_sha256": "7a1d6ea942f4a427de5ed86f347df634950d14356a2fcd3f03f1702c9b7cbef9",
++    "console_sha256": "8e2cc7ddbc8fba63800ece9d5cd3ef1a5de5e940f58af64dc8171c8544469497",
++    "first_offset": 0,
++    "final_offset": 65189,
++    "missing_bytes": 0,
++    "duplicate_bytes": 0,
++    "incomplete_frame_bytes": 0,
++    "device_lost_max": 0,
++    "frames_reporting_device_loss": 0,
++    "independent_parser_agrees_with_frozen_receiver": true,
++    "frozen_redecode_equals_complete_console": true,
++    "transport_verified": true,
++    "kernel_banner_offset": 0,
++    "timer_offset": 63720,
++    "normal_return_offset": 65073,
++    "drain_success": true,
++    "drain_records": [
++      {
++        "offset": 65140,
++        "drained": 1,
++        "target": 65140
++      }
++    ],
++    "emitted_kernel_stream_through_timer_verified": true,
++    "all_firmware_daemon_and_original_printf_logs_complete": false,
++    "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
++  },
++  "receiver_terminal": {
++    "started_at": "2026-11-23T04:37:44.814092+08:00",
++    "enumerated": true,
++    "frames": 263,
++    "missing_bytes": 0,
++    "duplicate_bytes": 0,
++    "status": "capture_failed",
++    "output": "F:\\IOS-MIX1\\evidence\\gpu-g1-20261123\\package\\runs\\gpu-g1-precheck-02\\console.log",
++    "device_commands_sent": false,
++    "candidate_seen": true,
++    "identity_verified": true,
++    "descriptor_errors": 0,
++    "descriptor_error_samples": [],
++    "configuration_verified": true,
++    "console_bytes": 65189,
++    "failure_stage": "capturing",
++    "failure": "[Errno 32] Pipe error",
++    "finished_at": "2026-11-23T04:41:18.753736+08:00"
++  },
++  "return_verification": {
++    "started_at": "2026-11-23T04:42:09.269336+08:00",
++    "elapsed_seconds": 263.183197,
++    "devices_query_count": 1,
++    "product_query_count": 1,
++    "device_rows": [
++      [
++        "54223ce9",
++        "fastboot"
++      ]
++    ],
++    "same_serial_fastboot": true,
++    "observed_product": "MSM8996_A8",
++    "product_verified": true,
++    "passed": true,
++    "retry": false,
++    "attempt_id": "gpu-g1-precheck-02",
++    "phase": "g1-precheck",
++    "capture_stop_requested": true,
++    "finished_at": "2026-11-23T04:42:10.221557+08:00"
++  },
++  "source_dropped_bytes": 0,
++  "cpu_temperature_peak_native_mC": {
++    "0x0": 52200,
++    "0x1": 52800,
++    "0x100": 49300,
++    "0x101": 50200
++  },
++  "stop_temperature_rows": [
++    {
++      "line": 408,
++      "text": "LITHIUM CPU TEMP phase=stop affinity=0x0 sensor=TSENS0 id=4 raw=0x002041f3 enabled=1 valid=1 native_mC=49900 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=52378995240 calibration_verified=0 freshness_verified=0",
++      "fields": {
++        "phase": "stop",
++        "affinity": "0x0",
++        "sensor": "TSENS0",
++        "id": "4",
++        "raw": "0x002041f3",
++        "enabled": "1",
++        "valid": "1",
++        "native_mC": "49900",
++        "reason": "native_hardware_units",
++        "trdy_read": "1",
++        "trdy": "0",
++        "status_reads": "1",
++        "reads": "4",
++        "at_abs": "52378995240",
++        "calibration_verified": "0",
++        "freshness_verified": "0"
++      }
++    },
++    {
++      "line": 409,
++      "text": "LITHIUM CPU TEMP phase=stop affinity=0x1 sensor=TSENS0 id=6 raw=0x002061d3 enabled=1 valid=1 native_mC=46700 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=52378995240 calibration_verified=0 freshness_verified=0",
++      "fields": {
++        "phase": "stop",
++        "affinity": "0x1",
++        "sensor": "TSENS0",
++        "id": "6",
++        "raw": "0x002061d3",
++        "enabled": "1",
++        "valid": "1",
++        "native_mC": "46700",
++        "reason": "native_hardware_units",
++        "trdy_read": "1",
++        "trdy": "0",
++        "status_reads": "1",
++        "reads": "4",
++        "at_abs": "52378995240",
++        "calibration_verified": "0",
++        "freshness_verified": "0"
++      }
++    },
++    {
++      "line": 410,
++      "text": "LITHIUM CPU TEMP phase=stop affinity=0x100 sensor=TSENS0 id=9 raw=0x002091cd enabled=1 valid=1 native_mC=46100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=52378995240 calibration_verified=0 freshness_verified=0",
++      "fields": {
++        "phase": "stop",
++        "affinity": "0x100",
++        "sensor": "TSENS0",
++        "id": "9",
++        "raw": "0x002091cd",
++        "enabled": "1",
++        "valid": "1",
++        "native_mC": "46100",
++        "reason": "native_hardware_units",
++        "trdy_read": "1",
++        "trdy": "0",
++        "status_reads": "1",
++        "reads": "4",
++        "at_abs": "52378995240",
++        "calibration_verified": "0",
++        "freshness_verified": "0"
++      }
++    },
++    {
++      "line": 411,
++      "text": "LITHIUM CPU TEMP phase=stop affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1cd enabled=1 valid=1 native_mC=46100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=52378995240 calibration_verified=0 freshness_verified=0",
++      "fields": {
++        "phase": "stop",
++        "affinity": "0x101",
++        "sensor": "TSENS0",
++        "id": "11",
++        "raw": "0x0020b1cd",
++        "enabled": "1",
++        "valid": "1",
++        "native_mC": "46100",
++        "reason": "native_hardware_units",
++        "trdy_read": "1",
++        "trdy": "0",
++        "status_reads": "1",
++        "reads": "4",
++        "at_abs": "52378995240",
++        "calibration_verified": "0",
++        "freshness_verified": "0"
++      }
++    }
++  ],
++  "map_trace": [
++    {
++      "line": 134,
++      "action": "map",
++      "fields": {
++        "physical": "0x74000",
++        "allocation": "0xfffffff6db25c000",
++        "bytes": "16384",
++        "valid": "1"
++      }
++    },
++    {
++      "line": 135,
++      "action": "unmap",
++      "fields": {
++        "allocation": "0xfffffff6db25c000",
++        "bytes": "16384"
++      }
++    },
++    {
++      "line": 149,
++      "action": "map",
++      "fields": {
++        "physical": "0x400c000",
++        "allocation": "0xfffffff6db25c000",
++        "bytes": "16384",
++        "valid": "1"
++      }
++    },
++    {
++      "line": 152,
++      "action": "map",
++      "fields": {
++        "physical": "0x4da0000",
++        "allocation": "0xfffffff6db260000",
++        "bytes": "16384",
++        "valid": "1"
++      }
++    },
++    {
++      "line": 182,
++      "action": "unmap",
++      "fields": {
++        "allocation": "0xfffffff6db260000",
++        "bytes": "16384"
++      }
++    },
++    {
++      "line": 184,
++      "action": "map",
++      "fields": {
++        "physical": "0x4ff8000",
++        "allocation": "0xfffffff6db260000",
++        "bytes": "16384",
++        "valid": "1"
++      }
++    },
++    {
++      "line": 202,
++      "action": "unmap",
++      "fields": {
++        "allocation": "0xfffffff6db260000",
++        "bytes": "16384"
++      }
++    },
++    {
++      "line": 203,
++      "action": "unmap",
++      "fields": {
++        "allocation": "0xfffffff6db25c000",
++        "bytes": "16384"
++      }
++    }
++  ],
++  "g0_summary": [
++    {
++      "line": 132,
++      "text": "LITHIUM GPU stage=0 end status=snapshot_complete valid0=0x1ff valid1=0x1ff stable_mask=0x1ff unstable_mask=0x0 reads=18 loads=18 read_failures=0 completed_passes=2 errors=0x0 elapsed_us=18 gpu_writes=0 power_verified=0 chip_id=UNREAD",
++      "fields": {
++        "stage": "0",
++        "status": "snapshot_complete",
++        "valid0": "0x1ff",
++        "valid1": "0x1ff",
++        "stable_mask": "0x1ff",
++        "unstable_mask": "0x0",
++        "reads": "18",
++        "loads": "18",
++        "read_failures": "0",
++        "completed_passes": "2",
++        "errors": "0x0",
++        "elapsed_us": "18",
++        "gpu_writes": "0",
++        "power_verified": "0",
++        "chip_id": "UNREAD"
++      }
++    }
++  ],
++  "interleaved_printf_line_numbers": [
++    152
++  ],
++  "printf_lines_are_all_atomic": false,
++  "no_panic_text_in_collected_stream": true,
++  "physical_screen_observed": false,
++  "measured_gpu_chip_id": null,
++  "gpu_stage1_passed": false,
++  "gpu_acceleration_verified": false,
++  "regulator_writes": 0,
++  "gpu_clock_writes": 0,
++  "spmi_read_commands_observed": 28,
++  "rail_settled_or_analog_voltage_verified": false,
++  "pas13_called": false,
++  "next": "GFX enable + regulator-settled/RPM/bus/clock prerequisites before GPU domain power-on",
++  "input_sha256": {
++    "console.log": "8e2cc7ddbc8fba63800ece9d5cd3ef1a5de5e940f58af64dc8171c8544469497",
++    "console.frames": "7a1d6ea942f4a427de5ed86f347df634950d14356a2fcd3f03f1702c9b7cbef9",
++    "capture-host.py": "d5a9aecdd3c5ac728b233628d9ae810a598a35ba05d9068d0db3ed70fde3791c",
++    "result.json": "e424ae9e38c8ae95209b9121a96a11df17055e53a53f29265d291ac03a7b7f74",
++    "usb-status.json": "fd542c1fb963a372714758a6f5640525f6ceb73576a80330a78630edd22d62d5",
++    "return-verification.json": "58adefb5d60caf299d1e404657939287692e1956da095cf21566d2777cca0fd4"
++  },
++  "report": "reports/hakios-ios16-gpu-g1-precheck-02.md",
++  "stock133_fuse_model": {
++    "schema": "gpu-g1-stock133-model-v1",
++    "attempt_id": "gpu-g1-precheck-02",
++    "assessment_phase": "final",
++    "snapshot_finality": "final snapshot after main end notification",
++    "created_at": "2026-11-23T04:43:27.998219+08:00",
++    "source_pin": "1492c8e4373b7428bb0accc4f4881e97b36508b9",
++    "source_hashes_verified": {
++      "evidence/gpu-g0-20261123/power-zap/sources/micode/drivers/regulator/cpr3-mmss-regulator.c": "8864d338a4fc011b4ab3d5f2394d16e3589eccccb67b7b3a8a1877621d667fcf",
++      "evidence/gpu-g1-20261123/fuses/micode-cpr3-util.c": "46187dd2028533b6459d5506ab72c738c49039a3f3363f8b46b16d3c14cefe8a",
++      "evidence/gpu-g0-20261123/power-zap/sources/micode/drivers/regulator/cpr3-regulator.c": "a8d2efa596f6a4d47dd4c1a000373eacc16285b918e3d58cb764e9a1f0382c06",
++      "evidence/gpu-g0-20261123/power-zap/sources/stock/lithium-stock.dts": "2252e2fb6c8b28c4d5db6e390e3618e5e6a0a42d51779822f16d0ea640c45df8",
++      "artifacts/stock/V9.5.2.0.NAHCNFA/dtbs/03.dtb": "93dc50ef24a5a6e56c19346ce5c1aa43c11f1e1842970d150020cde6c3b79985"
++    },
++    "original_calculator_sha256": "1f17307d1cf3f45f3a64a518092821173e05f6f304eca0ecac01c8f6f364b43f",
++    "calculator_functions_used": [
++      "pinned_policy",
++      "decode",
++      "target_policy",
++      "compute"
++    ],
++    "capture_validation": {
++      "per_pass_ascending": true,
++      "indices_unique_disjoint": true,
++      "actual_line_order_preserved": true,
++      "full64bit_two_pass_stability": true,
++      "validmasks": [
++        63,
++        63
++      ],
++      "stablemask": 63,
++      "fuse_reads": 12
++    },
++    "capture_provenance": {
++      "kind": "captured_console",
++      "source": "evidence/gpu-g1-20261123/fuses/runtime-precheck02/console-final.snapshot.log",
++      "sha256": "8e2cc7ddbc8fba63800ece9d5cd3ef1a5de5e940f58af64dc8171c8544469497",
++      "bytes": 65189,
++      "original_console": "evidence/gpu-g1-20261123/package/runs/gpu-g1-precheck-02/console.log",
++      "snapshot_bytes_unmodified": true,
++      "console_reordered": false,
++      "actual_emit_order": "row-major/pass-interleaved"
++    },
++    "guard_provenance": {
++      "records": {
++        "boot-intent": {
++          "source": "evidence/gpu-g1-20261123/package/runs/gpu-g1-precheck-02/boot-intent.json",
++          "snapshot": "evidence/gpu-g1-20261123/fuses/runtime-precheck02/guard-boot-intent-final.json",
++          "sha256": "44c957146522d2bbfcc906f69c7b1d3ee32a939b0e79b408fb5bea3241f77f53"
++        },
++        "authorization": {
++          "source": "evidence/gpu-g1-20261123/package/runs/gpu-g1-precheck-02/authorization.json",
++          "snapshot": "evidence/gpu-g1-20261123/fuses/runtime-precheck02/guard-authorization-final.json",
++          "sha256": "135824c7056f53ca3208617c8a058faa912961ac2424566291946530d4a1ad1a"
++        },
++        "result": {
++          "source": "evidence/gpu-g1-20261123/package/runs/gpu-g1-precheck-02/result.json",
++          "snapshot": "evidence/gpu-g1-20261123/fuses/runtime-precheck02/guard-result-final.json",
++          "sha256": "e424ae9e38c8ae95209b9121a96a11df17055e53a53f29265d291ac03a7b7f74"
++        },
++        "kernel-result": {
++          "source": "evidence/gpu-g1-20261123/package/g1-precheck-02/kernel-result.json",
++          "snapshot": "evidence/gpu-g1-20261123/fuses/runtime-precheck02/guard-kernel-result-final.json",
++          "sha256": "7ded8fe0c73f2e9ac3f47be01d6f44daa46dddfe4e6155970786039226554eae"
++        },
++        "contract": {
++          "source": "evidence/gpu-g1-20261123/package/g1-precheck-02/contract.json",
++          "snapshot": "evidence/gpu-g1-20261123/fuses/runtime-precheck02/guard-contract-final.json",
++          "sha256": "f6b7428eeb21dd712ef4f8661a16b9388740413eeb4bfd0c82c77fb125256d0d"
++        }
++      },
++      "attempt_id": "gpu-g1-precheck-02",
++      "accepted_at": "2026-11-23T04:37:46.086139+08:00",
++      "accepted_image_sha256": "24f53f36277df2ccdd4cb2bc5e4226ea5edda403435820ff55a7a586d5b4bc6a",
++      "kernel_sha256_from_build_manifest": "7c63f434fcae955c07299cf135025fb6b349bab854df3e7d8acf2c974ca090e8",
++      "actual_runtime_bootargs_match": true,
++      "production_source_sha256": {
++        "gpu/g1-fuse.h": "65a8dd90ddff560f7378f9e813e6690448fccebe36dfbcdec3d19c1915368b69",
++        "gpu/g1-precheck.inc": "fa417243536b6a93cd445ce43c2c847fb0d9e16e1714f8de5a24c60b9bfdc5e1"
++      },
++      "source_guard_semantics": {
++        "owner": "logical0/affinity1 with interrupts enabled",
++        "budget_us": 250000,
++        "access_cap": 9000,
++        "capture_order": "pass0 six rows then pass1 six rows in source",
++        "print_order": "row-major pass0/pass1 pairs; source g1-precheck.inc:149-157",
++        "validity": "64-bit load, barrier, pre/post lg1_open checks",
++        "stability": "full uint64 equality and both valid masks, source149-163"
++      },
++      "authorization_json_is_preflight_intent": true,
++      "actual_preflight_acceptance_basis": "result.json + boot-intent.json",
++      "new_device_queries": 0,
++      "boot_reissued": false,
++      "lifecycle_and_USB_audit": "owned by main; not certified by this calculation"
++    },
++    "decoded": {
++      "revision": 1,
++      "speedbin": 0,
++      "limitation": 0,
++      "initcode": [
++        20,
++        22,
++        25,
++        27
++      ],
++      "offsetraw_turbo": 0,
++      "offsetraw_svs": 0,
++      "aging": 1,
++      "aging_init_quot_diff": 2
++    },
++    "stock_compatible": "qcom,cpr3-msm8996pro-mmss-regulator",
++    "stock_policy": {
++      "soc_variant": "MSM8996 Pro",
++      "soc_match_table_id": 4,
++      "combo": 1,
++      "revision": 1,
++      "speedbin": 0,
++      "stock_corner": 2,
++      "array_index": 1,
++      "frequency_hz": 133000000,
++      "fuse_corner_index": 0,
++      "interpolation_at_target": false,
++      "array_selection": {
++        "qcom,cpr-corner-fmax-map": {
++          "selector": "speed_bin",
++          "offset": 0,
++          "cells": 8,
++          "tuple_size": 4,
++          "selected": [
++            2,
++            4,
++            6,
++            9
++          ]
++        },
++        "qcom,cpr-voltage-floor": {
++          "selector": "speed_bin",
++          "offset": 0,
++          "cells": 18,
++          "tuple_size": 9,
++          "selected": [
++            400000,
++            520000,
++            520000,
++            520000,
++            520000,
++            520000,
++            520000,
++            520000,
++            520000
++          ]
++        },
++        "qcom,cpr-voltage-ceiling": {
++          "selector": "speed_bin",
++          "offset": 0,
++          "cells": 18,
++          "tuple_size": 9,
++          "selected": [
++            400000,
++            670000,
++            670000,
++            745000,
++            825000,
++            905000,
++            960000,
++            1015000,
++            1065000
++          ]
++        },
++        "qcom,corner-frequencies": {
++          "selector": "speed_bin",
++          "offset": 0,
++          "cells": 18,
++          "tuple_size": 9,
++          "selected": [
++            0,
++            133000000,
++            214000000,
++            315000000,
++            401800000,
++            510000000,
++            560000000,
++            624000000,
++            652800000
++          ]
++        },
++        "qcom,cpr-open-loop-voltage-fuse-adjustment": {
++          "selector": "speed_bin",
++          "offset": 0,
++          "cells": 8,
++          "tuple_size": 4,
++          "selected": [
++            4294882296,
++            4294952296,
++            4294952296,
++            4294927296
++          ],
++          "selected_signed_uv": [
++            -85000,
++            -15000,
++            -15000,
++            -40000
++          ]
++        },
++        "qcom,cpr-floor-to-ceiling-max-range": {
++          "selector": "speed_bin",
++          "offset": 0,
++          "cells": 18,
++          "tuple_size": 9,
++          "selected": [
++            0,
++            70000,
++            70000,
++            75000,
++            80000,
++            90000,
++            95000,
++            100000,
++            100000
++          ]
++        },
++        "qcom,cpr-aging-max-voltage-adjustment": {
++          "selector": "shared",
++          "offset": 0,
++          "cells": 1,
++          "tuple_size": 1,
++          "selected": [
++            15000
++          ]
++        },
++        "qcom,allow-aging-voltage-adjustment": {
++          "selector": "shared",
++          "offset": 0,
++          "cells": 1,
++          "tuple_size": 1,
++          "selected": [
++            1
++          ]
++        },
++        "qcom,allow-aging-open-loop-voltage-adjustment": {
++          "selector": "shared",
++          "offset": 0,
++          "cells": 1,
++          "tuple_size": 1,
++          "selected": [
++            1
++          ]
++        }
++      },
++      "reference_uv": [
++        670000,
++        745000,
++        905000,
++        1065000
++      ],
++      "fuse_adjustment_uv": [
++        -85000,
++        -15000,
++        -15000,
++        -40000
++      ],
++      "round_up_step_uv": 5000,
++      "absolute_ceiling_uv": 670000,
++      "initial_dt_floor_uv": 520000,
++      "max_floor_to_ceiling_range_uv": 70000,
++      "maximum_startup_aging_uv": 15000,
++      "formula": {
++        "signed_steps": "(code & 0x10) ? -(code & 0xf) : (code & 0xf)",
++        "decoded_fuse_uv": "670000 + signed_steps * 10000",
++        "trimmed_fuse_uv": "decoded_fuse_uv - 85000",
++        "unaged_open_loop_uv": "clamp(round_up_5000(trimmed_fuse_uv), 520000, 670000)",
++        "unaged_ceiling_uv": "unaged_open_loop_uv",
++        "unaged_floor_uv": "max(520000, round_up_5000(unaged_ceiling_uv - 70000))",
++        "aged_ceiling_uv": "min(unaged_ceiling_uv + 15000, 670000)",
++        "aged_floor_uv": "min(unaged_floor_uv + 15000, aged_ceiling_uv)",
++        "aged_open_loop_uv": "min(unaged_open_loop_uv + 15000, aged_ceiling_uv)"
++      }
++    },
++    "row63_independent_check": {
++      "raw": "0x3a5b3bb5f3badb39",
++      "actual_lines": [
++        140,
++        141
++      ],
++      "bitstrings": [
++        "10100",
++        "10110",
++        "11001",
++        "11011"
++      ],
++      "initcodes": [
++        20,
++        22,
++        25,
++        27
++      ],
++      "signed_steps": [
++        -4,
++        -6,
++        -9,
++        -11
++      ],
++      "kernel_decode_matches": true,
++      "source_fused_uv": [
++        630000,
++        685000,
++        815000,
++        955000
++      ],
++      "stock_adjusted_fused_uv": [
++        545000,
++        670000,
++        800000,
++        915000
++      ]
++    },
++    "computed": {
++      "initcode0": 20,
++      "signed_steps": -4,
++      "decoded_fuse_uv": 630000,
++      "dt_fused_trim_uv": -85000,
++      "trimmed_fuse_uv": 545000,
++      "unaged": {
++        "floor_uv": 520000,
++        "open_loop_uv": 545000,
++        "ceiling_uv": 545000
++      },
++      "maximum_aging_added_uv": 15000,
++      "stock_startup": {
++        "floor_uv": 535000,
++        "open_loop_uv": 560000,
++        "ceiling_uv": 560000
++      }
++    },
++    "independent_stock_startup": {
++      "floor_uv": 535000,
++      "open_loop_uv": 560000,
++      "ceiling_uv": 560000
++    },
++    "modelready": true,
++    "state": "computed_stock_policy_only",
++    "raw_rows": {
++      "39": "0x401103ea7ab389d6",
++      "41": "0xd4c1838e02e761f0",
++      "63": "0x3a5b3bb5f3badb39",
++      "64": "0xc1dde74d5f3995ed",
++      "66": "0xab0e61ddc60a1d04",
++      "68": "0x00700000043ac54b"
++    },
++    "missing_rows": [],
++    "unstable_rows": [],
++    "cpu_baseline_config_hz": 614400000,
++    "measured_rail_uv": null,
++    "required_rail_write_uv": null,
++    "analog_voltage_verified": false,
++    "settled_verified": false,
++    "gpu_write_permission": false,
++    "device_operations": 0,
++    "main_lifecycle_USB_end_review_pending": false,
++    "main_end_notification": {
++      "basis": "user/main final notification, not independently re-queried",
++      "console_bytes": 65189,
++      "pipe_error_at": "2026-11-23T04:41:18+08:00",
++      "normal_timer_four_stop_drain1": true,
++      "drain_target": 65140,
++      "source_dropped_bytes": 0,
++      "same_fastboot_verified_at": "2026-11-23T04:42:09+08:00",
++      "sole_devices_product_check_by_main": true
++    },
++    "protected_originals_before": {
++      "evidence/gpu-g1-20261123/fuses/calculate-stock133.py": "1f17307d1cf3f45f3a64a518092821173e05f6f304eca0ecac01c8f6f364b43f",
++      "evidence/gpu-g1-20261123/fuses/pending-raw-input.json": "f7b942351c3453af92c2e1a0d4bfb85d9c7de359a6f56266fa2419da292120ea",
++      "evidence/gpu-g1-20261123/fuses/stock133-model.json": "88b004349bfd50697e639eb0d6a472087145c0b21fd56ed357b2c8f77865ed22",
++      "ports/hakios-lithium/gpu/g1-fuse.h": "65a8dd90ddff560f7378f9e813e6690448fccebe36dfbcdec3d19c1915368b69",
++      "scripts/tests/test-gpu-g1-fuse.c": "df5bfd4a95a912c0360da400998ff7c04b6c549312b654d9733d54f89de00653",
++      "evidence/gpu-g1-20261123/fuses/calculator-qa.py": "9cf31d13781100827972c91661efacf58bfdeb34e6198ee2392bac1e17505b7e",
++      "evidence/gpu-g1-20261123/fuses/run-tests.py": "f41ed4049b19d6c50801131f46d61686f60abb3afebb2b97c3d090fab3413e85"
++    },
++    "protected_originals_after": {
++      "evidence/gpu-g1-20261123/fuses/calculate-stock133.py": "1f17307d1cf3f45f3a64a518092821173e05f6f304eca0ecac01c8f6f364b43f",
++      "evidence/gpu-g1-20261123/fuses/pending-raw-input.json": "f7b942351c3453af92c2e1a0d4bfb85d9c7de359a6f56266fa2419da292120ea",
++      "evidence/gpu-g1-20261123/fuses/stock133-model.json": "88b004349bfd50697e639eb0d6a472087145c0b21fd56ed357b2c8f77865ed22",
++      "ports/hakios-lithium/gpu/g1-fuse.h": "65a8dd90ddff560f7378f9e813e6690448fccebe36dfbcdec3d19c1915368b69",
++      "scripts/tests/test-gpu-g1-fuse.c": "df5bfd4a95a912c0360da400998ff7c04b6c549312b654d9733d54f89de00653",
++      "evidence/gpu-g1-20261123/fuses/calculator-qa.py": "9cf31d13781100827972c91661efacf58bfdeb34e6198ee2392bac1e17505b7e",
++      "evidence/gpu-g1-20261123/fuses/run-tests.py": "f41ed4049b19d6c50801131f46d61686f60abb3afebb2b97c3d090fab3413e85"
++    }
++  },
++  "independent_s2_decode_report": "evidence/gpu-g1-20261123/spmi/runtime-precheck02/runtime-decode.json",
++  "stock133_fuse_report": "evidence/gpu-g1-20261123/fuses/runtime-precheck02/model-final.json",
++  "index_sha256": "fdf775be66b9e456182cd10df6271edadef7f977b6d0b02fa275030f985d1eb2",
++  "accepted_boot_counts": {
++    "hakios": 98,
++    "ios16": 67
++  },
++  "next_power_on_device_authorized": false,
++  "baseline_preserved": true
++}
+--- /dev/null
++++ b/evidence/gpu-g1-20261123/fuses/runtime-precheck02/calculate-runtime.py
+@@ -0,0 +1,258 @@
++"""Host-only precheck02 calculation from an exact immutable console snapshot.
++
++Original calculator and production/test files remain unchanged. The adapter
++prints row-major, pass-interleaved lines. Validate actual line numbers per
++pass without reordering the console, then use existing pure policy functions.
++No device operations, firmware loads/reads, builds or test reruns.
++"""
++import argparse
++from datetime import datetime
++import hashlib
++import importlib.util
++import json
++from pathlib import Path
++import re
++import sys
++
++sys.dont_write_bytecode = True
++HERE = Path(__file__).resolve().parent
++FUSES = HERE.parent
++ROOT = HERE.parents[3]
++RUN = ROOT / "evidence/gpu-g1-20261123/package/runs/gpu-g1-precheck-02"
++PACKAGE = RUN.parents[1] / "g1-precheck-02"
++CALCULATOR = FUSES / "calculate-stock133.py"
++ROWS = (39, 41, 63, 64, 66, 68)
++PATTERN = re.compile(
++    r"^LITHIUM GPU fuse pass=([01]) row=(\d+) pa=(0x[0-9a-fA-F]+) "
++    r"bits=(\d+) valid=([01]) raw=(0x[0-9a-fA-F]{16}) stable=([01])$")
++
++
++def sha(data):
++    return hashlib.sha256(data).hexdigest()
++
++
++def filehash(path):
++    return sha(path.read_bytes())
++
++
++def protect():
++    paths = [CALCULATOR, FUSES / "pending-raw-input.json", FUSES / "stock133-model.json",
++             ROOT / "ports/hakios-lithium/gpu/g1-fuse.h",
++             ROOT / "scripts/tests/test-gpu-g1-fuse.c",
++             FUSES / "calculator-qa.py", FUSES / "run-tests.py"]
++    return {p.relative_to(ROOT).as_posix(): filehash(p) for p in paths}
++
++
++def existing_module():
++    spec = importlib.util.spec_from_file_location("stock133_existing", CALCULATOR)
++    module = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(module)
++    return module
++
++
++def guards(snapshot_lines, phase):
++    records = {}
++    metadata = {}
++    for name, source in [("boot-intent", RUN / "boot-intent.json"),
++                         ("authorization", RUN / "authorization.json"),
++                         ("result", RUN / "result.json"),
++                         ("kernel-result", PACKAGE / "kernel-result.json"),
++                         ("contract", PACKAGE / "contract.json")]:
++        data = source.read_bytes()
++        saved = HERE / f"guard-{name}-{phase}.json"
++        saved.write_bytes(data)
++        records[name] = {"source": source.relative_to(ROOT).as_posix(),
++                         "snapshot": saved.relative_to(ROOT).as_posix(), "sha256": sha(data)}
++        metadata[name] = json.loads(data)
++    intent, result = metadata["boot-intent"], metadata["result"]
++    auth, kernel, contract = metadata["authorization"], metadata["kernel-result"], metadata["contract"]
++    if not intent["accepted"] or intent["attempt_id"] != "gpu-g1-precheck-02" or \
++            intent["image_sha256"] != result["image_sha256"] or \
++            intent["image_sha256"] != auth["image_sha256"] or \
++            not result["preflight_passed"] or not result["command_accepted"] or \
++            result["automatic_retry"] or result["boot_returncode"] != 0:
++        raise ValueError("run guard metadata inconsistent")
++    if result["accepted_at"] != intent["accepted_at"]:
++        raise ValueError("acceptance timestamp differs")
++    wanted = {"ufs": "0", "cpu_perf_hz": "614400000", "gpu_stage": "0",
++              "gpu_probe": "1", "gpu_power_diag": "1", "gpu_wd": "1"}
++    for source in [auth["boot_args"], result["boot_args"], contract["boot_args"]]:
++        args = dict(re.findall(r"\b([a-zA-Z0-9_]+)=([^\s]+)", source))
++        if any(args.get(key) != value for key, value in wanted.items()):
++            raise ValueError("host RAM/CPU/G1 parameter guard differs")
++    bootargs = [line for line in snapshot_lines if "LITHIUM BOOTARGS" in line]
++    if len(bootargs) != 1:
++        raise ValueError("actual bootargs record missing or duplicated")
++    actual = dict(re.findall(r"\b([a-zA-Z0-9_]+)=([^\s]+)", bootargs[0]))
++    if any(actual.get(key) != value for key, value in wanted.items()):
++        raise ValueError("actual runtime bootargs differ from guarded policy")
++    current = {}
++    for name in ["gpu/g1-fuse.h", "gpu/g1-precheck.inc"]:
++        source = ROOT / "ports/hakios-lithium" / name
++        current[name] = filehash(source)
++        if current[name] != kernel["inputs"]["port_files"][name]:
++            raise ValueError("production source differs from built kernel manifest")
++    return {"records": records, "attempt_id": intent["attempt_id"],
++            "accepted_at": intent["accepted_at"], "accepted_image_sha256": intent["image_sha256"],
++            "kernel_sha256_from_build_manifest": kernel["sha256"],
++            "actual_runtime_bootargs_match": True, "production_source_sha256": current,
++            "source_guard_semantics": {
++                "owner": "logical0/affinity1 with interrupts enabled",
++                "budget_us": 250000, "access_cap": 9000,
++                "capture_order": "pass0 six rows then pass1 six rows in source",
++                "print_order": "row-major pass0/pass1 pairs; source g1-precheck.inc:149-157",
++                "validity": "64-bit load, barrier, pre/post lg1_open checks",
++                "stability": "full uint64 equality and both valid masks, source149-163"},
++            "authorization_json_is_preflight_intent": True,
++            "actual_preflight_acceptance_basis": "result.json + boot-intent.json",
++            "new_device_queries": 0, "boot_reissued": False,
++            "lifecycle_and_USB_audit": "owned by main; not certified by this calculation"}
++
++
++def actual_capture(snapshot, module):
++    data = snapshot.read_bytes()
++    lines = data.decode("utf-8").splitlines()
++    matches = {0: {}, 1: {}}
++    for lineno, line in enumerate(lines, 1):
++        if not line.startswith("LITHIUM GPU fuse pass="):
++            continue
++        found = PATTERN.fullmatch(line)
++        if not found:
++            raise ValueError(f"incomplete/malformed actual fuse line{lineno}")
++        passno, row, address, width, valid, raw, stable = found.groups()
++        passno, row = int(passno), int(row)
++        if row not in ROWS or row in matches[passno]:
++            raise ValueError("unexpected or duplicate actual fuse row")
++        if int(width) != 64 or valid != "1" or stable != "1" or \
++                int(address, 16) != 0x74000 + 8 * row:
++            raise ValueError("actual row address/width/valid/stable guard failed")
++        module.uint(raw, 64)
++        matches[passno][row] = {"rowid": row, "physical": address, "bits": 64,
++                               "valid": True, "raw": raw, "line": lineno,
++                               "source_line": line, "stable_reported": True}
++    all_indices, passes = set(), []
++    for passno in (0, 1):
++        if set(matches[passno]) != set(ROWS):
++            raise ValueError("complete six-row pass not yet captured")
++        entries = [matches[passno][row] for row in ROWS]
++        indices = [entry["line"] for entry in entries]
++        if indices != sorted(indices) or len(set(indices)) != 6 or all_indices & set(indices):
++            raise ValueError("per-pass actual line indices not ascending/unique/disjoint")
++        all_indices.update(indices)
++        passes.append({"pass": passno, "validmask": "0x3f", "rows": entries})
++    rawrows = {}
++    for row in ROWS:
++        a, b = (module.uint(matches[p][row]["raw"], 64) for p in (0, 1))
++        if a != b:
++            raise ValueError("full64-bit pass mismatch")
++        rawrows[row] = a
++    endlines = [(i, line) for i, line in enumerate(lines, 1)
++                if line.startswith("LITHIUM GPU supply end ")]
++    if len(endlines) != 1:
++        raise ValueError("supply capture end summary missing/duplicated")
++    fields = dict(re.findall(r"\b([a-zA-Z0-9_]+)=([^\s]+)", endlines[0][1]))
++    expected = {"fuse_valid0": "0x3f", "fuse_valid1": "0x3f", "fuse_stable": "0x3f",
++                "fuse_reads": "12", "poisoned": "0", "gpu_writes": "0",
++                "regulator_writes": "0", "settled": "UNVERIFIED", "chip_id": "UNREAD"}
++    if any(fields.get(key) != value for key, value in expected.items()):
++        raise ValueError("actual capture end guard differs")
++    capture = {"schema": "gpu-g1-fuse-capture-v1",
++               "provenance": {"kind": "captured_console", "source": snapshot.relative_to(ROOT).as_posix(),
++                              "sha256": sha(data), "bytes": len(data),
++                              "original_console": (RUN / "console.log").relative_to(ROOT).as_posix(),
++                              "snapshot_bytes_unmodified": True, "console_reordered": False,
++                              "actual_emit_order": "row-major/pass-interleaved"},
++               "passes": passes,
++               "capture_end": {"line": endlines[0][0], "source_line": endlines[0][1]}}
++    return capture, rawrows, lines
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--snapshot", type=Path, default=HERE / "console-provisional.snapshot.log")
++    parser.add_argument("--phase", choices=["provisional", "final"], default="provisional")
++    args = parser.parse_args()
++    snapshot = args.snapshot.resolve()
++    if not snapshot.is_relative_to(HERE):
++        raise ValueError("snapshot must be in the exclusive runtime directory")
++    before = protect()
++    module = existing_module()
++    capture, rawrows, lines = actual_capture(snapshot, module)
++    node, refs, hashes, compatible = module.pinned_policy()
++    decoded = module.decode(rawrows)
++    row63bits = f"{rawrows[63]:064b}"
++    bitstrings = [row63bits[63 - high:64 - low] for low, high in
++                  [(55, 59), (50, 54), (45, 49), (40, 44)]]
++    independent_codes = [int(bits, 2) for bits in bitstrings]
++    if independent_codes != decoded["initcode"]:
++        raise ValueError("independent row63 bitstring decode differs")
++    decode_lines = [line for line in lines if line.startswith("LITHIUM GPU fuse decode valid=1 ")]
++    if len(decode_lines) != 1:
++        raise ValueError("kernel decode missing/duplicated")
++    kernel_fields = dict(re.findall(r"\b([a-zA-Z0-9_]+)=([^\s]+)", decode_lines[0]))
++    expect = {"revision": decoded["revision"], "speedbin": decoded["speedbin"],
++              "limitation": decoded["limitation"], "aging_raw": decoded["aging"],
++              **{f"init{i}": value for i, value in enumerate(independent_codes)}}
++    if any(int(kernel_fields[key]) != value for key, value in expect.items()):
++        raise ValueError("independent decode differs from actual kernel output")
++    if decoded["speedbin"] >= 2 or decoded["limitation"] == 2:
++        raise ValueError("stock chip policy rejects captured fuses")
++    policy = module.target_policy(node, refs, decoded)
++    computed = module.compute(decoded["initcode"][0])
++    # Independent math using selected pinned arrays and bitstring signs.
++    signed = [-(code & 15) if code >= 16 else code for code in independent_codes]
++    source_fused = [reference + steps * 10000 for reference, steps in zip(refs, signed)]
++    adjusted = [uv + trim for uv, trim in zip(source_fused, policy["fuse_adjustment_uv"])]
++    rounded = ((adjusted[0] + policy["round_up_step_uv"] - 1) // policy["round_up_step_uv"]) * policy["round_up_step_uv"]
++    unaged_open = min(policy["absolute_ceiling_uv"], max(policy["initial_dt_floor_uv"], rounded))
++    unaged_floor = max(policy["initial_dt_floor_uv"], unaged_open - policy["max_floor_to_ceiling_range_uv"])
++    age = policy["maximum_startup_aging_uv"]
++    aged_ceiling = min(policy["absolute_ceiling_uv"], unaged_open + age)
++    independent = {"floor_uv": min(unaged_floor + age, aged_ceiling),
++                   "open_loop_uv": min(unaged_open + age, aged_ceiling), "ceiling_uv": aged_ceiling}
++    if independent != computed["stock_startup"]:
++        raise ValueError("independent stock math differs from existing compute")
++    provenance = guards(lines, args.phase)
++    after = protect()
++    if before != after:
++        raise ValueError("protected original calculator/pending/test/source files changed")
++    model = {"schema": "gpu-g1-stock133-model-v1", "attempt_id": "gpu-g1-precheck-02",
++             "assessment_phase": args.phase, "snapshot_finality": "provisional growing-console prefix" if
++             args.phase == "provisional" else "final snapshot after main end notification",
++             "created_at": datetime.now().astimezone().isoformat(),
++             "source_pin": module.PIN, "source_hashes_verified": hashes,
++             "original_calculator_sha256": before[CALCULATOR.relative_to(ROOT).as_posix()],
++             "calculator_functions_used": ["pinned_policy", "decode", "target_policy", "compute"],
++             "capture_validation": {"per_pass_ascending": True, "indices_unique_disjoint": True,
++                                    "actual_line_order_preserved": True, "full64bit_two_pass_stability": True,
++                                    "validmasks": [63, 63], "stablemask": 63, "fuse_reads": 12},
++             "capture_provenance": capture["provenance"], "guard_provenance": provenance,
++             "decoded": decoded, "stock_compatible": compatible, "stock_policy": policy,
++             "row63_independent_check": {"raw": f"0x{rawrows[63]:016x}", "actual_lines": [capture["passes"][p]["rows"][2]["line"] for p in (0, 1)],
++                                         "bitstrings": bitstrings, "initcodes": independent_codes,
++                                         "signed_steps": signed, "kernel_decode_matches": True,
++                                         "source_fused_uv": source_fused, "stock_adjusted_fused_uv": adjusted},
++             "computed": computed, "independent_stock_startup": independent,
++             "modelready": True, "state": "computed_stock_policy_only",
++             "raw_rows": {str(row): f"0x{value:016x}" for row, value in rawrows.items()},
++             "missing_rows": [], "unstable_rows": [], "cpu_baseline_config_hz": 614400000,
++             "measured_rail_uv": None, "required_rail_write_uv": None,
++             "analog_voltage_verified": False, "settled_verified": False,
++             "gpu_write_permission": False, "device_operations": 0,
++             "main_lifecycle_USB_end_review_pending": args.phase != "final",
++             "main_end_notification": None if args.phase != "final" else {
++                 "basis": "user/main final notification, not independently re-queried",
++                 "console_bytes": 65189, "pipe_error_at": "2026-11-23T04:41:18+08:00",
++                 "normal_timer_four_stop_drain1": True, "drain_target": 65140,
++                 "source_dropped_bytes": 0, "same_fastboot_verified_at": "2026-11-23T04:42:09+08:00",
++                 "sole_devices_product_check_by_main": True},
++             "protected_originals_before": before, "protected_originals_after": after}
++    for filename, value in [("captured-input.json", capture), ("model.json", model),
++                            (f"captured-input-{args.phase}.json", capture), (f"model-{args.phase}.json", model)]:
++        (HERE / filename).write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
++    print(json.dumps({"phase": args.phase, "row63": model["row63_independent_check"],
++                      "modelready": True, "computed": computed, "snapshot_sha256": capture["provenance"]["sha256"]}))
++
++
++if __name__ == "__main__":
++    main()
+--- /dev/null
++++ b/evidence/gpu-g1-20261123/spmi/runtime-precheck02/analyze_saved_console.py
+@@ -0,0 +1,237 @@
++"""Snapshot a bounded prefix of main's saved console and decode S2 bytes.
++
++All writes stay under runtime-precheck02. No device operations, test runs,
++production changes, lifecycle audit, source re-fetch or firmware access.
++"""
++from datetime import datetime, timezone
++import hashlib
++import json
++from pathlib import Path
++import re
++import runpy
++
++HERE = Path(__file__).resolve().parent
++ROOT = HERE.parents[3]
++CONSOLE = ROOT / 'evidence/gpu-g1-20261123/package/runs/gpu-g1-precheck-02/console.log'
++SPMI = HERE.parent
++FIELDS = [('TYPE', 4), ('SUBTYPE', 5), ('RANGE', 64), ('VSET', 65),
++          ('MODE', 69), ('ENABLE', 70), ('STEP', 97)]
++RAILS = [('GFX_PMI8994_S2', 3, 0x1700, 0x317, 'gfx'),
++         ('MX_PM8994_S2', 1, 0x1700, 0x117, 'mx')]
++ERRORS = ['OK', 'ARGUMENT', 'VERSION', 'NO_MAPPING', 'DUPLICATE_MAPPING',
++          'ROUTE_CHANGED', 'READ_ERROR', 'WRITE_ERROR', 'TIME_ERROR',
++          'DELAY_ERROR', 'CONFIG_UNSUPPORTED', 'TIMEOUT', 'DENIED',
++          'FAILURE', 'DROPPED', 'UNKNOWN_STATUS']
++
++
++def sha(data):
++    return hashlib.sha256(data).hexdigest()
++
++
++def save(name, data):
++    path = HERE / name
++    assert path.resolve().is_relative_to(HERE.resolve())
++    path.write_text(json.dumps(data, indent=2) + '\n', encoding='utf8')
++
++
++def values(text):
++    result = {}
++    for key, val in re.findall(r'([A-Za-z_][A-Za-z0-9_]*)=([^\s]+)', text):
++        try:
++            result[key] = int(val, 16 if val.startswith('0x') else 10)
++        except ValueError:
++            result[key] = val
++    return result
++
++
++def link(path, line=None, label=None):
++    suffix = ':' + str(line) if line is not None else ''
++    return '[%s](%s%s)' % (label or path.name, path.as_posix(), suffix)
++
++
++def main():
++    before = CONSOLE.stat()
++    # Fix the read length before opening: no unbounded read of a growing file.
++    size = min(before.st_size, 2 * 1024 * 1024)
++    with CONSOLE.open('rb') as f:
++        data = f.read(size)
++    after = CONSOLE.stat()
++    snapshot = HERE / 'console.snapshot.log'
++    snapshot.write_bytes(data)
++    newline = data.rfind(b'\n')
++    complete = data[:newline + 1] if newline >= 0 else b''
++    text = complete.decode('utf8', errors='replace')
++    records = []
++    for number, line in enumerate(text.splitlines(), 1):
++        marker = 'LITHIUM GPU supply '
++        start = line.find(marker)
++        if start < 0:
++            continue
++        segment = line[start:]
++        second = segment.find('LITHIUM ', len(marker))
++        if second >= 0:
++            segment = segment[:second]
++        kind = segment[len(marker):].split()[0].split('=', 1)[0]
++        records.append(dict(kind=kind, line=number, values=values(segment),
++                            text=segment, interleaved_prefix=start != 0))
++    decoder_path = SPMI / 'decode_digital_setpoint.py'
++    decode = runpy.run_path(str(decoder_path))['decode']
++    begin = [r for r in records if r['kind'] == 'begin']
++    end = [r for r in records if r['kind'] == 'end']
++    parsed_rails, issues, valid_records = [], [], []
++    expected_addresses = dict(FIELDS)
++    for name, sid, base, ppid, summary_key in RAILS:
++        routes = [r for r in records if r['kind'] == 'route' and r['values'].get('rail') == name]
++        route = routes[0] if len(routes) == 1 else None
++        route_valid = bool(route and route['values'].get('error') == 0 and
++            route['values'].get('sid') == sid and route['values'].get('base') == base and
++            route['values'].get('version') == 0x20010000 and
++            route['values'].get('matches') == 1 and
++            type(route['values'].get('apid')) is int and 0 <= route['values']['apid'] < 128 and
++            (route['values'].get('mapping', 0) >> 8 & 0xfff) == ppid and
++            route['values'].get('observer_pa') == 0x04c00000 + 0x8000 * route['values']['apid'])
++        if not route_valid:
++            issues.append(dict(rail=name, problem='missing, duplicate, rejected or inconsistent route', route_records=routes))
++        passes = []
++        for pass_id in (0, 1):
++            rows = [r for r in records if r['kind'] == 'pass' and
++                    r['values'].get('rail') == name and r['values'].get('pass') == pass_id]
++            field_records, field_bytes, valid_fields, duplicate_fields = [], {}, [], []
++            for field, offset in FIELDS:
++                matches = [r for r in rows if r['values'].get('reg') == field]
++                if len(matches) != 1:
++                    if len(matches) > 1:
++                        duplicate_fields.append(field)
++                    issues.append(dict(rail=name, pass_id=pass_id, field=field,
++                                       problem='missing or duplicate field record', count=len(matches)))
++                    continue
++                record = matches[0]
++                v = record['values']
++                raw = v.get('raw')
++                good = bool(route_valid and v.get('sid') == sid and v.get('addr') == base + offset and
++                    v.get('valid') == 1 and v.get('error') == 0 and v.get('phase') == 7 and
++                    v.get('status_valid') == 1 and v.get('status') == 1 and
++                    v.get('attempted') == 1 and v.get('completed') == 1 and
++                    type(v.get('polls')) is int and 1 <= v['polls'] <= 100 and
++                    type(raw) is int and 0 <= raw <= 255)
++                field_records.append(dict(record, data_valid_reported=v.get('valid'),
++                    data_valid_source='g1-precheck.inc:191-202 logs lgs_result.data_valid as valid',
++                    accepted_for_decode=good, error_name=ERRORS[v['error']] if
++                        type(v.get('error')) is int and 0 <= v['error'] < len(ERRORS) else 'unrecognized'))
++                if good:
++                    field_bytes[field] = raw
++                    valid_fields.append(field)
++                    valid_records.append(record)
++                else:
++                    issues.append(dict(rail=name, pass_id=pass_id, field=field,
++                                       problem='field metadata/status/data rejected', record=record))
++            extras = [r for r in rows if r['values'].get('reg') not in expected_addresses]
++            if extras:
++                issues.append(dict(rail=name, pass_id=pass_id, problem='unexpected field', records=extras))
++            valid_mask = sum(1 << i for i, (field, _) in enumerate(FIELDS) if field in valid_fields)
++            passes.append(dict(pass_id=pass_id, rows=len(rows), fields=field_bytes,
++                valid_fields=valid_fields, valid_mask=hex(valid_mask),
++                duplicate_fields=duplicate_fields, field_records=field_records))
++        stable = [field for field, _ in FIELDS if all(field in p['valid_fields'] for p in passes)
++                  and passes[0]['fields'][field] == passes[1]['fields'][field]]
++        stable_mask = sum(1 << i for i, (field, _) in enumerate(FIELDS) if field in stable)
++        for p in passes:
++            p['decoded'] = decode(dict(sid=sid, base=base, fields=p['fields'],
++                valid_fields=p['valid_fields'], stable_fields=stable))
++        summary_consistent = False
++        if len(end) == 1:
++            summary = end[0]['values']
++            summary_consistent = (all(summary.get(summary_key + '_valid' + str(i)) ==
++                int(passes[i]['valid_mask'], 16) for i in (0, 1)) and
++                summary.get(summary_key + '_stable') == stable_mask and
++                summary.get(summary_key + '_error') == 0)
++        parsed_rails.append(dict(name=name, sid=sid, base=hex(base), ppid=hex(ppid),
++            route_records=routes, route_metadata_valid=route_valid, passes=passes,
++            stable_fields=stable, stable_mask=hex(stable_mask),
++            independently_matches_adapter_summary=summary_consistent,
++            atomic_cross_field_coherence_verified=False, settled_permission=False))
++    rows = [r for r in records if r['kind'] == 'pass']
++    counts = dict(field_records=len(rows), accepted_field_records=len(valid_records),
++        attempted=sum(r['values'].get('attempted', 0) for r in rows),
++        completed=sum(r['values'].get('completed', 0) for r in rows),
++        status_valid=sum(r['values'].get('status_valid', 0) for r in rows),
++        done_status_exactly_1=sum(r['values'].get('status') == 1 for r in rows),
++        polls_total=sum(r['values'].get('polls', 0) for r in rows),
++        polls_min=min((r['values'].get('polls', 0) for r in rows), default=None),
++        polls_max=max((r['values'].get('polls', 0) for r in rows), default=None),
++        field_errors=sum(r['values'].get('error') != 0 for r in rows),
++        pmic_status_register_reads=0,
++        note='status is observer command completion; PMIC STATUS offset is outside the seven-field allowlist')
++    payload = dict(schema=1, state='decoded-saved-prefix-awaiting-main-notification',
++        snapshot=dict(source=str(CONSOLE), output=str(snapshot), sha256=sha(data),
++            bytes=len(data), bytes_before=before.st_size, bytes_after=after.st_size,
++            source_mtime_before_ns=before.st_mtime_ns, source_mtime_after_ns=after.st_mtime_ns,
++            bounded_read_cap_bytes=2*1024*1024, parsed_complete_bytes=len(complete),
++            unparsed_partial_tail_bytes=len(data)-len(complete),
++            captured_at=datetime.now(timezone.utc).isoformat(), source_modified=False),
++        decoder=dict(path=str(decoder_path), sha256=sha(decoder_path.read_bytes()),
++            pin='1492c8e4373b7428bb0accc4f4881e97b36508b9',
++            qpnp_source_sha256=sha((SPMI/'sources/micode/drivers/regulator/qpnp-regulator.c').read_bytes()),
++            anchors=['qpnp-regulator.c:427-429', 'qpnp-regulator.c:932-954',
++                     'qpnp-regulator.c:1666-1667', 'qpnp-regulator.c:174-175'],
++            tests_rerun=False),
++        begin=begin, end=end, rails=parsed_rails, counts=counts, issues=issues,
++        operation_count_consistency=dict(observer_cmd_writes_reported=end[0]['values'].get('observer_cmd_writes') if len(end)==1 else None,
++            parsed_attempts_match_reported=(len(end)==1 and counts['attempted']==end[0]['values'].get('observer_cmd_writes')),
++            expected_read32_count_if_all_slots_have_two_polls=2*129+28*135,
++            read32_count_reported=end[0]['values'].get('reads') if len(end)==1 else None,
++            source='lgs scan129 + route recheck2 + config1 + status2 + RDATA1 = 135/slot; two probes129 each',
++            independent_USB_integrity_audit=False),
++        hardware_operations=[], firmware_writes=0, regulator_writes_by_this_task=0,
++        lifecycle_status='main-owned; not inferred from this snapshot',
++        analog_voltage_measured=False, settled_permission=False,
++        raw_snapshot_continuity_verified=False, main_final_notification_received=False)
++    save('runtime-decode.json', payload)
++    save('field-records.json', rows)
++    save('snapshot-manifest.json', payload['snapshot'])
++    report = ['# G1 precheck02 S2 runtime decode (saved-prefix analysis)', '',
++        '**Both rails have all seven fields in both passes; all 28 slots accepted for decode.**' if
++            counts['accepted_field_records']==28 and not issues else '**Incomplete/rejected evidence; see JSON issues.**', '',
++        'State: awaiting main notification. USB integrity, lifecycle and return audit remain main-owned.', '',
++        'Snapshot: ' + link(snapshot) + ', SHA-256 `' + sha(data) + '`, ' + str(len(data)) + ' bytes.', '',
++        '| Rail | SID / PPID | APID / observer PA | TYPE/SUBTYPE | RANGE/VSET | Digital setpoint | SW-enable bit 7 |',
++        '|---|---|---|---|---|---:|---:|']
++    route_notes = []
++    for r in parsed_rails:
++        p = r['passes'][0]
++        fields = p['fields']; d = p['decoded']; route = r['route_records'][0] if len(r['route_records'])==1 else None
++        rv = route['values'] if route else {}
++        report.append('| %s | %s / `%s` | %s / `0x%x` | `%02x/%02x` | `%02x/%02x` | %s uV | %s |' %
++            (r['name'], r['sid'], r['ppid'], rv.get('apid','unknown'), rv.get('observer_pa',0),
++             fields.get('TYPE',0), fields.get('SUBTYPE',0), fields.get('RANGE',0), fields.get('VSET',0),
++             d.get('digital_setpoint_uv','UNVERIFIED'), int(d['digital_sw_enable_bit']) if 'digital_sw_enable_bit' in d else 'UNVERIFIED'))
++        if route:
++            route_notes.append(r['name'] + ' route: ' + link(snapshot, route['line'], 'line '+str(route['line'])) +
++                '; field evidence: ' + ', '.join(link(snapshot, p['field_records'][0]['line'], 'pass '+str(p['pass_id']))
++                for p in r['passes'] if p['field_records']) + '.')
++    report.extend([''] + route_notes)
++    report.extend(['',
++        'The actual captured pair is `TYPE=0x1c/SUBTYPE=0x09` on both rails, selecting the existing decoder\'s **FTSMPS2p5/common** layout. Range 0 uses `80000 + VSET*5000`: GFX `0xb8=184` yields **1,000,000 uV**; MX `0x9a=154` yields **850,000 uV**. Both passes yield the same values.', '',
++        'Both raw MODE bytes are `0x40`; both STEP bytes are `0x82`. GFX ENABLE=`0x00`, MX ENABLE=`0x80`. These are digital metadata. A cleared SW-enable bit alone does not establish that the physical rail is off; MODE/STEP are retained raw. No analog voltage, settled rail, RPM vote effect, or cross-field atomic coherence is established.', '',
++        'Counts: attempted/completed/status_valid/DONE=`28/28/28/28`; total status polls='+str(counts['polls_total'])+
++        ', per-slot '+str(counts['polls_min'])+'–'+str(counts['polls_max'])+'. Every accepted slot has error 0, phase 7 and status `0x1`. `valid` is the adapter\'s printed `lgs_result.data_valid`; unprinted result members remain unverified. No denied/failure/dropped/config/route error appears in these captured slots. There is no separate PMIC NACK field to interpret or guess.', '',
++        'Independent masks: both rails `valid0=valid1=stable=0x7f`, matching the adapter summary. Reported observer CMD writes=28 and MMIO read32 count=4038 are consistent with 28 slots ×135 reads plus two probes ×129; this count comparison is not a USB continuity audit.', '',
++        'End summary: '+(link(snapshot,end[0]['line'],'line '+str(end[0]['line'])) if len(end)==1 else 'missing/duplicate')+'. '+
++        'Captured summary reports GPU/regulator writes 0 and `settled=UNVERIFIED`; those are device log fields, separate from this host-only task.', '',
++        'Decoder: '+link(decoder_path)+', SHA-256 `'+payload['decoder']['sha256']+'`. Source pin **MiCode 1492c8e4373b7428bb0accc4f4881e97b36508b9**: '+
++        link(SPMI/'sources/micode/drivers/regulator/qpnp-regulator.c',427,'range table 427–429')+'; '+
++        link(SPMI/'sources/micode/drivers/regulator/qpnp-regulator.c',932,'arithmetic 932–954')+'; '+
++        link(SPMI/'sources/micode/drivers/regulator/qpnp-regulator.c',1666,'type match 1666–1667')+'; '+
++        link(SPMI/'sources/micode/drivers/regulator/qpnp-regulator.c',174,'SW enable bit 174–175')+'.', '',
++        'Structured evidence: '+link(HERE/'runtime-decode.json')+' and '+link(HERE/'field-records.json')+'. '+
++        'Original core/receipt/tests/decoder unchanged; no device operations, firmware/regulator writes or test reruns. This report will be finalized only after main notifies.'
++    ])
++    (HERE/'README.md').write_text('\n'.join(report)+'\n',encoding='utf8')
++    print(json.dumps(dict(snapshot_sha256=sha(data), snapshot_bytes=len(data), counts=counts,
++        issues=len(issues), rails=[dict(name=r['name'], route_valid=r['route_metadata_valid'],
++            stable_mask=r['stable_mask'], digital_setpoint_uv=r['passes'][0]['decoded'].get('digital_setpoint_uv'),
++            summary_matches=r['independently_matches_adapter_summary']) for r in parsed_rails]), indent=2))
++
++
++if __name__ == '__main__':
++    main()

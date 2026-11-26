@@ -1,0 +1,259 @@
+{
+  "schema": 1,
+  "attempt": "HakiOS lithium R10",
+  "started_at": "2026-11-15T00:52:18.914982+08:00",
+  "recorded_at": "2026-11-15T01:30:44.294782+08:00",
+  "baseline": {
+    "project": "HakiOS",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2"
+  },
+  "package": {
+    "image_sha256": "0c47097279c73ff89a024da8ce499da1f846fcb8529bffeb2852deab878604de",
+    "image_bytes": 15683584,
+    "kernel_sha256": "f66cdf17db064cba0dc5cf37209f691db8b1b1cef975715f7b45f6a37b5d6105",
+    "loader_sha256": "158ba23395a71b7eef0a155e32a9685ace6704168af66de5f6c95321942ea81a",
+    "fd_sha256": "65a56d10390e01e6af18734e017f2892e1c8a72849aea079898221c94dc05b80",
+    "hello_sha256": "fc3dcce5e628fe4b4b0f4ff0d17c934ac39beed543b168a379ca4999b5488c96",
+    "payload_sha256": "53432436239b3b301b490085deef704011dce028c8294b9e7ddabbf2697ea654",
+    "cmdline": "cores=1 serial=3 -v hello_wait=600 loader_return_after=660",
+    "stock_dtb_table_sha256": "ab929abf55ad4822ae83489a58d6b550b7b24ea8398ce8ead1de7b1d2caed6aa"
+  },
+  "frozen_artifacts_path": "artifacts/hakios/device-tests/20261115-005218",
+  "identity_verified": true,
+  "bootloader_unlocked": true,
+  "userdata_bytes": 250710192128,
+  "temporary_boot_issued": true,
+  "fastboot_returncode": 0,
+  "command_accepted": true,
+  "fastboot_boot_output": "Sending 'boot.img' (15316 KB)                      OKAY [  0.371s]\nBooting                                            OKAY [  0.740s]\nFinished. Total time: 1.117s\n",
+  "user_screen_observation": {
+    "source": "user_final_summary_photo",
+    "observation_pending": false,
+    "ordered_observations": [
+      "retained_final_summary_after_orderly_timed_return"
+    ],
+    "current_screen": "HAKIOS UEFI LOG with final hardware/user-wait summary",
+    "return_to_fastboot_confirmed_by_user": false
+  },
+  "latest_usb": {
+    "checked_at": "2026-11-15T00:52:38.595207+08:00",
+    "authorized_device_in_fastboot": false,
+    "adb_present": false,
+    "local_log_path": "reports/local/20261115-005218-887900-hakios-preflight/post-boot-usb.json"
+  },
+  "verified_stages": {
+    "fastboot_command": true,
+    "uefi": true,
+    "mmu_hobs": false,
+    "bds": false,
+    "gop": false,
+    "efi_file_hash": false,
+    "loader": true,
+    "kernel": true,
+    "hello": true,
+    "kernel_prepared": true,
+    "real_timer_ppi27_progress": true,
+    "select_timed_wake_progress": true,
+    "context_switch_progress": true,
+    "kernel_return_to_loader": true,
+    "orderly_timed_return": true,
+    "retained_final_measurements": true
+  },
+  "outcome": "660003_ms_hardware_interval_39515_timer_irqs_600_successful_select_waits_orderly_return_retained",
+  "exact_failure_stage": "none_observed_in_supplied_R10_final_photo",
+  "loader_pe": {
+    "preferred_base": "0x40400000",
+    "size_of_image": 9879552,
+    "mapped_window": [
+      "0x40400000",
+      "0x41000000"
+    ],
+    "fits_mapped_window": true,
+    "relocations_present": true
+  },
+  "uefi_heap": {
+    "base": "0x124000000",
+    "end_exclusive": "0x128000000",
+    "size_bytes": 67108864,
+    "measured_ddr_checked": true,
+    "reservation_ranges_checked": 10,
+    "other_board_regions_disjoint": true,
+    "memory_evidence_path": "reports/live-memory.json",
+    "memory_evidence_sha256": "38cc2d64f1b8b2f760492a78cbdd9f8916b9dd6f7041a641f7c11f4aafd9414d",
+    "memory_map_sha256": "6d63cc3bdae336dc8429d10e74bede596bdd281c92c0fa70a8484dc5fc977145",
+    "runtime_availability_verified": false
+  },
+  "hardware_verified": true,
+  "ios14_compatibility_verified": false,
+  "partition_writes_performed": false,
+  "qemu_used": false,
+  "stack_contract": {
+    "base": "0x41590000",
+    "end_exclusive": "0x415d0000",
+    "size_bytes": 262144,
+    "memory_map_pcd_loader_bounds_match": true,
+    "cache_line_aligned": true,
+    "hardware_handoff_verified": true
+  },
+  "test_contract": {
+    "scope": "Complete HakiOS MIX platform test only; not iOS14",
+    "automatic_measurements": [
+      "CNTVCT start/end and CNTFRQ",
+      "Actual acknowledged PPI27 start/end/delta",
+      "Minute sample count, stalled intervals and minimum IRQ increment",
+      "Final successful select count, errors, elapsed_ms and getrusage switches"
+    ],
+    "clock_origin": "Hardware interval starts at EARLY_BOOT; hello has its own elapsed_ms origin",
+    "clock_independence": "Direct hardware-counter measurement path; shares the SoC timebase with XNU, not independent external timing",
+    "manual_stopwatch_required": false,
+    "intermediate_photos_required": false,
+    "final_summary_remains_until_reboot": true,
+    "final_summary_when_convenient": true,
+    "compiled_markers_verified": true,
+    "runtime_collection_verified": true,
+    "contract_path": "reports/local/20261115-005218-887900-hakios-preflight/unattended-contract.json",
+    "acceptance": "Actual ten-minute timer/thread progression, successful select waits and three qualifying boots; not inferred from code or command acceptance",
+    "runtime_verification_scope": "R10_single_qualifying_ten_minute_platform_boot_not_full_three_boot_P1_or_iOS14"
+  },
+  "battery_preflight": {
+    "battery_soc_ok": "yes",
+    "voltage_raw": 3373000,
+    "battery_percentage_unknown": true,
+    "local_log_path": "reports/local/20261115-005218-887900-hakios-preflight/battery-query.json"
+  },
+  "runtime_acceptance": {
+    "P1_passed": false,
+    "single_boot_passed": true,
+    "final_measurements_pending": false,
+    "hardware_clock_interval_verified": true,
+    "recomputed_hardware_elapsed_ms": 660003,
+    "independent_wallclock_comparison_verified": false,
+    "final_irq_count_verified": true,
+    "timer_irq_counter_increasing": true,
+    "timer_samples": 11,
+    "stalled_samples": 0,
+    "min_irq_step": 2993,
+    "final_timer_count": 39515,
+    "last_direct_timer_sample_elapsed_ms": 650128,
+    "select_600_wakes_completed": true,
+    "select_errors": 0,
+    "select_elapsed_ms": 602282,
+    "nvcsw": 600,
+    "nivcsw": 6,
+    "orderly_return_observed": true,
+    "unexpected_panic_observed": false,
+    "pid1_kept_alive_observed": true,
+    "retained_screen_hardware_verified": true,
+    "continuous_ten_minutes_verified": true,
+    "timing_basis": "photographed_direct_SoC_counter_and_irq_samples_plus_hello_XNU_clock",
+    "qualifying_image_sha256": "0c47097279c73ff89a024da8ce499da1f846fcb8529bffeb2852deab878604de",
+    "consecutive_successful_ten_minute_boots": 1,
+    "qualifying_attempts": [
+      "R10"
+    ],
+    "remaining_evidence": [
+      "Two further consecutive qualifying boots on identical image"
+    ],
+    "ios14_boot_verified": false,
+    "graphics_and_touch_verified": false
+  },
+  "screen_evidence": {
+    "photos": [
+      {
+        "source": "user_photo",
+        "source_filename": "8fa5b3b02d855b5608144a67388d7691.jpg",
+        "path": "reports/local/20261115-005218-887900-hakios-preflight/r10-final-summary.jpg",
+        "frozen_path": "artifacts/hakios/device-tests/20261115-005218/r10-final-summary.jpg",
+        "sha256": "f3184520668223bebf5465e9368261e685f07d56adb0fae331f68d4e6b25f6b8",
+        "observed_scope": "complete_final_clock_irq_select_and_orderly_return_summary"
+      }
+    ],
+    "visible_lines": [
+      "HAKIOS UEFI LOG",
+      "LITHIUM RETURN LOG 18717 BYTES",
+      "KERNEL TIMED RETURN OBSERVED",
+      "FINAL HARDWARE MEASUREMENTS",
+      "LITHIUM CLOCK TICKS START 7517884088 TICKS END 2018995265",
+      "2 FREQ HZ 19200000 ELAPSED MS 660003 VALID 1",
+      "LITHIUM FINAL PPI27 START 0 PPI27 END 39515 IRQ DELTA 395",
+      "15 SAMPLES 11 STALLED 0 MIN STEP 2993",
+      "LITHIUM TIMER PPI27 38925 HEARTBEAT 66 ELAPSED MS 650128",
+      "SAMPLES 11 STALLED 0",
+      "FINAL USER WAIT",
+      "LITHIUM SELECT WAKES 600 ERRORS 0 ELAPSED MS 602282 NVCSW",
+      "600 NIVCSW 6",
+      "LITHIUM HELLO WAIT COMPLETE KEEPING PID1 ALIVE FOR LOADE",
+      "R TIMED RETURN",
+      "MEASUREMENTS SAVED UNTIL REBOOT",
+      "READ THIS SCREEN LATER NO STOPWATCH NEEDED",
+      "RAW LOG RETAINED IN RAM SCREEN SHOWS TEXT SUMMARY",
+      "LITHIUM TEST ENDED USE POWER VOLUME DOWN FOR FASTBOOT"
+    ],
+    "normalized_measurements": {
+      "clock": {
+        "ticks_start": 7517884088,
+        "ticks_end": 20189952652,
+        "freq_hz": 19200000,
+        "elapsed_ms": 660003,
+        "valid": 1
+      },
+      "final_irq": {
+        "ppi27_start": 0,
+        "ppi27_end": 39515,
+        "irq_delta": 39515,
+        "samples": 11,
+        "stalled": 0,
+        "min_step": 2993
+      },
+      "last_timer": {
+        "ppi27": 38925,
+        "heartbeat": 66,
+        "elapsed_ms": 650128,
+        "samples": 11,
+        "stalled": 0
+      },
+      "select": {
+        "wakes": 600,
+        "errors": 0,
+        "elapsed_ms": 602282,
+        "nvcsw": 600,
+        "nivcsw": 6
+      },
+      "returned_log_bytes": 18717,
+      "return_cause": "kernel_timed_return",
+      "pid1_kept_alive": true
+    },
+    "transcription_path": "reports/local/20261115-005218-887900-hakios-preflight/r10-screen-transcription.txt",
+    "console_characters_normalized": true,
+    "wrapped_fields_joined": true,
+    "wrapped_fields": [
+      "ticks_end",
+      "irq_delta",
+      "nvcsw",
+      "LOADER TIMED RETURN"
+    ],
+    "photo_capture_timestamps_verified": false,
+    "raw_ram_log_read_back_to_host": false,
+    "final_timer_line_visible": true,
+    "panic_cause_line_visible": false
+  },
+  "embedded_inputs_verified": {
+    "boot_contains_frozen_shim": true,
+    "shim_contains_frozen_payload": true,
+    "payload_kernel_sha256": "f66cdf17db064cba0dc5cf37209f691db8b1b1cef975715f7b45f6a37b5d6105",
+    "payload_hello_sha256": "fc3dcce5e628fe4b4b0f4ff0d17c934ac39beed543b168a379ca4999b5488c96",
+    "payload_cmdline_verified": true
+  },
+  "stage_evidence_basis": {
+    "kernel": "R10 final hardware counter/IRQ logs emitted by the launched kernel",
+    "hello": "R10 final 600 select waits/getrusage/PID1 wait-complete logs",
+    "loader": "R10 direct readable retained return-summary screen",
+    "uefi": "R10 UEFI return screen and inferred successful launch preconditions",
+    "mmu_hobs": "not directly photographed in R10",
+    "bds": "not directly photographed in R10",
+    "gop": "not directly photographed in R10",
+    "efi_file_hash": "not directly photographed in R10"
+  },
+  "hardware_verification_scope": "R10_single_qualifying_ten_minute_platform_boot_not_full_three_boot_P1_or_iOS14"
+}

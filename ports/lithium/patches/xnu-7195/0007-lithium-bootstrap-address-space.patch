@@ -1,0 +1,13 @@
+Subject: arm64: match 7195 L1 bootstrap tables to the TCR address size
+
+--- a/pexpert/pexpert/arm64/LITHIUM.h
++++ b/pexpert/pexpert/arm64/LITHIUM.h
+@@ -16,6 +16,8 @@
+ #define ARM_ARCH_TIMER
+ #define __ARM_ARCH__              8
+ #define __ARM_VMSA__              8
++/* XNU7195 bootstrap constructs L1 roots, requiring 39-bit VA at 16K. */
++#define __ARM64_PMAP_SUBPAGE_L1__  1
+ #define __ARM_VFP__               4
+ #define __ARM_COHERENT_CACHE__    1
+ #define __ARM_DEBUG__             7

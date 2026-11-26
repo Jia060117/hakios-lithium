@@ -1,0 +1,817 @@
+diff --git a/bsd/hfs/hfs_journal.c b/bsd/hfs/hfs_journal.c
+--- a/bsd/hfs/hfs_journal.c
++++ b/bsd/hfs/hfs_journal.c
+@@ -108,6 +108,9 @@
+ #endif   /* KERNEL */
+ 
+ #include "hfs_journal.h"
++#include "hfs_return.h"
++#define HFS_JRETURN_NOTE(jnl, error) \
++    ((void)lithium_hfs_return_note((jnl)->fsmount, (error)))
+ 
+ #include <sys/kdebug.h>
+ 
+@@ -441,6 +444,8 @@
+ 	if (need_vm_privilege == TRUE && was_vm_privileged == FALSE)
+ 		set_vm_privilege(FALSE);
+ 
++	if (direction & JNL_WRITE)
++		HFS_JRETURN_NOTE(jnl, err ? err : (buf_resid(bp) ? EIO : 0));
+ 	buf_free(bp);
+ 
+ 	if (err) {
+@@ -513,6 +518,7 @@
+ 		ret = VNOP_IOCTL(jnl->jdev, DKIOCSYNCHRONIZE, (caddr_t)&sync_request, FWRITE, vfs_context_kernel());
+ 	}
+ 	if (ret != 0) {
++		HFS_JRETURN_NOTE(jnl, ret);
+ 		//
+ 		// Only print this error if it's a different error than the
+ 		// previous one, or if it's the first time for this device
+@@ -566,7 +572,7 @@
+ 			jnl->flush_counter++;
+ 		}
+ 
+-		VNOP_IOCTL(jnl->jdev, DKIOCSYNCHRONIZE, (caddr_t)&sync_request, FWRITE, vfs_context_kernel());
++		HFS_JRETURN_NOTE(jnl, VNOP_IOCTL(jnl->jdev, DKIOCSYNCHRONIZE, (caddr_t)&sync_request, FWRITE, vfs_context_kernel()));
+ 	}
+ 
+ 	return 0;
+@@ -657,6 +663,9 @@
+ 
+ 	CHECK_JOURNAL(jnl);
+ 
++	/* Record the completion error before the filter advances journal accounting. */
++	HFS_JRETURN_NOTE(jnl, buf_error(bp) ? buf_error(bp) :
++	    (buf_resid(bp) ? EIO : 0));
+ 	amt_flushed = tr->num_killed;
+ 	total_bytes = tr->total_bytes;
+     
+@@ -2268,9 +2277,10 @@
+ }
+ 
+ 
+-void
+-journal_close(journal *jnl)
+-{
++static void
++journal_close_impl(journal *jnl, int *return_error)
++{
++	(void)return_error;
+ 	volatile off_t *start, *end;
+ 	int             counter=0;
+ 
+@@ -2296,7 +2306,7 @@
+ 			/*
+ 			 * "journal_end_transaction" will fire the flush asynchronously
+ 			 */
+-			journal_end_transaction(jnl);
++			HFS_JRETURN_NOTE(jnl, journal_end_transaction(jnl));
+ 		}
+ 		
+ 		// flush any buffered transactions
+@@ -2308,7 +2318,7 @@
+ 			 * "end_transaction" will wait for any in-progress flush to complete
+ 			 * before flushing "cur_tr" synchronously("must_wait" == TRUE)
+ 			 */
+-			end_transaction(tr, 1, NULL, NULL, FALSE, TRUE);
++			HFS_JRETURN_NOTE(jnl, end_transaction(tr, 1, NULL, NULL, FALSE, TRUE));
+ 		}
+ 		/*
+ 		 * if there was an "active_tr", make sure we wait for
+@@ -2329,6 +2339,7 @@
+ 		}
+ 
+ 		if (*start != *end) {
++			HFS_JRETURN_NOTE(jnl, EIO);
+ 			printf("jnl: %s: close: buffer flushing didn't seem to flush out all the transactions! (0x%llx - 0x%llx)\n",
+ 			       jnl->jdev_name, *start, *end);
+ 		}
+@@ -2337,7 +2348,7 @@
+ 		jnl->jhdr->start = jnl->active_start;
+ 
+ 		// if this fails there's not much we can do at this point...
+-		write_journal_header(jnl, 1, jnl->sequence_num);
++		HFS_JRETURN_NOTE(jnl, write_journal_header(jnl, 1, jnl->sequence_num));
+ 	} else {
+ 		// if we're here the journal isn't valid any more.
+ 		// so make sure we don't leave any locked blocks lying around
+@@ -2360,6 +2371,17 @@
+ 		}
+ 	}
+ 	wait_condition(jnl, &jnl->asyncIO, "journal_close");
++#if defined(KERNEL) && defined(LITHIUM_ARMV8_0)
++	if (return_error) {
++		/* Existing close has drained flushing/asyncIO; caller excludes writers. */
++		if ((jnl->flags & (JOURNAL_INVALID | JOURNAL_DEV_REVOKED)) ||
++		    jnl->flush_aborted || jnl->write_header_failed || jnl->flushing ||
++		    jnl->asyncIO || jnl->writing_header || jnl->active_tr || jnl->nested_count ||
++		    jnl->active_start != jnl->jhdr->end || jnl->jhdr->start != jnl->jhdr->end)
++			HFS_JRETURN_NOTE(jnl, EIO);
++		*return_error = lithium_hfs_return_error(jnl->fsmount);
++	}
++#endif
+ 
+ 	free_old_stuff(jnl);
+ 
+@@ -2374,6 +2396,22 @@
+ 	lck_mtx_destroy(&jnl->flock, jnl_mutex_group);
+ 	hfs_free_type(jnl, journal);
+ }
++
++void
++journal_close(journal *jnl)
++{
++	journal_close_impl(jnl, NULL);
++}
++
++#if defined(KERNEL) && defined(LITHIUM_ARMV8_0)
++int
++journal_close_for_return(journal *jnl)
++{
++	int error = EIO;
++	journal_close_impl(jnl, &error);
++	return error;
++}
++#endif
+ 
+ static void
+ dump_journal(journal *jnl)
+@@ -3885,6 +3923,7 @@
+ 	 */
+ 	bool is_revoked = (vnode_isrecycled(jnl->jdev) || ((jnl->fsdev != jnl->jdev) && vnode_isrecycled(jnl->fsdev)));
+ 	if ((jnl->flags & JOURNAL_INVALID) || jnl->flush_aborted == TRUE || is_revoked) {
++		HFS_JRETURN_NOTE(jnl, EIO);
+ 		unlock_condition(jnl, &jnl->flushing);
+ 
+ 		if (is_revoked) {
+@@ -4426,6 +4465,7 @@
+ 		 * waiting for the 'flushing' condition to clear...
+ 		 * everyone else will notice the JOURNAL_INVALID flag
+ 		 */
++		HFS_JRETURN_NOTE(jnl, EIO);
+ 		jnl->flush_aborted = TRUE;
+ 
+ 		unlock_condition(jnl, &jnl->flushing);
+@@ -4784,7 +4824,7 @@
+ 		 * specified the 'must_wait' arg as TRUE, it will then
+ 		 * synchronously flush the "cur_tr"
+ 		 */
+-		end_transaction(tr, 1, NULL, NULL, drop_lock, TRUE);   // force it to get flushed
++		HFS_JRETURN_NOTE(jnl, end_transaction(tr, 1, NULL, NULL, drop_lock, TRUE));
+ 
+ 	} else  { 
+ 		if (drop_lock == TRUE) {
+@@ -4811,12 +4851,16 @@
+ 		};
+ 
+ 		// We need a full cache flush. If it has not been done, do it here.
+-		if (flush_count == jnl->flush_counter)
++		if (flush_count == jnl->flush_counter) {
+ 			error = VNOP_IOCTL(jnl->jdev, DKIOCSYNCHRONIZE, (caddr_t)&sync_request, FWRITE, vfs_context_kernel());
++			HFS_JRETURN_NOTE(jnl, error);
++		}
+ 
+ 		// If external journal partition is enabled, flush filesystem data partition.
+-		if (jnl->jdev != jnl->fsdev)
++		if (jnl->jdev != jnl->fsdev) {
+ 			error = VNOP_IOCTL(jnl->fsdev, DKIOCSYNCHRONIZE, (caddr_t)&sync_request, FWRITE, vfs_context_kernel());
++			HFS_JRETURN_NOTE(jnl, error);
++		}
+ 
+ 	}
+ 
+diff --git a/bsd/hfs/hfs_journal.h b/bsd/hfs/hfs_journal.h
+--- a/bsd/hfs/hfs_journal.h
++++ b/bsd/hfs/hfs_journal.h
+@@ -296,6 +296,9 @@
+  * journal is in a consistent state.
+  */
+ void      journal_close(journal *journalp);
++#if defined(KERNEL) && defined(LITHIUM_ARMV8_0)
++int       journal_close_for_return(journal *jnl);
++#endif
+ 
+ /*
+  * flags for journal_create/open.  only can use 
+diff --git a/bsd/hfs/hfs_vfsops.c b/bsd/hfs/hfs_vfsops.c
+--- a/bsd/hfs/hfs_vfsops.c
++++ b/bsd/hfs/hfs_vfsops.c
+@@ -71,6 +71,7 @@
+  *
+  */
+ #include <sys/param.h>
++#include "hfs_return.h"
+ #include <sys/systm.h>
+ #include <sys/kauth.h>
+ 
+@@ -98,6 +99,11 @@
+ 
+ #include <miscfs/specfs/specdev.h>
+ #include "hfs_mount.h"
++#if defined(LITHIUM_ARMV8_0)
++/* HFS's kext-config omits BSD_KERNEL_PRIVATE's user.h typedef. */
++typedef struct uthread *uthread_t;
++#include <sys/mount_internal.h>
++#endif
+ 
+ #include <libkern/crypto/md5.h>
+ #include <uuid/uuid.h>
+@@ -171,6 +177,189 @@
+  *
+  * mount system call
+  */
++
++/* Included in hfs_vfsops.c, after its existing headers, with no new build unit. */
++#if defined(LITHIUM_ARMV8_0)
++/*
++ * Published once, before this Data mount can expose vnodes. Device, pointer
++ * and mount ID never change. The shutdown caller binds its cookie once it
++ * claims the attempt. No lock is taken from journal completion or vclean.
++ */
++static struct {
++	mount_t mp;
++	uint64_t generation;
++	dev_t dev;
++	uint64_t cookie;
++	fsid_t fsid;
++	journal *jnl;
++	int admitted, ready, called, first_error, hfs_done, vfs_done;
++} lithium_hfs_return;
++
++bool
++lithium_hfs_return_tracks(mount_t mp)
++{
++	return mp != NULL &&
++	    __atomic_load_n(&lithium_hfs_return.mp, __ATOMIC_ACQUIRE) == mp &&
++	    mp->mnt_mount_id == lithium_hfs_return.generation;
++}
++
++int
++lithium_hfs_return_note(mount_t mp, int error)
++{
++	if (error != 0 && lithium_hfs_return_tracks(mp)) {
++		int zero = 0;
++		int saved = error > 0 ? error : EIO; /* legacy journal -1 */
++		(void)__atomic_compare_exchange_n(&lithium_hfs_return.first_error,
++		    &zero, saved, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
++	}
++	return error; /* preserve the original ABI/error convention */
++}
++
++int
++lithium_hfs_return_error(mount_t mp)
++{
++	if (!lithium_hfs_return_tracks(mp))
++		return ENOTSUP;
++	return __atomic_load_n(&lithium_hfs_return.first_error, __ATOMIC_ACQUIRE);
++}
++
++static int
++lithium_hfs_return_admit(mount_t mp, vnode_t devvp)
++{
++	int enabled = 0;
++	int zero = 0;
++	const char *name;
++	bool data;
++
++	if (!PE_parse_boot_argn("ufs_return", &enabled, sizeof(enabled)) ||
++	    enabled != 1 || devvp == NULLVP)
++		return 0;
++	name = vnode_getname(devvp);
++	data = name && strcmp(name, "ufs_darwin_data") == 0;
++	if (name)
++		vnode_putname(name);
++	if (!data)
++		return 0;
++	if ((vfs_flags(mp) & (MNT_UPDATE | MNT_RDONLY | MNT_ROOTFS)) ||
++	    !vnode_isblk(devvp))
++		return ENOTSUP;
++	if (!__atomic_compare_exchange_n(&lithium_hfs_return.admitted,
++	    &zero, 1, false, __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE))
++		return EALREADY;
++	lithium_hfs_return.dev = vnode_specrdev(devvp);
++	lithium_hfs_return.generation = mp->mnt_mount_id;
++	__atomic_store_n(&lithium_hfs_return.mp, mp, __ATOMIC_RELEASE);
++	return 0;
++}
++
++static int
++lithium_hfs_return_ready(mount_t mp, int error)
++{
++	struct hfsmount *hfsmp;
++
++	if (!lithium_hfs_return_tracks(mp))
++		return error;
++	(void)lithium_hfs_return_note(mp, error);
++	if (error)
++		return error;
++	hfsmp = VFSTOHFS(mp);
++	if (__atomic_load_n(&lithium_hfs_return.ready, __ATOMIC_ACQUIRE)) {
++		/* A remount cannot replace the admitted journal instance. */
++		if (!hfsmp || !hfsmp->hfs_devvp || hfsmp->jnl != lithium_hfs_return.jnl ||
++		    vnode_specrdev(hfsmp->hfs_devvp) != lithium_hfs_return.dev)
++			(void)lithium_hfs_return_note(mp, ESTALE);
++		return error;
++	}
++	if (!hfsmp || !hfsmp->jnl || hfsmp->jnl->jdev != hfsmp->hfs_devvp ||
++	    hfsmp->jnl->fsdev != hfsmp->hfs_devvp ||
++	    (hfsmp->hfs_flags & HFS_READ_ONLY) ||
++	    (hfsmp->vcbAtrb & kHFSVolumeInconsistentMask)) {
++		(void)lithium_hfs_return_note(mp, ENOTSUP);
++		return error; /* don't change successful mount's normal result */
++	}
++	lithium_hfs_return.fsid = vfs_statfs(mp)->f_fsid;
++	lithium_hfs_return.jnl = hfsmp->jnl;
++	__atomic_store_n(&lithium_hfs_return.ready, 1, __ATOMIC_RELEASE);
++	return error;
++}
++
++void
++lithium_hfs_return_vfs_done(mount_t mp, uint64_t generation, int flags, int error)
++{
++	int zero = 0;
++	int saved;
++	/* Do not dereference mp: the covered-vnode path can already free it. */
++	if (mp != __atomic_load_n(&lithium_hfs_return.mp, __ATOMIC_ACQUIRE) ||
++	    generation != lithium_hfs_return.generation)
++		return;
++	saved = error ? error : ((flags & MNT_FORCE) ||
++	    !__atomic_load_n(&lithium_hfs_return.called, __ATOMIC_ACQUIRE) ||
++	    !__atomic_load_n(&lithium_hfs_return.hfs_done, __ATOMIC_ACQUIRE)
++	    ? EIO : 0);
++	if (saved)
++		(void)__atomic_compare_exchange_n(&lithium_hfs_return.first_error,
++		    &zero, saved > 0 ? saved : EIO, false,
++		    __ATOMIC_RELAXED, __ATOMIC_RELAXED);
++	__atomic_store_n(&lithium_hfs_return.vfs_done, error == 0 ? 1 : -1,
++	    __ATOMIC_RELEASE);
++}
++
++int
++lithium_hfs_return_unmount(dev_t expected_dev, uint64_t cookie)
++{
++	mount_t mp;
++	struct hfsmount *hfsmp;
++	int zero = 0, error;
++
++	if (cookie == 0)
++		return EINVAL;
++	if (!__atomic_load_n(&lithium_hfs_return.ready, __ATOMIC_ACQUIRE))
++		return ENOTSUP;
++	if (expected_dev != lithium_hfs_return.dev)
++		return EINVAL;
++	if (__atomic_load_n(&lithium_hfs_return.called, __ATOMIC_ACQUIRE) ||
++	    __atomic_load_n(&lithium_hfs_return.vfs_done, __ATOMIC_ACQUIRE))
++		return EALREADY;
++	/*
++	 * Same lookup/iteration-to-mount-ref handoff as vfs_unmountbyfsid().
++	 * Do not keep an extra ref across dounmount's mount_refdrain().
++	 */
++	mp = mount_list_lookupby_fsid(&lithium_hfs_return.fsid, 0, 1);
++	if (!mp)
++		return ENOENT;
++	if (!lithium_hfs_return_tracks(mp) || !mp->mnt_devvp ||
++	    vnode_specrdev(mp->mnt_devvp) != expected_dev ||
++	    (mp->mnt_flag & (MNT_ROOTFS | MNT_RDONLY | MNT_UPDATE)) ||
++	    (mp->mnt_kern_flag & MNTK_BACKS_ROOT)) {
++		mount_iterdrop(mp);
++		return ESTALE;
++	}
++	/* Caller has already fenced mount/remount and process/raw writers. */
++	hfsmp = VFSTOHFS(mp);
++	if (!hfsmp || hfsmp->jnl != lithium_hfs_return.jnl ||
++	    hfsmp->hfs_freeze_state != HFS_THAWED ||
++	    (hfsmp->hfs_flags & (HFS_READ_ONLY | HFS_IN_CHANGEFS))) {
++		mount_iterdrop(mp);
++		return EBUSY;
++	}
++	if (!__atomic_compare_exchange_n(&lithium_hfs_return.called, &zero, 1,
++	    false, __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE)) {
++		mount_iterdrop(mp);
++		return EALREADY;
++	}
++	lithium_hfs_return.cookie = cookie;
++	mount_ref(mp, 0);
++	mount_iterdrop(mp);
++	/* dounmount consumes this ref. flags=0: no force/no fallback. */
++	error = dounmount(mp, 0, 1, vfs_context_kernel());
++	if (error)
++		return error;
++	if (__atomic_load_n(&lithium_hfs_return.vfs_done, __ATOMIC_ACQUIRE) != 1 ||
++	    !__atomic_load_n(&lithium_hfs_return.hfs_done, __ATOMIC_ACQUIRE))
++		return EIO;
++	return __atomic_load_n(&lithium_hfs_return.first_error, __ATOMIC_ACQUIRE);
++}
++#endif
+ 
+ int
+ hfs_mount(struct mount *mp, vnode_t devvp, user_addr_t data, vfs_context_t context)
+@@ -483,6 +672,11 @@
+ 		/* Set the mount flag to indicate that we support volfs  */
+ 		vfs_setflags(mp, (u_int64_t)((unsigned int)MNT_DOVOLFS));
+ 
++#if defined(LITHIUM_ARMV8_0)
++		retval = lithium_hfs_return_admit(mp, devvp);
++		if (retval)
++			goto out;
++#endif
+ 		retval = hfs_mountfs(devvp, mp, data ? &args : NULL, 0, context);
+ 		if (retval) { 
+ 			const char *name = vnode_getname(devvp);
+@@ -525,6 +719,9 @@
+ 	if (retval == 0) {
+ 		(void)hfs_statfs(mp, vfs_statfs(mp), context);
+ 	}
++#if defined(LITHIUM_ARMV8_0)
++	(void)lithium_hfs_return_ready(mp, retval);
++#endif
+ 	return (retval);
+ }
+ 
+@@ -1859,7 +2056,7 @@
+ 	hfs_generate_volume_notifications(hfsmp);
+ 
+ 	if (ronly == 0) {
+-		(void) hfs_flushvolumeheader(hfsmp, HFS_FVH_WAIT);
++		(void)lithium_hfs_return_note(mp, hfs_flushvolumeheader(hfsmp, HFS_FVH_WAIT));
+ 	}
+ 	hfs_free_data(mdbp, kMDBSize);
+ 	return (0);
+@@ -1912,6 +2109,15 @@
+ 	int flags;
+ 	int force;
+ 	int started_tr = 0;
++#if defined(LITHIUM_ARMV8_0)
++	bool checked = lithium_hfs_return_tracks(mp) &&
++	    __atomic_load_n(&lithium_hfs_return.called, __ATOMIC_ACQUIRE);
++	if (checked && ((mntflags & MNT_FORCE) || !hfsmp->jnl ||
++	    hfsmp->jnl != lithium_hfs_return.jnl ||
++	    hfsmp->jnl->fsdev != hfsmp->hfs_devvp ||
++	    hfsmp->jnl->jdev != hfsmp->hfs_devvp))
++		return ENOTSUP;
++#endif
+ 
+ 	flags = 0;
+ 	force = 0;
+@@ -2046,34 +2252,39 @@
+ 		}
+ 
+ 		if (started_tr) {
+-		    hfs_end_transaction(hfsmp);
++		    (void)lithium_hfs_return_note(mp, hfs_end_transaction(hfsmp));
+ 		    started_tr = 0;
+ 		}
+ 	}
+ 
+ 	if (hfsmp->jnl) {
+-		hfs_flush(hfsmp, HFS_FLUSH_FULL);
++		(void)lithium_hfs_return_note(mp, hfs_flush(hfsmp, HFS_FLUSH_FULL));
+ 	}
+ 	
+ 	/*
+ 	 *	Invalidate our caches and release metadata vnodes
+ 	 */
+-	(void) hfsUnmount(hfsmp, p);
++	(void)lithium_hfs_return_note(mp, hfsUnmount(hfsmp, p));
+ 
+ 	// XXXdbg
+ 	if (hfsmp->jnl) {
+-	    journal_close(hfsmp->jnl);
++#if defined(LITHIUM_ARMV8_0)
++	    if (checked)
++		(void)lithium_hfs_return_note(mp, journal_close_for_return(hfsmp->jnl));
++	    else
++#endif
++		journal_close(hfsmp->jnl);
+ 	    hfsmp->jnl = NULL;
+ 	}
+ 
+-	VNOP_FSYNC(hfsmp->hfs_devvp, MNT_WAIT, context);
++	(void)lithium_hfs_return_note(mp, VNOP_FSYNC(hfsmp->hfs_devvp, MNT_WAIT, context));
+ 
+ 	hfs_close_jvp(hfsmp);
+ 
+ 	/*
+ 	 * Last chance to dump unreferenced system files.
+ 	 */
+-	(void) vflush(mp, NULLVP, FORCECLOSE);
++	(void)lithium_hfs_return_note(mp, vflush(mp, NULLVP, FORCECLOSE));
+ 
+ #if HFS_SPARSE_DEV
+ 	/* Drop our reference on the backing fs (if any). */
+@@ -2097,6 +2308,8 @@
+ 		   && TAILQ_EMPTY(&hfsmp->hfs_reserved_ranges[HFS_LOCKED_BLOCKS]));
+ 	hfs_assert(!hfsmp->lockedBlocks);
+ 
++	if (hfsmp->vcbAtrb & kHFSVolumeInconsistentMask)
++		(void)lithium_hfs_return_note(mp, EIO);
+ 	hfs_free_type(hfsmp, struct hfsmount);
+ 
+ 	// decrement kext retain count
+@@ -2117,12 +2330,18 @@
+ 	}
+ #endif
+ 
++#if defined(LITHIUM_ARMV8_0)
++	if (checked)
++		__atomic_store_n(&lithium_hfs_return.hfs_done, 1, __ATOMIC_RELEASE);
++#endif
++	/* Late errors are side results: HFS state has already been freed. */
+ 	return (0);
+ 
+   err_exit:
+ 	if (started_tr) {
+-		hfs_end_transaction(hfsmp);
+-	}
++		(void)lithium_hfs_return_note(mp, hfs_end_transaction(hfsmp));
++	}
++	(void)lithium_hfs_return_note(mp, retval);
+ 	return retval;
+ }
+ 
+@@ -2291,13 +2510,14 @@
+ 	retval = (int)buf_meta_bread(hfsmp->hfs_devvp, 
+ 			HFS_PHYSBLK_ROUNDDOWN(priIDSector, hfsmp->hfs_log_per_phys),
+ 			hfsmp->hfs_physical_block_size, NOCRED, &bp);
++	(void)lithium_hfs_return_note(mp, retval);
+ 	if ((retval != 0 ) && (retval != ENXIO)) {
+ 		printf("hfs_sync_metadata: can't read volume header at %d! (retval 0x%x)\n",
+ 		       (int)priIDSector, retval);
+ 	}
+ 
+ 	if (retval == 0 && ((buf_flags(bp) & (B_DELWRI | B_LOCKED)) == B_DELWRI)) {
+-	    buf_bwrite(bp);
++	    (void)lithium_hfs_return_note(mp, buf_bwrite(bp));
+ 	} else if (bp) {
+ 	    buf_brelse(bp);
+ 	}
+@@ -2312,12 +2532,13 @@
+ 		retval = (int)buf_meta_bread(hfsmp->hfs_devvp, 
+ 				HFS_PHYSBLK_ROUNDDOWN(hfsmp->hfs_partition_avh_sector, hfsmp->hfs_log_per_phys),
+ 				hfsmp->hfs_physical_block_size, NOCRED, &bp);
++	(void)lithium_hfs_return_note(mp, retval);
+ 		if (retval == 0 && ((buf_flags(bp) & (B_DELWRI | B_LOCKED)) == B_DELWRI)) {
+ 		    /* 
+ 			 * note this I/O can fail if the partition shrank behind our backs! 
+ 			 * So failure should be OK here.
+ 			 */
+-			buf_bwrite(bp);
++			(void)lithium_hfs_return_note(mp, buf_bwrite(bp));
+ 		} else if (bp) {
+ 		    buf_brelse(bp);
+ 		}
+@@ -2328,8 +2549,9 @@
+ 		retval = (int)buf_meta_bread(hfsmp->hfs_devvp, 
+ 				HFS_PHYSBLK_ROUNDDOWN(hfsmp->hfs_fs_avh_sector, hfsmp->hfs_log_per_phys),
+ 				hfsmp->hfs_physical_block_size, NOCRED, &bp);
++	(void)lithium_hfs_return_note(mp, retval);
+ 		if (retval == 0 && ((buf_flags(bp) & (B_DELWRI | B_LOCKED)) == B_DELWRI)) {
+-		    buf_bwrite(bp);
++		    (void)lithium_hfs_return_note(mp, buf_bwrite(bp));
+ 		} else if (bp) {
+ 		    buf_brelse(bp);
+ 		}
+@@ -2508,6 +2730,7 @@
+ 	if (wake)
+ 		wakeup(&hfsmp->hfs_freeze_state);
+ 
++	(void)lithium_hfs_return_note(mp, allerror);
+ 	return (allerror);
+ }
+ 
+diff --git a/bsd/hfs/hfs_vnops.c b/bsd/hfs/hfs_vnops.c
+--- a/bsd/hfs/hfs_vnops.c
++++ b/bsd/hfs/hfs_vnops.c
+@@ -33,6 +33,7 @@
+ #include <stdbool.h>
+ #include <sys/systm.h>
+ #include <sys/param.h>
++#include "hfs_return.h"
+ #include <sys/kernel.h>
+ #include <sys/dirent.h>
+ #include <sys/stat.h>
+@@ -3109,6 +3110,18 @@
+ /*
+  *  cnode must be locked
+  */
++static void
++lithium_hfs_return_push(vnode_t vp, int flags)
++{
++	if (lithium_hfs_return_tracks(vnode_mount(vp))) {
++		int error = 0;
++		(void)cluster_push_err(vp, flags, NULL, NULL, &error);
++		(void)lithium_hfs_return_note(vnode_mount(vp), error);
++	} else {
++		(void)cluster_push(vp, flags);
++	}
++}
++
+ int
+ hfs_fsync(struct vnode *vp, int waitfor, hfs_fsync_mode_t fsyncmode, struct proc *p)
+ {
+@@ -3163,7 +3176,7 @@
+ 		}
+ 
+ 		/* Don't hold cnode lock when calling into cluster layer. */
+-		(void) cluster_push(vp, waitdata ? IO_SYNC : 0);
++		lithium_hfs_return_push(vp, waitdata ? IO_SYNC : 0);
+ 
+ 		hfs_lock(cp, HFS_EXCLUSIVE_LOCK, HFS_LOCK_ALLOW_NOEXISTS);
+ 	}
+@@ -3198,7 +3211,7 @@
+ 			}
+ 			hfs_flush_invalid_ranges(vp);
+ 			hfs_unlock(cp);
+-			(void) cluster_push(vp, waitdata ? IO_SYNC : 0);
++			lithium_hfs_return_push(vp, waitdata ? IO_SYNC : 0);
+ 			hfs_lock(cp, HFS_EXCLUSIVE_LOCK, HFS_LOCK_ALLOW_NOEXISTS);
+ 		}
+ 	}
+@@ -3263,6 +3276,11 @@
+ 	if (!hfs_is_dirty(cp) && !ISSET(cp->c_flag, C_DELETED))
+ 		vnode_cleardirty(vp);
+ 
++	(void)lithium_hfs_return_note(vnode_mount(vp), retval);
++#if defined(LITHIUM_ARMV8_0)
++	if (retval == 0 && lithium_hfs_return_tracks(vnode_mount(vp)))
++		retval = lithium_hfs_return_error(vnode_mount(vp));
++#endif
+ 	return (retval);
+ }
+ 
+diff --git a/bsd/hfs/hfs_readwrite.c b/bsd/hfs/hfs_readwrite.c
+--- a/bsd/hfs/hfs_readwrite.c
++++ b/bsd/hfs/hfs_readwrite.c
+@@ -37,6 +37,7 @@
+  */
+ 
+ #include <sys/param.h>
++#include "hfs_return.h"
+ #include <sys/systm.h>
+ #include <sys/kernel.h>
+ #include <sys/fcntl.h>
+@@ -5202,6 +5203,7 @@
+ 		 */
+ 		hfs_unlock_truncate(cp, HFS_LOCK_SKIP_IF_EXCLUSIVE);
+ 	}
++	(void)lithium_hfs_return_note(vnode_mount(vp), retval);
+ 	return (retval);
+ }
+ 
+diff --git a/bsd/vfs/vfs_cluster.c b/bsd/vfs/vfs_cluster.c
+--- a/bsd/vfs/vfs_cluster.c
++++ b/bsd/vfs/vfs_cluster.c
+@@ -62,6 +62,7 @@
+  */
+ 
+ #include <sys/param.h>
++#include "../hfs/hfs_return.h"
+ #include <sys/proc_internal.h>
+ #include <sys/buf_internal.h>
+ #include <sys/mount_internal.h>
+@@ -2096,6 +2097,8 @@
+ 		panic("%s(): cbp_head is not NULL.", __FUNCTION__);
+ 	}
+ 
++	if (!(flags & CL_READ))
++		(void)lithium_hfs_return_note(vnode_mount(vp), retval);
+ 	if (real_bp) {
+ 		/*
+ 		 * can get here if we either encountered an error
+@@ -5994,6 +5997,7 @@
+ 	KERNEL_DEBUG((FSDBG_CODE(DBG_FSRW, 53)) | DBG_FUNC_END,
+ 	    wbp->cl_scmap, wbp->cl_number, retval, local_err, 0);
+ 
++	(void)lithium_hfs_return_note(vnode_mount(vp), local_err);
+ 	return retval;
+ }
+ 
+diff --git a/bsd/vfs/vfs_subr.c b/bsd/vfs/vfs_subr.c
+--- a/bsd/vfs/vfs_subr.c
++++ b/bsd/vfs/vfs_subr.c
+@@ -78,6 +78,7 @@
+  */
+ 
+ #include <sys/param.h>
++#include "../hfs/hfs_return.h"
+ #include <sys/systm.h>
+ #include <sys/proc_internal.h>
+ #include <sys/kauth.h>
+@@ -3072,7 +3073,7 @@
+ 		if (vp->v_tag == VT_NFS) {
+ 			nfs_vinvalbuf(vp, V_SAVE, ctx, 0);
+ 		} else {
+-			VNOP_FSYNC(vp, MNT_WAIT, ctx);
++			(void)lithium_hfs_return_note(vnode_mount(vp), VNOP_FSYNC(vp, MNT_WAIT, ctx));
+ 
+ 			/*
+ 			 * If the vnode is still in use (by the journal for
+@@ -3081,13 +3082,13 @@
+ 			 * up, or we will deal with it when the usecount is
+ 			 * finally released in vnode_rele_internal.
+ 			 */
+-			buf_invalidateblks(vp, BUF_WRITE_DATA | (active ? 0 : BUF_INVALIDATE_LOCKED), 0, 0);
++			(void)lithium_hfs_return_note(vnode_mount(vp), buf_invalidateblks(vp, BUF_WRITE_DATA | (active ? 0 : BUF_INVALIDATE_LOCKED), 0, 0));
+ 		}
+ 		if (UBCINFOEXISTS(vp)) {
+ 			/*
+ 			 * Clean the pages in VM.
+ 			 */
+-			(void)ubc_msync(vp, (off_t)0, ubc_getsize(vp), NULL, UBC_PUSHALL | UBC_INVALIDATE | UBC_SYNC);
++			(void)lithium_hfs_return_note(vnode_mount(vp), ubc_msync(vp, (off_t)0, ubc_getsize(vp), NULL, UBC_PUSHALL | UBC_INVALIDATE | UBC_SYNC));
+ 		}
+ 	}
+ 	if (active || need_inactive) {
+diff --git a/bsd/vfs/vfs_syscalls.c b/bsd/vfs/vfs_syscalls.c
+--- a/bsd/vfs/vfs_syscalls.c
++++ b/bsd/vfs/vfs_syscalls.c
+@@ -72,6 +72,7 @@
+  */
+ 
+ #include <sys/param.h>
++#include "../hfs/hfs_return.h"
+ #include <sys/systm.h>
+ #include <sys/namei.h>
+ #include <sys/filedesc.h>
+@@ -2709,6 +2710,9 @@
+ 	int forcedunmount = 0;
+ 	int lflags = 0;
+ 	struct vnode *devvp = NULLVP;
++#if defined(LITHIUM_ARMV8_0)
++	uint64_t return_generation = lithium_hfs_return_tracks(mp) ? mp->mnt_mount_id : 0;
++#endif
+ #if CONFIG_TRIGGERS
+ 	proc_t p = vfs_context_proc(ctx);
+ 	int did_vflush = 0;
+@@ -2840,8 +2844,8 @@
+ 		devvp = mp->mnt_devvp;
+ 		vnode_getalways(devvp);
+ 		vnode_rele(devvp);
+-		VNOP_CLOSE(devvp, mp->mnt_flag & MNT_RDONLY ? FREAD : FREAD | FWRITE,
+-		    ctx);
++		(void)lithium_hfs_return_note(mp,
++		    VNOP_CLOSE(devvp, mp->mnt_flag & MNT_RDONLY ? FREAD : FREAD | FWRITE, ctx));
+ 		vnode_clearmountedon(devvp);
+ 		vnode_put(devvp);
+ 	}
+@@ -2986,6 +2990,10 @@
+ 			panic("dounmount: no coveredvp");
+ 		}
+ 	}
++#if defined(LITHIUM_ARMV8_0)
++	if (return_generation)
++		lithium_hfs_return_vfs_done(mp, return_generation, flags, error);
++#endif
+ 	return error;
+ }
+ 
+diff --git a/bsd/hfs/hfs_return.h b/bsd/hfs/hfs_return.h
+new file mode 100644
+--- /dev/null
++++ b/bsd/hfs/hfs_return.h
+@@ -0,0 +1,44 @@
++/*
++ * Internal Lithium HFS return API. Enable LITHIUM_ARMV8_0 at build
++ * time and ufs_return=1 at boot time.
++ * Only the first HFS mount of the devfs node ufs_darwin_data is admitted.
++ */
++#ifndef LITHIUM_HFS_RETURN_RECEIPT_H
++#define LITHIUM_HFS_RETURN_RECEIPT_H
++#include <sys/types.h>
++#include <sys/errno.h>
++#include <sys/mount.h>
++#include <sys/vnode.h>
++#include <stdbool.h>
++
++#if defined(LITHIUM_ARMV8_0)
++/*
++ * Sleepable kernel shutdown caller: stop process relaunch and swaps, release
++ * Data cwd/root/file/mmap references, exclude mounts/remounts/raw writers.
++ * cookie is the nonzero caller boot/session cookie. One nonforced attempt per admission.
++ * Zero means checked journal close AND complete same-generation dounmount.
++ * A nonzero result always prohibits automatic return, even if VFS has already
++ * removed the mount. Never retry or remount on the basis of this return value.
++ * After zero, keep the writer fence and call hakios_ufs_seal_for_return()
++ * separately; this API neither seals UFS nor claims controller persistence.
++ */
++int lithium_hfs_return_unmount(dev_t expected_dev, uint64_t cookie);
++
++/* Internal producers; caller must own a valid mount/vnode lifetime. */
++bool lithium_hfs_return_tracks(mount_t mp);
++int lithium_hfs_return_note(mount_t mp, int error);
++int lithium_hfs_return_error(mount_t mp);
++/* mp is an identity token only here: dounmount may already have freed it. */
++void lithium_hfs_return_vfs_done(mount_t mp, uint64_t generation,
++    int flags, int error);
++#else
++static inline bool lithium_hfs_return_tracks(mount_t mp)
++{ (void)mp; return false; }
++static inline int lithium_hfs_return_note(mount_t mp, int error)
++{ (void)mp; return error; }
++static inline int lithium_hfs_return_error(mount_t mp)
++{ (void)mp; return ENOTSUP; }
++static inline int lithium_hfs_return_unmount(dev_t dev, uint64_t cookie)
++{ (void)dev; (void)cookie; return ENOTSUP; }
++#endif
++#endif

@@ -1,0 +1,65 @@
+"""Prepare the first source-level 7195 backport from sailfish's GIC work.
+
+Generates a reviewable patch and checks it against the pinned Apple checkout.
+It never edits the upstream checkout, builds a kernel or contacts the phone.
+"""
+import difflib
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+
+ROOT = Path(__file__).resolve().parents[1]
+APPLE = ROOT / 'upstream/research/xnu-7195.141.2'
+TARGET = 'pexpert/arm/pe_fiq.c'
+
+
+def main():
+    pin = subprocess.check_output(['git', '-C', str(APPLE), 'rev-parse', 'HEAD'], text=True).strip()
+    assert pin == '776661b72c2db9861865df68d309f6f35faccff4'
+    original = subprocess.check_output(['git', '-C', str(APPLE), 'show', 'HEAD:' + TARGET]).decode()
+    updated = original.replace('static vm_offset_t gicr_size;\n',
+                               'static vm_offset_t gicr_size;\nstatic uint32_t gicr_stride = GICR_PE_SIZE;\n', 1)
+    assert original.count('offset += GICR_PE_SIZE') == 1
+    updated = updated.replace('offset += GICR_PE_SIZE', 'offset += gicr_stride', 1)
+    anchor = '\tgicr_size = gicr_size_prop;\n'
+    assert updated.count(anchor) == 1
+    updated = updated.replace(anchor, anchor + '''
+\t// Optional ADT u32, matching the sailfish MSM8996 platform interface.
+\t// Linux FDT uses a different encoding; the ADT generator must convert it.
+\tvoid const *stride_prop;
+\tunsigned int stride_size;
+\tif (SecureDTGetProperty(entry, "redistributor-stride", &stride_prop, &stride_size) == kSuccess) {
+\t\tif (stride_size != sizeof(uint32_t)) {
+\t\t\tpanic("%s: redistributor-stride must be a 32-bit ADT value", __func__);
+\t\t}
+\t\tuint32_t stride = *(const uint32_t *)stride_prop;
+\t\tif (stride != GICR_PE_SIZE && stride != 0x40000) {
+\t\t\tpanic("%s: unsupported redistributor-stride 0x%x", __func__, stride);
+\t\t}
+\t\tgicr_stride = stride;
+\t}
+''', 1)
+    diff = ''.join(difflib.unified_diff(original.splitlines(keepends=True), updated.splitlines(keepends=True),
+                                        fromfile='a/' + TARGET, tofile='b/' + TARGET))
+    patch = ROOT / 'ports/lithium/patches/xnu-7195/0001-gicv3-redistributor-stride.patch'
+    patch.parent.mkdir(parents=True, exist_ok=True)
+    patch.write_bytes(('From: ios14-lithium\n'
+                       'Subject: [candidate] arm64: read GIC redistributor stride from ADT\n\n'
+                       'Backport the property interface from joranv1/ios-sailfish\n'
+                       '6f27e41ff249f2680540ebe8ee5ab982c5e641c9, patch 0079.\n'
+                       'Target: Apple xnu-7195.141.2. Existing default is retained.\n'
+                       'Not compiled or tested on hardware.\n\n' + diff).encode())
+    result = subprocess.run(['git', '-C', str(APPLE), 'apply', '--check', str(patch)], capture_output=True)
+    assert result.returncode == 0, result.stderr.decode(errors='replace')
+    report = dict(apple_commit=pin, reference_commit='6f27e41ff249f2680540ebe8ee5ab982c5e641c9',
+                  reference_patch='xnu/patches/0079-sweet-pixel1-gic-stride-fbcon-24bpp.patch',
+                  patch=patch.relative_to(ROOT).as_posix(), patch_sha256=hashlib.sha256(patch.read_bytes()).hexdigest(),
+                  dry_apply_passed=True, compilation_verified=False, hardware_verified=False,
+                  board_evidence='Pinned lithium stock DTS contains redistributor-stride = <0x00 0x40000>; target ADT must encode this as u32')
+    (ROOT / 'reports/ios14-gic-backport.json').write_text(json.dumps(report, indent=2) + '\n')
+    print(json.dumps(report, indent=2))
+
+
+if __name__ == '__main__':
+    main()

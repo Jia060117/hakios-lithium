@@ -1,0 +1,765 @@
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -1,3 +1,5 @@
++2026-11-23 GPU G0一次RAM真机通过：03:52:07接受61bc8b82，97/66；真实XNU3核、G0 logical0affinity1，9 GCC/GPUCC字段双遍18读全valid/stable、18us、三个16KiBallocation释放，0GPU写/未读GPU或SMMU。CX/GX00222001均PWR_ON0/SW_COLLAPSE1；四GPU分支enable0/off1，BIMC链两字段不等整总线供电/ownership证明，chipID/CP未验。180正常timer/四stop/source0/drain1target57875；235帧65444raw/57924console独立重放连续0gap/dup/残帧/lost，Pipeerror原样保留。03:56:56唯一devices/product核实54223ce9/MSM8996_A8回Fastboot，未请求手动恢复/未捕获固件内部PrepareCommit或目视终屏。CPU614.4配置模型，四CPU TSENS峰51.2/51.8/48.0/48.6C非GPU温度；RAMlookup2非UFS失败。Bacon保存日志/位定义复核、main生命周期/USB独立审计；无分区刷写/改压/固件装载/ADB/QEMU/重试，原索引/614/R20/low01冻结保持。G0结案，下一G1供电/fuse/RPMbus证据后才上电读ID，旧批准不扩到写GPU；见reports/hakios-ios16-gpu-g0-01.md/json。
++
+ 2026-11-23 GPU G0主机包冻结：用户选614.4MHz配置模型为基线，结束频率搜索；A530内核/MSM语义→Freedreno Gallium，Metal延后。G0 exact9 GCC/GPUCC字段双遍18读/0写，不读GPU/SMMU，完整VM页可释放映射/绑定logical0affinity1，缺开关不访问。实际完整内核14635e6d/隔离RAM镜像61bc8b82构建读回、最终嵌套FV无物理UFS且FastbootDXE精确，180秒/自动返回10秒；主机核心2696case470478check/适配器14case795check/打包22+FV6通过。本地匹配stock8固件64504字节仅忽略区，stock最低活跃133MHz、GFX CPR3/PMI8994S2区别于MX PM8994RPM，PAS13/供电/池所有权均未验；fb2只变一字节90186317未上机。Bacon/Kepler/Pasteur/Kant并行，main实际构建及来源/哈希复核；本阶段设备0、96/65/原索引/614/R20/low01旧冻结保持。按用户GPU计划§0等待一次G0 RAM上机批准，不沿用CPU阶段授权；见reports/hakios-ios16-gpu-g0-prepared.md/json。
+ 
+ 2026-11-23 R40 691.2MHz上机结案：02:01:35单次80681f0c/03同kernel/loader/Mu/root/Boot只变目标档，96/65。真实三核/E7/R20桌面，用户反馈较614小幅流畅；一组134事件/idle30s通过，第二组event_late_over_100ms于147queued/147copy/146dispatch瞬时值+1cleanup受控退出，非三组全通过或CPU运算失败。9560原始USB帧/2090909字节独立连续，0gap/dup/残帧/lost，source0，正常600timer/四stop/drain1 target2090858；非强制Data unmount0/seal0 request40980/finalready1，02:12:46唯一devices/product核实同机Fastboot。启动核峰79.4/perf76.5,77.8，初温比614高4.2C，不全归因频率；绘制band1各6样本中位17.004→15.146ms非物理FPS。保留614基线，甜点未定，不继续升档；无改压/刷分区/重试，原索引及旧冻结保持。见reports/hakios-ios16-device-r40-r40-ui-691-03.md/json及691-comparison/final-69103-021210。
+--- a/project.json
++++ b/project.json
+@@ -174,20 +174,20 @@
+     "large_tasks_sequential": true
+   },
+   "work_status": {
+-    "status": "r40_691_comparison_complete_left_in_fastboot",
++    "status": "gpu_G0_passed_left_in_fastboot",
+     "phase2_approved": true,
+     "device_operations_performed": true,
+     "device_boots_performed": true,
+     "partition_writes_performed": true,
+-    "hakios_temporary_boot_count": 96,
++    "hakios_temporary_boot_count": 97,
+     "backup_branch": "archive/ios14-r31-20261116",
+-    "next_step": "Qualify the one-step 384 MHz clock/supply transition; fb_threads=2 desktop comparison remains separate",
++    "next_step": "G1 GPU GFX/MX supply evidence and controlled power-on at stock133MHz; CPU614.4baseline",
+     "phase3_approved": true,
+     "auxiliary_stock_reader_boots_accepted": 4,
+-    "ios16_boots_performed": 65,
++    "ios16_boots_performed": 66,
+     "auxiliary_stock_reader_adb_runtime_observations": 3,
+-    "latest_evidence_recorded_at": "2026-11-21T13:05:56.148630+08:00",
+-    "latest_host_report": "reports/hakios-ios16-r38-perf-fixed05-prepared.md",
++    "latest_evidence_recorded_at": "2026-11-22T20:01:41.851288+00:00",
++    "latest_host_report": "reports/hakios-ios16-gpu-g0-01.md",
+     "r5_backup_branch": "archive/ios16-r5-20261117",
+     "r6_backup_branch": "archive/ios16-r6-20261117",
+     "r7_backup_branch": "archive/ios16-r7-20261117",
+@@ -3838,11 +3838,11 @@
+     "cpu_baseline_model_hz": 614400000,
+     "cpu_choice": "user_accepted_2026-11-23",
+     "route": "A530 MSM-style kernel ABI then Freedreno Gallium/GLES; fill/blit first; Metal later",
+-    "phase": "G0_host_ready_awaiting_device_approval",
++    "phase": "G0_runtime_passed_next_G1",
+     "default_off": true,
+-    "device_operations_this_phase": 0,
++    "device_operations_this_phase": 8,
+     "next_device_approval_required": true,
+-    "hardware_stage_passed": null,
++    "hardware_stage_passed": "G0_readonly_clock_gdsc",
+     "report": "reports/hakios-ios16-gpu-g0-prepared.md",
+     "g0_image": "evidence\\gpu-g0-20261123\\package\\g0-01\\lithium-hakios-ios16-gpu-g0-01.img",
+     "g0_image_sha256": "61bc8b8220f54e8a2b0772a694690901b89e48a65b2d52463c8f962ab02c7933",
+@@ -3855,6 +3855,15 @@
+     "g1_power_runtime_verified": false,
+     "g2_pas_runtime_verified": false,
+     "fb2_image": "artifacts/hakios/lithium-ios16/phase4-gpu-off-fb2-614/lithium-hakios-ios16-gpu-off-fb2-614.img",
+-    "fb2_runtime_verified": false
++    "fb2_runtime_verified": false,
++    "gpu_acceleration_verified": false,
++    "temporary_boots_this_phase": 1,
++    "register_snapshot_passed": true,
++    "elapsed_read_us": 18,
++    "cx_gdsc_raw": "0x00222001",
++    "gx_gdsc_raw": "0x00222001",
++    "automatic_fastboot_observed": true,
++    "latest_runtime_report": "reports/hakios-ios16-gpu-g0-01.md",
++    "g1_device_authorized": false
+   }
+ }
+--- /dev/null
++++ b/scripts/analyze-hakios-gpu-g0.py
+@@ -0,0 +1,127 @@
++#!/usr/bin/env python3
++"""Audit only the completed, saved G0 USB stream; never contact a device."""
++from datetime import datetime, timezone
++import hashlib
++import importlib.util
++import json
++from pathlib import Path
++import re
++import sys
++
++sys.dont_write_bytecode = True
++ROOT = Path(__file__).resolve().parents[1]
++RUN = ROOT / "evidence/gpu-g0-20261123/package/runs/gpu-g0-01"
++OUT = ROOT / "evidence/gpu-g0-20261123/main/runtime-g0-01"
++def read(path): return json.loads(path.read_text(encoding="utf-8"))
++def write(path, value):
++    path.parent.mkdir(parents=True,exist_ok=True)
++    path.write_text(json.dumps(value,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
++def sha(data): return hashlib.sha256(data).hexdigest()
++def fields(line): return dict(re.findall(r"([A-Za-z_][A-Za-z_0-9]*)=([^\s]+)",line))
++def main():
++    state = read(RUN/"result.json")
++    receiver = read(RUN/"usb-status.json")
++    if receiver["status"] == "capturing":
++        raise RuntimeError("saved USB capture is still running; final audit deferred")
++    raw = (RUN/"console.frames").read_bytes()
++    console = (RUN/"console.log").read_bytes()
++    text = console.decode("utf-8",errors="replace")
++    spec=importlib.util.spec_from_file_location("g0_usb_audit",ROOT/"scripts/hakios_usb_audit.py")
++    audit_module=importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(audit_module)
++    usb=audit_module.audit(raw,console,RUN/"capture-host.py")
++    write(OUT/"usb-audit.json",usb)
++    expected = {
++        "CX_GDSCR":0x008c4034,"GX_GDSCR":0x008c4024,
++        "GPU_AHB_CBCR":0x008c403c,"GPU_AON_ISENSE_CBCR":0x008c4044,
++        "GPU_GX_GFX3D_CBCR":0x008c4028,"GPU_GX_RBBMTIMER_CBCR":0x008c40b0,
++        "GFX3D_CMD_RCGR":0x008c4000,"GCC_MMSS_BIMC_GFX_CBCR":0x00309010,
++        "GCC_BIMC_GFX_CBCR":0x00346018}
++    rows=[]; begin=[]; end=[]; maps=[]; unmaps=[]; temps=[]
++    for number,line in enumerate(text.splitlines(),1):
++        f=fields(line)
++        if line.startswith("LITHIUM GPU stage=0 pass="):
++            rows.append(dict(line=number,pass_index=int(f["pass"]),reg=f["reg"],
++                pa=int(f["pa"],0),valid=int(f["valid"]),
++                raw=int(f["raw"],0) if f["raw"]!="UNREAD" else None,
++                stable=int(f["stable"])))
++        elif line.startswith("LITHIUM GPU stage=0 begin"):
++            begin.append(dict(line=number,fields=f))
++        elif line.startswith("LITHIUM GPU stage=0 end"):
++            end.append(dict(line=number,fields=f))
++        elif line.startswith("LITHIUM GPU stage=0 map "):
++            maps.append(dict(line=number,fields=f))
++        elif line.startswith("LITHIUM GPU stage=0 unmap "):
++            unmaps.append(dict(line=number,fields=f))
++        elif line.startswith("LITHIUM CPU TEMP "):
++            temps.append(dict(line=number,fields=f))
++    pairs={}
++    for row in rows:
++        key=(row["pass_index"],row["reg"])
++        if key in pairs: raise ValueError("duplicate G0 register observation")
++        pairs[key]=row
++    snapshot = len(rows)==18 and len(begin)==1 and len(end)==1
++    for name,pa in expected.items():
++        a=pairs.get((0,name)); b=pairs.get((1,name))
++        snapshot = snapshot and bool(a and b and a["pa"]==b["pa"]==pa and
++            a["valid"]==b["valid"]==a["stable"]==b["stable"]==1 and a["raw"]==b["raw"])
++    summary = end[-1]["fields"] if end else {}
++    snapshot = bool(snapshot and summary.get("status")=="snapshot_complete" and
++        summary.get("errors")=="0x0" and summary.get("loads")=="18" and
++        summary.get("gpu_writes")=="0" and summary.get("valid0")=="0x1ff" and
++        summary.get("valid1")=="0x1ff" and summary.get("stable_mask")=="0x1ff")
++    binding = bool(begin and begin[0]["fields"].get("logical")=="0" and
++                   begin[0]["fields"].get("affinity")=="0x1")
++    cleanup = len(maps)==len(unmaps)==3
++    for m,u in zip(maps,unmaps):
++        a=m["fields"]; b=u["fields"]
++        cleanup = (cleanup and a["valid"]=="1" and a["allocation"]==b["allocation"] and
++            a["bytes"]==b["bytes"]=="16384" and a["index"]==b["index"])
++    decoded=[]
++    for name,pa in expected.items():
++        row=pairs.get((0,name))
++        if not row or row["raw"] is None: continue
++        value=row["raw"]
++        d=dict(reg=name,pa=f"0x{pa:08x}",raw=f"0x{value:08x}")
++        if "GDSCR" in name:
++            d.update(pwr_on=(value>>31)&1,sw_override=(value>>2)&1,
++                hw_control=(value>>1)&1,sw_collapse=value&1,
++                meaning="GDSC reports collapsed, PWR_ON clear" if not value>>31 and value&1 else "see raw")
++        elif "CBCR" in name:
++            d.update(branch_enable=value&1,branch_off=(value>>31)&1,
++                meaning="documented branch enable/off fields only; no actual MHz or ownership claim")
++        decoded.append(d)
++    drops=[int(x) for x in re.findall(r"writer_contention_dropped_bytes=(\d+)",text)]
++    stop=[t for t in temps if t["fields"].get("phase")=="stop"]
++    stop_valid={t["fields"].get("affinity") for t in stop if t["fields"].get("valid")=="1"}
++    peaks={}
++    for t in temps:
++        f=t["fields"]
++        if f.get("valid")=="1" and "native_mC" in f:
++            affinity=f["affinity"]; value=int(f["native_mC"])
++            peaks[affinity]=max(peaks.get(affinity,value),value)
++    return_record=read(RUN/"return-verification.json")
++    no_panic=not re.search(r"panic\(cpu |PANIC CAUSE|Debugger message:\s*panic",text,re.I)
++    passed=bool(state["command_accepted"] and snapshot and binding and cleanup and
++        usb["emitted_kernel_stream_through_timer_verified"] and drops and drops[-1]==0 and
++        stop_valid=={"0x0","0x1","0x100","0x101"} and return_record.get("passed") is True and no_panic)
++    result=dict(schema="hakios-gpu-g0-saved-runtime-v1",analyzed_at=datetime.now(timezone.utc).isoformat(),
++        attempt="gpu-g0-01",passed=passed,status="G0_passed" if passed else "G0_observations_incomplete",
++        accepted_at=state["accepted_at"],image_sha256=state["image_sha256"],
++        boot_args=state["boot_args"],snapshot_passed=snapshot,cpu_binding_observed=binding,
++        allocation_cleanup_observed=cleanup,begin=begin,end=end,registers=rows,decoded_registers=decoded,
++        gpu_mmio_writes=0,gpu_aperture_read=False,chip_id=None,firmware_loaded=False,
++        gpu_acceleration_verified=False,power_rail_voltage_verified=False,
++        cpu_temperature_peak_native_mC=peaks,temperature_rows=len(temps),stop_temperature_rows=stop,
++        source_contention_dropped_bytes=drops[-1] if drops else None,
++        usb=usb,receiver_terminal=receiver,return_verification=return_record,
++        no_panic_text_in_collected_stream=no_panic,physical_screen_observed=False,
++        cpu_frequency_kind="614.4 MHz configuration model; no PMU measured MHz",
++        device_operation_scope="5 preflight reads, one temporary boot, one post-return devices/product check; no retry",
++        next="G1 source-backed GPU GFX/MX supply and bus prerequisites before power-on/chip-ID",
++        input_sha256={name:sha((RUN/name).read_bytes()) for name in (
++            "console.frames","console.log","result.json","usb-status.json","return-verification.json","capture-host.py")})
++    write(OUT/"analysis.json",result)
++    print(json.dumps({k:result[k] for k in ("passed","status","snapshot_passed","allocation_cleanup_observed",
++        "cpu_temperature_peak_native_mC","source_contention_dropped_bytes")},indent=2))
++if __name__=="__main__": main()
+--- /dev/null
++++ b/reports/hakios-ios16-gpu-g0-01.md
+@@ -0,0 +1,72 @@
++# A530 G0 真机结果 — 2026-11-23
++
++**G0 只读状态阶段通过。** 同一 RAM 会话读取了全部 9 个 GCC/GPUCC 字段，每个两遍有效且一致，18 次读取耗时 18 µs；正常 180 秒结束、USB 排空通过，03:56:56 唯一返回核验确认同一设备已处于 Fastboot。
++
++**GPU 的 CX/GX GDSC 当前均报告关闭。** 这是下一阶段上电流程的真实起点；G0 没有读取 chip ID、加载固件、提交 CP 命令或 GPU 加速。
++
++## 会话与边界
++
++- 用户批准一次 G0 RAM 测试后，03:52:07.672005 +08:00 接受冻结镜像 `61bc8b8220f54e8a2b0772a694690901b89e48a65b2d52463c8f962ab02c7933`。
++- 五项预检通过，USB 接收器先于单次临时 boot 启动；之后只读取该次保存日志，再做一次 Fastboot devices/product 返回核验。
++- 真实 XNU 日志为 `3 of 3 processors are running`。G0 worker 实际 logical 0 / affinity 0x1 / max logical 2；结束返回也为 logical 0 / affinity 0x1。
++- CPU 使用用户选定的 614.4 MHz **配置模型**，PMU 实测 MHz 未建立；包含短 CPU sanity 基准，未启用满载 soak。
++- `ufs=0`，最终 Mu 无物理 UFS provider；PID1 在 RAM hold，没有启动 SpringBoard，不访问 Data/userdata。
++- 无 GPU 寄存器写、时钟/电源写、SMMU/中断配置、固件装载；无刷写、分区命令、ADB、QEMU 或重试。本次沿用基线的 UEFI CPU PLL 初始化。
++- 启动计数更新为 **HakiOS 97 / iOS16 66**；原索引、614.4 桌面/R20/low01 和此前冻结包保持。
++
++## 两遍原始读数
++
++以下所有字段 `valid=1, stable=1`，两遍值完全相同。源日志行 111–128；完整分析包含各字段独立行号。
++
++| 字段 | 地址 | 两遍 raw | 文档字段解释 |
++|---|---|---|---|
++| CX_GDSCR | 0x008c4034 | 0x00222001 | PWR_ON=0、SW_COLLAPSE=1、HW_CONTROL=0、SW_OVERRIDE=0 |
++| GX_GDSCR | 0x008c4024 | 0x00222001 | 同上，GX 报告 collapsed |
++| GPU_AHB_CBCR | 0x008c403c | 0x80008000 | enable=0、off=1 |
++| GPU_AON_ISENSE_CBCR | 0x008c4044 | 0x80000000 | enable=0、off=1 |
++| GPU_GX_GFX3D_CBCR | 0x008c4028 | 0x80000220 | enable=0、off=1 |
++| GPU_GX_RBBMTIMER_CBCR | 0x008c40b0 | 0x80000000 | enable=0、off=1 |
++| GFX3D_CMD_RCGR | 0x008c4000 | 0x80000000 | 原始值保留；未读 CFG/PLL，不推算实际 GPU Hz |
++| GCC_MMSS_BIMC_GFX_CBCR | 0x00309010 | 0x80004221 | enable=1、off=1；使能请求与反馈不能等同 |
++| GCC_BIMC_GFX_CBCR | 0x00346018 | 0x00000001 | enable=1、off=0；不足以证明整条 GPU 总线可用 |
++
++GDSCR 字段直接来自固定 MiCode `gdsc.c:28–35`，CBCR enable/off 来自 `clock-local2.c:67–68`。高位其他字段不猜测。G0 未读 GDSC 独立 HW_STATUS、clamp、GFX regulator、RPM vote/ack 或 PLL，因此这些读数不建立 rail 数字设定/模拟电压、供电 settled、所有权、实际频率和 GPU MMIO 安全访问证明。
++
++三个映射以完整 **16KiB allocation** 建立并分别释放，日志保留对应 allocation/extent。快照结束行：
++
++```text
++status=snapshot_complete valid0=0x1ff valid1=0x1ff stable_mask=0x1ff
++unstable_mask=0x0 reads=18 loads=18 read_failures=0 completed_passes=2
++errors=0x0 elapsed_us=18 gpu_writes=0 power_verified=0 chip_id=UNREAD
++```
++
++## 温度、退出与日志
++
++| CPU affinity | 本次最高原生读数 | 结束读数 |
++|---|---:|---:|
++| 0x0（UEFI resident） | 51.2°C | 48.6°C |
++| 0x1（XNU 引导核） | 51.8°C | 46.1°C |
++| 0x100 | 48.0°C | 45.1°C |
++| 0x101 | 48.6°C | 45.1°C |
++
++这是四路 CPU TSENS 原生值，非 GPU 温度或校准精度验收。本次没有持续满载，不据此选择新频率。
++
++尾部包含正常 timer、四路 `phase=stop`、`return_cpu affinity=0x1`、source writer contention dropped bytes=0，以及 **`drain=1 target=57875`**。RAM 的 `DATA SYNC error=2 phase=lookup` 是没有真实 Data 路径，不是 UFS 失败。
++
++独立逐字节重放原始 USB：**235 帧 / 65,444 原始字节 / 57,924 console 字节**，起始 offset 0，末 offset 57,924，缺口/重复/残帧/device-lost 均 0，与冻结 receiver 重解码完全一致，包含内核起点至正常 timer/drain。接收器在 03:55:40 记录 **capture_failed / Pipe error**，该进程状态原样保留；独立排空与返回证据不依赖把它改成 success。
++
++03:56:56 在原窗口内只核验一次，得到 serial `54223ce9` / product `MSM8996_A8`，确认同一手机 Fastboot。没有请求或执行手动恢复，不再查询。固件内部 Prepare/Commit 文本未单独捕获，未目视手机终屏；USB 断开本身不作为自动返回证明。
++
++## 独立复核与下一阶段
++
++主代理执行真机 lifecycle、保存流分析和独立 USB 重放。Bacon 子代理仅从保存日志与固定源码核对原始字段、地址、位定义和解释；不操作设备。复核结果附在 evidence/core/runtime-g0-01；本报告的原始数值和位计算由主代理直接复核。
++
++下一步是 **G1 供电与上电后 chip ID**，仍保持 614.4 MHz CPU 基线：
++
++1. 从已固定的 stock CPR3 数据与本机 fuse 确认 GFX corner 2 / 133 MHz 所需数字配置；独立核对 GFX 的 PMI8994 S2 与 MX 的 PM8994 RPM smpa/2 corner 4，不能套 CPU S11。
++2. 建立可观测的 regulator settled、RPM/bus acknowledgement、CX/GX/clamp 和时钟前置，再实现受控上电/逆序退场；在此前不访问 0x00b00000。
++3. 上电前置满足后，单独批准的 G1 包才读取 `RBBM_CHIP_ID`；目标 0x05030004。再单独验证 G2 的 PAS13/内存池与 CP 安全切换。G0 通过不扩大成 G1/G2 写操作批准。
++
++匹配本地 8 个固件已准备，但本次均未装载。软件 fb_threads=2 对照仍单独冻结未上机。
++
++[逐字段分析](/F:/IOS-MIX1/evidence/gpu-g0-20261123/main/runtime-g0-01/analysis.json) · [USB 独立审计](/F:/IOS-MIX1/evidence/gpu-g0-20261123/main/runtime-g0-01/usb-audit.json) · [原始 console](/F:/IOS-MIX1/evidence/gpu-g0-20261123/package/runs/gpu-g0-01/console.log) · [G1/G2 来源准备](/F:/IOS-MIX1/evidence/gpu-g0-20261123/power-zap/G1-G2-readiness.md)
+--- /dev/null
++++ b/reports/hakios-ios16-gpu-g0-01.json
+@@ -0,0 +1,488 @@
++{
++  "schema": "hakios-gpu-g0-saved-runtime-v1",
++  "analyzed_at": "2026-11-22T19:57:20.930802+00:00",
++  "attempt": "gpu-g0-01",
++  "passed": true,
++  "status": "G0_passed",
++  "accepted_at": "2026-11-23T03:52:07.672005+08:00",
++  "image_sha256": "61bc8b8220f54e8a2b0772a694690901b89e48a65b2d52463c8f962ab02c7933",
++  "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_sanity=1 cpu_perf_fixed=1 cpu_perf_hz=614400000 cpu_thermal_diag=1 cpu_inherited_supply_r39=1 gpu_stage=0 gpu_probe=1 gpu_wd=1 lithium_log_retry=1",
++  "snapshot_passed": true,
++  "cpu_binding_observed": true,
++  "allocation_cleanup_observed": true,
++  "begin": [
++    {
++      "line": 107,
++      "fields": {
++        "stage": "0",
++        "logical": "0",
++        "affinity": "0x1",
++        "max_logical": "2",
++        "register_count": "9",
++        "passes": "2",
++        "read_cap": "18",
++        "deadline_us": "50000",
++        "gpu_aperture": "unread",
++        "smmu": "unread",
++        "gpu_writes": "0",
++        "irq_attached": "0"
++      }
++    }
++  ],
++  "end": [
++    {
++      "line": 132,
++      "fields": {
++        "stage": "0",
++        "status": "snapshot_complete",
++        "valid0": "0x1ff",
++        "valid1": "0x1ff",
++        "stable_mask": "0x1ff",
++        "unstable_mask": "0x0",
++        "reads": "18",
++        "loads": "18",
++        "read_failures": "0",
++        "completed_passes": "2",
++        "errors": "0x0",
++        "elapsed_us": "18",
++        "gpu_writes": "0",
++        "power_verified": "0",
++        "chip_id": "UNREAD"
++      }
++    }
++  ],
++  "registers": [
++    {
++      "line": 111,
++      "pass_index": 0,
++      "reg": "CX_GDSCR",
++      "pa": 9191476,
++      "valid": 1,
++      "raw": 2236417,
++      "stable": 1
++    },
++    {
++      "line": 112,
++      "pass_index": 0,
++      "reg": "GX_GDSCR",
++      "pa": 9191460,
++      "valid": 1,
++      "raw": 2236417,
++      "stable": 1
++    },
++    {
++      "line": 113,
++      "pass_index": 0,
++      "reg": "GPU_AHB_CBCR",
++      "pa": 9191484,
++      "valid": 1,
++      "raw": 2147516416,
++      "stable": 1
++    },
++    {
++      "line": 114,
++      "pass_index": 0,
++      "reg": "GPU_AON_ISENSE_CBCR",
++      "pa": 9191492,
++      "valid": 1,
++      "raw": 2147483648,
++      "stable": 1
++    },
++    {
++      "line": 115,
++      "pass_index": 0,
++      "reg": "GPU_GX_GFX3D_CBCR",
++      "pa": 9191464,
++      "valid": 1,
++      "raw": 2147484192,
++      "stable": 1
++    },
++    {
++      "line": 116,
++      "pass_index": 0,
++      "reg": "GPU_GX_RBBMTIMER_CBCR",
++      "pa": 9191600,
++      "valid": 1,
++      "raw": 2147483648,
++      "stable": 1
++    },
++    {
++      "line": 117,
++      "pass_index": 0,
++      "reg": "GFX3D_CMD_RCGR",
++      "pa": 9191424,
++      "valid": 1,
++      "raw": 2147483648,
++      "stable": 1
++    },
++    {
++      "line": 118,
++      "pass_index": 0,
++      "reg": "GCC_MMSS_BIMC_GFX_CBCR",
++      "pa": 3182608,
++      "valid": 1,
++      "raw": 2147500577,
++      "stable": 1
++    },
++    {
++      "line": 119,
++      "pass_index": 0,
++      "reg": "GCC_BIMC_GFX_CBCR",
++      "pa": 3432472,
++      "valid": 1,
++      "raw": 1,
++      "stable": 1
++    },
++    {
++      "line": 120,
++      "pass_index": 1,
++      "reg": "CX_GDSCR",
++      "pa": 9191476,
++      "valid": 1,
++      "raw": 2236417,
++      "stable": 1
++    },
++    {
++      "line": 121,
++      "pass_index": 1,
++      "reg": "GX_GDSCR",
++      "pa": 9191460,
++      "valid": 1,
++      "raw": 2236417,
++      "stable": 1
++    },
++    {
++      "line": 122,
++      "pass_index": 1,
++      "reg": "GPU_AHB_CBCR",
++      "pa": 9191484,
++      "valid": 1,
++      "raw": 2147516416,
++      "stable": 1
++    },
++    {
++      "line": 123,
++      "pass_index": 1,
++      "reg": "GPU_AON_ISENSE_CBCR",
++      "pa": 9191492,
++      "valid": 1,
++      "raw": 2147483648,
++      "stable": 1
++    },
++    {
++      "line": 124,
++      "pass_index": 1,
++      "reg": "GPU_GX_GFX3D_CBCR",
++      "pa": 9191464,
++      "valid": 1,
++      "raw": 2147484192,
++      "stable": 1
++    },
++    {
++      "line": 125,
++      "pass_index": 1,
++      "reg": "GPU_GX_RBBMTIMER_CBCR",
++      "pa": 9191600,
++      "valid": 1,
++      "raw": 2147483648,
++      "stable": 1
++    },
++    {
++      "line": 126,
++      "pass_index": 1,
++      "reg": "GFX3D_CMD_RCGR",
++      "pa": 9191424,
++      "valid": 1,
++      "raw": 2147483648,
++      "stable": 1
++    },
++    {
++      "line": 127,
++      "pass_index": 1,
++      "reg": "GCC_MMSS_BIMC_GFX_CBCR",
++      "pa": 3182608,
++      "valid": 1,
++      "raw": 2147500577,
++      "stable": 1
++    },
++    {
++      "line": 128,
++      "pass_index": 1,
++      "reg": "GCC_BIMC_GFX_CBCR",
++      "pa": 3432472,
++      "valid": 1,
++      "raw": 1,
++      "stable": 1
++    }
++  ],
++  "decoded_registers": [
++    {
++      "reg": "CX_GDSCR",
++      "pa": "0x008c4034",
++      "raw": "0x00222001",
++      "pwr_on": 0,
++      "sw_override": 0,
++      "hw_control": 0,
++      "sw_collapse": 1,
++      "meaning": "GDSC reports collapsed, PWR_ON clear"
++    },
++    {
++      "reg": "GX_GDSCR",
++      "pa": "0x008c4024",
++      "raw": "0x00222001",
++      "pwr_on": 0,
++      "sw_override": 0,
++      "hw_control": 0,
++      "sw_collapse": 1,
++      "meaning": "GDSC reports collapsed, PWR_ON clear"
++    },
++    {
++      "reg": "GPU_AHB_CBCR",
++      "pa": "0x008c403c",
++      "raw": "0x80008000",
++      "branch_enable": 0,
++      "branch_off": 1,
++      "meaning": "documented branch enable/off fields only; no actual MHz or ownership claim"
++    },
++    {
++      "reg": "GPU_AON_ISENSE_CBCR",
++      "pa": "0x008c4044",
++      "raw": "0x80000000",
++      "branch_enable": 0,
++      "branch_off": 1,
++      "meaning": "documented branch enable/off fields only; no actual MHz or ownership claim"
++    },
++    {
++      "reg": "GPU_GX_GFX3D_CBCR",
++      "pa": "0x008c4028",
++      "raw": "0x80000220",
++      "branch_enable": 0,
++      "branch_off": 1,
++      "meaning": "documented branch enable/off fields only; no actual MHz or ownership claim"
++    },
++    {
++      "reg": "GPU_GX_RBBMTIMER_CBCR",
++      "pa": "0x008c40b0",
++      "raw": "0x80000000",
++      "branch_enable": 0,
++      "branch_off": 1,
++      "meaning": "documented branch enable/off fields only; no actual MHz or ownership claim"
++    },
++    {
++      "reg": "GFX3D_CMD_RCGR",
++      "pa": "0x008c4000",
++      "raw": "0x80000000"
++    },
++    {
++      "reg": "GCC_MMSS_BIMC_GFX_CBCR",
++      "pa": "0x00309010",
++      "raw": "0x80004221",
++      "branch_enable": 1,
++      "branch_off": 1,
++      "meaning": "documented branch enable/off fields only; no actual MHz or ownership claim"
++    },
++    {
++      "reg": "GCC_BIMC_GFX_CBCR",
++      "pa": "0x00346018",
++      "raw": "0x00000001",
++      "branch_enable": 1,
++      "branch_off": 0,
++      "meaning": "documented branch enable/off fields only; no actual MHz or ownership claim"
++    }
++  ],
++  "gpu_mmio_writes": 0,
++  "gpu_aperture_read": false,
++  "chip_id": null,
++  "firmware_loaded": false,
++  "gpu_acceleration_verified": false,
++  "power_rail_voltage_verified": false,
++  "cpu_temperature_peak_native_mC": {
++    "0x0": 51200,
++    "0x1": 51800,
++    "0x100": 48000,
++    "0x101": 48600
++  },
++  "temperature_rows": 172,
++  "stop_temperature_rows": [
++    {
++      "line": 355,
++      "fields": {
++        "phase": "stop",
++        "affinity": "0x0",
++        "sensor": "TSENS0",
++        "id": "4",
++        "raw": "0x002041e6",
++        "enabled": "1",
++        "valid": "1",
++        "native_mC": "48600",
++        "reason": "native_hardware_units",
++        "trdy_read": "1",
++        "trdy": "0",
++        "status_reads": "1",
++        "reads": "4",
++        "at_abs": "27428053195",
++        "calibration_verified": "0",
++        "freshness_verified": "0"
++      }
++    },
++    {
++      "line": 356,
++      "fields": {
++        "phase": "stop",
++        "affinity": "0x1",
++        "sensor": "TSENS0",
++        "id": "6",
++        "raw": "0x002061cd",
++        "enabled": "1",
++        "valid": "1",
++        "native_mC": "46100",
++        "reason": "native_hardware_units",
++        "trdy_read": "1",
++        "trdy": "0",
++        "status_reads": "1",
++        "reads": "4",
++        "at_abs": "27428053195",
++        "calibration_verified": "0",
++        "freshness_verified": "0"
++      }
++    },
++    {
++      "line": 357,
++      "fields": {
++        "phase": "stop",
++        "affinity": "0x100",
++        "sensor": "TSENS0",
++        "id": "9",
++        "raw": "0x002091c3",
++        "enabled": "1",
++        "valid": "1",
++        "native_mC": "45100",
++        "reason": "native_hardware_units",
++        "trdy_read": "1",
++        "trdy": "0",
++        "status_reads": "1",
++        "reads": "4",
++        "at_abs": "27428053195",
++        "calibration_verified": "0",
++        "freshness_verified": "0"
++      }
++    },
++    {
++      "line": 358,
++      "fields": {
++        "phase": "stop",
++        "affinity": "0x101",
++        "sensor": "TSENS0",
++        "id": "11",
++        "raw": "0x0020b1c3",
++        "enabled": "1",
++        "valid": "1",
++        "native_mC": "45100",
++        "reason": "native_hardware_units",
++        "trdy_read": "1",
++        "trdy": "0",
++        "status_reads": "1",
++        "reads": "4",
++        "at_abs": "27428053195",
++        "calibration_verified": "0",
++        "freshness_verified": "0"
++      }
++    }
++  ],
++  "source_contention_dropped_bytes": 0,
++  "usb": {
++    "raw_bytes": 65444,
++    "console_bytes": 57924,
++    "frames": 235,
++    "raw_sha256": "934b551850868285aa2d606378b6079e91d627354ab6746d7b379c54bedde061",
++    "console_sha256": "520007cbc338040e19585171df9b66c4881e2cd997815d2e29ffb4d297335499",
++    "first_offset": 0,
++    "final_offset": 57924,
++    "missing_bytes": 0,
++    "duplicate_bytes": 0,
++    "incomplete_frame_bytes": 0,
++    "device_lost_max": 0,
++    "frames_reporting_device_loss": 0,
++    "independent_parser_agrees_with_frozen_receiver": true,
++    "frozen_redecode_equals_complete_console": true,
++    "transport_verified": true,
++    "kernel_banner_offset": 0,
++    "timer_offset": 56455,
++    "normal_return_offset": 57808,
++    "drain_success": true,
++    "drain_records": [
++      {
++        "offset": 57875,
++        "drained": 1,
++        "target": 57875
++      }
++    ],
++    "emitted_kernel_stream_through_timer_verified": true,
++    "all_firmware_daemon_and_original_printf_logs_complete": false,
++    "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
++  },
++  "receiver_terminal": {
++    "started_at": "2026-11-23T03:52:06.324945+08:00",
++    "enumerated": true,
++    "frames": 235,
++    "missing_bytes": 0,
++    "duplicate_bytes": 0,
++    "status": "capture_failed",
++    "output": "F:\\IOS-MIX1\\evidence\\gpu-g0-20261123\\package\\runs\\gpu-g0-01\\console.log",
++    "device_commands_sent": false,
++    "candidate_seen": true,
++    "identity_verified": true,
++    "descriptor_errors": 0,
++    "descriptor_error_samples": [],
++    "configuration_verified": true,
++    "console_bytes": 57924,
++    "failure_stage": "capturing",
++    "failure": "[Errno 32] Pipe error",
++    "finished_at": "2026-11-23T03:55:40.335676+08:00"
++  },
++  "return_verification": {
++    "started_at": "2026-11-23T03:56:56.098317+08:00",
++    "elapsed_seconds": 288.425307,
++    "devices_query_count": 1,
++    "product_query_count": 1,
++    "device_rows": [
++      [
++        "54223ce9",
++        "fastboot"
++      ]
++    ],
++    "same_serial_fastboot": true,
++    "observed_product": "MSM8996_A8",
++    "product_verified": true,
++    "passed": true,
++    "retry": false,
++    "attempt_id": "gpu-g0-01",
++    "phase": "g0",
++    "capture_stop_requested": true,
++    "finished_at": "2026-11-23T03:56:56.595875+08:00"
++  },
++  "no_panic_text_in_collected_stream": true,
++  "physical_screen_observed": false,
++  "cpu_frequency_kind": "614.4 MHz configuration model; no PMU measured MHz",
++  "device_operation_scope": "5 preflight reads, one temporary boot, one post-return devices/product check; no retry",
++  "next": "G1 source-backed GPU GFX/MX supply and bus prerequisites before power-on/chip-ID",
++  "input_sha256": {
++    "console.frames": "934b551850868285aa2d606378b6079e91d627354ab6746d7b379c54bedde061",
++    "console.log": "520007cbc338040e19585171df9b66c4881e2cd997815d2e29ffb4d297335499",
++    "result.json": "4b0f027dea56f63409daa6add9c36122ec681e7c6249762cc9197d0348ecb521",
++    "usb-status.json": "42f69de51836bf6be415ac0bfeaa1924a1ed9eb9d8c5ff069a5a4a36d5f1bb95",
++    "return-verification.json": "3c9d1ca5aa5060096c9c4095cffa68e9acc982ab0ae497f2806970a844a6c4a2",
++    "capture-host.py": "d5a9aecdd3c5ac728b233628d9ae810a598a35ba05d9068d0db3ed70fde3791c"
++  },
++  "report": "reports/hakios-ios16-gpu-g0-01.md",
++  "accepted_boot_counts": {
++    "hakios": 97,
++    "ios16": 66
++  },
++  "independent_register_review": "evidence/gpu-g0-20261123/core/runtime-g0-01.json",
++  "git_index_sha256": "fdf775be66b9e456182cd10df6271edadef7f977b6d0b02fa275030f985d1eb2",
++  "baseline_preserved": true,
++  "phase_complete": true,
++  "next_phase": "G1",
++  "G1_device_authorized": false
++}

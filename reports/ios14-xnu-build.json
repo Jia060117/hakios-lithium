@@ -1,0 +1,148 @@
+{
+  "source_commit": "776661b72c2db9861865df68d309f6f35faccff4",
+  "workspace": "/home/jia/ios-mix1-build/xnu7195-workspace",
+  "stage": "kernel",
+  "dependency_lock": {
+    "manifest": {
+      "repository": "apple-oss-distributions/distribution-macOS",
+      "commit": "cb82d4060393c4a14a838bf5179bcd786c7f666b",
+      "path": "release.json",
+      "release": "macOS 11.5",
+      "note": "Same published XNU tag; dependency versions are a build baseline, not an exact iOS14.8 SDK."
+    },
+    "projects": [
+      {
+        "name": "AvailabilityVersions",
+        "tag": "AvailabilityVersions-80.3",
+        "tag_object": "a3c833b64250e25f242c1ce3152105e281b24258",
+        "commit": "c5d16a4820c345bf7d6abfa88899a41d04fa7999"
+      },
+      {
+        "name": "libplatform",
+        "tag": "libplatform-254.80.2",
+        "tag_object": "3ddbd6edb4d63df541b79648807fce4e3e868513",
+        "commit": "c8b140a4b2cf36665497f4f9df3797d2ed10e857"
+      },
+      {
+        "name": "libdispatch",
+        "tag": "libdispatch-1271.120.2",
+        "tag_object": "f7d580cac8896ca07bb8e0911530fe4d7a62e9d1",
+        "commit": "6d29adec75a4cf1d03d826fffa57e2364504d35c"
+      }
+    ]
+  },
+  "patches": [
+    {
+      "path": "ports/lithium/patches/xnu-7195-build/0001-linux-posix-header-generator.patch",
+      "sha256": "8d7846f61a73cef4a36cfeab22bac0ad37673ffbcc9014bf445a290d89b39493"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195-build/0002-persona-commpage-include.patch",
+      "sha256": "876cf78fe58c5dea95448ded6aa9b05e00052618d421c4560420cee4eec66dca"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195-build/0003-generic-arm-without-apple-amcc.patch",
+      "sha256": "3557a43e281e6396da22e0e2f018d23ec5ad5257e42e52f5583e21e396341060"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195-build/0005-kernelrpc-constant-array-bound.patch",
+      "sha256": "ae1836dcb38b7085cc2fd4822812ccd32e7b5fec5fa8472ef1fe4b4d17bb60fe"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195-build/0006-iig-generator-dependency.patch",
+      "sha256": "f02ad5bf6cc768ae14b7738b815232b1ed5bd6533034e70418babb6e5b6edb5a"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195-build/0007-apple-only-cpu-tunables.patch",
+      "sha256": "61d238b16e9514d55a54723438e7c695d18e7219cef6fc8bfdbe193c4e51fdac"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195-build/0008-pmap-compilation-service-state.patch",
+      "sha256": "c1a977e00602cb93514771fd9b260df4b0c42efee9b6d01e678f8fbd7c453c57"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195-build/0009-upstream-clang-crypto-assembler-syntax.patch",
+      "sha256": "c84731c36540a70a01d3c6859cfd51f572ab4b5894e62bffbefec4c5d2596edd"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195-build/0010-monitor-call-only-with-monitor.patch",
+      "sha256": "48a2ab06bae9682c5b587637f71254a481c00a71e267e45aed533ffba76a7991"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195-build/0011-unsupported-pmap-signing-exception.patch",
+      "sha256": "318c42f97c00f1f4aa74a9089d78a09dd3432e51c3c0b2b6af95ddb884595612"
+    },
+    {
+      "path": "ports/lithium/patches/xnu-7195-build/0012-explicit-optional-kext-pgo-provider.patch",
+      "sha256": "7012c4ea2218d6d8ec871d321150150c44b59c29cf29a2e70f9fd77c052ca4aa"
+    }
+  ],
+  "target": "iOS14 arm64 DEVELOPMENT BCM2837 public-source baseline; not lithium",
+  "sdk_kind": "source-exported kernel headers, not an Apple iPhoneOS SDK",
+  "unsupported_features": [
+    "kext PGO export (ENOTSUP)",
+    "per-pmap W+X signing exception without PMAP_CS (KERN_NOT_SUPPORTED)"
+  ],
+  "command": [
+    "make",
+    "--output-sync=target",
+    "-C",
+    "/home/jia/ios-mix1-build/xnu7195-workspace/src",
+    "build",
+    "SHELL=/bin/bash",
+    "SDKROOT=iphoneos",
+    "ARCH_CONFIGS=ARM64",
+    "MACHINE_CONFIGS=BCM2837",
+    "KERNEL_CONFIGS=DEVELOPMENT",
+    "ARCH_STRING_FOR_CURRENT_MACHINE_CONFIG=arm64",
+    "PLATFORM=iPhoneOS",
+    "HOST_OS_VERSION=11.0",
+    "HOST_SDKROOT_RESOLVED=/",
+    "HOST_CC=/opt/unixnu-linux/CommandLineTools/usr/bin/xnu-host-cc",
+    "MIGCOM=/opt/unixnu-linux/CommandLineTools/usr/libexec/migcom",
+    "IIG=/mnt/f/IOS-MIX1/scripts/iig-ios14.py",
+    "SYSCTL_HW_PHYSICALCPU=8",
+    "SYSCTL_HW_LOGICALCPU=8",
+    "MEMORY_SIZE=25199046656",
+    "MAKEJOBS=-j8",
+    "BUILD_DSYM=0",
+    "BUILD_LTO=0",
+    "BUILD_WERROR=0",
+    "WARNFLAGS_STD=-Wall -Wextra -Wno-unused-parameter -Wno-unknown-warning-option",
+    "RC_NONARCH_CFLAGS=-DXNU_KEXT_PGO=0",
+    "RC_DARWIN_KERNEL_VERSION=20.6.0",
+    "RC_ProjectSourceVersion=7195.141.2",
+    "OBJROOT=/home/jia/ios-mix1-build/xnu7195-workspace/obj",
+    "SYMROOT=/home/jia/ios-mix1-build/xnu7195-workspace/sym",
+    "DSTROOT=/home/jia/ios-mix1-build/xnu7195-workspace/dst"
+  ],
+  "environment": {
+    "PATH": "/opt/unixnu-linux/CommandLineTools/usr/bin:/opt/unixnu-linux/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Users/Jia33/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell:/mnt/c/Users/Jia33/.codex/tmp/arg0-windows/codex-arg0ZdF5gN:/mnt/c/Users/Jia33/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/libheif/libheif/bin:/mnt/c/Users/Jia33/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/jxrlib/jxrlib/bin:/mnt/c/Users/Jia33/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/poppler/Library/bin:/mnt/c/Users/Jia33/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/override:/mnt/c/Program Files/Common Files/Oracle/Java/javapath:/mnt/c/Windows/system32:/mnt/c/Windows:/mnt/c/Windows/System32/Wbem:/mnt/c/Windows/System32/WindowsPowerShell/v1.0/:/mnt/c/Windows/System32/OpenSSH/:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/:/mnt/c/Program Files/nodejs/:/mnt/c/Users/Jia33/.local/bin:/mnt/c/Program Files/AMD/ROCm/7.2/bin:/mnt/c/Program Files/Git/cmd:/mnt/c/Program Files (x86)/GnuWin32/bin:/mnt/c/Program Files/Git/bin:/mnt/c/platform-tools:/mnt/c/Users/Jia33/AppData/Local/pnpm/bin:/mnt/c/Program Files (x86)/Tencent/\u5fae\u4fe1web\u5f00\u53d1\u8005\u5de5\u5177:/mnt/c/Program Files/WSL/:/mnt/c/Users/Jia33/AppData/Local/Programs/DeepSeek Harness/resources/runtime/cli/bin:/mnt/c/Users/Jia33/AppData/Local/agy/bin:/mnt/c/Users/Jia33/AppData/Local/kdocs-cli:/mnt/c/Users/Jia33/.cargo/bin:/mnt/c/Users/Jia33/AppData/Local/hermes/hermes-agent/venv/Scripts:/mnt/c/Users/Jia33/AppData/Local/hermes/node:/mnt/c/Users/Jia33/AppData/Local/hermes/bin:/mnt/c/Users/Jia33/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell:/mnt/c/Users/Jia33/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/Jia33/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/Jia33/.dotnet/tools:/mnt/c/Users/Jia33/AppData/Local/hermes/git/cmd:/mnt/c/Users/Jia33/AppData/Local/hermes/git/bin:/mnt/c/Users/Jia33/AppData/Local/hermes/git/usr/bin:/mnt/c/Users/Jia33/AppData/Local/Microsoft/WinGet/Packages/BurntSushi.ripgrep.MSVC_Microsoft.Winget.Source_8wekyb3d8bbwe/ripgrep-15.2.0-x86_64-pc-windows-msvc:/mnt/c/Users/Jia33/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-9.0-full_build/bin:/mnt/c/Users/Jia33/AppData/Roaming/npm:/mnt/c/Program Files/Eclipse Adoptium/jdk-21.0.12.8-hotspot/bin:/mnt/c/Users/Jia33/AppData/Local/Android/Sdk/platform-tools:/mnt/c/Users/Jia33/AppData/Local/Microsoft/WinGet/Packages/ggml.llamacpp_Microsoft.Winget.Source_8wekyb3d8bbwe:/mnt/c/Users/Jia33/AppData/Local/Unity/bin:/mnt/c/Users/Jia33/.dotnet/tools:/mnt/c/mysql/bin:/mnt/c/Users/Jia33/AppData/Local/Programs/DockerDesktop/resources/bin:/mnt/c/Users/Jia33/.lmstudio/bin:/mnt/c/Users/Jia33/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/fallback:/mnt/c/Users/Jia33/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:/mnt/c/Users/Jia33/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/git/cmd:/mnt/c/Users/Jia33/AppData/Local/OpenAI/Codex/bin/fc32aa0651e37f32:/mnt/c/Users/Jia33/AppData/Local/OpenAI/Codex/bin/9e1da79431da526b",
+    "LC_ALL": "C",
+    "ZERO_AR_DATE": "1",
+    "CROSS_CLANG": "/opt/unixnu-linux/llvm/bin/clang",
+    "DARWIN_TRIPLE": "arm64-apple-ios14.0",
+    "CROSS_EXTRA_FLAGS": "-mllvm -disable-atexit-based-global-dtor-lowering",
+    "XNU_CLANG_DROP_FLAGS": "-enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang",
+    "XNU_TOOLCHAIN_BIN": "/opt/unixnu-linux/CommandLineTools/usr/bin /opt/unixnu-linux/XcodeDefault.xctoolchain/usr/bin",
+    "UNIXNU_SDKROOT": "/home/jia/ios-mix1-build/xnu7195-workspace/sdk",
+    "IOS14_IIG_REAL": "/opt/unixnu-linux/XcodeDefault.xctoolchain/usr/bin/iig",
+    "IOS14_IIG_ROOT": "/home/jia/ios-mix1-build/xnu7195-workspace",
+    "UNIXNU_SDK_VERSION": "14.0",
+    "UNIXNU_SDK_BUILD": "source-headers-7195.141.2",
+    "UNIXNU_PLATFORM_PATH": "/home/jia/ios-mix1-build/xnu7195-workspace/sdk/Platforms/iPhoneOS.platform"
+  },
+  "exit_code": 0,
+  "log": "/home/jia/ios-mix1-build/xnu7195-workspace/logs/kernel-20261112T152219Z.log",
+  "log_sha256": "f3f4515ef1f92dc85f307f8c151cc8c98f4d860e6f58526181cec6c241e797ab",
+  "kernel_binaries": [
+    {
+      "path": "/home/jia/ios-mix1-build/xnu7195-workspace/obj/DEVELOPMENT_ARM64_BCM2837/mach.development.bcm2837.unstripped",
+      "bytes": 13493032,
+      "sha256": "f828fa415f3665af01943bef5e5784629f753a855ec87d2230f2b38fb6138d65"
+    }
+  ],
+  "device_operations": false,
+  "kernel_boot_verified": false,
+  "ios_userspace_started": false
+}

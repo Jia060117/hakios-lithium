@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "revision": "R34-touch-live",
+  "recorded_at": "2026-11-20T17:02:52.706498+08:00",
+  "host_built": true,
+  "hardware_verified": false,
+  "device_operations": 0,
+  "enable_arg": "touch=1",
+  "profiles": {
+    "ram": {
+      "path": "artifacts\\hakios\\lithium-ios16\\phase4-r34-touch-live-ram-final\\lithium-hakios-ios16-r34-touch-live-ram.img",
+      "image_sha256": "d1bbc6bf94defeacacf3ffbbae32bd3e227b70ef74bb1ceda2fb5539f8ad0d3b",
+      "image_bytes": 16318464,
+      "kernel_sha256": "799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c",
+      "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 touch=1 touch_log=1 touch_poll=1 touch_diag=1 return_fastboot=1 return_fastboot_delay=10",
+      "components_rehashed": 10,
+      "unique_fastboot_return_record": true
+    },
+    "ufs": {
+      "path": "artifacts\\hakios\\lithium-ios16\\phase4-r34-touch-live-ufs-final\\lithium-hakios-ios16-r34-touch-live-ufs.img",
+      "image_sha256": "47740664f56fcf021096493444cc96934223f49ce0dfc099920bfb73cfc426ed",
+      "image_bytes": 16318464,
+      "kernel_sha256": "799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c",
+      "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1",
+      "components_rehashed": 10,
+      "unique_fastboot_return_record": true
+    }
+  },
+  "focused_tests": {
+    "qup_cases": 91,
+    "events_groups": 4,
+    "sanitizers": [
+      "ASan",
+      "UBSan"
+    ],
+    "actual_kernel_link": true,
+    "actual_init_build": true,
+    "apfs_clean_and_entries_read_back": 486,
+    "package_layers_readback": true,
+    "historical_full_regression_repeated": false
+  },
+  "source_sha256": {
+    "ports/hakios-lithium/peripherals/kernel.inc": "87f4b11f19e75b0cd06addae90d5f2d8f169aed4b419c72ea00810bf18bb2bab",
+    "ports/hakios-lithium/peripherals/touch-live.inc": "025dc0d2f9023ac55817b8608f5dcf41ec664c8a88f9818e040f12e868614538",
+    "ports/hakios-lithium/peripherals/touch-live-qup.h": "dde6eb52f693084c56acba60ce6f0d54348a37ddf052af5d2f65e5a05d588fe5",
+    "ports/hakios-lithium/peripherals/touch-live-events.h": "a3acea8a6d9cdcb7296c840424cfce9abe0289d62763f9162d84d38fcd1ac195",
+    "ports/hakios-lithium/patches/0024-lithium-touch-live.patch": "2149a49ba75a75fd86b8cee06793849dfc48a3955ec9b51e6d8f07459acffdac",
+    "maintenance/hakios-lithium/peripherals/touch-live-qup-test.c": "4a3cc4a70ee48d9f5c67f7afe36ed5aa56a8a3af9509a25b8d2be1cdabb8325b",
+    "maintenance/hakios-lithium/peripherals/touch-live-events-test.c": "b3f5d6497d195182d28ade5049f2d784a508d93360b733e51c9b8dc49af74f2d",
+    "scripts/prepare-hakios-touch-live.py": "5fbad31c0d5b4d0001773726b17d4a3a3e4efbfc23c4810a5ec2d295891f54ac",
+    "scripts/build-hakios-touch-live.py": "053617f8ff2a39f6a7ff30ffc83a18eb23ebe30683a2affb74d2a99f23e34ec3",
+    "scripts/package-hakios-touch-live.py": "7e1e8e2b2345af0fcd76887c6a17bc8cf60268748c2594df00d597d80a37d64b",
+    "reports/local/run-touch-live-build.ps1": "7e9be40af4b7aa2dd71f1e65203b5cc66ed91212d3331590b8d9772e8bbc99f2"
+  },
+  "index_sha256": "ead184543d0a1d907521c4acaddb65b98f8e8a8783bb05c16eff8dea64011f47",
+  "frozen_baselines": {
+    "phase4-r20-display": "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82",
+    "phase4-r32-touch-qup-transfer": "b260776a3fff5513134b2c594e364eb58fb95a495c9a7625e6866354345fe767",
+    "phase4-r33-return-fastboot": "7a4010a051e16c9f339d1ed5b04ea64abc7ac69e952de3072d78dab94a5a956e"
+  },
+  "no_firmware_write": true,
+  "no_regulator_write": true,
+  "reset_sequence": "GPIO89 low10ms high300ms",
+  "followup": "authorized once RAM short test, then already built UFS desktop candidate",
+  "goal_complete": false
+}

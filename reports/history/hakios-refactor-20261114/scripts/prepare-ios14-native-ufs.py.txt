@@ -1,0 +1,143 @@
+#!/usr/bin/env python3
+"""Adapt pinned sailfish read-only UFS to XNU7195 and measured MIX geometry."""
+import difflib
+import importlib.util
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+PATCH = ROOT / 'ports/lithium/patches/xnu-7195/0018-lithium-native-ufs-read.patch'
+REF = ROOT / 'upstream/research/ios-sailfish/xnu/patches/0028-sweet-ufs-root-device.patch'
+
+def main():
+    spec=importlib.util.spec_from_file_location('native_alias',ROOT/'scripts/prepare-ios14-native-alias-probe.py')
+    helper=importlib.util.module_from_spec(spec); spec.loader.exec_module(helper)
+    edits={}
+    def read(path): return helper.baseline(path,PATCH)
+    section=REF.read_text().split('+++ b/bsd/dev/sweet_ufs.c\n',1)[1]
+    src=''.join(s[1:]+'\n' for s in section.splitlines() if s.startswith('+'))
+    src=src.replace('sweet','lithium').replace('SWEET','LITHIUM')
+    # KMA_DATA was introduced after 7195; this version's allocator has no such flag.
+    src=src.replace('KMA_DATA | KMA_ZERO | KMA_PERMANENT','KMA_ZERO | KMA_PERMANENT')
+    def replace(a,b):
+        nonlocal src
+        assert src.count(a)==1, a
+        src=src.replace(a,b)
+    replace('#define REG_IS', '#include "lithium_ufs_gpt.h"\n\n#define REG_CAP         0x00\n#define REG_VER         0x08\n#define REG_IS')
+    replace('uint64_t first_block, nblocks;', 'uint64_t disk_blocks;\n\tbool failed;\n\tuint64_t first_block, nblocks;')
+    replace('assert(len <= BOUNCE_SIZE);', '''/* An explicit command allowlist prevents accidental storage writes. */
+    if (su.failed || cdb_len > 16 || len > BOUNCE_SIZE ||
+        (cdb[0] != 0x00 && cdb[0] != 0x25 && cdb[0] != 0x28)) return EINVAL;
+    if (ufs_rd(REG_UTRLDBR) || ufs_rd(REG_UTRLBA) != (uint32_t)su.dma_pa ||
+        ufs_rd(REG_UTRLBAU) != (uint32_t)(su.dma_pa >> 32) ||
+        !(ufs_rd(REG_UTRLRSR) & 1)) return EBUSY;''')
+    replace('ufs_wr(REG_UTRLCLR, ~1u);', 'su.failed = true; /* Never reuse DMA after an uncompleted request. */\n\t\t\tufs_wr(REG_UTRLCLR, ~1u);')
+    replace('if (ocs || ucd->resp[0] != 0x21 || ucd->resp[6] || ucd->resp[7])',
+            'if (ocs || ucd->resp[0] != 0x21 || ucd->resp[2] != su.lun ||\n\t    ucd->resp[3] != su.tag || (ucd->resp[1] & 0x60) || ucd->resp[6] || ucd->resp[7])')
+    replace('if (lba > UINT32_MAX || count > BOUNCE_SIZE / UFS_BLOCK)',
+            'if (!count || lba > UINT32_MAX || count > BOUNCE_SIZE / UFS_BLOCK ||\n\t    lba >= su.disk_blocks || count > su.disk_blocks-lba)')
+    start=src.index('static int\nufs_find_partition(')
+    end=src.index('static int\nufs_take_over_host(',start)
+    userdata=next(p for p in json.loads((ROOT/'reports/partition-map.json').read_text())['named_partitions'] if p['label']=='userdata')
+    disk=next(p for p in json.loads((ROOT/'reports/block-geometry.json').read_text())['blocks'] if p['name']=='sda')
+    assert userdata['disk']=='sda' and userdata['logical_block_bytes']==4096
+    src=src[:start]+f'''static int
+ufs_find_partition(const char *want)
+{{
+    const uint8_t *b=(const uint8_t *)(su.dma+DMA_BOUNCE);
+    struct lithium_gpt g;
+    int error=ufs_read_blocks(1,1);
+    if(error) return error;
+    int check=lg_header(b,su.disk_blocks,&g);
+    if(check) {{ printf("LITHIUM UFS: GPT header rejected %d\\n",check); return ENXIO; }}
+    error=ufs_read_blocks(g.entries_lba,(g.bytes+UFS_BLOCK-1)/UFS_BLOCK);
+    if(error) return error;
+    check=lg_partition(b,&g,want,&su.first_block,&su.nblocks);
+    if(check) {{ printf("LITHIUM UFS: GPT entries rejected %d\\n",check); return ENXIO; }}
+    if(strcmp(want,"userdata") || su.first_block != {userdata['start_bytes']//4096}ULL ||
+        su.nblocks != {userdata['size_bytes']//4096}ULL) {{
+        printf("LITHIUM UFS: partition differs from measured MIX geometry\\n"); return ENXIO;
+    }}
+    printf("LITHIUM UFS: GPT header + entries CRC verified; userdata bounds match\\n");
+    return 0;
+}}
+
+static int
+ufs_capacity(void)
+{{
+    const uint8_t cdb[10]={{0x25}};
+    int error=ufs_scsi(cdb,sizeof(cdb),8);
+    if(error) return error;
+    const uint8_t *b=(const uint8_t *)(su.dma+DMA_BOUNCE);
+    uint32_t last=OSReadBigInt32(b,0), size=OSReadBigInt32(b,4);
+    printf("LITHIUM UFS: LUN0 last LBA 0x%x block bytes %u\\n",last,size);
+    if(size!=UFS_BLOCK || last==UINT32_MAX || (uint64_t)last+1!={disk['size_bytes']//4096}ULL) return ENXIO;
+    su.disk_blocks=(uint64_t)last+1;
+    error=ufs_read_blocks(0,1);
+    if(error) return error;
+    if(b[510]!=0x55 || b[511]!=0xaa || b[450]!=0xee) return ENXIO;
+    return 0;
+}}
+
+'''+src[end:]
+    replace('#include <libkern/libkern.h>', '#include <libkern/libkern.h>\n#include <libkern/OSByteOrder.h>')
+    replace('uint32_t hce = ufs_rd(REG_HCE), hcs = ufs_rd(REG_HCS);', '''uint32_t hce = ufs_rd(REG_HCE), hcs = ufs_rd(REG_HCS);
+    printf("LITHIUM UFS: ver 0x%x cap 0x%x hce 0x%x hcs 0x%x DMA 0x%llx\\n",
+        ufs_rd(REG_VER),ufs_rd(REG_CAP),hce,hcs,su.dma_pa);
+    if (((su.dma_pa+DMA_SIZE-1)>>32) && !(ufs_rd(REG_CAP)&(1u<<24))) return ENXIO;''')
+    replace('su.regs = ml_io_map(reg[0], reg[1]);', '''if (reg[0] != 0x624000 || reg[1] != 0x2500) return ENXIO;
+    printf("LITHIUM UFS: mapping measured controller 0x624000, read-only probe\\n");
+    su.regs = ml_io_map(reg[0], reg[1]);
+    if (!su.regs) return ENOMEM;''')
+    replace('if (!error) {\n\t\terror = ufs_find_partition(want);', '''if (!error) error = ufs_capacity();
+    if (!error) {
+        error = ufs_find_partition(want);''')
+    replace('want, su.lun, su.first_block, su.nblocks * UFS_BLOCK >> 20);', '''want, su.lun, su.first_block, su.nblocks * UFS_BLOCK >> 20);
+    error=ufs_read_blocks(su.first_block,1);
+    if(error) return error;
+    const uint8_t *sb=(const uint8_t *)(su.dma+DMA_BOUNCE+1024);
+    printf("LITHIUM UFS: userdata first block CRC32 0x%x; superblock 0x%x ext magic 0x%x\\n",
+        lg_crc((const uint8_t *)(su.dma+DMA_BOUNCE),4096,0),lg_le32(sb),
+        (unsigned)sb[56]|(unsigned)sb[57]<<8);''')
+    replace('su.ready = true;\n', '')
+    replace('/* Root device for rd=ufsroot0 (IOFindBSDRoot). */', '/* Future read-only root hook; probe does not claim to mount a filesystem. */')
+    replace('*dev = su.bdev;', 'su.ready = true;\n\t*dev = su.bdev;')
+    edits['bsd/dev/lithium_ufs.c']=('',src)
+    edits['bsd/dev/lithium_ufs_gpt.h']=('',(ROOT/'ports/lithium/native/ufs_gpt.h').read_text())
+    path='bsd/conf/files';old=read(path)
+    anchor=next(s for s in old.splitlines(True) if s.startswith('bsd/dev/memdev.c'))
+    edits[path]=(old,old.replace(anchor,anchor+'bsd/dev/lithium_ufs.c\t\tstandard\n'))
+    path='bsd/conf/Makefile.template';old=read(path)
+    edits[path]=(old,old+'\n# UFS descriptors and CRC use scalar ARMv8.0 only.\nlithium_ufs.o_CFLAGS_ADD += -mgeneral-regs-only\n')
+    path='iokit/bsddev/IOKitBSDInit.cpp';old=read(path)
+    anchor='//\n//\tNow check if we are trying to root on a memory device'
+    assert old.count(anchor)==1
+    declaration='extern "C" {\n'
+    assert old.count(declaration)==1
+    new=old.replace(declaration,declaration+'#if defined(ARM64_BOARD_CONFIG_LITHIUM)\nint lithium_ufs_rootdev(dev_t *);\n#endif\n')
+    edits[path]=(old,new.replace(anchor,'''#if defined(ARM64_BOARD_CONFIG_LITHIUM)
+    {
+        static bool probed = false;
+        int probe = 0;
+        PE_parse_boot_argn("lithium_ufs_probe", &probe, sizeof(probe));
+        if (probe && !probed) {
+            probed = true;
+            dev_t probedev;
+            int error = lithium_ufs_rootdev(&probedev);
+            IOLog("LITHIUM UFS: read-only probe result %d; root filesystem not mounted\\n", error);
+        }
+    }
+#endif
+
+'''+anchor))
+    patch='Subject: lithium: measured UFS host and bounded read-only GPT probe\n\n'
+    patch+='Adapted from ios-sailfish 6f27e41ff249f2680540ebe8ee5ab982c5e641c9 patches 0028/0034.\n'
+    patch+='No SCSI write command; boot argument only probes before ordinary root matching.\n\n'
+    for path,(old,new) in edits.items():
+        patch+=f'diff --git a/{path} b/{path}\n'
+        if not old: patch+='new file mode 100644\n'
+        patch+=''.join(difflib.unified_diff(old.splitlines(True),new.splitlines(True),fromfile='a/'+path if old else '/dev/null',tofile='b/'+path))
+    PATCH.write_text(patch)
+    print(PATCH)
+
+if __name__=='__main__': main()

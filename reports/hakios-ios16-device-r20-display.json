@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "revision": "R20-display",
+  "recorded_at": "2026-11-19T01:25:25+08:00",
+  "candidate_image": "artifacts/hakios/lithium-ios16/phase4-r20-display/lithium-hakios-ios16-r20-display.img",
+  "image_sha256": "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82",
+  "parent_revision": 19,
+  "temporary_boot": true,
+  "fastboot_accepted": true,
+  "fastboot_output": "Sending 'boot.img' (15888 KB) OKAY; Booting OKAY",
+  "flash_issued": false,
+  "partition_write_issued": false,
+  "userdata_changed": false,
+  "screen_observation": {
+    "source": "user_photo_and_reply",
+    "state": "iOS16 SpringBoard home screen",
+    "user_confirmed": "已到主屏；这个比例算正常了",
+    "photo_path": "reports/local/20261119-011748-321-r20-display-preflight/r20-display-screen.jpg",
+    "photo_sha256": "d62fcae3c002a7812944154e45e401b380f4c9f7031ff3397d3aa6c32ee0c5c8"
+  },
+  "display_acceptance": {
+    "passed": true,
+    "logical_bounds": "360x680 points",
+    "scale": 3,
+    "native_bounds": "1080x2040 pixels",
+    "native_scale": 3,
+    "framebuffer": "1080x2040 BGR24, stride 3240",
+    "springboard_home_window": "frame/bounds 0,0,360,680",
+    "photo_observation": "Status bar, icon labels, search control, and complete dock fit on screen; oversized/cropped R19 layout is no longer apparent"
+  },
+  "log_evidence": {
+    "usb_enumerated": true,
+    "identity_verified": true,
+    "frames": 9488,
+    "console_bytes": 2134770,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "device_lost": 0,
+    "independent_redecode_transport_verified": true,
+    "console_sha256": "7bf3a88f4ff3ebeb998fcd0280dd0ae98c53f306cef14ea42439a657d3e33934",
+    "frames_sha256": "859de3276a25549bd3575e1e4b710bf126d7fd6c6264acf31adc9aac11f3cd73",
+    "log_path": "reports/local/20261119-011748-321-r20-display-preflight/console.log",
+    "timer_return_and_drain_verified": false
+  },
+  "remaining_notes": [
+    "Legacy diagnostic output still reports main display 750x1334 while WindowServer, UIScreen, and SpringBoard windows report the validated 1080x2040 and 360x680@3 geometry.",
+    "One No status bar visual provider warning preceded the Split1080 fallback selection; the user photo shows the status bar rendered.",
+    "This validates display layout only. GPU acceleration, physical touch, multicore, and long-term stability remain separate.",
+    "USB capture was stopped on the host after the screen evidence was collected; the phone was left running and was not rebooted. No device command was sent to stop the test."
+  ],
+  "qemu_used": false
+}

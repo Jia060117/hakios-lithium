@@ -1,0 +1,36 @@
+{
+  "revision": 11,
+  "base_revision": 10,
+  "before_sha256": {
+    "userland/src/inject.c": "bb3f30751b05ff841f98146b8036d0033bfabae0ddda873c4dd3d3bfbf4fb492",
+    "userland/src/inject_sb.c": "ee9d6540854382de1b05d541588ee96ac40ef3d532e682c93ef057a622c8d06f",
+    "xnu/files/osfmk/arm64/user_exception_trace.c": "c05bba46a7e6c74934154d776da20cef0aa2274b526a0db6951ee8a24eb9ebb3",
+    "xnu/files/osfmk/arm64/loader_return.c": "db84d8a2ff329965c45b8155c721dd703bcd11f7b1e4ed4d5b25061de93768d7",
+    "xnu/hakios.patch": "0a0906d91c0a3aad0c2ebdaa6b306ee0938a608e87d22e13154c4d8e749ddce4"
+  },
+  "after_sha256": {
+    "userland/src/inject.c": "d9840e74252a04da9d4645d08987105294f201d5f47e55c1bb531da1a18aa5c6",
+    "userland/src/inject_sb.c": "13cacd45d1ed0a27dced8f6098a254a704688d96b71489c1da0a5bbd5c5cae3a",
+    "xnu/files/osfmk/arm64/user_exception_trace.c": "5a7a534a370a00ae4de3ea0cb36dfe0565a0e7591f8efd2e630fae2f24c534e1",
+    "xnu/files/osfmk/arm64/loader_return.c": "c1d76f06d55a9ef1a72483029db504297821e153bc7a255e8e067241de944999",
+    "xnu/hakios.patch": "91f0d38516751d47988282a82c52b56202a2ba383df65d63336edd28b09637a2"
+  },
+  "snapshot_interval_seconds": 30,
+  "snapshot_limit_seconds": 3600,
+  "objects_per_process": 2048,
+  "active_per_process": 64,
+  "group_categories": 128,
+  "syscall_slots": 128,
+  "preserved_original_calls": true,
+  "critical_states_share_event_budget": false,
+  "usb_reader_chunk": 256,
+  "identity_scope": "operation/path or bundle-parent-content tuple; persona is not included",
+  "syscall_nonlocal_return_observed": true,
+  "syscall_lost_end_retired": true,
+  "requested_xnu_cpus": 3,
+  "resident_uefi_cpus": 1,
+  "kernel_memory_mib": 2880,
+  "userdata_reinstall_required": false,
+  "hardware_verified": false,
+  "root_cause_fixed": false
+}

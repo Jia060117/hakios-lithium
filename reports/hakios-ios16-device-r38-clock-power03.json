@@ -1,0 +1,2664 @@
+{
+  "schema": 1,
+  "revision": "R38-clock-power03",
+  "attempt": {
+    "schema": 1,
+    "revision": "R37-ram-measure",
+    "phase": "frequency",
+    "attempt_id": "r37-frequency-07",
+    "started_at": "2026-11-20T23:44:18.787391+08:00",
+    "package": "F:\\IOS-MIX1\\artifacts\\hakios\\lithium-ios16\\phase4-r37-ram-frequency-07",
+    "candidate": "R37-frequency-07",
+    "profile": "r37-frequency",
+    "image_sha256": "188029554650ebb903e4be98ad798a2f02c6ab9c8644d3a784de872a6cb745b4",
+    "image_bytes": 16334848,
+    "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_clock_diag=1 cpu_power_diag=1 cpu_freq_pmu_setup=0 cpu_sanity=1 cpu_freq_diag=1",
+    "preflight_passed": true,
+    "boot_attempted": true,
+    "command_accepted": true,
+    "automatic_retry": false,
+    "partition_commands": 0,
+    "flash_commands": 0,
+    "erase_commands": 0,
+    "adb_commands": 0,
+    "android_recovery_boots": 0,
+    "qemu": false,
+    "preflight": {
+      "passed": true,
+      "finished_at": "2026-11-20T23:44:18.984536+08:00",
+      "device_commands": 5,
+      "retry": false
+    },
+    "private_image": "F:\\IOS-MIX1\\reports\\local\\r37-attempts\\r37-frequency-07\\lithium-hakios-ios16-r37-ram-frequency-07.img",
+    "usb_capture_started_at": "2026-11-20T23:44:19.312359+08:00",
+    "boot_output": "Sending 'boot.img' (15952 KB)                      OKAY [  0.384s]\nBooting                                            OKAY [  0.834s]\nFinished. Total time: 1.224s\n",
+    "boot_returncode": 0,
+    "accepted_at": "2026-11-20T23:44:20.561282+08:00",
+    "outcome": "boot_accepted_observation_pending"
+  },
+  "return_verification": {
+    "started_at": "2026-11-20T23:48:48.059933+08:00",
+    "elapsed_seconds": 267.498651,
+    "devices_query_count": 1,
+    "product_query_count": 1,
+    "device_rows": [
+      [
+        "54223ce9",
+        "fastboot"
+      ]
+    ],
+    "same_serial_fastboot": true,
+    "observed_product": "MSM8996_A8",
+    "product_verified": true,
+    "passed": true,
+    "retry": false,
+    "attempt_id": "r37-frequency-07",
+    "phase": "frequency",
+    "capture_stop_requested": true,
+    "finished_at": "2026-11-20T23:48:48.179930+08:00"
+  },
+  "usb_audit": {
+    "raw_bytes": 39276,
+    "console_bytes": 34668,
+    "frames": 144,
+    "raw_sha256": "d33fa97f004a239d51b2f8c71a064e59333ff25eaf43bc1d7bb2c70a36c687da",
+    "console_sha256": "8e4ed5d68e37a5b8b720dcabff145ec8eec7976476a1a82f02762a82db4bb106",
+    "first_offset": 0,
+    "final_offset": 34668,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "incomplete_frame_bytes": 0,
+    "device_lost_max": 0,
+    "frames_reporting_device_loss": 0,
+    "independent_parser_agrees_with_frozen_receiver": true,
+    "frozen_redecode_equals_complete_console": true,
+    "transport_verified": true,
+    "kernel_banner_offset": 0,
+    "timer_offset": 34176,
+    "normal_return_offset": 34552,
+    "drain_success": true,
+    "drain_records": [
+      {
+        "offset": 34619,
+        "drained": 1,
+        "target": 34619
+      }
+    ],
+    "emitted_kernel_stream_through_timer_verified": true,
+    "all_firmware_daemon_and_original_printf_logs_complete": false,
+    "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
+  },
+  "records": [
+    {
+      "line": 111,
+      "text": "LITHIUM CPU CLOCK begin revision=38 affinity=0x1 mmio_writes=0 voltage_writes=0 fault_guard=0 effective_source_unverified=1",
+      "fields": {
+        "revision": "38",
+        "affinity": "0x1",
+        "mmio_writes": "0",
+        "voltage_writes": "0",
+        "fault_guard": "0",
+        "effective_source_unverified": "1"
+      }
+    },
+    {
+      "line": 112,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=0 reg=primary.MODE pa=0x6400000 valid=1 raw=0x81018007 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "0",
+        "reg": "primary.MODE",
+        "pa": "0x6400000",
+        "valid": "1",
+        "raw": "0x81018007",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 113,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=0 reg=primary.L pa=0x6400004 valid=1 raw=0x00000040 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "0",
+        "reg": "primary.L",
+        "pa": "0x6400004",
+        "valid": "1",
+        "raw": "0x00000040",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 114,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=0 reg=primary.ALPHA pa=0x6400008 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "0",
+        "reg": "primary.ALPHA",
+        "pa": "0x6400008",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 115,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=0 reg=primary.USER_CTL pa=0x6400010 valid=1 raw=0x00000009 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "0",
+        "reg": "primary.USER_CTL",
+        "pa": "0x6400010",
+        "valid": "1",
+        "raw": "0x00000009",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 116,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=0 reg=primary.CONFIG_CTL pa=0x6400018 valid=1 raw=0x200d4828 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "0",
+        "reg": "primary.CONFIG_CTL",
+        "pa": "0x6400018",
+        "valid": "1",
+        "raw": "0x200d4828",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 117,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=0 reg=primary.CONFIG_CTL_HI pa=0x640001c valid=1 raw=0x00000006 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "0",
+        "reg": "primary.CONFIG_CTL_HI",
+        "pa": "0x640001c",
+        "valid": "1",
+        "raw": "0x00000006",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 118,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=0 reg=primary.TEST_CTL_LO pa=0x6400020 valid=1 raw=0x1c000000 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "0",
+        "reg": "primary.TEST_CTL_LO",
+        "pa": "0x6400020",
+        "valid": "1",
+        "raw": "0x1c000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 119,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=0 reg=primary.TEST_CTL_HI pa=0x6400024 valid=1 raw=0x00004000 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "0",
+        "reg": "primary.TEST_CTL_HI",
+        "pa": "0x6400024",
+        "valid": "1",
+        "raw": "0x00004000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 120,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=0 reg=primary.STATUS pa=0x6400028 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "0",
+        "reg": "primary.STATUS",
+        "pa": "0x6400028",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 121,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=0 reg=alt.MODE pa=0x6400100 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "0",
+        "reg": "alt.MODE",
+        "pa": "0x6400100",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 122,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=0 reg=alt.L pa=0x6400104 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "0",
+        "reg": "alt.L",
+        "pa": "0x6400104",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 123,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=0 reg=alt.ALPHA pa=0x6400108 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "0",
+        "reg": "alt.ALPHA",
+        "pa": "0x6400108",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 124,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=0 reg=alt.ALPHA_HI pa=0x640010c valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "0",
+        "reg": "alt.ALPHA_HI",
+        "pa": "0x640010c",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 125,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=0 reg=alt.USER_CTL pa=0x6400110 valid=1 raw=0x00000001 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "0",
+        "reg": "alt.USER_CTL",
+        "pa": "0x6400110",
+        "valid": "1",
+        "raw": "0x00000001",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 126,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=0 reg=alt.CONFIG_CTL pa=0x6400118 valid=1 raw=0x4001051b stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "0",
+        "reg": "alt.CONFIG_CTL",
+        "pa": "0x6400118",
+        "valid": "1",
+        "raw": "0x4001051b",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 127,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=0 reg=alt.TEST_CTL_LO pa=0x6400120 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "0",
+        "reg": "alt.TEST_CTL_LO",
+        "pa": "0x6400120",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 128,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=0 reg=alt.STATUS pa=0x6400128 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "0",
+        "reg": "alt.STATUS",
+        "pa": "0x6400128",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 129,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=0 reg=MUX40 pa=0x6400040 valid=1 raw=0x00000004 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "0",
+        "reg": "MUX40",
+        "pa": "0x6400040",
+        "valid": "1",
+        "raw": "0x00000004",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 130,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=0 reg=CLKCTL44 pa=0x6400044 valid=1 raw=0x40440071 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "0",
+        "reg": "CLKCTL44",
+        "pa": "0x6400044",
+        "valid": "1",
+        "raw": "0x40440071",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 131,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=1 reg=primary.MODE pa=0x6400000 valid=1 raw=0x81018007 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "1",
+        "reg": "primary.MODE",
+        "pa": "0x6400000",
+        "valid": "1",
+        "raw": "0x81018007",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 132,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=1 reg=primary.L pa=0x6400004 valid=1 raw=0x00000040 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "1",
+        "reg": "primary.L",
+        "pa": "0x6400004",
+        "valid": "1",
+        "raw": "0x00000040",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 133,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=1 reg=primary.ALPHA pa=0x6400008 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "1",
+        "reg": "primary.ALPHA",
+        "pa": "0x6400008",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 134,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=1 reg=primary.USER_CTL pa=0x6400010 valid=1 raw=0x00000009 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "1",
+        "reg": "primary.USER_CTL",
+        "pa": "0x6400010",
+        "valid": "1",
+        "raw": "0x00000009",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 135,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=1 reg=primary.CONFIG_CTL pa=0x6400018 valid=1 raw=0x200d4828 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "1",
+        "reg": "primary.CONFIG_CTL",
+        "pa": "0x6400018",
+        "valid": "1",
+        "raw": "0x200d4828",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 136,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=1 reg=primary.CONFIG_CTL_HI pa=0x640001c valid=1 raw=0x00000006 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "1",
+        "reg": "primary.CONFIG_CTL_HI",
+        "pa": "0x640001c",
+        "valid": "1",
+        "raw": "0x00000006",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 137,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=1 reg=primary.TEST_CTL_LO pa=0x6400020 valid=1 raw=0x1c000000 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "1",
+        "reg": "primary.TEST_CTL_LO",
+        "pa": "0x6400020",
+        "valid": "1",
+        "raw": "0x1c000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 138,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=1 reg=primary.TEST_CTL_HI pa=0x6400024 valid=1 raw=0x00004000 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "1",
+        "reg": "primary.TEST_CTL_HI",
+        "pa": "0x6400024",
+        "valid": "1",
+        "raw": "0x00004000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 139,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=1 reg=primary.STATUS pa=0x6400028 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "1",
+        "reg": "primary.STATUS",
+        "pa": "0x6400028",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 140,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=1 reg=alt.MODE pa=0x6400100 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "1",
+        "reg": "alt.MODE",
+        "pa": "0x6400100",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 141,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=1 reg=alt.L pa=0x6400104 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "1",
+        "reg": "alt.L",
+        "pa": "0x6400104",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 142,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=1 reg=alt.ALPHA pa=0x6400108 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "1",
+        "reg": "alt.ALPHA",
+        "pa": "0x6400108",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 143,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=1 reg=alt.ALPHA_HI pa=0x640010c valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "1",
+        "reg": "alt.ALPHA_HI",
+        "pa": "0x640010c",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 144,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=1 reg=alt.USER_CTL pa=0x6400110 valid=1 raw=0x00000001 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "1",
+        "reg": "alt.USER_CTL",
+        "pa": "0x6400110",
+        "valid": "1",
+        "raw": "0x00000001",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 145,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=1 reg=alt.CONFIG_CTL pa=0x6400118 valid=1 raw=0x4001051b stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "1",
+        "reg": "alt.CONFIG_CTL",
+        "pa": "0x6400118",
+        "valid": "1",
+        "raw": "0x4001051b",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 146,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=1 reg=alt.TEST_CTL_LO pa=0x6400120 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "1",
+        "reg": "alt.TEST_CTL_LO",
+        "pa": "0x6400120",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 147,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=1 reg=alt.STATUS pa=0x6400128 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "1",
+        "reg": "alt.STATUS",
+        "pa": "0x6400128",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 148,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=1 reg=MUX40 pa=0x6400040 valid=1 raw=0x00000004 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "1",
+        "reg": "MUX40",
+        "pa": "0x6400040",
+        "valid": "1",
+        "raw": "0x00000004",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 149,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl pass=1 reg=CLKCTL44 pa=0x6400044 valid=1 raw=0x40440071 stable=1",
+      "fields": {
+        "cluster": "pwrcl",
+        "pass": "1",
+        "reg": "CLKCTL44",
+        "pa": "0x6400044",
+        "valid": "1",
+        "raw": "0x40440071",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 150,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl requested_pmux=0 requested_smux=1 always_on_mux=0 auto_select=0 primary_lock_mode31=1 alternate_lock_mode31=0 programmed_l=64 effective_hz=UNVERIFIED actual_voltage_uv=UNVERIFIED",
+      "fields": {
+        "cluster": "pwrcl",
+        "requested_pmux": "0",
+        "requested_smux": "1",
+        "always_on_mux": "0",
+        "auto_select": "0",
+        "primary_lock_mode31": "1",
+        "alternate_lock_mode31": "0",
+        "programmed_l": "64",
+        "effective_hz": "UNVERIFIED",
+        "actual_voltage_uv": "UNVERIFIED"
+      }
+    },
+    {
+      "line": 151,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl extra_pa=0x640007c valid=1 raw=0x00000000",
+      "fields": {
+        "cluster": "pwrcl",
+        "extra_pa": "0x640007c",
+        "valid": "1",
+        "raw": "0x00000000"
+      }
+    },
+    {
+      "line": 152,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl extra_pa=0x6400160 valid=1 raw=0x00000000",
+      "fields": {
+        "cluster": "pwrcl",
+        "extra_pa": "0x6400160",
+        "valid": "1",
+        "raw": "0x00000000"
+      }
+    },
+    {
+      "line": 153,
+      "text": "LITHIUM CPU CLOCK cluster=pwrcl extra_pa=0x6400164 valid=1 raw=0x00020001",
+      "fields": {
+        "cluster": "pwrcl",
+        "extra_pa": "0x6400164",
+        "valid": "1",
+        "raw": "0x00020001"
+      }
+    },
+    {
+      "line": 154,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=0 reg=primary.MODE pa=0x6480000 valid=1 raw=0x01000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "0",
+        "reg": "primary.MODE",
+        "pa": "0x6480000",
+        "valid": "1",
+        "raw": "0x01000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 155,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=0 reg=primary.L pa=0x6480004 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "0",
+        "reg": "primary.L",
+        "pa": "0x6480004",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 156,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=0 reg=primary.ALPHA pa=0x6480008 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "0",
+        "reg": "primary.ALPHA",
+        "pa": "0x6480008",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 157,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=0 reg=primary.USER_CTL pa=0x6480010 valid=1 raw=0x00000008 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "0",
+        "reg": "primary.USER_CTL",
+        "pa": "0x6480010",
+        "valid": "1",
+        "raw": "0x00000008",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 158,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=0 reg=primary.CONFIG_CTL pa=0x6480018 valid=1 raw=0x200d4828 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "0",
+        "reg": "primary.CONFIG_CTL",
+        "pa": "0x6480018",
+        "valid": "1",
+        "raw": "0x200d4828",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 159,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=0 reg=primary.CONFIG_CTL_HI pa=0x648001c valid=1 raw=0x00000006 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "0",
+        "reg": "primary.CONFIG_CTL_HI",
+        "pa": "0x648001c",
+        "valid": "1",
+        "raw": "0x00000006",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 160,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=0 reg=primary.TEST_CTL_LO pa=0x6480020 valid=1 raw=0x1c000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "0",
+        "reg": "primary.TEST_CTL_LO",
+        "pa": "0x6480020",
+        "valid": "1",
+        "raw": "0x1c000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 161,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=0 reg=primary.TEST_CTL_HI pa=0x6480024 valid=1 raw=0x00004000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "0",
+        "reg": "primary.TEST_CTL_HI",
+        "pa": "0x6480024",
+        "valid": "1",
+        "raw": "0x00004000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 162,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=0 reg=primary.STATUS pa=0x6480028 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "0",
+        "reg": "primary.STATUS",
+        "pa": "0x6480028",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 163,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=0 reg=alt.MODE pa=0x6480100 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "0",
+        "reg": "alt.MODE",
+        "pa": "0x6480100",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 164,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=0 reg=alt.L pa=0x6480104 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "0",
+        "reg": "alt.L",
+        "pa": "0x6480104",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 165,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=0 reg=alt.ALPHA pa=0x6480108 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "0",
+        "reg": "alt.ALPHA",
+        "pa": "0x6480108",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 166,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=0 reg=alt.ALPHA_HI pa=0x648010c valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "0",
+        "reg": "alt.ALPHA_HI",
+        "pa": "0x648010c",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 167,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=0 reg=alt.USER_CTL pa=0x6480110 valid=1 raw=0x00000001 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "0",
+        "reg": "alt.USER_CTL",
+        "pa": "0x6480110",
+        "valid": "1",
+        "raw": "0x00000001",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 168,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=0 reg=alt.CONFIG_CTL pa=0x6480118 valid=1 raw=0x4001051b stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "0",
+        "reg": "alt.CONFIG_CTL",
+        "pa": "0x6480118",
+        "valid": "1",
+        "raw": "0x4001051b",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 169,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=0 reg=alt.TEST_CTL_LO pa=0x6480120 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "0",
+        "reg": "alt.TEST_CTL_LO",
+        "pa": "0x6480120",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 170,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=0 reg=alt.STATUS pa=0x6480128 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "0",
+        "reg": "alt.STATUS",
+        "pa": "0x6480128",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 171,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=0 reg=MUX40 pa=0x6480040 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "0",
+        "reg": "MUX40",
+        "pa": "0x6480040",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 172,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=0 reg=CLKCTL44 pa=0x6480044 valid=1 raw=0x00000071 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "0",
+        "reg": "CLKCTL44",
+        "pa": "0x6480044",
+        "valid": "1",
+        "raw": "0x00000071",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 173,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=1 reg=primary.MODE pa=0x6480000 valid=1 raw=0x01000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "1",
+        "reg": "primary.MODE",
+        "pa": "0x6480000",
+        "valid": "1",
+        "raw": "0x01000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 174,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=1 reg=primary.L pa=0x6480004 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "1",
+        "reg": "primary.L",
+        "pa": "0x6480004",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 175,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=1 reg=primary.ALPHA pa=0x6480008 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "1",
+        "reg": "primary.ALPHA",
+        "pa": "0x6480008",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 176,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=1 reg=primary.USER_CTL pa=0x6480010 valid=1 raw=0x00000008 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "1",
+        "reg": "primary.USER_CTL",
+        "pa": "0x6480010",
+        "valid": "1",
+        "raw": "0x00000008",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 177,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=1 reg=primary.CONFIG_CTL pa=0x6480018 valid=1 raw=0x200d4828 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "1",
+        "reg": "primary.CONFIG_CTL",
+        "pa": "0x6480018",
+        "valid": "1",
+        "raw": "0x200d4828",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 178,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=1 reg=primary.CONFIG_CTL_HI pa=0x648001c valid=1 raw=0x00000006 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "1",
+        "reg": "primary.CONFIG_CTL_HI",
+        "pa": "0x648001c",
+        "valid": "1",
+        "raw": "0x00000006",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 179,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=1 reg=primary.TEST_CTL_LO pa=0x6480020 valid=1 raw=0x1c000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "1",
+        "reg": "primary.TEST_CTL_LO",
+        "pa": "0x6480020",
+        "valid": "1",
+        "raw": "0x1c000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 180,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=1 reg=primary.TEST_CTL_HI pa=0x6480024 valid=1 raw=0x00004000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "1",
+        "reg": "primary.TEST_CTL_HI",
+        "pa": "0x6480024",
+        "valid": "1",
+        "raw": "0x00004000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 181,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=1 reg=primary.STATUS pa=0x6480028 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "1",
+        "reg": "primary.STATUS",
+        "pa": "0x6480028",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 182,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=1 reg=alt.MODE pa=0x6480100 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "1",
+        "reg": "alt.MODE",
+        "pa": "0x6480100",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 183,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=1 reg=alt.L pa=0x6480104 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "1",
+        "reg": "alt.L",
+        "pa": "0x6480104",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 184,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=1 reg=alt.ALPHA pa=0x6480108 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "1",
+        "reg": "alt.ALPHA",
+        "pa": "0x6480108",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 185,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=1 reg=alt.ALPHA_HI pa=0x648010c valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "1",
+        "reg": "alt.ALPHA_HI",
+        "pa": "0x648010c",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 186,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=1 reg=alt.USER_CTL pa=0x6480110 valid=1 raw=0x00000001 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "1",
+        "reg": "alt.USER_CTL",
+        "pa": "0x6480110",
+        "valid": "1",
+        "raw": "0x00000001",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 187,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=1 reg=alt.CONFIG_CTL pa=0x6480118 valid=1 raw=0x4001051b stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "1",
+        "reg": "alt.CONFIG_CTL",
+        "pa": "0x6480118",
+        "valid": "1",
+        "raw": "0x4001051b",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 188,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=1 reg=alt.TEST_CTL_LO pa=0x6480120 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "1",
+        "reg": "alt.TEST_CTL_LO",
+        "pa": "0x6480120",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 189,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=1 reg=alt.STATUS pa=0x6480128 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "1",
+        "reg": "alt.STATUS",
+        "pa": "0x6480128",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 190,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=1 reg=MUX40 pa=0x6480040 valid=1 raw=0x00000000 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "1",
+        "reg": "MUX40",
+        "pa": "0x6480040",
+        "valid": "1",
+        "raw": "0x00000000",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 191,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl pass=1 reg=CLKCTL44 pa=0x6480044 valid=1 raw=0x00000071 stable=1",
+      "fields": {
+        "cluster": "perfcl",
+        "pass": "1",
+        "reg": "CLKCTL44",
+        "pa": "0x6480044",
+        "valid": "1",
+        "raw": "0x00000071",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 192,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl requested_pmux=0 requested_smux=0 always_on_mux=0 auto_select=0 primary_lock_mode31=0 alternate_lock_mode31=0 programmed_l=0 effective_hz=UNVERIFIED actual_voltage_uv=UNVERIFIED",
+      "fields": {
+        "cluster": "perfcl",
+        "requested_pmux": "0",
+        "requested_smux": "0",
+        "always_on_mux": "0",
+        "auto_select": "0",
+        "primary_lock_mode31": "0",
+        "alternate_lock_mode31": "0",
+        "programmed_l": "0",
+        "effective_hz": "UNVERIFIED",
+        "actual_voltage_uv": "UNVERIFIED"
+      }
+    },
+    {
+      "line": 193,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl extra_pa=0x648007c valid=1 raw=0x00000000",
+      "fields": {
+        "cluster": "perfcl",
+        "extra_pa": "0x648007c",
+        "valid": "1",
+        "raw": "0x00000000"
+      }
+    },
+    {
+      "line": 194,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl extra_pa=0x6480160 valid=1 raw=0x00000000",
+      "fields": {
+        "cluster": "perfcl",
+        "extra_pa": "0x6480160",
+        "valid": "1",
+        "raw": "0x00000000"
+      }
+    },
+    {
+      "line": 195,
+      "text": "LITHIUM CPU CLOCK cluster=perfcl extra_pa=0x6480164 valid=1 raw=0x00020001",
+      "fields": {
+        "cluster": "perfcl",
+        "extra_pa": "0x6480164",
+        "valid": "1",
+        "raw": "0x00020001"
+      }
+    },
+    {
+      "line": 196,
+      "text": "LITHIUM CPU CLOCK efuse_pa=0x74130 raw=0x1091005f speedbin=0 voltage_uv=UNVERIFIED",
+      "fields": {
+        "efuse_pa": "0x74130",
+        "raw": "0x1091005f",
+        "speedbin": "0",
+        "voltage_uv": "UNVERIFIED"
+      }
+    },
+    {
+      "line": 197,
+      "text": "LITHIUM CPU CLOCK end revision=38 mmio_writes=0 regulator_writes=0 fixed_frequency_applied=0",
+      "fields": {
+        "revision": "38",
+        "mmio_writes": "0",
+        "regulator_writes": "0",
+        "fixed_frequency_applied": "0"
+      }
+    },
+    {
+      "line": 198,
+      "text": "LITHIUM CPU POWER map index=0 physical=0x99a2000 vm_page=16384 allocation=0xfffffff7db5cc000 bytes=16384 data_offset=8192 valid=1",
+      "fields": {
+        "index": "0",
+        "physical": "0x99a2000",
+        "vm_page": "16384",
+        "allocation": "0xfffffff7db5cc000",
+        "bytes": "16384",
+        "data_offset": "8192",
+        "valid": "1"
+      }
+    },
+    {
+      "line": 199,
+      "text": "LITHIUM CPU POWER map index=1 physical=0x99d2000 vm_page=16384 allocation=0xfffffff7db5d0000 bytes=16384 data_offset=8192 valid=1",
+      "fields": {
+        "index": "1",
+        "physical": "0x99d2000",
+        "vm_page": "16384",
+        "allocation": "0xfffffff7db5d0000",
+        "bytes": "16384",
+        "data_offset": "8192",
+        "valid": "1"
+      }
+    },
+    {
+      "line": 200,
+      "text": "LITHIUM CPU POWER map index=2 physical=0x99e0000 vm_page=16384 allocation=0xfffffff7db5d4000 bytes=16384 data_offset=0 valid=1",
+      "fields": {
+        "index": "2",
+        "physical": "0x99e0000",
+        "vm_page": "16384",
+        "allocation": "0xfffffff7db5d4000",
+        "bytes": "16384",
+        "data_offset": "0",
+        "valid": "1"
+      }
+    },
+    {
+      "line": 201,
+      "text": "LITHIUM CPU POWER map index=3 physical=0x9820000 vm_page=16384 allocation=0xfffffff7db5d8000 bytes=16384 data_offset=0 valid=1",
+      "fields": {
+        "index": "3",
+        "physical": "0x9820000",
+        "vm_page": "16384",
+        "allocation": "0xfffffff7db5d8000",
+        "bytes": "16384",
+        "data_offset": "0",
+        "valid": "1"
+      }
+    },
+    {
+      "line": 202,
+      "text": "LITHIUM CPU POWER map index=4 physical=0x9a10000 vm_page=16384 allocation=0xfffffff7db5dc000 bytes=16384 data_offset=0 valid=1",
+      "fields": {
+        "index": "4",
+        "physical": "0x9a10000",
+        "vm_page": "16384",
+        "allocation": "0xfffffff7db5dc000",
+        "bytes": "16384",
+        "data_offset": "0",
+        "valid": "1"
+      }
+    },
+    {
+      "line": 203,
+      "text": "LITHIUM CPU POWER map index=5 physical=0x74000 vm_page=16384 allocation=0xfffffff7db5e0000 bytes=16384 data_offset=0 valid=1",
+      "fields": {
+        "index": "5",
+        "physical": "0x74000",
+        "vm_page": "16384",
+        "allocation": "0xfffffff7db5e0000",
+        "bytes": "16384",
+        "data_offset": "0",
+        "valid": "1"
+      }
+    },
+    {
+      "line": 204,
+      "text": "LITHIUM CPU POWER begin revision=38 affinity=0x1 cookie=UNBOUND time=mach_absolute_ticks mmio_writes=0 regulator_writes=0 spmi_transactions=0 fault_guard=0 voltage_kind=programmed_only",
+      "fields": {
+        "revision": "38",
+        "affinity": "0x1",
+        "cookie": "UNBOUND",
+        "time": "mach_absolute_ticks",
+        "mmio_writes": "0",
+        "regulator_writes": "0",
+        "spmi_transactions": "0",
+        "fault_guard": "0",
+        "voltage_kind": "programmed_only"
+      }
+    },
+    {
+      "line": 205,
+      "text": "LITHIUM CPU POWER pass=0 phase=begin t=14843551319 cookie=UNBOUND",
+      "fields": {
+        "pass": "0",
+        "phase": "begin",
+        "t": "14843551319",
+        "cookie": "UNBOUND"
+      }
+    },
+    {
+      "line": 206,
+      "text": "LITHIUM CPU POWER pass=0 block=pwrcl reg=LDO_VREF pa=0x99a2008 bits=32 valid=1 raw=0x000000000000004d t0=14843551525 t1=14843551578",
+      "fields": {
+        "pass": "0",
+        "block": "pwrcl",
+        "reg": "LDO_VREF",
+        "pa": "0x99a2008",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x000000000000004d",
+        "t0": "14843551525",
+        "t1": "14843551578"
+      }
+    },
+    {
+      "line": 207,
+      "text": "LITHIUM CPU POWER pass=0 block=pwrcl reg=RET_VREF pa=0x99a2010 bits=32 valid=1 raw=0x000000000000001f t0=14843551934 t1=14843551946",
+      "fields": {
+        "pass": "0",
+        "block": "pwrcl",
+        "reg": "RET_VREF",
+        "pa": "0x99a2010",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x000000000000001f",
+        "t0": "14843551934",
+        "t1": "14843551946"
+      }
+    },
+    {
+      "line": 208,
+      "text": "LITHIUM CPU POWER pass=0 block=pwrcl reg=PWR_GATE_MODE pa=0x99a2018 bits=32 valid=1 raw=0x0000000000000001 t0=14843552293 t1=14843552306",
+      "fields": {
+        "pass": "0",
+        "block": "pwrcl",
+        "reg": "PWR_GATE_MODE",
+        "pa": "0x99a2018",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000001",
+        "t0": "14843552293",
+        "t1": "14843552306"
+      }
+    },
+    {
+      "line": 209,
+      "text": "LITHIUM CPU POWER pass=0 block=pwrcl reg=PWR_GATE_DLY pa=0x99a2028 bits=32 valid=1 raw=0x0000000000000101 t0=14843552651 t1=14843552663",
+      "fields": {
+        "pass": "0",
+        "block": "pwrcl",
+        "reg": "PWR_GATE_DLY",
+        "pa": "0x99a2028",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000101",
+        "t0": "14843552651",
+        "t1": "14843552663"
+      }
+    },
+    {
+      "line": 210,
+      "text": "LITHIUM CPU POWER pass=0 block=pwrcl reg=LDO_CFG pa=0x99a2040 bits=32 valid=1 raw=0x00000000f1f0e471 t0=14843553003 t1=14843553016",
+      "fields": {
+        "pass": "0",
+        "block": "pwrcl",
+        "reg": "LDO_CFG",
+        "pa": "0x99a2040",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x00000000f1f0e471",
+        "t0": "14843553003",
+        "t1": "14843553016"
+      }
+    },
+    {
+      "line": 211,
+      "text": "LITHIUM CPU POWER pass=0 block=pwrcl reg=APM_CFG pa=0x99a2050 bits=32 valid=1 raw=0x0000000000000001 t0=14843553378 t1=14843553390",
+      "fields": {
+        "pass": "0",
+        "block": "pwrcl",
+        "reg": "APM_CFG",
+        "pa": "0x99a2050",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000001",
+        "t0": "14843553378",
+        "t1": "14843553390"
+      }
+    },
+    {
+      "line": 212,
+      "text": "LITHIUM CPU POWER pass=0 block=pwrcl reg=PGS_STATUS pa=0x99a2060 bits=32 valid=1 raw=0x000000000000020f t0=14843553721 t1=14843553734",
+      "fields": {
+        "pass": "0",
+        "block": "pwrcl",
+        "reg": "PGS_STATUS",
+        "pa": "0x99a2060",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x000000000000020f",
+        "t0": "14843553721",
+        "t1": "14843553734"
+      }
+    },
+    {
+      "line": 213,
+      "text": "LITHIUM CPU POWER pass=0 block=perfcl reg=LDO_VREF pa=0x99d2008 bits=32 valid=1 raw=0x000000000000004d t0=14843554076 t1=14843554093",
+      "fields": {
+        "pass": "0",
+        "block": "perfcl",
+        "reg": "LDO_VREF",
+        "pa": "0x99d2008",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x000000000000004d",
+        "t0": "14843554076",
+        "t1": "14843554093"
+      }
+    },
+    {
+      "line": 214,
+      "text": "LITHIUM CPU POWER pass=0 block=perfcl reg=RET_VREF pa=0x99d2010 bits=32 valid=1 raw=0x000000000000001f t0=14843554438 t1=14843554450",
+      "fields": {
+        "pass": "0",
+        "block": "perfcl",
+        "reg": "RET_VREF",
+        "pa": "0x99d2010",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x000000000000001f",
+        "t0": "14843554438",
+        "t1": "14843554450"
+      }
+    },
+    {
+      "line": 215,
+      "text": "LITHIUM CPU POWER pass=0 block=perfcl reg=PWR_GATE_MODE pa=0x99d2018 bits=32 valid=1 raw=0x0000000000000001 t0=14843554785 t1=14843554798",
+      "fields": {
+        "pass": "0",
+        "block": "perfcl",
+        "reg": "PWR_GATE_MODE",
+        "pa": "0x99d2018",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000001",
+        "t0": "14843554785",
+        "t1": "14843554798"
+      }
+    },
+    {
+      "line": 216,
+      "text": "LITHIUM CPU POWER pass=0 block=perfcl reg=PWR_GATE_DLY pa=0x99d2028 bits=32 valid=1 raw=0x0000000000000101 t0=14843555137 t1=14843555150",
+      "fields": {
+        "pass": "0",
+        "block": "perfcl",
+        "reg": "PWR_GATE_DLY",
+        "pa": "0x99d2028",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000101",
+        "t0": "14843555137",
+        "t1": "14843555150"
+      }
+    },
+    {
+      "line": 217,
+      "text": "LITHIUM CPU POWER pass=0 block=perfcl reg=LDO_CFG pa=0x99d2040 bits=32 valid=1 raw=0x00000000f1f0e471 t0=14843555501 t1=14843555514",
+      "fields": {
+        "pass": "0",
+        "block": "perfcl",
+        "reg": "LDO_CFG",
+        "pa": "0x99d2040",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x00000000f1f0e471",
+        "t0": "14843555501",
+        "t1": "14843555514"
+      }
+    },
+    {
+      "line": 218,
+      "text": "LITHIUM CPU POWER pass=0 block=perfcl reg=APM_CFG pa=0x99d2050 bits=32 valid=1 raw=0x0000000000000001 t0=14843555866 t1=14843555879",
+      "fields": {
+        "pass": "0",
+        "block": "perfcl",
+        "reg": "APM_CFG",
+        "pa": "0x99d2050",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000001",
+        "t0": "14843555866",
+        "t1": "14843555879"
+      }
+    },
+    {
+      "line": 219,
+      "text": "LITHIUM CPU POWER pass=0 block=perfcl reg=PGS_STATUS pa=0x99d2060 bits=32 valid=1 raw=0x000000000000020f t0=14843556220 t1=14843556233",
+      "fields": {
+        "pass": "0",
+        "block": "perfcl",
+        "reg": "PGS_STATUS",
+        "pa": "0x99d2060",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x000000000000020f",
+        "t0": "14843556220",
+        "t1": "14843556233"
+      }
+    },
+    {
+      "line": 220,
+      "text": "LITHIUM CPU POWER pass=0 block=apcc reg=PWR_OVERRIDE pa=0x99e0038 bits=32 valid=1 raw=0x0000000000000000 t0=14843556573 t1=14843556590",
+      "fields": {
+        "pass": "0",
+        "block": "apcc",
+        "reg": "PWR_OVERRIDE",
+        "pa": "0x99e0038",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000000",
+        "t0": "14843556573",
+        "t1": "14843556590"
+      }
+    },
+    {
+      "line": 221,
+      "text": "LITHIUM CPU POWER pass=0 block=apcc reg=MEMACC pa=0x99e00c0 bits=32 valid=1 raw=0x0000000000000000 t0=14843556930 t1=14843556942",
+      "fields": {
+        "pass": "0",
+        "block": "apcc",
+        "reg": "MEMACC",
+        "pa": "0x99e00c0",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000000",
+        "t0": "14843556930",
+        "t1": "14843556942"
+      }
+    },
+    {
+      "line": 222,
+      "text": "LITHIUM CPU POWER pass=0 block=apcs reg=VERSION pa=0x9820fd0 bits=32 valid=1 raw=0x0000000010020000 t0=14843557275 t1=14843557302",
+      "fields": {
+        "pass": "0",
+        "block": "apcs",
+        "reg": "VERSION",
+        "pa": "0x9820fd0",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000010020000",
+        "t0": "14843557275",
+        "t1": "14843557302"
+      }
+    },
+    {
+      "line": 223,
+      "text": "LITHIUM CPU POWER pass=0 block=saw reg=VERSION pa=0x9a10fd0 bits=32 valid=1 raw=0x0000000010000000 t0=14843557636 t1=14843557673",
+      "fields": {
+        "pass": "0",
+        "block": "saw",
+        "reg": "VERSION",
+        "pa": "0x9a10fd0",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000010000000",
+        "t0": "14843557636",
+        "t1": "14843557673"
+      }
+    },
+    {
+      "line": 224,
+      "text": "LITHIUM CPU POWER pass=0 block=saw major=1 minor=0 layout=1 version_valid=1",
+      "fields": {
+        "pass": "0",
+        "block": "saw",
+        "major": "1",
+        "minor": "0",
+        "layout": "1",
+        "version_valid": "1"
+      }
+    },
+    {
+      "line": 225,
+      "text": "LITHIUM CPU POWER pass=0 block=saw reg=PMIC_STS pa=0x9a10014 bits=32 valid=1 raw=0x0000000000000000 t0=14843558258 t1=14843558275",
+      "fields": {
+        "pass": "0",
+        "block": "saw",
+        "reg": "PMIC_STS",
+        "pa": "0x9a10014",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000000",
+        "t0": "14843558258",
+        "t1": "14843558275"
+      }
+    },
+    {
+      "line": 226,
+      "text": "LITHIUM CPU POWER pass=0 block=saw reg=VCTL pa=0x9a1001c bits=32 valid=1 raw=0x0000000000000000 t0=14843558647 t1=14843558665",
+      "fields": {
+        "pass": "0",
+        "block": "saw",
+        "reg": "VCTL",
+        "pa": "0x9a1001c",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000000",
+        "t0": "14843558647",
+        "t1": "14843558665"
+      }
+    },
+    {
+      "line": 227,
+      "text": "LITHIUM CPU POWER pass=0 block=saw reg=AVS_CTL pa=0x9a10020 bits=32 valid=1 raw=0x0000000000000000 t0=14843558992 t1=14843559010",
+      "fields": {
+        "pass": "0",
+        "block": "saw",
+        "reg": "AVS_CTL",
+        "pa": "0x9a10020",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000000",
+        "t0": "14843558992",
+        "t1": "14843559010"
+      }
+    },
+    {
+      "line": 228,
+      "text": "LITHIUM CPU POWER pass=0 block=saw reg=AVS_LIMIT pa=0x9a10024 bits=32 valid=1 raw=0x0000000000000000 t0=14843559344 t1=14843559362",
+      "fields": {
+        "pass": "0",
+        "block": "saw",
+        "reg": "AVS_LIMIT",
+        "pa": "0x9a10024",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000000",
+        "t0": "14843559344",
+        "t1": "14843559362"
+      }
+    },
+    {
+      "line": 229,
+      "text": "LITHIUM CPU POWER pass=0 block=qfprom reg=ROW pa=0x74130 bits=64 valid=1 raw=0x8048d8e11091005f t0=14843559712 t1=14843559767",
+      "fields": {
+        "pass": "0",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74130",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x8048d8e11091005f",
+        "t0": "14843559712",
+        "t1": "14843559767"
+      }
+    },
+    {
+      "line": 230,
+      "text": "LITHIUM CPU POWER pass=0 block=qfprom reg=ROW pa=0x74138 bits=64 valid=1 raw=0x401103ea7ab389d6 t0=14843560093 t1=14843560122",
+      "fields": {
+        "pass": "0",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74138",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x401103ea7ab389d6",
+        "t0": "14843560093",
+        "t1": "14843560122"
+      }
+    },
+    {
+      "line": 231,
+      "text": "LITHIUM CPU POWER pass=0 block=qfprom reg=ROW pa=0x74148 bits=64 valid=1 raw=0xd4c1838e02e761f0 t0=14843560448 t1=14843560478",
+      "fields": {
+        "pass": "0",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74148",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0xd4c1838e02e761f0",
+        "t0": "14843560448",
+        "t1": "14843560478"
+      }
+    },
+    {
+      "line": 232,
+      "text": "LITHIUM CPU POWER pass=0 block=qfprom reg=ROW pa=0x74200 bits=64 valid=1 raw=0xc1dde74d5f3995ed t0=14843560795 t1=14843560823",
+      "fields": {
+        "pass": "0",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74200",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0xc1dde74d5f3995ed",
+        "t0": "14843560795",
+        "t1": "14843560823"
+      }
+    },
+    {
+      "line": 233,
+      "text": "LITHIUM CPU POWER pass=0 block=qfprom reg=ROW pa=0x74208 bits=64 valid=1 raw=0x986989b92da2a70a t0=14843561156 t1=14843561185",
+      "fields": {
+        "pass": "0",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74208",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x986989b92da2a70a",
+        "t0": "14843561156",
+        "t1": "14843561185"
+      }
+    },
+    {
+      "line": 234,
+      "text": "LITHIUM CPU POWER pass=0 block=qfprom reg=ROW pa=0x74210 bits=64 valid=1 raw=0xab0e61ddc60a1d04 t0=14843561504 t1=14843561534",
+      "fields": {
+        "pass": "0",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74210",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0xab0e61ddc60a1d04",
+        "t0": "14843561504",
+        "t1": "14843561534"
+      }
+    },
+    {
+      "line": 235,
+      "text": "LITHIUM CPU POWER pass=0 block=qfprom reg=ROW pa=0x74218 bits=64 valid=1 raw=0x1004446389b8ec63 t0=14843561875 t1=14843561905",
+      "fields": {
+        "pass": "0",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74218",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x1004446389b8ec63",
+        "t0": "14843561875",
+        "t1": "14843561905"
+      }
+    },
+    {
+      "line": 236,
+      "text": "LITHIUM CPU POWER pass=0 block=qfprom reg=ROW pa=0x74220 bits=64 valid=1 raw=0x00700000043ac54b t0=14843562223 t1=14843562251",
+      "fields": {
+        "pass": "0",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74220",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x00700000043ac54b",
+        "t0": "14843562223",
+        "t1": "14843562251"
+      }
+    },
+    {
+      "line": 237,
+      "text": "LITHIUM CPU POWER pass=0 block=qfprom reg=ROW pa=0x74248 bits=64 valid=1 raw=0x19800001c9699201 t0=14843562571 t1=14843562600",
+      "fields": {
+        "pass": "0",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74248",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x19800001c9699201",
+        "t0": "14843562571",
+        "t1": "14843562600"
+      }
+    },
+    {
+      "line": 238,
+      "text": "LITHIUM CPU POWER pass=0 block=qfprom reg=ROW pa=0x74250 bits=64 valid=1 raw=0x0000000000000000 t0=14843562920 t1=14843562948",
+      "fields": {
+        "pass": "0",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74250",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x0000000000000000",
+        "t0": "14843562920",
+        "t1": "14843562948"
+      }
+    },
+    {
+      "line": 239,
+      "text": "LITHIUM CPU POWER pass=0 block=qfprom reg=ROW pa=0x74258 bits=64 valid=1 raw=0x0000000000000000 t0=14843563283 t1=14843563311",
+      "fields": {
+        "pass": "0",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74258",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x0000000000000000",
+        "t0": "14843563283",
+        "t1": "14843563311"
+      }
+    },
+    {
+      "line": 240,
+      "text": "LITHIUM CPU POWER pass=0 block=qfprom reg=ROW pa=0x74260 bits=64 valid=1 raw=0x0000000000000000 t0=14843563623 t1=14843563653",
+      "fields": {
+        "pass": "0",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74260",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x0000000000000000",
+        "t0": "14843563623",
+        "t1": "14843563653"
+      }
+    },
+    {
+      "line": 241,
+      "text": "LITHIUM CPU POWER pass=0 phase=end t=14843563967 cookie=UNBOUND",
+      "fields": {
+        "pass": "0",
+        "phase": "end",
+        "t": "14843563967",
+        "cookie": "UNBOUND"
+      }
+    },
+    {
+      "line": 242,
+      "text": "LITHIUM CPU POWER pass=1 phase=begin t=14843564153 cookie=UNBOUND",
+      "fields": {
+        "pass": "1",
+        "phase": "begin",
+        "t": "14843564153",
+        "cookie": "UNBOUND"
+      }
+    },
+    {
+      "line": 243,
+      "text": "LITHIUM CPU POWER pass=1 block=pwrcl reg=LDO_VREF pa=0x99a2008 bits=32 valid=1 raw=0x000000000000004d t0=14843564352 t1=14843564365",
+      "fields": {
+        "pass": "1",
+        "block": "pwrcl",
+        "reg": "LDO_VREF",
+        "pa": "0x99a2008",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x000000000000004d",
+        "t0": "14843564352",
+        "t1": "14843564365"
+      }
+    },
+    {
+      "line": 244,
+      "text": "LITHIUM CPU POWER pass=1 block=pwrcl reg=RET_VREF pa=0x99a2010 bits=32 valid=1 raw=0x000000000000001f t0=14843564699 t1=14843564712",
+      "fields": {
+        "pass": "1",
+        "block": "pwrcl",
+        "reg": "RET_VREF",
+        "pa": "0x99a2010",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x000000000000001f",
+        "t0": "14843564699",
+        "t1": "14843564712"
+      }
+    },
+    {
+      "line": 245,
+      "text": "LITHIUM CPU POWER pass=1 block=pwrcl reg=PWR_GATE_MODE pa=0x99a2018 bits=32 valid=1 raw=0x0000000000000001 t0=14843565047 t1=14843565059",
+      "fields": {
+        "pass": "1",
+        "block": "pwrcl",
+        "reg": "PWR_GATE_MODE",
+        "pa": "0x99a2018",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000001",
+        "t0": "14843565047",
+        "t1": "14843565059"
+      }
+    },
+    {
+      "line": 246,
+      "text": "LITHIUM CPU POWER pass=1 block=pwrcl reg=PWR_GATE_DLY pa=0x99a2028 bits=32 valid=1 raw=0x0000000000000101 t0=14843565415 t1=14843565427",
+      "fields": {
+        "pass": "1",
+        "block": "pwrcl",
+        "reg": "PWR_GATE_DLY",
+        "pa": "0x99a2028",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000101",
+        "t0": "14843565415",
+        "t1": "14843565427"
+      }
+    },
+    {
+      "line": 247,
+      "text": "LITHIUM CPU POWER pass=1 block=pwrcl reg=LDO_CFG pa=0x99a2040 bits=32 valid=1 raw=0x00000000f1f0e471 t0=14843565774 t1=14843565787",
+      "fields": {
+        "pass": "1",
+        "block": "pwrcl",
+        "reg": "LDO_CFG",
+        "pa": "0x99a2040",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x00000000f1f0e471",
+        "t0": "14843565774",
+        "t1": "14843565787"
+      }
+    },
+    {
+      "line": 248,
+      "text": "LITHIUM CPU POWER pass=1 block=pwrcl reg=APM_CFG pa=0x99a2050 bits=32 valid=1 raw=0x0000000000000001 t0=14843566122 t1=14843566135",
+      "fields": {
+        "pass": "1",
+        "block": "pwrcl",
+        "reg": "APM_CFG",
+        "pa": "0x99a2050",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000001",
+        "t0": "14843566122",
+        "t1": "14843566135"
+      }
+    },
+    {
+      "line": 249,
+      "text": "LITHIUM CPU POWER pass=1 block=pwrcl reg=PGS_STATUS pa=0x99a2060 bits=32 valid=1 raw=0x000000000000020f t0=14843566497 t1=14843566510",
+      "fields": {
+        "pass": "1",
+        "block": "pwrcl",
+        "reg": "PGS_STATUS",
+        "pa": "0x99a2060",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x000000000000020f",
+        "t0": "14843566497",
+        "t1": "14843566510"
+      }
+    },
+    {
+      "line": 250,
+      "text": "LITHIUM CPU POWER pass=1 block=perfcl reg=LDO_VREF pa=0x99d2008 bits=32 valid=1 raw=0x000000000000004d t0=14843566875 t1=14843566887",
+      "fields": {
+        "pass": "1",
+        "block": "perfcl",
+        "reg": "LDO_VREF",
+        "pa": "0x99d2008",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x000000000000004d",
+        "t0": "14843566875",
+        "t1": "14843566887"
+      }
+    },
+    {
+      "line": 251,
+      "text": "LITHIUM CPU POWER pass=1 block=perfcl reg=RET_VREF pa=0x99d2010 bits=32 valid=1 raw=0x000000000000001f t0=14843567250 t1=14843567263",
+      "fields": {
+        "pass": "1",
+        "block": "perfcl",
+        "reg": "RET_VREF",
+        "pa": "0x99d2010",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x000000000000001f",
+        "t0": "14843567250",
+        "t1": "14843567263"
+      }
+    },
+    {
+      "line": 252,
+      "text": "LITHIUM CPU POWER pass=1 block=perfcl reg=PWR_GATE_MODE pa=0x99d2018 bits=32 valid=1 raw=0x0000000000000001 t0=14843567609 t1=14843567622",
+      "fields": {
+        "pass": "1",
+        "block": "perfcl",
+        "reg": "PWR_GATE_MODE",
+        "pa": "0x99d2018",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000001",
+        "t0": "14843567609",
+        "t1": "14843567622"
+      }
+    },
+    {
+      "line": 253,
+      "text": "LITHIUM CPU POWER pass=1 block=perfcl reg=PWR_GATE_DLY pa=0x99d2028 bits=32 valid=1 raw=0x0000000000000101 t0=14843567964 t1=14843567977",
+      "fields": {
+        "pass": "1",
+        "block": "perfcl",
+        "reg": "PWR_GATE_DLY",
+        "pa": "0x99d2028",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000101",
+        "t0": "14843567964",
+        "t1": "14843567977"
+      }
+    },
+    {
+      "line": 254,
+      "text": "LITHIUM CPU POWER pass=1 block=perfcl reg=LDO_CFG pa=0x99d2040 bits=32 valid=1 raw=0x00000000f1f0e471 t0=14843568315 t1=14843568327",
+      "fields": {
+        "pass": "1",
+        "block": "perfcl",
+        "reg": "LDO_CFG",
+        "pa": "0x99d2040",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x00000000f1f0e471",
+        "t0": "14843568315",
+        "t1": "14843568327"
+      }
+    },
+    {
+      "line": 255,
+      "text": "LITHIUM CPU POWER pass=1 block=perfcl reg=APM_CFG pa=0x99d2050 bits=32 valid=1 raw=0x0000000000000001 t0=14843568659 t1=14843568672",
+      "fields": {
+        "pass": "1",
+        "block": "perfcl",
+        "reg": "APM_CFG",
+        "pa": "0x99d2050",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000001",
+        "t0": "14843568659",
+        "t1": "14843568672"
+      }
+    },
+    {
+      "line": 256,
+      "text": "LITHIUM CPU POWER pass=1 block=perfcl reg=PGS_STATUS pa=0x99d2060 bits=32 valid=1 raw=0x000000000000020f t0=14843569006 t1=14843569019",
+      "fields": {
+        "pass": "1",
+        "block": "perfcl",
+        "reg": "PGS_STATUS",
+        "pa": "0x99d2060",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x000000000000020f",
+        "t0": "14843569006",
+        "t1": "14843569019"
+      }
+    },
+    {
+      "line": 257,
+      "text": "LITHIUM CPU POWER pass=1 block=apcc reg=PWR_OVERRIDE pa=0x99e0038 bits=32 valid=1 raw=0x0000000000000000 t0=14843569358 t1=14843569371",
+      "fields": {
+        "pass": "1",
+        "block": "apcc",
+        "reg": "PWR_OVERRIDE",
+        "pa": "0x99e0038",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000000",
+        "t0": "14843569358",
+        "t1": "14843569371"
+      }
+    },
+    {
+      "line": 258,
+      "text": "LITHIUM CPU POWER pass=1 block=apcc reg=MEMACC pa=0x99e00c0 bits=32 valid=1 raw=0x0000000000000000 t0=14843569715 t1=14843569726",
+      "fields": {
+        "pass": "1",
+        "block": "apcc",
+        "reg": "MEMACC",
+        "pa": "0x99e00c0",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000000",
+        "t0": "14843569715",
+        "t1": "14843569726"
+      }
+    },
+    {
+      "line": 259,
+      "text": "LITHIUM CPU POWER pass=1 block=apcs reg=VERSION pa=0x9820fd0 bits=32 valid=1 raw=0x0000000010020000 t0=14843570055 t1=14843570067",
+      "fields": {
+        "pass": "1",
+        "block": "apcs",
+        "reg": "VERSION",
+        "pa": "0x9820fd0",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000010020000",
+        "t0": "14843570055",
+        "t1": "14843570067"
+      }
+    },
+    {
+      "line": 260,
+      "text": "LITHIUM CPU POWER pass=1 block=saw reg=VERSION pa=0x9a10fd0 bits=32 valid=1 raw=0x0000000010000000 t0=14843570406 t1=14843570422",
+      "fields": {
+        "pass": "1",
+        "block": "saw",
+        "reg": "VERSION",
+        "pa": "0x9a10fd0",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000010000000",
+        "t0": "14843570406",
+        "t1": "14843570422"
+      }
+    },
+    {
+      "line": 261,
+      "text": "LITHIUM CPU POWER pass=1 block=saw major=1 minor=0 layout=1 version_valid=1",
+      "fields": {
+        "pass": "1",
+        "block": "saw",
+        "major": "1",
+        "minor": "0",
+        "layout": "1",
+        "version_valid": "1"
+      }
+    },
+    {
+      "line": 262,
+      "text": "LITHIUM CPU POWER pass=1 block=saw reg=PMIC_STS pa=0x9a10014 bits=32 valid=1 raw=0x0000000000000000 t0=14843570977 t1=14843570994",
+      "fields": {
+        "pass": "1",
+        "block": "saw",
+        "reg": "PMIC_STS",
+        "pa": "0x9a10014",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000000",
+        "t0": "14843570977",
+        "t1": "14843570994"
+      }
+    },
+    {
+      "line": 263,
+      "text": "LITHIUM CPU POWER pass=1 block=saw reg=VCTL pa=0x9a1001c bits=32 valid=1 raw=0x0000000000000000 t0=14843571358 t1=14843571376",
+      "fields": {
+        "pass": "1",
+        "block": "saw",
+        "reg": "VCTL",
+        "pa": "0x9a1001c",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000000",
+        "t0": "14843571358",
+        "t1": "14843571376"
+      }
+    },
+    {
+      "line": 264,
+      "text": "LITHIUM CPU POWER pass=1 block=saw reg=AVS_CTL pa=0x9a10020 bits=32 valid=1 raw=0x0000000000000000 t0=14843571696 t1=14843571713",
+      "fields": {
+        "pass": "1",
+        "block": "saw",
+        "reg": "AVS_CTL",
+        "pa": "0x9a10020",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000000",
+        "t0": "14843571696",
+        "t1": "14843571713"
+      }
+    },
+    {
+      "line": 265,
+      "text": "LITHIUM CPU POWER pass=1 block=saw reg=AVS_LIMIT pa=0x9a10024 bits=32 valid=1 raw=0x0000000000000000 t0=14843572044 t1=14843572062",
+      "fields": {
+        "pass": "1",
+        "block": "saw",
+        "reg": "AVS_LIMIT",
+        "pa": "0x9a10024",
+        "bits": "32",
+        "valid": "1",
+        "raw": "0x0000000000000000",
+        "t0": "14843572044",
+        "t1": "14843572062"
+      }
+    },
+    {
+      "line": 266,
+      "text": "LITHIUM CPU POWER pass=1 block=qfprom reg=ROW pa=0x74130 bits=64 valid=1 raw=0x8048d8e11091005f t0=14843572395 t1=14843572452",
+      "fields": {
+        "pass": "1",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74130",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x8048d8e11091005f",
+        "t0": "14843572395",
+        "t1": "14843572452"
+      }
+    },
+    {
+      "line": 267,
+      "text": "LITHIUM CPU POWER pass=1 block=qfprom reg=ROW pa=0x74138 bits=64 valid=1 raw=0x401103ea7ab389d6 t0=14843572775 t1=14843572803",
+      "fields": {
+        "pass": "1",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74138",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x401103ea7ab389d6",
+        "t0": "14843572775",
+        "t1": "14843572803"
+      }
+    },
+    {
+      "line": 268,
+      "text": "LITHIUM CPU POWER pass=1 block=qfprom reg=ROW pa=0x74148 bits=64 valid=1 raw=0xd4c1838e02e761f0 t0=14843573139 t1=14843573168",
+      "fields": {
+        "pass": "1",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74148",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0xd4c1838e02e761f0",
+        "t0": "14843573139",
+        "t1": "14843573168"
+      }
+    },
+    {
+      "line": 269,
+      "text": "LITHIUM CPU POWER pass=1 block=qfprom reg=ROW pa=0x74200 bits=64 valid=1 raw=0xc1dde74d5f3995ed t0=14843573489 t1=14843573517",
+      "fields": {
+        "pass": "1",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74200",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0xc1dde74d5f3995ed",
+        "t0": "14843573489",
+        "t1": "14843573517"
+      }
+    },
+    {
+      "line": 270,
+      "text": "LITHIUM CPU POWER pass=1 block=qfprom reg=ROW pa=0x74208 bits=64 valid=1 raw=0x986989b92da2a70a t0=14843573836 t1=14843573866",
+      "fields": {
+        "pass": "1",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74208",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x986989b92da2a70a",
+        "t0": "14843573836",
+        "t1": "14843573866"
+      }
+    },
+    {
+      "line": 271,
+      "text": "LITHIUM CPU POWER pass=1 block=qfprom reg=ROW pa=0x74210 bits=64 valid=1 raw=0xab0e61ddc60a1d04 t0=14843574185 t1=14843574214",
+      "fields": {
+        "pass": "1",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74210",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0xab0e61ddc60a1d04",
+        "t0": "14843574185",
+        "t1": "14843574214"
+      }
+    },
+    {
+      "line": 272,
+      "text": "LITHIUM CPU POWER pass=1 block=qfprom reg=ROW pa=0x74218 bits=64 valid=1 raw=0x1004446389b8ec63 t0=14843574533 t1=14843574562",
+      "fields": {
+        "pass": "1",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74218",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x1004446389b8ec63",
+        "t0": "14843574533",
+        "t1": "14843574562"
+      }
+    },
+    {
+      "line": 273,
+      "text": "LITHIUM CPU POWER pass=1 block=qfprom reg=ROW pa=0x74220 bits=64 valid=1 raw=0x00700000043ac54b t0=14843574880 t1=14843574909",
+      "fields": {
+        "pass": "1",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74220",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x00700000043ac54b",
+        "t0": "14843574880",
+        "t1": "14843574909"
+      }
+    },
+    {
+      "line": 274,
+      "text": "LITHIUM CPU POWER pass=1 block=qfprom reg=ROW pa=0x74248 bits=64 valid=1 raw=0x19800001c9699201 t0=14843575230 t1=14843575259",
+      "fields": {
+        "pass": "1",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74248",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x19800001c9699201",
+        "t0": "14843575230",
+        "t1": "14843575259"
+      }
+    },
+    {
+      "line": 275,
+      "text": "LITHIUM CPU POWER pass=1 block=qfprom reg=ROW pa=0x74250 bits=64 valid=1 raw=0x0000000000000000 t0=14843575578 t1=14843575606",
+      "fields": {
+        "pass": "1",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74250",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x0000000000000000",
+        "t0": "14843575578",
+        "t1": "14843575606"
+      }
+    },
+    {
+      "line": 276,
+      "text": "LITHIUM CPU POWER pass=1 block=qfprom reg=ROW pa=0x74258 bits=64 valid=1 raw=0x0000000000000000 t0=14843575930 t1=14843575959",
+      "fields": {
+        "pass": "1",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74258",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x0000000000000000",
+        "t0": "14843575930",
+        "t1": "14843575959"
+      }
+    },
+    {
+      "line": 277,
+      "text": "LITHIUM CPU POWER pass=1 block=qfprom reg=ROW pa=0x74260 bits=64 valid=1 raw=0x0000000000000000 t0=14843576279 t1=14843576308",
+      "fields": {
+        "pass": "1",
+        "block": "qfprom",
+        "reg": "ROW",
+        "pa": "0x74260",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x0000000000000000",
+        "t0": "14843576279",
+        "t1": "14843576308"
+      }
+    },
+    {
+      "line": 278,
+      "text": "LITHIUM CPU POWER pass=1 phase=end t=14843576626 cookie=UNBOUND",
+      "fields": {
+        "pass": "1",
+        "phase": "end",
+        "t": "14843576626",
+        "cookie": "UNBOUND"
+      }
+    },
+    {
+      "line": 279,
+      "text": "LITHIUM CPU POWER unmap index=0 allocation=0xfffffff7db5cc000 bytes=16384",
+      "fields": {
+        "index": "0",
+        "allocation": "0xfffffff7db5cc000",
+        "bytes": "16384"
+      }
+    },
+    {
+      "line": 280,
+      "text": "LITHIUM CPU POWER unmap index=1 allocation=0xfffffff7db5d0000 bytes=16384",
+      "fields": {
+        "index": "1",
+        "allocation": "0xfffffff7db5d0000",
+        "bytes": "16384"
+      }
+    },
+    {
+      "line": 281,
+      "text": "LITHIUM CPU POWER unmap index=2 allocation=0xfffffff7db5d4000 bytes=16384",
+      "fields": {
+        "index": "2",
+        "allocation": "0xfffffff7db5d4000",
+        "bytes": "16384"
+      }
+    },
+    {
+      "line": 282,
+      "text": "LITHIUM CPU POWER unmap index=3 allocation=0xfffffff7db5d8000 bytes=16384",
+      "fields": {
+        "index": "3",
+        "allocation": "0xfffffff7db5d8000",
+        "bytes": "16384"
+      }
+    },
+    {
+      "line": 283,
+      "text": "LITHIUM CPU POWER unmap index=4 allocation=0xfffffff7db5dc000 bytes=16384",
+      "fields": {
+        "index": "4",
+        "allocation": "0xfffffff7db5dc000",
+        "bytes": "16384"
+      }
+    },
+    {
+      "line": 284,
+      "text": "LITHIUM CPU POWER unmap index=5 allocation=0xfffffff7db5e0000 bytes=16384",
+      "fields": {
+        "index": "5",
+        "allocation": "0xfffffff7db5e0000",
+        "bytes": "16384"
+      }
+    },
+    {
+      "line": 285,
+      "text": "LITHIUM CPU POWER end revision=38 valid=68 unread=0 cookie=UNBOUND mmio_writes=0 regulator_writes=0 fixed_frequency_applied=0",
+      "fields": {
+        "revision": "38",
+        "valid": "68",
+        "unread": "0",
+        "cookie": "UNBOUND",
+        "mmio_writes": "0",
+        "regulator_writes": "0",
+        "fixed_frequency_applied": "0"
+      }
+    },
+    {
+      "line": 301,
+      "text": "LITHIUM CPU sanity logical=0 actual_logical=0 mpidr=0x80000001 cntfrq=19200000 mair=0xc08044f00bb44ff tcr=0x22a51a251a ram_va=0xfffffff833f20000 ram_par=0xff00000109d08b00 ram_attr=0xff ram_fault=0 stack_par=0xff00000109917b00 midr=0x512f2011 sctlr=0x34d4593d sctlr_i=1 sctlr_c=1 sctlr_m=1 affinity=0x1 logical_match=1",
+      "fields": {
+        "logical": "0",
+        "actual_logical": "0",
+        "mpidr": "0x80000001",
+        "cntfrq": "19200000",
+        "mair": "0xc08044f00bb44ff",
+        "tcr": "0x22a51a251a",
+        "ram_va": "0xfffffff833f20000",
+        "ram_par": "0xff00000109d08b00",
+        "ram_attr": "0xff",
+        "ram_fault": "0",
+        "stack_par": "0xff00000109917b00",
+        "midr": "0x512f2011",
+        "sctlr": "0x34d4593d",
+        "sctlr_i": "1",
+        "sctlr_c": "1",
+        "sctlr_m": "1",
+        "affinity": "0x1",
+        "logical_match": "1"
+      }
+    },
+    {
+      "line": 321,
+      "text": "LITHIUM CPU BENCH test=integer logical=0 count=5 errors=0 min_us=2441 avg_us=2454 max_us=2466 ns_per_iteration=2 cntvct_min=46876 cntvct_avg=47112 cntvct_max=47353 checksum=0x1ccc1ea74481e979",
+      "fields": {
+        "test": "integer",
+        "logical": "0",
+        "count": "5",
+        "errors": "0",
+        "min_us": "2441",
+        "avg_us": "2454",
+        "max_us": "2466",
+        "ns_per_iteration": "2",
+        "cntvct_min": "46876",
+        "cntvct_avg": "47112",
+        "cntvct_max": "47353",
+        "checksum": "0x1ccc1ea74481e979"
+      }
+    },
+    {
+      "line": 322,
+      "text": "LITHIUM CPU BENCH test=memcpy logical=0 count=5 errors=0 min_us=9581 avg_us=9868 max_us=10757 MBps_min=3119 MBps_avg=3400 MBps_max=3501 warm_cache=1",
+      "fields": {
+        "test": "memcpy",
+        "logical": "0",
+        "count": "5",
+        "errors": "0",
+        "min_us": "9581",
+        "avg_us": "9868",
+        "max_us": "10757",
+        "MBps_min": "3119",
+        "MBps_avg": "3400",
+        "MBps_max": "3501",
+        "warm_cache": "1"
+      }
+    },
+    {
+      "line": 323,
+      "text": "LITHIUM CPU sanity logical=1 actual_logical=1 mpidr=0x80000100 cntfrq=19200000 mair=0xc08044f00bb44ff tcr=0x22a51a251a ram_va=0xfffffff833f20000 ram_par=0xff00000109d08b00 ram_attr=0xff ram_fault=0 stack_par=0xff00000109917b00 midr=0x512f2051 sctlr=0x34d4593d sctlr_i=1 sctlr_c=1 sctlr_m=1 affinity=0x100 logical_match=1",
+      "fields": {
+        "logical": "1",
+        "actual_logical": "1",
+        "mpidr": "0x80000100",
+        "cntfrq": "19200000",
+        "mair": "0xc08044f00bb44ff",
+        "tcr": "0x22a51a251a",
+        "ram_va": "0xfffffff833f20000",
+        "ram_par": "0xff00000109d08b00",
+        "ram_attr": "0xff",
+        "ram_fault": "0",
+        "stack_par": "0xff00000109917b00",
+        "midr": "0x512f2051",
+        "sctlr": "0x34d4593d",
+        "sctlr_i": "1",
+        "sctlr_c": "1",
+        "sctlr_m": "1",
+        "affinity": "0x100",
+        "logical_match": "1"
+      }
+    },
+    {
+      "line": 325,
+      "text": "LITHIUM CPU BENCH test=integer logical=1 count=5 errors=0 min_us=161623 avg_us=162146 max_us=162686 ns_per_iteration=162 cntvct_min=3103005 cntvct_avg=3113043 cntvct_max=3123430 checksum=0x1ccc1ea74481e979",
+      "fields": {
+        "test": "integer",
+        "logical": "1",
+        "count": "5",
+        "errors": "0",
+        "min_us": "161623",
+        "avg_us": "162146",
+        "max_us": "162686",
+        "ns_per_iteration": "162",
+        "cntvct_min": "3103005",
+        "cntvct_avg": "3113043",
+        "cntvct_max": "3123430",
+        "checksum": "0x1ccc1ea74481e979"
+      }
+    },
+    {
+      "line": 326,
+      "text": "LITHIUM CPU BENCH test=memcpy logical=1 count=5 errors=0 min_us=311726 avg_us=313143 max_us=315166 MBps_min=106 MBps_avg=107 MBps_max=107 warm_cache=1",
+      "fields": {
+        "test": "memcpy",
+        "logical": "1",
+        "count": "5",
+        "errors": "0",
+        "min_us": "311726",
+        "avg_us": "313143",
+        "max_us": "315166",
+        "MBps_min": "106",
+        "MBps_avg": "107",
+        "MBps_max": "107",
+        "warm_cache": "1"
+      }
+    },
+    {
+      "line": 327,
+      "text": "LITHIUM CPU sanity logical=2 actual_logical=2 mpidr=0x80000101 cntfrq=19200000 mair=0xc08044f00bb44ff tcr=0x22a51a251a ram_va=0xfffffff833f20000 ram_par=0xff00000109d08b00 ram_attr=0xff ram_fault=0 stack_par=0xff00000109917b00 midr=0x512f2051 sctlr=0x34d4593d sctlr_i=1 sctlr_c=1 sctlr_m=1 affinity=0x101 logical_match=1",
+      "fields": {
+        "logical": "2",
+        "actual_logical": "2",
+        "mpidr": "0x80000101",
+        "cntfrq": "19200000",
+        "mair": "0xc08044f00bb44ff",
+        "tcr": "0x22a51a251a",
+        "ram_va": "0xfffffff833f20000",
+        "ram_par": "0xff00000109d08b00",
+        "ram_attr": "0xff",
+        "ram_fault": "0",
+        "stack_par": "0xff00000109917b00",
+        "midr": "0x512f2051",
+        "sctlr": "0x34d4593d",
+        "sctlr_i": "1",
+        "sctlr_c": "1",
+        "sctlr_m": "1",
+        "affinity": "0x101",
+        "logical_match": "1"
+      }
+    },
+    {
+      "line": 328,
+      "text": "LITHIUM CPU BENCH test=integer logical=2 count=5 errors=0 min_us=161674 avg_us=161897 max_us=162544 ns_per_iteration=161 cntvct_min=3103964 cntvct_avg=3108262 cntvct_max=3120689 checksum=0x1ccc1ea74481e979",
+      "fields": {
+        "test": "integer",
+        "logical": "2",
+        "count": "5",
+        "errors": "0",
+        "min_us": "161674",
+        "avg_us": "161897",
+        "max_us": "162544",
+        "ns_per_iteration": "161",
+        "cntvct_min": "3103964",
+        "cntvct_avg": "3108262",
+        "cntvct_max": "3120689",
+        "checksum": "0x1ccc1ea74481e979"
+      }
+    },
+    {
+      "line": 329,
+      "text": "LITHIUM CPU BENCH test=memcpy logical=2 count=5 errors=0 min_us=307914 avg_us=313778 max_us=316697 MBps_min=105 MBps_avg=106 MBps_max=108 warm_cache=1",
+      "fields": {
+        "test": "memcpy",
+        "logical": "2",
+        "count": "5",
+        "errors": "0",
+        "min_us": "307914",
+        "avg_us": "313778",
+        "max_us": "316697",
+        "MBps_min": "105",
+        "MBps_avg": "106",
+        "MBps_max": "108",
+        "warm_cache": "1"
+      }
+    }
+  ],
+  "supply_register_reads": 68,
+  "stable_passes": true,
+  "allocation_unmaps": 6,
+  "old_unmap_panic_reproduced": false,
+  "normal_timer": true,
+  "clock_writes": 0,
+  "voltage_writes": 0,
+  "fixed_frequency_applied": false,
+  "cpu_frequency_fixed": false,
+  "four_xnu_cpus_verified": false,
+  "ram_hold_not_springboard_test": true,
+  "receiver_terminal_status": {
+    "started_at": "2026-11-20T23:44:19.224610+08:00",
+    "enumerated": true,
+    "frames": 144,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "status": "capture_failed",
+    "output": "F:\\IOS-MIX1\\reports\\local\\r37-attempts\\r37-frequency-07\\console.log",
+    "device_commands_sent": false,
+    "candidate_seen": true,
+    "identity_verified": true,
+    "descriptor_errors": 0,
+    "descriptor_error_samples": [],
+    "configuration_verified": true,
+    "console_bytes": 34668,
+    "failure_stage": "capturing",
+    "failure": "[Errno 32] Pipe error",
+    "finished_at": "2026-11-20T23:47:52.420876+08:00"
+  },
+  "limitations": [
+    "Digital register snapshots are not analog voltage measurements.",
+    "SAW zero status does not establish the S11 operating voltage.",
+    "PMU setup disabled: current run has no valid MHz samples.",
+    "UEFI internal Prepare/Commit fields are not in this USB stream.",
+    "No after-run hardware-key confirmation was separately obtained.",
+    "Phys0 remains the UEFI/UFS resident worker; only three XNU CPUs."
+  ]
+}

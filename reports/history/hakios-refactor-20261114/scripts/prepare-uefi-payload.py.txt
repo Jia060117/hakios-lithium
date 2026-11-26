@@ -1,0 +1,71 @@
+"""Build a deterministic FAT12 volume containing the verified iOS14 EFI loader.
+
+No device access. mtools independently reads every file back from the volume.
+The first volume is intentionally small; it does not contain an XNU kernel.
+"""
+import hashlib
+import json
+from pathlib import Path
+import struct
+import subprocess
+
+
+def fnv64(data):
+    value=0xcbf29ce484222325
+    for byte in data:
+        value=((value^byte)*0x100000001b3)&0xffffffffffffffff
+    return value
+
+
+def prepare(root,out,include):
+    build=json.loads((root/'reports/ios14-loader-build.json').read_text())
+    checks=json.loads((root/'reports/ios14-loader-validation.json').read_text())
+    driver=(root/build['efi_path']).read_bytes()
+    digest=hashlib.sha256(driver).hexdigest()
+    assert build['build_success'] and digest==build['efi_sha256']
+    assert checks['all_passed'] and checks['efi_sha256']==digest
+    for name,expected in build['sources'].items():
+        assert hashlib.sha256((root/name).read_bytes()).hexdigest()==expected,name
+    manifest=json.dumps(dict(target='iOS 14.8 / 18H17',loader_sha256=digest,
+        loader_bytes=len(driver),scope='EFI installation only; XNU and user space absent'),sort_keys=True).encode()+b'\n'
+    files={b'DARWIN14EFI':driver,b'CHECK   TXT':b'MIX1 iOS 14 payload v1\n',b'PAYLOAD JSN':manifest}
+    disk=bytearray(0x100000)
+    disk[:3]=b'\xeb\x3c\x90'; disk[3:11]=b'MIX1FAT '
+    struct.pack_into('<HBHBHHBHHHII',disk,11,512,1,1,2,128,2048,0xf8,6,32,64,0,0)
+    disk[36]=0x80; disk[38]=0x29
+    struct.pack_into('<I',disk,39,0x4d495831)
+    disk[43:54]=b'MIX1IOS14  '; disk[54:62]=b'FAT12   '; disk[510:512]=b'\x55\xaa'
+    fat=bytearray(6*512)
+    def entry(cluster,value):
+        index=cluster*3//2
+        word=int.from_bytes(fat[index:index+2],'little')
+        word=(word&0xf000)|value if cluster%2==0 else (word&0x000f)|(value<<4)
+        fat[index:index+2]=word.to_bytes(2,'little')
+    entry(0,0xff8); entry(1,0xfff)
+    cluster=2
+    for index,(name,content) in enumerate(files.items()):
+        assert len(name)==11
+        count=(len(content)+511)//512
+        assert cluster+count<=2029
+        for n in range(count): entry(cluster+n,0xfff if n==count-1 else cluster+n+1)
+        offset=21*512+(cluster-2)*512
+        disk[offset:offset+len(content)]=content
+        directory=13*512+index*32
+        disk[directory:directory+11]=name; disk[directory+11]=0x21
+        struct.pack_into('<HHHI',disk,directory+22,0,((2026-1980)<<9)|(11<<5)|12,cluster,len(content))
+        cluster+=count
+    disk[512:7*512]=fat; disk[7*512:13*512]=fat
+    image=out/'payload.fat'; image.write_bytes(disk)
+    for name,content in files.items():
+        path=name[:8].decode().strip()+'.'+name[8:].decode().strip()
+        actual=subprocess.check_output(['mtype','-i',str(image),'::/'+path])
+        assert actual==content,path
+    header=include/'PayloadGenerated.h'
+    header.write_text('// Generated from the hash-verified iOS14 EFI.\n'
+        f'#define LITHIUM_LOADER_BYTES {len(driver)}U\n'
+        f'#define LITHIUM_LOADER_FNV64 0x{fnv64(driver):016x}ULL\n')
+    return dict(sha256=hashlib.sha256(disk).hexdigest(),bytes=len(disk),
+        base='0x44d00000',end_exclusive='0x44e00000',
+        loader_sha256=digest,loader_bytes=len(driver),loader_fnv64=hex(fnv64(driver)),
+        mtools_file_roundtrip_verified=True,generator_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        generated_header_sha256=hashlib.sha256(header.read_bytes()).hexdigest())

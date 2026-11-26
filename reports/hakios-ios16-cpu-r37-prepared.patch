@@ -1,0 +1,2890 @@
+diff --git a/AGENTS.md b/AGENTS.md
+index acb2985..eb374df 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -1,3 +1,5 @@
++2026-11-20 R37频率、计时、调度与止血主机候选完成：用户报告三核触摸可用但Clock图标指针抽搐，单核匀速；无同次调度记录。默认关闭cpu_freq_diag、timer_migrate_diag、ui_sched_diag、slowcores_idle。实际内核cdd261e6be574dce61c4781b0b034a4d8412ff039c44b16a9f0cedbaba26cec4完成链接，最终五包在phase4-r37-cpu-final、每轮累加一个参数；旧非-final归档不测。Popper实现PMU/迁移，James核对推荐接口及策略专项，Locke测试调度核心/报告器，Chandrasekhar完成时钟只读调查；主代理复核、修正任务ID与状态发布、针对性复测及冻结。0x100/101属于perfcl，19.2MHz XO是源码可选项，实际频率、跨核计时、抽搐时驻留、CPU_ON后选源及本机电压均未验证。未改硬件时钟/供电、未设计定频或调速器。无手机操作，已记录启动计数62/31不变；R20和旧冻结/原索引保留。见reports/hakios-ios16-cpu-r37-prepared.md/json。
++
+ 2026-11-20 R36三核触摸兼容主机候选完成：R35 combined于18:14:16单次启动，三核online/ICM1，但旧touch单核门禁在affinity101/max2拒绝初始化，不能作三核触摸性能验收。整数2491/162535/162603us、memcpy3534/110/110MBps，慢核仍约65倍，MHz/cache命中未测。新默认关闭touch_smp1，初始化和每次poll绑定logical0并核对affinity1后才MMIO，退出恢复原绑定；旧诊断门禁保留。实际HakiOS增量链接、68项专项及整包逐层读回通过，镜像d4f2d0ee4f4be24952d7439b17834d0d159fa76e78da40bec59622b6623b5669；未改PLL/电压、未重建未改Mu/用户态。Harvey提取CPU、Nietzsche专项/复核，主代理实际源码/日志/哈希独立读回。本阶段无新设备命令，62/31不变；保持当前R35，R36未上机，三核收益未验证。R20及旧冻结/原索引保留；UFS自动返回仍关。见reports/hakios-ios16-touch-smp-r36-prepared.md/json，运行见reports/hakios-ios16-device-r35-ui-perf-combined.md。
+ 
+ 2026-11-20 R35三项合并包已准备、预检等待：用户反馈lite仍点不动并要求前述选项一起试；已说明lite原含applog_ui_quiet1/ui_lite1，本包仅新增cpus3，bootcpu1不变。同冻结内核/根APFS、无重编译，实际整包读回通过；镜像bfc3a041b7d81f33582dae04ba9894c53b3b44f16e1b5f70ba10b1672500370d。唯一一次只读fastboot devices返回0但枚举空，未到身份/电量、无新USB/boot/复位/分区/ADB/QEMU/重试；61/30不变，启动未消费。保留旧lite与空枚举记录；用户手动返回Fastboot确认后，复用冻结包建立新独立预检尝试，不自动查询。三核/流畅度未验证，未启用8996未适配调频，UFS自动返回仍关。见reports/hakios-ios16-r35-ui-performance-combined-prepared.md/json及reports/local/20261120-r35-ui-perf-combined-approved/。
+diff --git a/maintenance/hakios-lithium/cpu-frequency-r37-test.c b/maintenance/hakios-lithium/cpu-frequency-r37-test.c
+new file mode 100644
+index 0000000..8f69020
+--- /dev/null
++++ b/maintenance/hakios-lithium/cpu-frequency-r37-test.c
+@@ -0,0 +1,373 @@
++/* Focused host test of the actual R37 include, with deterministic register and
++ * scheduler mocks. Run from the repository root; output goes under measure/.
++ * clang -std=c11 -O1 -g -Wall -Wextra -Werror -Wno-format -fsanitize=address,undefined \
++ *   maintenance/hakios-lithium/cpu-frequency-r37-test.c -o evidence/.../measure/r37-test
++ *
++ * Linux uint64_t uses unsigned long; XNU ARM64 uses unsigned long long.
++ * The kernel printf format is independently checked by main's real BSD build.
++ */
++#include <assert.h>
++#include <stdint.h>
++#include <stdio.h>
++#include <stdarg.h>
++#include <string.h>
++
++#define LITHIUM_R37_TEST 1
++#ifndef LITHIUM_R37_ARCH_PMU_UNOWNED
++#define LITHIUM_R37_ARCH_PMU_UNOWNED 1
++#endif
++#define MONOTONIC 0
++#define KPC 1
++#define THREAD_CONTINUE_NULL NULL
++#define PROCESSOR_NULL NULL
++#define PROCESSOR_BASIC_INFO 1
++#define PROCESSOR_BASIC_INFO_COUNT 5
++#define KERN_SUCCESS 0
++typedef unsigned mach_msg_type_number_t;
++typedef void *host_t;
++typedef int *processor_info_t;
++typedef struct { int running; } processor_basic_info_data_t;
++typedef struct { uint32_t numer, denom; } mach_timebase_info_data_t;
++typedef struct mock_cpu {
++	int id, online;
++	uint64_t pmcr, enable, filter, interrupt, overflow, pmuver, cycles;
++} *processor_t;
++static struct mock_cpu mock_cpus[8];
++static processor_t binding, original_binding;
++static int actual_cpu, max_cpu, irq_enabled, preemption_level;
++static unsigned arg_freq, arg_timer, raw_reads, pmu_reads, writes;
++static int arg_setup;
++static unsigned blocks, logs, pmcr_reset_writes, counter_writes, bad_bind;
++static unsigned owner_classes, force_bad_readback, freeze_timer;
++static uint64_t tick;
++static char log_buffer[128000];
++static size_t log_used;
++
++static int
++mock_printf(const char *fmt, ...)
++{
++	va_list ap;
++	va_start(ap, fmt);
++	int n = vsnprintf(log_buffer + log_used, sizeof(log_buffer) - log_used, fmt, ap);
++	va_end(ap);
++	assert(n >= 0 && (size_t)n < sizeof(log_buffer) - log_used);
++	log_used += (size_t)n;
++	logs++;
++	return n;
++}
++#define printf mock_printf
++
++static void
++PE_parse_boot_argn(const char *name, void *v, unsigned n)
++{
++	assert(n == sizeof(unsigned));
++	if (!strcmp(name, "cpu_freq_diag")) *(unsigned *)v = arg_freq;
++	if (!strcmp(name, "timer_migrate_diag")) *(unsigned *)v = arg_timer;
++	if (!strcmp(name, "cpu_freq_pmu_setup") && arg_setup >= 0) *(unsigned *)v = (unsigned)arg_setup;
++}
++static int ml_get_interrupts_enabled(void) { return irq_enabled; }
++static int get_preemption_level(void) { return preemption_level; }
++static int ml_get_max_cpu_number(void) { return max_cpu; }
++static int cpu_number(void) { return actual_cpu; }
++static void disable_preemption(void) { preemption_level++; }
++static void enable_preemption(void) { assert(preemption_level > 0); preemption_level--; }
++static __attribute__((unused)) unsigned kpc_get_classes(void) { return owner_classes; }
++static __attribute__((unused)) int kpc_is_running_fixed(void) { return 0; }
++static __attribute__((unused)) int kpc_is_running_configurable(uint64_t m) { (void)m; return 0; }
++static processor_t cpu_to_processor(int i)
++{
++	assert(i >= 0 && i <= max_cpu && i < 8);
++	return &mock_cpus[i];
++}
++static int
++processor_info(processor_t p, int flavor, host_t *host, processor_info_t info,
++    mach_msg_type_number_t *count)
++{
++	assert(flavor == PROCESSOR_BASIC_INFO && *count == PROCESSOR_BASIC_INFO_COUNT);
++	((processor_basic_info_data_t *)info)->running = p->online;
++	*host = NULL;
++	return 0;
++}
++static processor_t thread_bind(processor_t p)
++{
++	assert(!preemption_level);
++	processor_t old = binding;
++	binding = p;
++	return old;
++}
++static void thread_block(void *continuation)
++{
++	assert(!continuation && !preemption_level);
++	blocks++;
++	if (binding && !bad_bind) actual_cpu = binding->id;
++	tick += 500;
++}
++static uint64_t mach_absolute_time(void) { return ++tick; }
++static void clock_timebase_info(mach_timebase_info_data_t *tb)
++{
++	tb->numer = 125;
++	tb->denom = 3;
++}
++
++static uint64_t
++mock_read(const char *reg)
++{
++	struct mock_cpu *p = &mock_cpus[actual_cpu];
++	raw_reads++;
++	if (!freeze_timer) {
++		tick += 24;
++		if ((p->pmcr & 1) && (p->enable & (1ULL << 31)) &&
++		    !(p->filter & ((1ULL << 31) | (1ULL << 29)))) {
++			p->cycles += 2400; /* 2400 MHz / 24 MHz */
++		}
++	}
++	if (!strcmp(reg, "CurrentEL")) return 4;
++	if (!strcmp(reg, "ID_AA64DFR0_EL1")) return p->pmuver << 8;
++	if (!strcmp(reg, "CNTFRQ_EL0")) return 24000000;
++	if (!strcmp(reg, "CNTVCT_EL0")) return tick;
++	if (!strcmp(reg, "CNTPCT_EL0")) return tick + 999;
++	if (!strcmp(reg, "MPIDR_EL1")) return (uint64_t)actual_cpu;
++	pmu_reads++;
++	if (!strcmp(reg, "PMCR_EL0")) return p->pmcr;
++	if (!strcmp(reg, "PMCNTENSET_EL0")) return p->enable;
++	if (!strcmp(reg, "PMCCFILTR_EL0")) return p->filter;
++	if (!strcmp(reg, "PMINTENSET_EL1")) return p->interrupt;
++	if (!strcmp(reg, "PMOVSCLR_EL0")) return p->overflow;
++	if (!strcmp(reg, "PMCCNTR_EL0")) return p->cycles;
++	assert(!"unexpected system register");
++	return 0;
++}
++static void
++mock_write(const char *reg, uint64_t value)
++{
++	struct mock_cpu *p = &mock_cpus[actual_cpu];
++	writes++;
++	assert(preemption_level);
++	if (!strcmp(reg, "PMCR_EL0")) {
++		pmcr_reset_writes += !!(value & 6);
++		p->pmcr = value;
++	} else if (!strcmp(reg, "PMCCFILTR_EL0")) {
++		p->filter = force_bad_readback && writes == 1 ? value | (1ULL << 31) : value;
++	} else if (!strcmp(reg, "PMCNTENSET_EL0")) {
++		p->enable |= value;
++	} else if (!strcmp(reg, "PMCNTENCLR_EL0")) {
++		p->enable &= ~value;
++	} else {
++		counter_writes++;
++		assert(!"unexpected register write");
++	}
++}
++#define R37_READ(reg) mock_read(#reg)
++#define R37_WRITE(reg, value) mock_write(#reg, (uint64_t)(value))
++#define R37_ISB() ((void)0)
++#include "../../ports/hakios-lithium/diagnostics/cpu-frequency-r37.inc"
++#undef printf
++
++static unsigned checks;
++#define CHECK(e) do { checks++; assert(e); } while (0)
++
++static void
++reset_mock(void)
++{
++	memset(mock_cpus, 0, sizeof(mock_cpus));
++	for (int i = 0; i < 8; i++) {
++		mock_cpus[i].id = i;
++		mock_cpus[i].online = i < 3;
++		mock_cpus[i].pmuver = 1;
++	}
++	binding = original_binding = NULL;
++	actual_cpu = 0; max_cpu = 2; irq_enabled = 1; preemption_level = 0;
++	arg_freq = arg_timer = raw_reads = pmu_reads = writes = 0;
++	arg_setup = -1;
++	blocks = logs = pmcr_reset_writes = counter_writes = bad_bind = 0;
++	owner_classes = force_bad_readback = freeze_timer = 0;
++	tick = 1000; log_used = 0; log_buffer[0] = 0;
++}
++
++static void
++test_math(void)
++{
++	uint64_t out = 123;
++	CHECK(r37_divisor(0) == 1);
++	CHECK(r37_divisor(8) == 64);
++	CHECK(r37_divisor(64) == 1);
++	CHECK(r37_divisor(72) == 1);
++	CHECK(r37_supported_pmu(1) && r37_supported_pmu(4));
++	CHECK(!r37_supported_pmu(0) && !r37_supported_pmu(15) && !r37_supported_pmu(9));
++	CHECK(r37_el1_counted(0));
++	CHECK(!r37_el1_counted(1ULL << 31));
++	CHECK(!r37_el1_counted(1ULL << 29));
++	CHECK(!r37_el1_counted((1ULL << 31) | (1ULL << 29)));
++	CHECK(r37_muldiv(5000000, 24000000, 24000, &out) && out == 5000000000ULL);
++	CHECK(!r37_muldiv(R37_U64_MAX, 2, 1, &out));
++	CHECK(!r37_muldiv(1, 2, 0, &out));
++	CHECK(r37_muldiv(0, R37_U64_MAX, 1, &out) && !out);
++	CHECK(r37_counter_delta(0xfffffff0, 0x20, 32) == 48);
++	CHECK(r37_counter_delta(R37_U64_MAX - 15, 32, 64) == 48);
++	CHECK(r37_counter_delta(0xfffffff0, 0x100000020ULL, 64) == 48);
++	for (uint64_t i = 0; i < 1024; i++) {
++		CHECK(r37_counter_delta(R37_U64_MAX - i, i, 64) == 2 * i + 1);
++		CHECK(r37_counter_delta(0xffffffffULL - i, i, 32) == 2 * i + 1);
++	}
++	struct r37_stats s = {0};
++	CHECK(r37_avg(&s) == 0);
++	CHECK(r37_add(&s, 0) && r37_add(&s, 10) && r37_add(&s, 5));
++	CHECK(s.count == 3 && s.min == 0 && s.max == 10 && r37_avg(&s) == 5);
++	s.sum = R37_U64_MAX;
++	CHECK(!r37_add(&s, 1) && s.overflow && !r37_avg(&s));
++}
++
++static void
++test_frequency(void)
++{
++	struct r37_cycle_stamp a = {100, 1000, 102};
++	struct r37_cycle_stamp b = {24100, 2401000, 24102};
++	struct r37_frequency f = {0};
++	CHECK(r37_frequency_add(&f, a, b, 24000000, 1));
++	CHECK(f.khz.min == 2400000 && f.khz.max == 2400000 && f.khz.count == 1);
++	CHECK(f.lower_khz < 2400000 && f.upper_khz > 2400000 && f.bracket.max == 4);
++	f = (struct r37_frequency){0};
++	b.cycles = 38500;
++	CHECK(r37_frequency_add(&f, a, b, 24000000, 64) && f.khz.sum == 2400000);
++	f = (struct r37_frequency){0};
++	a.cycles = R37_U64_MAX - 999;
++	b.cycles = 2399000;
++	CHECK(r37_frequency_add(&f, a, b, 24000000, 1));
++	CHECK(f.wrapped == 1 && f.khz.sum == 2400000);
++	a.cycles = b.cycles;
++	CHECK(!r37_frequency_add(&f, a, b, 24000000, 1)); /* stopped PMU */
++	b.v0 = 90;
++	CHECK(!r37_frequency_add(&f, a, b, 24000000, 1)); /* backwards reference */
++	b = (struct r37_cycle_stamp){24100, R37_U64_MAX / 2, 24102};
++	a = (struct r37_cycle_stamp){100, 0, 102};
++	CHECK(!r37_frequency_add(&f, a, b, 24000000, 64)); /* scaled overflow */
++	CHECK(!r37_frequency_add(&f, a, b, 24000000, 1)); /* product overflow */
++	b.cycles = 2400000;
++	CHECK(!r37_frequency_add(&f, a, b, 0, 1));
++}
++
++static struct r37_migration
++forward_migration(uint64_t ns)
++{
++	struct r37_migration m = {{100, 100, 100, 101, 101, 0},
++	    {101 + ns, 102 + ns, 102 + ns, 103 + ns, 104 + ns, 1}};
++	return m;
++}
++
++static void
++test_migration(void)
++{
++	struct r37_migration_stats s = {0};
++	mach_timebase_info_data_t tb = {1, 1};
++	uint64_t values[] = {0, 9999, 10000, 99999, 100000, 999999,
++	    1000000, 9999999, 10000000};
++	for (unsigned i = 0; i < sizeof(values) / sizeof(values[0]); i++) {
++		struct r37_migration m = forward_migration(values[i]);
++		r37_migration_add(&s, &m, 0, 1, tb);
++	}
++	CHECK(s.abs_ticks.count == 9 && s.latency_ns.min == 0 && s.latency_ns.max == 10000000);
++	CHECK(s.histogram[0] == 2 && s.histogram[1] == 2 && s.histogram[2] == 2 &&
++	    s.histogram[3] == 2 && s.histogram[4] == 1);
++	struct r37_migration b = forward_migration(1);
++	b.after.abs0 = 90; b.after.v0 = 90; b.after.physical = 90;
++	r37_migration_add(&s, &b, 0, 1, tb);
++	CHECK(s.abs_back == 1 && s.abs_back_max == 11 && s.virtual_back == 1 &&
++	    s.physical_back == 1 && s.abs_ticks.count == 9);
++	b.after.cpu = 7;
++	r37_migration_add(&s, &b, 0, 1, tb);
++	CHECK(s.bad_cpu == 1 && s.abs_back == 1);
++	b = forward_migration(1);
++	b.before.abs1 = 99; b.before.v1 = 99;
++	r37_migration_add(&s, &b, 0, 1, tb);
++	CHECK(s.internal_back == 1);
++}
++
++static void
++test_mock_execution(void)
++{
++	reset_mock();
++	lithium_cpu_frequency_r37();
++	CHECK(!raw_reads && !writes && !blocks && !logs);
++	arg_freq = 2; arg_timer = 99;
++	lithium_cpu_frequency_r37();
++	CHECK(!raw_reads && !writes && !blocks);
++	reset_mock(); arg_timer = 1; binding = original_binding = &mock_cpus[2];
++	lithium_cpu_frequency_r37();
++	CHECK(!pmu_reads && !writes && blocks > 90 && binding == original_binding);
++	CHECK(strstr(log_buffer, "abs_back=0") && !strstr(log_buffer, "abs_back=1"));
++	CHECK(strstr(log_buffer, "original_binding_restored=1") && logs < 40);
++	reset_mock(); arg_freq = 1;
++	lithium_cpu_frequency_r37();
++#if LITHIUM_R37_ARCH_PMU_UNOWNED
++	CHECK(writes == 18 && !counter_writes && !pmcr_reset_writes);
++	CHECK(strstr(log_buffer, "valid=1 samples=5") && strstr(log_buffer, "restored=1"));
++	for (unsigned i = 0; i < 3; i++) {
++		CHECK(mock_cpus[i].pmcr == 0 && mock_cpus[i].enable == 0 &&
++		    mock_cpus[i].filter == 0 && mock_cpus[i].cycles > 0);
++	}
++#else
++	CHECK(!writes && strstr(log_buffer, "unowned_audited=0"));
++#endif
++	CHECK(!preemption_level && binding == NULL);
++	reset_mock(); arg_freq = 1; arg_setup = 0;
++	lithium_cpu_frequency_r37();
++	CHECK(!writes && strstr(log_buffer, "setup_requested=0"));
++	reset_mock(); arg_freq = 1; owner_classes = 1;
++	lithium_cpu_frequency_r37();
++	CHECK(!writes);
++	reset_mock(); arg_freq = 1;
++	for (unsigned i = 0; i < 3; i++) mock_cpus[i].interrupt = 1;
++	lithium_cpu_frequency_r37();
++	CHECK(!writes);
++	reset_mock(); arg_freq = 1;
++	for (unsigned i = 0; i < 3; i++) mock_cpus[i].enable = 1; /* reserved event */
++	lithium_cpu_frequency_r37();
++	CHECK(!writes);
++	reset_mock(); arg_freq = 1;
++	for (unsigned i = 0; i < 3; i++) {
++		mock_cpus[i].pmcr = 1 | 64 | 8; /* D ignored with LC */
++		mock_cpus[i].enable = R37_C;
++	}
++	lithium_cpu_frequency_r37();
++	CHECK(!writes && strstr(log_buffer, "divisor=1") && strstr(log_buffer, "valid=1 samples=5"));
++	reset_mock(); arg_freq = 1;
++	for (unsigned i = 0; i < 3; i++) mock_cpus[i].pmuver = 0;
++	lithium_cpu_frequency_r37();
++	CHECK(!pmu_reads && !writes);
++	reset_mock(); arg_freq = 1; irq_enabled = 0;
++	lithium_cpu_frequency_r37();
++	CHECK(!raw_reads && !blocks);
++	reset_mock(); arg_freq = 1; bad_bind = 1;
++	lithium_cpu_frequency_r37();
++	CHECK(strstr(log_buffer, "reason=binding_mismatch") && binding == NULL);
++	reset_mock(); arg_freq = 1; freeze_timer = 1; max_cpu = 0;
++	lithium_cpu_frequency_r37();
++#if LITHIUM_R37_ARCH_PMU_UNOWNED
++	CHECK(strstr(log_buffer, "timeout=5") && writes == 6);
++#else
++	CHECK(!writes);
++#endif
++	reset_mock(); arg_freq = 1; force_bad_readback = 1; max_cpu = 0;
++	lithium_cpu_frequency_r37();
++#if LITHIUM_R37_ARCH_PMU_UNOWNED
++	CHECK(writes == 6 && !mock_cpus[0].pmcr && !mock_cpus[0].filter &&
++	    !mock_cpus[0].enable && strstr(log_buffer, "valid=0"));
++#else
++	CHECK(!writes);
++#endif
++	reset_mock(); arg_timer = 1; max_cpu = 0;
++	lithium_cpu_frequency_r37();
++	CHECK(strstr(log_buffer, "less_than_two_online_cpus") && binding == NULL);
++}
++
++int
++main(void)
++{
++	test_math();
++	test_frequency();
++	test_migration();
++	test_mock_execution();
++	printf("R37 PASS checks=%u audited_setup=%u math rollover statistics frequency migration mock_default_off restore bounded_timeout\n",
++	    checks, (unsigned)LITHIUM_R37_ARCH_PMU_UNOWNED);
++	return 0;
++}
+diff --git a/maintenance/hakios-lithium/cpu-sched-r37-test.c b/maintenance/hakios-lithium/cpu-sched-r37-test.c
+new file mode 100644
+index 0000000..a2f72bf
+--- /dev/null
++++ b/maintenance/hakios-lithium/cpu-sched-r37-test.c
+@@ -0,0 +1,866 @@
++/*
++ * Focused HOST ONLY R37 tests. Include the production implementation verbatim.
++ * All state reset below is test-only; production has no reset/re-enable API.
++ *
++ * clang -std=c11 -O1 -g -Wall -Wextra -Werror -pedantic \
++ *   -fsanitize=address,undefined -fno-sanitize-recover=all -pthread \
++ *   maintenance/hakios-lithium/cpu-sched-r37-test.c -o <evidence>/sched-test
++ *
++ * -DLR37_TEST_REPORT also includes the production normal-context reporter.
++ * -DLR37_TEST_HOT_OBJECT produces an inspectable object with only the real core.
++ * The report mock deliberately has thread_tag, not an invented "tag" member.
++ * This tests host arithmetic/accounting and API contracts, not XNU scheduling,
++ * kernel lock implementation, MMIO, frequencies, devices, or SMP correctness.
++ */
++#include <assert.h>
++#include <limits.h>
++#include <pthread.h>
++#include <stdbool.h>
++#include <stdint.h>
++#include <stdarg.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++
++struct mock_task;
++struct mock_thread;
++typedef struct mock_task *task_t;
++typedef struct mock_thread *thread_t;
++struct mock_queue { void *first; };
++struct proc { const char *name; };
++struct mock_task {
++    uint64_t task_uniqueid;
++    uint64_t bsd_uniqueid;
++    struct mock_queue threads;
++    task_t tasks;
++    struct proc *bsd;
++    unsigned refs, locks;
++};
++struct mock_thread {
++    task_t task;
++    uint64_t thread_id;
++    uint16_t thread_tag;
++    void *bsd;
++    thread_t task_threads;
++};
++
++#ifdef LR37_TEST_HOT_OBJECT
++extern task_t get_threadtask(thread_t thread);
++extern uint64_t thread_tid(thread_t thread);
++extern uint64_t mach_absolute_time(void);
++#else
++static uint64_t mock_now;
++static unsigned task_reads, tid_reads, time_reads, checks, cases;
++static task_t get_threadtask(thread_t thread)
++{
++    __atomic_fetch_add(&task_reads, 1, __ATOMIC_RELAXED);
++    assert(thread && thread->task);
++    return thread->task;
++}
++static uint64_t thread_tid(thread_t thread)
++{
++    __atomic_fetch_add(&tid_reads, 1, __ATOMIC_RELAXED);
++    assert(thread);
++    return thread->thread_id;
++}
++static uint64_t mach_absolute_time(void)
++{
++    ++time_reads;
++    return mock_now;
++}
++#endif
++
++/* Reject known logging/allocator/device APIs if added to the actual hot core.
++ * New undeclared APIs fail -Werror; the separate object also gets nm auditing.
++ */
++extern void lr37_forbidden_hot_api(void)
++    __attribute__((unavailable("logging/allocation/device API in R37 hot core")));
++#define printf(...) lr37_forbidden_hot_api()
++#define kprintf(...) lr37_forbidden_hot_api()
++#define panic(...) lr37_forbidden_hot_api()
++#define os_log(...) lr37_forbidden_hot_api()
++#define os_log_error(...) lr37_forbidden_hot_api()
++#define IOLog(...) lr37_forbidden_hot_api()
++#define malloc(...) lr37_forbidden_hot_api()
++#define calloc(...) lr37_forbidden_hot_api()
++#define realloc(...) lr37_forbidden_hot_api()
++#define free(...) lr37_forbidden_hot_api()
++#define kalloc_data(...) lr37_forbidden_hot_api()
++#define kalloc_type(...) lr37_forbidden_hot_api()
++#define kfree_data(...) lr37_forbidden_hot_api()
++#define zalloc(...) lr37_forbidden_hot_api()
++#define zfree(...) lr37_forbidden_hot_api()
++#define ml_io_map(...) lr37_forbidden_hot_api()
++#define ml_io_read(...) lr37_forbidden_hot_api()
++#define ml_io_write(...) lr37_forbidden_hot_api()
++#define ml_phys_read(...) lr37_forbidden_hot_api()
++#define ml_phys_write(...) lr37_forbidden_hot_api()
++#define IORead32(...) lr37_forbidden_hot_api()
++#define IOWrite32(...) lr37_forbidden_hot_api()
++#define copyin(...) lr37_forbidden_hot_api()
++#define copyout(...) lr37_forbidden_hot_api()
++#include "../../ports/hakios-lithium/diagnostics/cpu-sched-r37.inc"
++#undef printf
++#undef kprintf
++#undef panic
++#undef os_log
++#undef os_log_error
++#undef IOLog
++#undef malloc
++#undef calloc
++#undef realloc
++#undef free
++#undef kalloc_data
++#undef kalloc_type
++#undef kfree_data
++#undef zalloc
++#undef zfree
++#undef ml_io_map
++#undef ml_io_read
++#undef ml_io_write
++#undef ml_phys_read
++#undef ml_phys_write
++#undef IORead32
++#undef IOWrite32
++#undef copyin
++#undef copyout
++
++#ifdef LR37_TEST_HOT_OBJECT
++void lr37_test_hot_switch(thread_t t, unsigned cpu, uint64_t start, uint64_t end)
++{
++    lithium_sched_r37_switch(t, cpu, start, end);
++}
++void lr37_test_hot_expiry(thread_t t, unsigned cpu)
++{
++    lithium_sched_r37_expiry(t, cpu);
++}
++#else
++#define CHECK(condition) do { \
++    ++checks; \
++    if (!(condition)) { \
++        fprintf(stderr, "FAIL %s:%d: %s\n", __FILE__, __LINE__, #condition); \
++        exit(1); \
++    } \
++} while (0)
++
++static struct mock_task selected[2], other;
++static struct mock_thread a, b, c;
++
++static void reset(void)
++{
++    memset(lr37_rows, 0, sizeof(lr37_rows));
++    memset(lr37_task_ids, 0, sizeof(lr37_task_ids));
++    lr37_started = lr37_dropped = 0;
++    lr37_enabled = false;
++    mock_now = 1000;
++    task_reads = tid_reads = time_reads = 0;
++    selected[0] = (struct mock_task){.task_uniqueid = 101, .bsd_uniqueid = 100101};
++    selected[1] = (struct mock_task){.task_uniqueid = 202, .bsd_uniqueid = 100202};
++    other = (struct mock_task){.task_uniqueid = 303};
++    a = (struct mock_thread){.task = &selected[0], .thread_id = 11};
++    b = (struct mock_thread){.task = &selected[1], .thread_id = 22};
++    c = (struct mock_thread){.task = &other, .thread_id = 33};
++}
++
++static void arm(void)
++{
++    lithium_sched_r37_select(0, selected[0].task_uniqueid);
++    lithium_sched_r37_select(1, selected[1].task_uniqueid);
++    lithium_sched_r37_enable();
++    CHECK(time_reads == 1);
++    CHECK(lr37_started == mock_now);
++}
++
++static struct lr37_row read_row(uint64_t tid)
++{
++    struct lr37_row snapshot[LR37_SLOTS];
++    uint64_t dropped = UINT64_MAX;
++    unsigned n = lithium_sched_r37_snapshot(snapshot, LR37_SLOTS, &dropped);
++    CHECK(n <= LR37_SLOTS);
++    CHECK(dropped == lr37_dropped);
++    for (unsigned i = 0; i < n; ++i) {
++        if (snapshot[i].tid == tid) return snapshot[i];
++    }
++    CHECK(false);
++    return (struct lr37_row){0};
++}
++
++static unsigned row_count(void)
++{
++    struct lr37_row snapshot[LR37_SLOTS];
++    uint64_t dropped;
++    return lithium_sched_r37_snapshot(snapshot, LR37_SLOTS, &dropped);
++}
++
++static void pass(const char *name)
++{
++    ++cases;
++    printf("PASS %s\n", name);
++}
++
++static void test_disabled(void)
++{
++    reset();
++    lithium_sched_r37_select(0, 101);
++    lithium_sched_r37_switch(NULL, 0, 0, UINT64_MAX);
++    lithium_sched_r37_expiry(NULL, LR37_CPUS - 1);
++    CHECK(!lr37_enabled && task_reads == 0 && tid_reads == 0 && time_reads == 0);
++    CHECK(row_count() == 0 && lr37_dropped == 0);
++    pass("disabled gate returns before thread/task/time access");
++}
++
++static void test_selection(void)
++{
++    reset();
++    lithium_sched_r37_select(2, 909);
++    lithium_sched_r37_select(UINT_MAX, 909);
++    CHECK(lr37_task_ids[0] == 0 && lr37_task_ids[1] == 0);
++    lithium_sched_r37_enable();
++    lithium_sched_r37_switch(&a, 0, 1000, 1100);
++    CHECK(row_count() == 0 && tid_reads == 0);
++    lithium_sched_r37_select(0, 101);
++    lithium_sched_r37_select(1, 202);
++    lithium_sched_r37_switch(&a, 0, 1000, 1100);
++    lithium_sched_r37_switch(&b, 1, 1000, 1200);
++    unsigned before = tid_reads;
++    lithium_sched_r37_switch(&c, 2, 1000, 1300);
++    lithium_sched_r37_expiry(&c, 3);
++    CHECK(tid_reads == before);
++    CHECK(row_count() == 2);
++    struct lr37_row ra = read_row(11), rb = read_row(22);
++    CHECK(ra.task_id == 101 && rb.task_id == 202);
++    CHECK(ra.ticks[0] == 100 && rb.ticks[1] == 200);
++    CHECK(ra.switches[0] == 1 && rb.switches[1] == 1);
++    /* Task ID zero and TID zero are sentinels, never legitimate rows. */
++    other.task_uniqueid = 0;
++    lithium_sched_r37_select(1, 0);
++    lithium_sched_r37_switch(&c, 0, 1000, 2000);
++    a.thread_id = 0;
++    lithium_sched_r37_switch(&a, 0, 1000, 2000);
++    CHECK(row_count() == 2 && lr37_dropped == 0);
++    /* Changing selection stops future accounting, retaining historical rows. */
++    lithium_sched_r37_select(0, 303);
++    a.thread_id = 11;
++    lithium_sched_r37_switch(&a, 0, 1000, 9999);
++    CHECK(read_row(11).ticks[0] == 100);
++    other.task_uniqueid = 303;
++    lithium_sched_r37_switch(&c, 0, 1000, 1010);
++    CHECK(row_count() == 3 && read_row(33).task_id == 303);
++    pass("selected groups, unselected switches, invalid groups and zero IDs");
++}
++
++static void test_cpu_boundaries(void)
++{
++    reset();
++    arm();
++    lithium_sched_r37_switch(NULL, LR37_CPUS, 1000, 1100);
++    lithium_sched_r37_switch(NULL, UINT_MAX, 1000, 1100);
++    lithium_sched_r37_expiry(NULL, LR37_CPUS);
++    lithium_sched_r37_expiry(NULL, UINT_MAX);
++    CHECK(task_reads == 0 && tid_reads == 0 && row_count() == 0);
++    for (unsigned cpu = 0; cpu < LR37_CPUS; ++cpu) {
++        lithium_sched_r37_switch(&a, cpu, 1000, 1100 + cpu);
++        lithium_sched_r37_expiry(&a, cpu);
++    }
++    struct lr37_row row = read_row(11);
++    for (unsigned cpu = 0; cpu < LR37_CPUS; ++cpu) {
++        CHECK(row.ticks[cpu] == 100 + cpu);
++        CHECK(row.switches[cpu] == 1 && row.expiries[cpu] == 1);
++    }
++    CHECK(time_reads == 1);
++    pass("CPU 0..3 accepted; 4 and UINT_MAX return without dereference");
++}
++
++static void test_deltas_and_clamp(void)
++{
++    reset();
++    arm();
++    lithium_sched_r37_switch(&a, 0, 1001, 1000);
++    struct lr37_row row = read_row(11);
++    CHECK(row.backwards == 1 && row.ticks[0] == 0 && row.switches[0] == 0);
++    CHECK(row.last_tick == 0);
++    lithium_sched_r37_switch(&a, 0, 1200, 1200);
++    row = read_row(11);
++    CHECK(row.backwards == 1 && row.ticks[0] == 0 && row.switches[0] == 1);
++    CHECK(row.last_tick == 1200);
++    lithium_sched_r37_switch(&a, 0, 900, 1100);
++    row = read_row(11);
++    CHECK(row.ticks[0] == 100 && row.switches[0] == 2);
++    lithium_sched_r37_switch(&a, 1, 100, 999);
++    row = read_row(11);
++    CHECK(row.backwards == 2 && row.ticks[1] == 0 && row.switches[1] == 0);
++    CHECK(row.last_tick == 1100);
++    lithium_sched_r37_switch(&a, 2, 0, 1000);
++    row = read_row(11);
++    CHECK(row.ticks[2] == 0 && row.switches[2] == 1);
++    CHECK(row.last_tick == 1000 && row.backwards == 2);
++    /* Unsigned absolute timestamps near the limit must not become signed. */
++    lithium_sched_r37_switch(&a, 3, UINT64_MAX - 7, UINT64_MAX);
++    row = read_row(11);
++    CHECK(row.ticks[3] == 7 && row.switches[3] == 1);
++    CHECK(row.last_tick == UINT64_MAX);
++    pass("negative/zero delta, start clamp, before-enable interval, uint64 edge");
++}
++
++static void test_expiry_is_not_runtime(void)
++{
++    reset();
++    arm();
++    for (unsigned i = 0; i < 5; ++i) lithium_sched_r37_expiry(&a, 3);
++    struct lr37_row row = read_row(11);
++    CHECK(row.expiries[3] == 5 && row.last_tick == 0);
++    for (unsigned cpu = 0; cpu < LR37_CPUS; ++cpu)
++        CHECK(row.ticks[cpu] == 0 && row.switches[cpu] == 0);
++    lithium_sched_r37_switch(&a, 0, 1100, 1175);
++    row = read_row(11);
++    CHECK(row.ticks[0] == 75 && row.switches[0] == 1);
++    CHECK(row.expiries[3] == 5 && row.expiries[0] == 0);
++    CHECK(row.ticks[3] == 0 && row.switches[3] == 0 && row.last_tick == 1175);
++    CHECK(time_reads == 1);
++    pass("timer expiry counts callback CPU independently of execution residency");
++}
++
++static uint64_t tid_for_hash(unsigned hash, unsigned ordinal)
++{
++    for (uint64_t tid = 1; tid < UINT64_C(10000000); ++tid) {
++        if ((tid ^ (tid >> 7)) % LR37_SLOTS == hash) {
++            if (!ordinal--) return tid;
++        }
++    }
++    CHECK(false);
++    return 0;
++}
++
++static void test_collision_bound(void)
++{
++    reset();
++    arm();
++    struct mock_thread threads[9];
++    const unsigned bucket = LR37_SLOTS - 3;
++    for (unsigned i = 0; i < 9; ++i) {
++        threads[i] = (struct mock_thread){
++            .task = &selected[0], .thread_id = tid_for_hash(bucket, i)};
++        lithium_sched_r37_switch(&threads[i], 0, 1000, 1001 + i);
++    }
++    CHECK(row_count() == 8 && lr37_dropped == 1);
++    for (unsigned i = 0; i < LR37_SLOTS; ++i) {
++        bool occupied = false;
++        for (unsigned j = 0; j < 8; ++j)
++            if (i == (bucket + j) % LR37_SLOTS) occupied = true;
++        CHECK(!!lr37_rows[i].tid == occupied);
++    }
++    for (unsigned i = 0; i < 8; ++i) {
++        struct lr37_row row = read_row(threads[i].thread_id);
++        CHECK(row.ticks[0] == 1 + i && row.switches[0] == 1);
++        lithium_sched_r37_expiry(&threads[i], 2);
++    }
++    for (unsigned i = 0; i < 100; ++i) {
++        lithium_sched_r37_switch(&threads[8], 1, 1000, 2000);
++        lithium_sched_r37_expiry(&threads[8], 3);
++    }
++    CHECK(lr37_dropped == 201 && row_count() == 8);
++    CHECK(read_row(threads[7].thread_id).expiries[2] == 1);
++    pass("8-probe TID collision bound, wraparound, retained row and drop accounting");
++}
++
++static void test_snapshot_capacity(void)
++{
++    reset();
++    arm();
++    struct mock_thread threads[LR37_SLOTS + 1];
++    for (unsigned i = 0; i < LR37_SLOTS; ++i) {
++        threads[i] = (struct mock_thread){
++            .task = &selected[i % 2], .thread_id = tid_for_hash(i, 0)};
++        lithium_sched_r37_switch(&threads[i], i % LR37_CPUS, 1000, 1001 + i);
++    }
++    CHECK(row_count() == LR37_SLOTS && lr37_dropped == 0);
++    threads[LR37_SLOTS] = (struct mock_thread){
++        .task = &selected[0], .thread_id = tid_for_hash(0, 1)};
++    lithium_sched_r37_expiry(&threads[LR37_SLOTS], 0);
++    CHECK(lr37_dropped == 1);
++    struct guarded {
++        uint64_t before;
++        struct lr37_row rows[LR37_SLOTS + 1];
++        uint64_t after;
++    } out;
++    unsigned capacities[] = {0, 1, 7, LR37_SLOTS - 1, LR37_SLOTS,
++        LR37_SLOTS + 1, UINT_MAX};
++    for (unsigned k = 0; k < sizeof(capacities) / sizeof(capacities[0]); ++k) {
++        memset(&out, 0xa5, sizeof(out));
++        unsigned capacity = capacities[k];
++        unsigned expected = capacity < LR37_SLOTS ? capacity : LR37_SLOTS;
++        uint64_t dropped = 0;
++        CHECK(lithium_sched_r37_snapshot(out.rows, capacity, &dropped) == expected);
++        CHECK(dropped == 1);
++        CHECK(out.before == UINT64_C(0xa5a5a5a5a5a5a5a5));
++        CHECK(out.after == UINT64_C(0xa5a5a5a5a5a5a5a5));
++        for (unsigned i = 0; i < expected; ++i) {
++            CHECK(out.rows[i].tid == threads[i].thread_id);
++            CHECK(out.rows[i].task_id == selected[i % 2].task_uniqueid);
++            CHECK(out.rows[i].ticks[i % LR37_CPUS] == 1 + i);
++        }
++        const unsigned char *untouched = (const unsigned char *)&out.rows[expected];
++        size_t remaining = (LR37_SLOTS + 1 - expected) * sizeof(out.rows[0]);
++        for (size_t i = 0; i < remaining; ++i) CHECK(untouched[i] == 0xa5);
++    }
++    uint64_t dropped = 0;
++    CHECK(lithium_sched_r37_snapshot(NULL, 0, &dropped) == 0 && dropped == 1);
++    pass("snapshot 0/1/7/127/128/129/UINT_MAX capacities and guard bytes");
++}
++
++static void test_partial_publication(void)
++{
++    reset();
++    lr37_rows[0].tid = 44;       /* Reserved TID, identity not published yet. */
++    lr37_rows[1].task_id = 101;  /* Identity without a reserved TID. */
++    lr37_rows[2] = (struct lr37_row){
++        .tid = 55, .task_id = 202, .ticks = {1, 2, 3, 4},
++        .switches = {5, 6, 7, 8}, .expiries = {9, 10, 11, 12},
++        .last_tick = 4321, .backwards = 7};
++    CHECK(row_count() == 1);
++    struct lr37_row row = read_row(55);
++    CHECK(row.ticks[3] == 4 && row.switches[2] == 7 && row.expiries[1] == 10);
++    CHECK(row.last_tick == 4321 && row.backwards == 7);
++    pass("snapshot skips incomplete identity and copies all row fields");
++}
++
++enum { WRITERS = 4, ITERATIONS = 5000 };
++static void *concurrent_writer(void *argument)
++{
++    unsigned cpu = (unsigned)(uintptr_t)argument;
++    for (unsigned i = 0; i < ITERATIONS; ++i) {
++        lithium_sched_r37_switch(&a, cpu, 1000 + i * 10, 1003 + i * 10);
++        lithium_sched_r37_expiry(&a, (cpu + 1) % LR37_CPUS);
++    }
++    return NULL;
++}
++
++static void test_cross_cpu(void)
++{
++    reset();
++    arm();
++    for (unsigned i = 0; i < 100; ++i) {
++        unsigned cpu = i % LR37_CPUS;
++        lithium_sched_r37_switch(&a, cpu, 1000 + i * 10, 1000 + i * 10 + cpu + 1);
++        lithium_sched_r37_expiry(&a, (cpu + 1) % LR37_CPUS);
++    }
++    struct lr37_row row = read_row(11);
++    for (unsigned cpu = 0; cpu < LR37_CPUS; ++cpu) {
++        CHECK(row.ticks[cpu] == 25 * (cpu + 1));
++        CHECK(row.switches[cpu] == 25 && row.expiries[cpu] == 25);
++    }
++    CHECK(row.last_tick == 1994 && row.backwards == 0 && row_count() == 1);
++    reset();
++    arm();
++    pthread_t writers[WRITERS];
++    for (unsigned i = 0; i < WRITERS; ++i)
++        CHECK(pthread_create(&writers[i], NULL, concurrent_writer,
++            (void *)(uintptr_t)i) == 0);
++    for (unsigned i = 0; i < WRITERS; ++i)
++        CHECK(pthread_join(writers[i], NULL) == 0);
++    row = read_row(11);
++    CHECK(row_count() == 1 && row.task_id == 101 && row.backwards == 0);
++    for (unsigned cpu = 0; cpu < LR37_CPUS; ++cpu) {
++        CHECK(row.ticks[cpu] == ITERATIONS * 3);
++        CHECK(row.switches[cpu] == ITERATIONS && row.expiries[cpu] == ITERATIONS);
++    }
++    CHECK(lr37_dropped == 0 && time_reads == 1);
++    pass("cross-CPU counters; 4 concurrent actual-hook writers share one TID row");
++}
++
++#ifdef LR37_TEST_REPORT
++#define TASK_NULL ((task_t)NULL)
++#define THREAD_TAG_MAINTHREAD 1u
++#define __unused __attribute__((unused))
++#define NSEC_PER_SEC UINT64_C(1000000000)
++#define Z_WAITOK 1u
++#define Z_ZERO 2u
++typedef void *thread_call_param_t;
++typedef void (*mock_call_fn)(thread_call_param_t, thread_call_param_t);
++struct mock_call { mock_call_fn fn; void *param; };
++typedef struct mock_call *thread_call_t;
++static struct mock_queue tasks;
++static unsigned tasks_threads_lock, global_locks, refs, unrefs, named, tag_reads;
++static unsigned log_calls, entered, delayed, alloc_calls, mitigation_reports;
++static unsigned boot_flag;
++static struct mock_call report_call;
++static void *allocations[2];
++static struct report_event {
++    unsigned window, main, cpu;
++    uint64_t at, task, tid, us, switches, expiries, last, backwards;
++    char name[64];
++} events[LR37_SLOTS * LR37_CPUS];
++static unsigned event_count, reported_emitted, reported_omitted;
++static bool saw_residency_scope, saw_callback_scope, saw_interrupt_scope;
++static void lck_mtx_lock(unsigned *lock)
++{
++    CHECK(lock == &tasks_threads_lock && !global_locks);
++    ++global_locks;
++}
++static void lck_mtx_unlock(unsigned *lock)
++{
++    CHECK(lock == &tasks_threads_lock && global_locks == 1);
++    --global_locks;
++}
++#define queue_iterate(head, element, type, link) \
++    for ((element) = (type)(head)->first; (element); (element) = (element)->link)
++static struct proc *get_bsdtask_info(task_t task)
++{
++    CHECK(global_locks == 1);
++    return task->bsd;
++}
++static const char *proc_best_name(struct proc *proc)
++{
++    CHECK(proc && global_locks == 1);
++    return proc->name;
++}
++static void task_reference(task_t task)
++{
++    CHECK(global_locks == 1);
++    ++task->refs;
++    ++refs;
++}
++static void task_deallocate(task_t task)
++{
++    CHECK(task->refs && !task->locks && !global_locks);
++    --task->refs;
++    ++unrefs;
++}
++static uint64_t __attribute__((unused)) get_task_uniqueid(task_t task)
++{
++    CHECK(task->refs && !global_locks);
++    /* XNU bsd_kern.c:1313 returns a proc-derived ID, NOT task_uniqueid. */
++    return task->bsd_uniqueid;
++}
++static void task_lock(task_t task)
++{
++    CHECK(task->refs && !task->locks && !global_locks);
++    ++task->locks;
++}
++static void task_unlock(task_t task)
++{
++    CHECK(task->locks == 1);
++    --task->locks;
++}
++static uint16_t __attribute__((unused)) thread_get_tag(thread_t thread)
++{
++    CHECK(thread->task->locks == 1);
++    ++tag_reads;
++    return thread->thread_tag;
++}
++static void *get_bsdthread_info(thread_t thread)
++{
++    CHECK(thread->task->locks == 1);
++    return thread->bsd;
++}
++static void bsd_getthreadname(void *uth, char *output)
++{
++    CHECK(uth != NULL && !global_locks);
++    memcpy(output, uth, 64);
++    ++named;
++}
++static void absolutetime_to_nanoseconds(uint64_t ticks, uint64_t *ns)
++{
++    CHECK(ticks <= UINT64_MAX / 1000);
++    *ns = ticks * 1000;
++}
++static void clock_interval_to_deadline(unsigned interval, uint64_t scale,
++    uint64_t *deadline)
++{
++    CHECK(interval == 5 && scale == NSEC_PER_SEC);
++    *deadline = mock_now + interval * scale;
++}
++static void thread_call_enter_delayed(thread_call_t call, uint64_t deadline)
++{
++    CHECK(call && deadline > mock_now && !global_locks);
++    ++delayed;
++}
++static int mock_report_printf(const char *format, ...)
++{
++    CHECK(format && !global_locks && !selected[0].locks && !selected[1].locks);
++    ++log_calls;
++    if (strstr(format, "scope=completed_switch_residency")) saw_residency_scope = true;
++    if (strstr(format, "timer_role=callback_not_execution")) saw_callback_scope = true;
++    if (strstr(format, "counter=on_cpu_residency_including_interrupts"))
++        saw_interrupt_scope = true;
++    va_list args;
++    va_start(args, format);
++    if (strstr(format, "LITHIUM SCHED thread ")) {
++        CHECK(event_count < LR37_SLOTS * LR37_CPUS);
++        struct report_event *event = &events[event_count++];
++        event->window = va_arg(args, unsigned);
++        event->at = va_arg(args, uint64_t);
++        event->task = va_arg(args, uint64_t);
++        event->tid = va_arg(args, uint64_t);
++        event->main = (unsigned)va_arg(args, int); /* bool default promotion */
++        const char *process = va_arg(args, const char *);
++        CHECK(!strcmp(process, "SpringBoard") || !strcmp(process, "backboardd") ||
++            !strcmp(process, "unknown"));
++        const char *name = va_arg(args, const char *);
++        CHECK(strlen(name) < sizeof(event->name));
++        memcpy(event->name, name, strlen(name) + 1);
++        event->cpu = va_arg(args, unsigned);
++        event->us = va_arg(args, uint64_t);
++        event->switches = va_arg(args, uint64_t);
++        event->expiries = va_arg(args, uint64_t);
++        event->last = va_arg(args, uint64_t);
++        event->backwards = va_arg(args, uint64_t);
++    } else if (strstr(format, "LITHIUM SCHED window_end=")) {
++        (void)va_arg(args, unsigned);
++        reported_emitted = va_arg(args, unsigned);
++        reported_omitted = va_arg(args, unsigned);
++    }
++    va_end(args);
++    return 0;
++}
++void lithium_slowcores_r37_report(void) { ++mitigation_reports; }
++static void bzero(void *p, size_t length) { memset(p, 0, length); }
++static void PE_parse_boot_argn(const char *name, unsigned *flag, size_t length)
++{
++    CHECK(!strcmp(name, "ui_sched_diag") && length == sizeof(*flag));
++    *flag = boot_flag;
++}
++static void *kalloc_data(size_t length, unsigned flags)
++{
++    CHECK(alloc_calls < 2 && length == sizeof(struct lr37_row) * LR37_SLOTS);
++    CHECK(flags == (Z_WAITOK | Z_ZERO) && !global_locks);
++    allocations[alloc_calls] = calloc(1, length);
++    return allocations[alloc_calls++];
++}
++static thread_call_t thread_call_allocate(mock_call_fn fn, void *param)
++{
++    report_call.fn = fn;
++    report_call.param = param;
++    return &report_call;
++}
++static void thread_call_enter(thread_call_t call)
++{
++    CHECK(call && !global_locks);
++    ++entered;
++}
++#define printf mock_report_printf
++#include "../../ports/hakios-lithium/diagnostics/cpu-sched-report-r37.inc"
++#undef printf
++
++static void report_setup(void)
++{
++    reset();
++    static struct proc pa = {"SpringBoard"}, pb = {"backboardd"}, pc = {"unselected"};
++    tasks_threads_lock = global_locks = refs = unrefs = named = tag_reads = 0;
++    log_calls = entered = delayed = alloc_calls = mitigation_reports = 0;
++    boot_flag = event_count = reported_emitted = reported_omitted = 0;
++    saw_residency_scope = saw_callback_scope = saw_interrupt_scope = false;
++    report_call = (struct mock_call){0};
++    memset(allocations, 0, sizeof(allocations));
++    memset(events, 0, sizeof(events));
++    lr37_report_call = NULL;
++    lr37_snap = lr37_previous = NULL;
++    lr37_report_sequence = lr37_name_count = 0;
++    memset(lr37_names, 0, sizeof(lr37_names));
++    selected[0].bsd = &pa;
++    selected[1].bsd = &pb;
++    other.bsd = &pc;
++    selected[0].threads.first = &a;
++    selected[1].threads.first = &b;
++    selected[0].tasks = &selected[1];
++    selected[1].tasks = &other;
++    tasks.first = &selected[0];
++}
++
++static void report_cleanup(void)
++{
++    CHECK(!selected[0].refs && !selected[1].refs && !global_locks);
++    CHECK(!selected[0].locks && !selected[1].locks && refs == unrefs);
++    free(allocations[0]);
++    free(allocations[1]);
++    lr37_snap = lr37_previous = NULL;
++}
++
++static void test_report_identity(void)
++{
++    report_setup();
++    boot_flag = 1;
++    lithium_sched_r37_init();
++    report_call.fn(NULL, NULL);
++    CHECK(selected[0].bsd_uniqueid != selected[0].task_uniqueid);
++    CHECK(selected[1].bsd_uniqueid != selected[1].task_uniqueid);
++    lithium_sched_r37_switch(&a, 0, 1000, 1020);
++    lithium_sched_r37_switch(&b, 1, 1000, 1030);
++    unsigned count = row_count();
++    printf("discovery IDs: %llu/%llu; expected task IDs: %llu/%llu; sampled rows: %u\n",
++        (unsigned long long)lr37_task_ids[0], (unsigned long long)lr37_task_ids[1],
++        (unsigned long long)selected[0].task_uniqueid,
++        (unsigned long long)selected[1].task_uniqueid, count);
++    CHECK(count == 2);
++    CHECK(lr37_task_ids[0] == selected[0].task_uniqueid);
++    CHECK(lr37_task_ids[1] == selected[1].task_uniqueid);
++    CHECK(read_row(11).task_id == selected[0].task_uniqueid);
++    CHECK(read_row(22).task_id == selected[1].task_uniqueid);
++    report_cleanup();
++    pass("discovery and hot hooks share task IDs distinct from BSD process IDs");
++}
++
++static void test_report(void)
++{
++    report_setup();
++    /* Equal IDs here isolate formatting and name checks from discovery identity. */
++    selected[0].bsd_uniqueid = selected[0].task_uniqueid;
++    selected[1].bsd_uniqueid = selected[1].task_uniqueid;
++    char long_name[64];
++    memset(long_name, 'x', sizeof(long_name));
++    a.thread_tag = THREAD_TAG_MAINTHREAD;
++    a.bsd = long_name;
++    /* b has NULL BSD info, which must be explicitly skipped. */
++    boot_flag = 0;
++    lithium_sched_r37_init();
++    CHECK(!lr37_enabled && !alloc_calls && !entered);
++    boot_flag = 2;
++    lithium_sched_r37_init();
++    CHECK(!lr37_enabled && !alloc_calls && !entered);
++    boot_flag = 1;
++    lithium_sched_r37_init();
++    CHECK(lr37_enabled && alloc_calls == 2 && entered == 1 && report_call.fn);
++    lithium_sched_r37_init();
++    CHECK(alloc_calls == 2 && entered == 1);
++    report_call.fn(NULL, NULL);
++    CHECK(refs == 2 && unrefs == 2 && !global_locks);
++    CHECK(!selected[0].refs && !selected[1].refs);
++    CHECK(!selected[0].locks && !selected[1].locks);
++    CHECK(lr37_task_ids[0] == 101 && lr37_task_ids[1] == 202);
++    CHECK(lr37_name_count == 2 && named == 1);
++    CHECK(lr37_names[0].main && lr37_names[0].name[63] == 0);
++    CHECK(!lr37_names[1].main && lr37_names[1].name[0] == 0);
++    CHECK(tag_reads == 2); /* Must use the real XNU accessor. */
++    CHECK(lr37_report_sequence == 1 && delayed == 1);
++    lithium_sched_r37_switch(&a, 0, 1000, 1020);
++    lithium_sched_r37_expiry(&a, 3);
++    report_call.fn(NULL, NULL);
++    CHECK(lr37_name_count == 2 && lr37_report_sequence == 2 && delayed == 2);
++    CHECK(lr37_previous[0].tid == 11 && lr37_previous[0].ticks[0] == 20);
++    CHECK(lr37_previous[0].expiries[3] == 1);
++    CHECK(event_count == 2 && events[0].main && events[0].cpu == 0);
++    CHECK(events[0].task == 101 && events[0].tid == 11 && events[0].us == 20);
++    CHECK(events[0].switches == 1 && events[0].expiries == 0);
++    CHECK(strlen(events[0].name) == 63 && events[0].name[0] == 'x');
++    CHECK(events[1].cpu == 3 && events[1].expiries == 1 && events[1].us == 0);
++    CHECK(saw_residency_scope && saw_callback_scope && saw_interrupt_scope);
++    lr37_report_sequence = 359;
++    unsigned prior = delayed;
++    report_call.fn(NULL, NULL);
++    CHECK(lr37_report_sequence == 360 && delayed == prior);
++    CHECK(log_calls >= 5 && mitigation_reports == 3);
++    report_cleanup();
++    pass("actual report default gate, task lifetime/locks, tag/name and 360-window bound");
++}
++
++static void test_report_limits(bool early_exempt)
++{
++    report_setup();
++    selected[0].bsd_uniqueid = selected[0].task_uniqueid;
++    selected[1].bsd_uniqueid = selected[1].task_uniqueid;
++    struct mock_thread workers[34];
++    char names[34][64];
++    const unsigned main_a = early_exempt ? 0 : 31;
++    const unsigned expiry = early_exempt ? 1 : 32;
++    const unsigned main_b = early_exempt ? 2 : 33;
++    const unsigned low = early_exempt ? 3 : 30;
++    const unsigned omitted = early_exempt ? 33 : 29;
++    for (unsigned i = 0; i < 34; ++i) {
++        (void)snprintf(names[i], sizeof(names[i]), "worker-%u", i);
++        workers[i] = (struct mock_thread){
++            .task = &selected[0], .thread_id = tid_for_hash(i, 0),
++            .bsd = names[i],
++            .thread_tag = (i == main_a || i == main_b) ? THREAD_TAG_MAINTHREAD : 0,
++            .task_threads = i + 1 < 34 ? &workers[i + 1] : NULL};
++    }
++    selected[0].threads.first = workers;
++    selected[1].threads.first = NULL;
++    boot_flag = 1;
++    lithium_sched_r37_init();
++    report_call.fn(NULL, NULL);
++    CHECK(lr37_name_count == 34 && named == 34);
++    for (unsigned i = 0; i < 34; ++i) {
++        if (i != low && i != main_a && i != main_b && i != expiry)
++            lithium_sched_r37_switch(&workers[i], i % LR37_CPUS, 1000, 3000);
++    }
++    lithium_sched_r37_switch(&workers[low], 0, 1000, 1999);
++    lithium_sched_r37_switch(&workers[main_a], 0, 1000, 1000);
++    lithium_sched_r37_expiry(&workers[expiry], 3);
++    lithium_sched_r37_switch(&workers[main_b], 3, 1000, 1010);
++    report_call.fn(NULL, NULL);
++    printf("report cap (%s exemptions): emitted=%u omitted=%u\n",
++        early_exempt ? "early" : "late", reported_emitted, reported_omitted);
++    CHECK(event_count == 27 && reported_emitted == 27 && reported_omitted == 7);
++    unsigned incidental = 0, mains = 0, expiry_only = 0;
++    for (unsigned i = 0; i < event_count; ++i) {
++        const struct report_event *event = &events[i];
++        CHECK(event->task == 101 && event->window == 1 && event->at == mock_now);
++        if (event->main) {
++            ++mains;
++            CHECK(event->tid == workers[main_a].thread_id || event->tid == workers[main_b].thread_id);
++        } else if (event->expiries) {
++            ++expiry_only;
++            CHECK(event->tid == workers[expiry].thread_id && event->cpu == 3);
++            CHECK(event->switches == 0 && event->us == 0);
++        } else {
++            ++incidental;
++            CHECK(event->us == 2000 && event->switches == 1);
++        }
++    }
++    CHECK(incidental == 24 && mains == 2 && expiry_only == 1);
++    event_count = 0;
++    mock_now += UINT64_C(5000000000);
++    report_call.fn(NULL, NULL);
++    CHECK(event_count == 0 && reported_emitted == 0 && reported_omitted == 0);
++    const unsigned retained = early_exempt ? 4 : 0;
++    CHECK(read_row(workers[retained].thread_id).ticks[0] == 2000);
++    /* An ongoing interval has no completed-switch sample; no time is invented.
++     * Previously omitted rows still participate in the next delta baseline. */
++    lithium_sched_r37_switch(&workers[omitted], omitted % LR37_CPUS, 3000, 4500);
++    report_call.fn(NULL, NULL);
++    CHECK(event_count == 1 && events[0].tid == workers[omitted].thread_id);
++    CHECK(events[0].us == 1500 && events[0].switches == 1);
++    CHECK(saw_residency_scope && saw_callback_scope && saw_interrupt_scope);
++    report_cleanup();
++    pass(early_exempt ? "early main/expiry output leaves full incidental quota" :
++        "report 24 incidental rows; main/expiry exemptions, low activity, pending/delta semantics");
++}
++#endif
++
++int main(int argc, char **argv)
++{
++#ifdef LR37_TEST_REPORT
++    /* Isolate known failures so one report path cannot hide another. */
++    if (argc == 2) {
++        if (!strcmp(argv[1], "identity")) test_report_identity();
++        else if (!strcmp(argv[1], "report")) {
++            test_report();
++            test_report_limits(false);
++        } else if (!strcmp(argv[1], "early-exempt")) test_report_limits(true);
++        else return 2;
++        printf("PASS R37 actual-source report suite: %u cases, %u checks\n", cases, checks);
++        return 0;
++    }
++#else
++    (void)argv;
++#endif
++    if (argc != 1) return 2;
++    test_disabled();
++    test_selection();
++    test_cpu_boundaries();
++    test_deltas_and_clamp();
++    test_expiry_is_not_runtime();
++    test_collision_bound();
++    test_snapshot_capacity();
++    test_partial_publication();
++    test_cross_cpu();
++#ifdef LR37_TEST_REPORT
++    test_report_identity();
++    test_report();
++    test_report_limits(false);
++    test_report_limits(true);
++#endif
++    printf("PASS R37 actual-source focused suite: %u cases, %u checks\n", cases, checks);
++    return 0;
++}
++#endif
+diff --git a/ports/hakios-lithium/diagnostics/cpu-frequency-r37.inc b/ports/hakios-lithium/diagnostics/cpu-frequency-r37.inc
+new file mode 100644
+index 0000000..9209a79
+--- /dev/null
++++ b/ports/hakios-lithium/diagnostics/cpu-frequency-r37.inc
+@@ -0,0 +1,623 @@
++/*
++ * R37: call lithium_cpu_frequency_r37() once from bsdinit_task, before exec,
++ * with interrupts/preemption enabled. Independent of cpu_sanity.
++ *
++ * Required BSD-visible interfaces are included here, including the generated
++ * <mach/processor.h>. No struct processor/thread layout is required.
++ *
++ * cpu_freq_diag=1 explicitly opts into raw PMU/feature reads WITHOUT a fault
++ * guard. ID_AA64DFR0_EL1 and PMU accesses can trap to EL2/EL3 even at EL1.
++ * Neither CurrentEL nor PMUVer proves the absence of such traps. We cannot
++ * inspect MDCR_EL2/EL3 from EL1. An unhandled trap can terminate this boot.
++ * timer_migrate_diag=1 separately opts into raw CNTPCT reads with the same
++ * absence of an EL2 trap guard. CNTVOFF_EL2 is NEVER accessed from EL1 here.
++ *
++ * cpu_freq_diag=1 also authorizes minimal setup ONLY with a main-agent audited
++ * LITHIUM_R37_ARCH_PMU_UNOWNED=1. Set the latter only for the actual generic
++ * inert osfmk/arm64/kpc.c backend with MONOTONIC disabled and exclusive
++ * architected PMU ownership for this prelaunch interval. The default is 0.
++ * Main enforces the inert KPC source hash and generated NMONOTONIC=0 headers.
++ * This software audit does not prove Secure-world/firmware PMU ownership.
++ * Optional cpu_freq_pmu_setup=0 disables setup; absent defaults to 1. An
++ * explicit value of 1 still cannot bypass the audited/live ownership checks.
++ * Runtime empty enable/interrupt/export masks are necessary, not proof of
++ * ownership. No Apple PMCR0/PMC register is accessed by this include.
++ *
++ * Only PMCR.E, PMCNTENSET.C and PMCCFILTR.{P,NSK} can temporarily change.
++ * No counter/reset/overflow-clear writes, clock/voltage/MMIO/timer writes,
++ * PMCR.{P,C,D,LC,DP} changes, or enabling PMU interrupts. Configuration is
++ * restored/read back on normal completion; counter values and sticky overflow
++ * status naturally advance and are NOT restored. There is no trap recovery.
++ *
++ * ARM DDI0601 2024-12 register entries, archived in measure/:
++ * PMCCNTR_EL0 is 64 bit in AArch64. LC selects overflow detection width, not
++ * the MRS data width. D divides by 64 ONLY if effective LC == 0.
++ * PMCCFILTR.P/NSK are XOR filters in NS EL1; requiring both clear also avoids
++ * assuming this EL1's security state. Newer PMU extensions are rejected here.
++ * CNTVCT is a reference calibrated by CNTFRQ, NOT an external clock reference.
++ *
++ * All software loops have fixed caps. A scheduler block, trapped register
++ * access, interrupt or hardware stall has no hard wall-clock bound here.
++ */
++#ifndef LITHIUM_CPU_FREQUENCY_R37_INC
++#define LITHIUM_CPU_FREQUENCY_R37_INC
++
++#ifndef LITHIUM_R37_TEST
++/* This include is compiled by osfmk/user_exception_trace.c. Its existing
++ * kernel printf/string declarations avoid BSD sys/systm.h type conflicts. */
++#include <stdint.h>
++#include <kern/clock.h>
++#include <kern/cpu_data.h>
++#include <kern/processor.h>
++#include <kern/sched_prim.h>
++#include <mach/mach_time.h>
++#include <mach/processor.h>
++#include <mach/processor_info.h>
++#include <machine/machine_routines.h>
++#include <pexpert/pexpert.h>
++#if KPC
++#include <kern/kpc.h>
++#endif
++#define R37_READ(reg) __builtin_arm_rsr64(#reg)
++#define R37_WRITE(reg, value) __builtin_arm_wsr64(#reg, (uint64_t)(value))
++#define R37_ISB() __asm__ volatile("isb" ::: "memory")
++#endif
++
++#ifndef LITHIUM_R37_ARCH_PMU_UNOWNED
++#define LITHIUM_R37_ARCH_PMU_UNOWNED 0
++#endif
++
++#define R37_CPU_CAP 8u
++#define R37_FREQ_SAMPLES 5u
++#define R37_MIGRATE_SAMPLES 8u
++#define R37_SPIN_CAP 262144u
++#define R37_U64_MAX (~(uint64_t)0)
++#define R37_C ((uint64_t)1 << 31)
++#define R37_RESET_BITS ((uint64_t)6)
++#define R37_FILTER_EL1 (((uint64_t)1 << 31) | ((uint64_t)1 << 29))
++
++struct r37_stats {
++	uint64_t count, sum, min, max;
++	unsigned overflow;
++};
++
++static int
++r37_add(struct r37_stats *s, uint64_t v)
++{
++	if (s->sum > R37_U64_MAX - v || s->count == R37_U64_MAX) {
++		s->overflow = 1;
++		return 0;
++	}
++	if (!s->count || v < s->min) {
++		s->min = v;
++	}
++	if (!s->count || v > s->max) {
++		s->max = v;
++	}
++	s->count++;
++	s->sum += v;
++	return 1;
++}
++
++static uint64_t
++r37_avg(const struct r37_stats *s)
++{
++	return s->count && !s->overflow ? s->sum / s->count : 0;
++}
++
++/* Checked product/quotient: reject overflow rather than link __udivti3 into
++ * the kernel, silently wrap, or invent a plausible frequency. */
++static int
++r37_muldiv(uint64_t a, uint64_t b, uint64_t d, uint64_t *out)
++{
++	if (!d || (b && a > R37_U64_MAX / b)) {
++		return 0;
++	}
++	*out = a * b / d;
++	return 1;
++}
++
++static uint64_t
++r37_counter_delta(uint64_t before, uint64_t after, unsigned bits)
++{
++	return bits == 32 ? (uint64_t)(uint32_t)(after - before) : after - before;
++}
++
++static unsigned
++r37_divisor(uint64_t pmcr)
++{
++	return (pmcr & (1u << 3)) && !(pmcr & (1u << 6)) ? 64u : 1u;
++}
++
++static int
++r37_supported_pmu(unsigned v)
++{
++	/* v3 and v3p1 only: target-era semantics, no EBEP effective-LC override. */
++	return v == 1 || v == 4;
++}
++
++static int
++r37_el1_counted(uint64_t filter)
++{
++	/* Both Secure and Non-secure EL1 included; no inaccessible SCR_EL3 read. */
++	return !(filter & R37_FILTER_EL1);
++}
++
++struct r37_pmu {
++	uint64_t pmcr, enable, filter, interrupt, overflow;
++};
++
++static struct r37_pmu
++r37_pmu_read(void)
++{
++	struct r37_pmu p;
++	p.pmcr = R37_READ(PMCR_EL0);
++	p.enable = R37_READ(PMCNTENSET_EL0);
++	p.filter = R37_READ(PMCCFILTR_EL0);
++	p.interrupt = R37_READ(PMINTENSET_EL1);
++	p.overflow = R37_READ(PMOVSCLR_EL0);
++	return p;
++}
++
++static int
++r37_same_controls(const struct r37_pmu *a, const struct r37_pmu *b)
++{
++	return a->pmcr == b->pmcr && a->enable == b->enable &&
++	       a->filter == b->filter && a->interrupt == b->interrupt;
++}
++
++static int
++r37_pmu_enabled(const struct r37_pmu *p)
++{
++	return (p->pmcr & 1) && (p->enable & R37_C) && r37_el1_counted(p->filter);
++}
++
++static int
++r37_setup_allowed(const struct r37_pmu *p, unsigned request, unsigned unowned)
++{
++	/* Do not take over a disabled-but-reserved cycle/event counter. */
++	return request == 1 && unowned && !p->enable && !p->interrupt &&
++	       !(p->pmcr & (1u << 4));
++}
++
++static unsigned
++r37_backend_unowned(void)
++{
++#if !LITHIUM_R37_ARCH_PMU_UNOWNED || MONOTONIC || (defined(NMONOTONIC) && NMONOTONIC)
++	return 0;
++#else
++#if KPC
++	if (kpc_get_classes() != 0 || kpc_is_running_fixed() ||
++	    kpc_is_running_configurable(R37_U64_MAX)) {
++		return 0;
++	}
++#endif
++	return 1;
++#endif
++}
++
++struct r37_cycle_stamp {
++	uint64_t v0, cycles, v1;
++};
++
++static struct r37_cycle_stamp
++r37_cycle_stamp(void)
++{
++	struct r37_cycle_stamp s;
++	R37_ISB();
++	s.v0 = R37_READ(CNTVCT_EL0);
++	R37_ISB();
++	s.cycles = R37_READ(PMCCNTR_EL0);
++	R37_ISB();
++	s.v1 = R37_READ(CNTVCT_EL0);
++	return s;
++}
++
++struct r37_frequency {
++	struct r37_stats khz, cycles, ticks, bracket;
++	uint64_t lower_khz, upper_khz;
++	unsigned invalid, timeout, wrapped;
++};
++
++static int
++r37_frequency_add(struct r37_frequency *f, struct r37_cycle_stamp a,
++    struct r37_cycle_stamp b, uint64_t hz, unsigned divisor)
++{
++	uint64_t c, midpoint_a, midpoint_b, dt, lo_dt, hi_dt, rate, lo, hi;
++	if (a.v1 < a.v0 || b.v1 < b.v0 || b.v0 <= a.v1 || !hz ||
++	    a.v1 - a.v0 > R37_U64_MAX - (b.v1 - b.v0) ||
++	    (divisor != 1 && divisor != 64)) {
++		f->invalid++;
++		return 0;
++	}
++	/* AArch64 PMCCNTR MRS width is 64 even when LC selects 32-bit overflow. */
++	c = r37_counter_delta(a.cycles, b.cycles, 64);
++	if (!c || c > R37_U64_MAX / divisor) {
++		f->invalid++;
++		return 0;
++	}
++	c *= divisor;
++	midpoint_a = a.v0 + (a.v1 - a.v0) / 2;
++	midpoint_b = b.v0 + (b.v1 - b.v0) / 2;
++	dt = midpoint_b - midpoint_a;
++	lo_dt = b.v0 - a.v1;
++	hi_dt = b.v1 - a.v0;
++	if (!r37_muldiv(c, hz, dt, &rate) ||
++	    !r37_muldiv(c, hz, hi_dt, &lo) ||
++	    !r37_muldiv(c, hz, lo_dt, &hi)) {
++		f->invalid++;
++		return 0;
++	}
++	/* Transactional statistics: no half-added accepted sample on overflow. */
++	struct r37_frequency next = *f;
++	if (!r37_add(&next.khz, rate / 1000) ||
++	    !r37_add(&next.cycles, c) || !r37_add(&next.ticks, dt) ||
++	    !r37_add(&next.bracket, (a.v1 - a.v0) + (b.v1 - b.v0))) {
++		f->invalid++;
++		return 0;
++	}
++	if (next.khz.count == 1 || lo / 1000 < next.lower_khz) {
++		next.lower_khz = lo / 1000;
++	}
++	if (hi / 1000 > next.upper_khz) {
++		next.upper_khz = hi / 1000;
++	}
++	next.wrapped += b.cycles < a.cycles;
++	*f = next;
++	return 1;
++}
++
++static void
++r37_frequency_cpu(unsigned logical, unsigned setup, unsigned unowned)
++{
++	uint64_t el = R37_READ(CurrentEL);
++	if (el != 4) {
++		printf("LITHIUM CPU FREQ logical=%u valid=0 reason=requires_el1 currentel=0x%llx\n",
++		    logical, el);
++		return;
++	}
++	uint64_t dfr = R37_READ(ID_AA64DFR0_EL1);
++	unsigned pmuver = (unsigned)((dfr >> 8) & 15);
++	if (!r37_supported_pmu(pmuver)) {
++		printf("LITHIUM CPU FREQ logical=%u valid=0 reason=unsupported_pmu pmuver=%u dfr=0x%llx\n",
++		    logical, pmuver, dfr);
++		return;
++	}
++	uint64_t hz = R37_READ(CNTFRQ_EL0);
++	if (hz < 1000 || hz > 1000000000ULL) {
++		printf("LITHIUM CPU FREQ logical=%u valid=0 reason=cntfrq_out_of_range cntfrq=%llu\n",
++		    logical, hz);
++		return;
++	}
++	struct r37_pmu saved = r37_pmu_read(), expected = saved;
++	unsigned changed = 0, readback_ok = 1;
++	if (!r37_pmu_enabled(&saved) && r37_setup_allowed(&saved, setup, unowned)) {
++		/* No P/C reset strobes can enter either PMCR write. */
++		disable_preemption();
++		expected.filter &= ~R37_FILTER_EL1;
++		expected.pmcr = (expected.pmcr | 1) & ~R37_RESET_BITS;
++		expected.enable = R37_C;
++		R37_WRITE(PMCCFILTR_EL0, expected.filter);
++		R37_WRITE(PMCR_EL0, expected.pmcr);
++		R37_WRITE(PMCNTENSET_EL0, R37_C);
++		R37_ISB();
++		struct r37_pmu actual = r37_pmu_read();
++		readback_ok = r37_same_controls(&expected, &actual);
++		enable_preemption();
++		changed = 1;
++	}
++	struct r37_frequency f = {0};
++	unsigned controls_ok = readback_ok;
++	if (controls_ok && r37_pmu_enabled(&expected)) {
++		for (unsigned s = 0; s < R37_FREQ_SAMPLES; s++) {
++			disable_preemption(); /* IRQs stay enabled; no printing here. */
++			struct r37_pmu check = r37_pmu_read();
++			struct r37_cycle_stamp a = r37_cycle_stamp();
++			uint64_t now = a.v1;
++			unsigned spin;
++			for (spin = 0; spin < R37_SPIN_CAP; spin++) {
++				R37_ISB();
++				now = R37_READ(CNTVCT_EL0);
++				if (now < a.v1 || now - a.v1 >= hz / 1000) {
++					break; /* nominal 1 ms, or broken reference */
++				}
++			}
++			struct r37_cycle_stamp b = r37_cycle_stamp();
++			struct r37_pmu end = r37_pmu_read();
++			unsigned cpu_match = cpu_number() == (int)logical;
++			enable_preemption();
++			if (!r37_same_controls(&expected, &check) ||
++			    !r37_same_controls(&expected, &end)) {
++				controls_ok = 0;
++				f.invalid++;
++				break;
++			}
++			if (spin == R37_SPIN_CAP) {
++				f.timeout++;
++				continue;
++			}
++			if (!cpu_match || now < a.v1) {
++				f.invalid++;
++				continue;
++			}
++			r37_frequency_add(&f, a, b, hz, r37_divisor(expected.pmcr));
++		}
++	}
++	/* Restoration occurs before any log, even after setup readback failure.
++	 * Exclusive ownership is required: restoration is not a concurrent PMU
++	 * arbitration protocol. Overflow status/cycle contents are not written. */
++	struct r37_pmu used = r37_pmu_read();
++	if (!r37_same_controls(&expected, &used)) {
++		controls_ok = 0;
++	}
++	if (changed) {
++		disable_preemption();
++		R37_WRITE(PMCNTENCLR_EL0, R37_C);
++		R37_WRITE(PMCCFILTR_EL0, saved.filter);
++		R37_WRITE(PMCR_EL0, saved.pmcr & ~R37_RESET_BITS);
++		R37_ISB();
++		enable_preemption();
++	}
++	struct r37_pmu restored = r37_pmu_read();
++	unsigned restored_ok = r37_same_controls(&saved, &restored);
++	uint64_t calibrated = 0;
++	unsigned valid = controls_ok && restored_ok && f.khz.count &&
++	    r37_muldiv(f.cycles.sum, hz, f.ticks.sum, &calibrated);
++	printf("LITHIUM CPU FREQ logical=%u actual=%d mpidr=0x%llx currentel=0x%llx pmuver=%u cntfrq=%llu pmcr=0x%llx enable=0x%llx filter=0x%llx interrupt=0x%llx\n",
++	    logical, cpu_number(), R37_READ(MPIDR_EL1), el, pmuver, hz,
++	    saved.pmcr, saved.enable, saved.filter, saved.interrupt);
++	printf("LITHIUM CPU FREQ logical=%u setup_requested=%u unowned_audited=%u setup_changed=%u setup_readback=%u controls_stable=%u restored=%u used_pmcr=0x%llx used_filter=0x%llx counter_width=64 overflow_width=%u divisor=%u overflow_before=0x%llx overflow_after=0x%llx\n",
++	    logical, setup, unowned, changed, readback_ok, controls_ok, restored_ok,
++	    expected.pmcr, expected.filter, (expected.pmcr & (1u << 6)) ? 64 : 32,
++	    r37_divisor(expected.pmcr), saved.overflow, restored.overflow);
++	printf("LITHIUM CPU FREQ logical=%u valid=%u samples=%llu invalid=%u timeout=%u wraps64=%u effective_mhz_milli_min=%llu effective_mhz_milli_avg=%llu effective_mhz_milli_max=%llu calibrated_mhz_milli=%llu bound_min=%llu bound_max=%llu cycles_min=%llu cycles_avg=%llu cycles_max=%llu ticks_min=%llu ticks_avg=%llu ticks_max=%llu bracket_max_ticks=%llu\n",
++	    logical, valid, f.khz.count, f.invalid, f.timeout, f.wrapped,
++	    f.khz.min, r37_avg(&f.khz), f.khz.max, valid ? calibrated / 1000 : 0,
++	    f.lower_khz, f.upper_khz, f.cycles.min, r37_avg(&f.cycles), f.cycles.max,
++	    f.ticks.min, r37_avg(&f.ticks), f.ticks.max, f.bracket.max);
++}
++
++struct r37_timer_stamp {
++	uint64_t abs0, v0, physical, v1, abs1;
++	int cpu;
++};
++
++struct r37_migration {
++	struct r37_timer_stamp before, after;
++};
++
++static struct r37_timer_stamp
++r37_timer_stamp(void)
++{
++	struct r37_timer_stamp s;
++	s.cpu = cpu_number();
++	s.abs0 = mach_absolute_time();
++	R37_ISB();
++	s.v0 = R37_READ(CNTVCT_EL0);
++	R37_ISB();
++	s.physical = R37_READ(CNTPCT_EL0);
++	R37_ISB();
++	s.v1 = R37_READ(CNTVCT_EL0);
++	s.abs1 = mach_absolute_time();
++	return s;
++}
++
++struct r37_migration_stats {
++	struct r37_stats abs_ticks, virtual_ticks, physical_ticks, latency_ns;
++	uint64_t histogram[5], abs_back_max, virtual_back_max, physical_back_max;
++	unsigned abs_back, virtual_back, physical_back, internal_back, bad_cpu;
++};
++
++static void
++r37_migration_add(struct r37_migration_stats *s, const struct r37_migration *m,
++    unsigned from, unsigned to, mach_timebase_info_data_t tb)
++{
++	const struct r37_timer_stamp *a = &m->before, *b = &m->after;
++	if (a->cpu != (int)from || b->cpu != (int)to) {
++		s->bad_cpu++;
++		return;
++	}
++	if (a->abs1 < a->abs0 || b->abs1 < b->abs0 ||
++	    a->v1 < a->v0 || b->v1 < b->v0) {
++		s->internal_back++;
++	}
++	/* Compare ordered reads BEFORE subtraction: no unsigned underflow and
++	 * no zero-clamping of a backward observation into the latency histogram. */
++	if (b->abs0 < a->abs1) {
++		uint64_t back = a->abs1 - b->abs0;
++		s->abs_back++;
++		if (back > s->abs_back_max) {
++			s->abs_back_max = back;
++		}
++	} else {
++		uint64_t dt = b->abs0 - a->abs1, ns;
++		r37_add(&s->abs_ticks, dt);
++		if (r37_muldiv(dt, tb.numer, tb.denom, &ns) &&
++		    r37_add(&s->latency_ns, ns)) {
++			unsigned bin = ns < 10000 ? 0 : ns < 100000 ? 1 :
++			    ns < 1000000 ? 2 : ns < 10000000 ? 3 : 4;
++			s->histogram[bin]++;
++		}
++	}
++	if (b->v0 < a->v1) {
++		uint64_t back = a->v1 - b->v0;
++		s->virtual_back++;
++		if (back > s->virtual_back_max) {
++			s->virtual_back_max = back;
++		}
++	} else {
++		r37_add(&s->virtual_ticks, b->v0 - a->v1);
++	}
++	if (b->physical < a->physical) {
++		uint64_t back = a->physical - b->physical;
++		s->physical_back++;
++		if (back > s->physical_back_max) {
++			s->physical_back_max = back;
++		}
++	} else {
++		r37_add(&s->physical_ticks, b->physical - a->physical);
++	}
++}
++
++static void
++r37_print_migration(unsigned from, unsigned to, unsigned sample,
++    const struct r37_migration *m, const char *kind)
++{
++	printf("LITHIUM TIMER snapshot from=%u to=%u sample=%u kind=%s before_cpu=%d abs0=%llu v0=%llu p=%llu v1=%llu abs1=%llu after_cpu=%d abs0=%llu v0=%llu p=%llu v1=%llu abs1=%llu\n",
++	    from, to, sample, kind, m->before.cpu, m->before.abs0, m->before.v0,
++	    m->before.physical, m->before.v1, m->before.abs1, m->after.cpu,
++	    m->after.abs0, m->after.v0, m->after.physical, m->after.v1, m->after.abs1);
++}
++
++static void
++r37_timer_pair(processor_t from_p, unsigned from, processor_t to_p, unsigned to,
++    mach_timebase_info_data_t tb)
++{
++	struct r37_migration_stats stats = {0};
++	struct r37_migration first = {0}, worst = {0}, backward = {0};
++	unsigned worst_sample = 0, backward_sample = 0, have_back = 0;
++	uint64_t worst_dt = 0;
++	for (unsigned sample = 0; sample < R37_MIGRATE_SAMPLES; sample++) {
++		thread_bind(from_p);
++		thread_block(THREAD_CONTINUE_NULL);
++		struct r37_migration m;
++		disable_preemption();
++		m.before = r37_timer_stamp();
++		enable_preemption();
++		thread_bind(to_p);
++		thread_block(THREAD_CONTINUE_NULL);
++		disable_preemption();
++		m.after = r37_timer_stamp();
++		enable_preemption();
++		r37_migration_add(&stats, &m, from, to, tb);
++		if (!sample) {
++			first = worst = m;
++		}
++		if (m.after.abs0 >= m.before.abs1) {
++			uint64_t dt = m.after.abs0 - m.before.abs1;
++			if (dt > worst_dt) {
++				worst_dt = dt;
++				worst = m;
++				worst_sample = sample;
++			}
++		}
++		if (!have_back && (m.after.abs0 < m.before.abs1 ||
++		    m.after.v0 < m.before.v1 || m.after.physical < m.before.physical ||
++		    m.before.abs1 < m.before.abs0 || m.after.abs1 < m.after.abs0 ||
++		    m.before.v1 < m.before.v0 || m.after.v1 < m.after.v0)) {
++			backward = m;
++			backward_sample = sample;
++			have_back = 1;
++		}
++	}
++	printf("LITHIUM TIMER migration from=%u to=%u samples=%u bad_cpu=%u internal_back=%u abs_back=%u abs_back_max_ticks=%llu virtual_back=%u virtual_back_max_ticks=%llu physical_back=%u physical_back_max_ticks=%llu\n",
++	    from, to, R37_MIGRATE_SAMPLES, stats.bad_cpu, stats.internal_back,
++	    stats.abs_back, stats.abs_back_max, stats.virtual_back,
++	    stats.virtual_back_max, stats.physical_back, stats.physical_back_max);
++	printf("LITHIUM TIMER migration from=%u to=%u forward=%llu abs_ticks_min=%llu abs_ticks_avg=%llu abs_ticks_max=%llu v_ticks_min=%llu v_ticks_avg=%llu v_ticks_max=%llu p_ticks_min=%llu p_ticks_avg=%llu p_ticks_max=%llu elapsed_ns_min=%llu elapsed_ns_avg=%llu elapsed_ns_max=%llu hist_lt_10us=%llu lt_100us=%llu lt_1ms=%llu lt_10ms=%llu ge_10ms=%llu stats_overflow=%u\n",
++	    from, to, stats.abs_ticks.count, stats.abs_ticks.min,
++	    r37_avg(&stats.abs_ticks), stats.abs_ticks.max, stats.virtual_ticks.min,
++	    r37_avg(&stats.virtual_ticks), stats.virtual_ticks.max, stats.physical_ticks.min,
++	    r37_avg(&stats.physical_ticks), stats.physical_ticks.max, stats.latency_ns.min,
++	    r37_avg(&stats.latency_ns), stats.latency_ns.max, stats.histogram[0],
++	    stats.histogram[1], stats.histogram[2], stats.histogram[3], stats.histogram[4],
++	    stats.abs_ticks.overflow | stats.virtual_ticks.overflow |
++	    stats.physical_ticks.overflow | stats.latency_ns.overflow);
++	r37_print_migration(from, to, 0, &first, "first");
++	if (worst_sample) {
++		r37_print_migration(from, to, worst_sample, &worst, "max_forward");
++	}
++	if (have_back) {
++		r37_print_migration(from, to, backward_sample, &backward, "first_backward");
++	}
++}
++
++void
++lithium_cpu_frequency_r37(void)
++{
++	unsigned freq = 0, timer = 0, setup = 1;
++	PE_parse_boot_argn("cpu_freq_diag", &freq, sizeof(freq));
++	PE_parse_boot_argn("timer_migrate_diag", &timer, sizeof(timer));
++	if (freq != 1 && timer != 1) {
++		return; /* no register accesses, binding or output by default */
++	}
++	PE_parse_boot_argn("cpu_freq_pmu_setup", &setup, sizeof(setup));
++	if (!ml_get_interrupts_enabled() || get_preemption_level() != 0) {
++		printf("LITHIUM CPU FREQ skipped=1 reason=requires_irq_and_preemption_enabled\n");
++		return;
++	}
++	processor_t cpus[R37_CPU_CAP];
++	unsigned ids[R37_CPU_CAP], count = 0;
++	int max_cpu = ml_get_max_cpu_number();
++	unsigned unowned = freq == 1 ? r37_backend_unowned() : 0;
++	for (unsigned i = 0; max_cpu >= 0 && i <= (unsigned)max_cpu && i < R37_CPU_CAP; i++) {
++		processor_t p = cpu_to_processor((int)i);
++		processor_basic_info_data_t info;
++		mach_msg_type_number_t n = PROCESSOR_BASIC_INFO_COUNT;
++		host_t host;
++		if (p && processor_info(p, PROCESSOR_BASIC_INFO, &host,
++		    (processor_info_t)&info, &n) == KERN_SUCCESS && info.running) {
++			cpus[count] = p;
++			ids[count++] = i;
++		}
++	}
++	if (freq == 1) {
++		printf("LITHIUM CPU FREQ begin revision=37 prelaunch=1 raw_pmu_optin=1 fault_guard=0 el2_el3_trap_risk=1 samples=%u nominal_us=1000 spin_cap=%u online=%u max_cpu=%d truncated=%u cntfrq_assumed_correct=1 external_reference=0 active_clock_or_pll_proof=0\n",
++		    R37_FREQ_SAMPLES, R37_SPIN_CAP, count, max_cpu,
++		    max_cpu >= (int)R37_CPU_CAP);
++	}
++	if (timer == 1) {
++		printf("LITHIUM TIMER begin revision=37 raw_physical_read_optin=1 fault_guard=0 el2_trap_risk=1 samples_per_directed_pair=%u online=%u max_cpu=%d truncated=%u cntvoff_el2=unavailable_at_el1_not_read independent_walltime=0 elapsed_is_offset_skew=0\n",
++		    R37_MIGRATE_SAMPLES, count, max_cpu, max_cpu >= (int)R37_CPU_CAP);
++	}
++	if (!count) {
++		printf("LITHIUM CPU FREQ skipped=1 reason=no_online_cpu\n");
++		return;
++	}
++	/* Snapshot the original binding once; intermediate thread_bind return
++	 * values must not overwrite it while visiting different processors. */
++	processor_t original = thread_bind(cpus[0]);
++	thread_block(THREAD_CONTINUE_NULL);
++	for (unsigned c = 0; c < count; c++) {
++		thread_bind(cpus[c]);
++		thread_block(THREAD_CONTINUE_NULL);
++		int actual = cpu_number();
++		if (actual != (int)ids[c]) {
++			printf("LITHIUM CPU FREQ logical=%u actual=%d valid=0 reason=binding_mismatch\n",
++			    ids[c], actual);
++			continue;
++		}
++		if (freq == 1) {
++			r37_frequency_cpu(ids[c], setup, unowned);
++		}
++		if (timer == 1) {
++			printf("LITHIUM TIMER cpu logical=%u actual=%d mpidr=0x%llx currentel=0x%llx cntfrq=%llu\n",
++			    ids[c], actual, R37_READ(MPIDR_EL1), R37_READ(CurrentEL),
++			    R37_READ(CNTFRQ_EL0));
++		}
++	}
++	if (timer == 1) {
++		mach_timebase_info_data_t tb;
++		clock_timebase_info(&tb);
++		printf("LITHIUM TIMER units timebase_numer=%u timebase_denom=%u raw_ticks=1 snapshot_order=abs_v_p_v_abs snapshot_atomic=0 raw_backwards_compared_before_subtraction=1 positive_delta_is_scheduling_plus_timer=1\n",
++		    tb.numer, tb.denom);
++		for (unsigned from = 0; from < count; from++) {
++			for (unsigned to = 0; to < count; to++) {
++				if (from != to) {
++					r37_timer_pair(cpus[from], ids[from], cpus[to], ids[to], tb);
++				}
++			}
++		}
++		if (count < 2) {
++			printf("LITHIUM TIMER migration skipped=1 reason=less_than_two_online_cpus\n");
++		}
++	}
++	processor_t previous = thread_bind(original);
++	/* Check the restored binding without exposing struct thread to BSD.
++	 * Rebinding to the same value is idempotent and returns that binding. */
++	processor_t readback = thread_bind(original);
++	thread_block(THREAD_CONTINUE_NULL);
++	printf("LITHIUM CPU FREQ end revision=37 original_binding_restored=%u original_unbound=%u previous_was_null=%u clock_voltage_writes=0 counter_resets=0 irq_included=1 preemption_disabled_per_freq_sample=1 hypervisor_or_secure_exclusion_unknown=1\n",
++	    readback == original, original == PROCESSOR_NULL, previous == PROCESSOR_NULL);
++}
++#endif /* LITHIUM_CPU_FREQUENCY_R37_INC */
+diff --git a/ports/hakios-lithium/diagnostics/cpu-sanity.inc b/ports/hakios-lithium/diagnostics/cpu-sanity.inc
+index 805255e..3148f09 100644
+--- a/ports/hakios-lithium/diagnostics/cpu-sanity.inc
++++ b/ports/hakios-lithium/diagnostics/cpu-sanity.inc
+@@ -16,7 +16,7 @@ static uint64_t lc_translate(const void *address) {
+     __asm__ volatile("at s1e1r, %1\n\tisb\n\tmrs %0, par_el1" : "=r"(par) : "r"(address) : "memory");
+     ml_set_interrupts_enabled(irq);return par;
+ }
+-void lithium_cpu_sanity(void) {
++static void lithium_cpu_sanity_legacy(void) {
+     unsigned enabled=0;PE_parse_boot_argn("cpu_sanity",&enabled,sizeof(enabled));
+     if(enabled!=1)return;
+     extern void lithium_log_bytes(const char *,unsigned);
+@@ -72,3 +72,20 @@ void lithium_cpu_sanity(void) {
+     kfree_data(src,1024*1024);kfree_data(dst,1024*1024);
+     printf("LITHIUM CPU BENCH end prelaunch=1 frequency_registers_changed=0 cache_policy_changed=0\n");
+ }
++
++/* New diagnostics and mitigation each parse their own default-off argument;
++ * none depends on enabling the older integer/memcpy benchmark. */
++/* Pinned generic kpc backend is inert; the R37 builder checks its exact hash.
++ * MONOTONIC and live enable/interrupt/export masks still veto setup.
++ * This is not proof of secure-world or EL2 PMU ownership. */
++#define LITHIUM_R37_ARCH_PMU_UNOWNED 1
++#include "cpu-frequency-r37.inc"
++#include "cpu-sched-report-r37.inc"
++extern void lithium_slowcores_r37(void);
++void lithium_cpu_sanity(void)
++{
++    lithium_cpu_frequency_r37();
++    lithium_cpu_sanity_legacy();
++    lithium_sched_r37_init();
++    lithium_slowcores_r37();
++}
+diff --git a/ports/hakios-lithium/diagnostics/cpu-sched-r37.h b/ports/hakios-lithium/diagnostics/cpu-sched-r37.h
+new file mode 100644
+index 0000000..5d5a69a
+--- /dev/null
++++ b/ports/hakios-lithium/diagnostics/cpu-sched-r37.h
+@@ -0,0 +1,17 @@
++/* Bounded, default-off R37 observations. Scheduler hot path never prints. */
++#ifndef LITHIUM_CPU_SCHED_R37_H
++#define LITHIUM_CPU_SCHED_R37_H
++#define LR37_CPUS 4u
++#define LR37_SLOTS 128u
++struct lr37_row {
++    uint64_t tid, task_id;
++    uint64_t ticks[LR37_CPUS], switches[LR37_CPUS], expiries[LR37_CPUS];
++    uint64_t last_tick, backwards;
++};
++void lithium_sched_r37_enable(void);
++void lithium_sched_r37_select(unsigned group, uint64_t task_id);
++unsigned lithium_sched_r37_snapshot(struct lr37_row *rows, unsigned capacity,
++    uint64_t *dropped);
++void lithium_sched_r37_init(void);
++void lithium_slowcores_r37_report(void);
++#endif
+diff --git a/ports/hakios-lithium/diagnostics/cpu-sched-r37.inc b/ports/hakios-lithium/diagnostics/cpu-sched-r37.inc
+new file mode 100644
+index 0000000..14bdebd
+--- /dev/null
++++ b/ports/hakios-lithium/diagnostics/cpu-sched-r37.inc
+@@ -0,0 +1,97 @@
++/* Included by sched_prim.c, with private thread/task/processor definitions.
++ * Fixed-size atomics only; no names, process lookup, logging or allocations in
++ * context-switch or timer-interrupt paths. Online CPUs are never powered off. */
++#include "cpu-sched-r37.h"
++static struct lr37_row lr37_rows[LR37_SLOTS];
++static uint64_t lr37_task_ids[2], lr37_started, lr37_dropped;
++static bool lr37_enabled;
++
++void
++lithium_sched_r37_enable(void)
++{
++    lr37_started = mach_absolute_time();
++    __atomic_store_n(&lr37_enabled, true, __ATOMIC_RELEASE);
++}
++
++void
++lithium_sched_r37_select(unsigned group, uint64_t task_id)
++{
++    if (group < 2) __atomic_store_n(&lr37_task_ids[group], task_id, __ATOMIC_RELEASE);
++}
++
++static struct lr37_row *
++lr37_get(thread_t thread)
++{
++    if (!__atomic_load_n(&lr37_enabled, __ATOMIC_ACQUIRE)) return NULL;
++    const uint64_t task_id = get_threadtask(thread)->task_uniqueid;
++    if (!task_id || (task_id != __atomic_load_n(&lr37_task_ids[0], __ATOMIC_ACQUIRE) &&
++        task_id != __atomic_load_n(&lr37_task_ids[1], __ATOMIC_ACQUIRE))) return NULL;
++    const uint64_t tid = thread_tid(thread);
++    if (!tid) return NULL;
++    const unsigned hash = (unsigned)((tid ^ (tid >> 7)) % LR37_SLOTS);
++    for (unsigned i = 0; i < 8; ++i) {
++        struct lr37_row *row = &lr37_rows[(hash + i) % LR37_SLOTS];
++        uint64_t key = __atomic_load_n(&row->tid, __ATOMIC_ACQUIRE);
++        if (!key) {
++            uint64_t expected = 0;
++            if (__atomic_compare_exchange_n(&row->tid, &expected, tid, false,
++                __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE)) key = tid;
++            else key = expected;
++        }
++        if (key == tid) {
++            /* TIDs are system-unique. Publish task identity independently;
++             * snapshots may initially observe zero, and explicitly skip it. */
++            __atomic_store_n(&row->task_id, task_id, __ATOMIC_RELEASE);
++            return row;
++        }
++    }
++    __atomic_fetch_add(&lr37_dropped, 1, __ATOMIC_RELAXED);
++    return NULL;
++}
++
++static void
++lithium_sched_r37_switch(thread_t old, unsigned cpu, uint64_t start, uint64_t end)
++{
++    if (cpu >= LR37_CPUS) return;
++    struct lr37_row *row = lr37_get(old);
++    if (!row) return;
++    if (start < lr37_started) start = lr37_started;
++    if (end < start) {
++        __atomic_fetch_add(&row->backwards, 1, __ATOMIC_RELAXED);
++        return;
++    }
++    __atomic_fetch_add(&row->ticks[cpu], end - start, __ATOMIC_RELAXED);
++    __atomic_fetch_add(&row->switches[cpu], 1, __ATOMIC_RELAXED);
++    __atomic_store_n(&row->last_tick, end, __ATOMIC_RELAXED);
++}
++
++static void
++lithium_sched_r37_expiry(thread_t target, unsigned callback_cpu)
++{
++    if (callback_cpu >= LR37_CPUS) return;
++    struct lr37_row *row = lr37_get(target);
++    if (row) __atomic_fetch_add(&row->expiries[callback_cpu], 1, __ATOMIC_RELAXED);
++}
++
++unsigned
++lithium_sched_r37_snapshot(struct lr37_row *rows, unsigned capacity, uint64_t *dropped)
++{
++    unsigned count = 0;
++    for (unsigned i = 0; i < LR37_SLOTS && count < capacity; ++i) {
++        const struct lr37_row *src = &lr37_rows[i];
++        uint64_t tid = __atomic_load_n(&src->tid, __ATOMIC_ACQUIRE);
++        uint64_t task_id = __atomic_load_n(&src->task_id, __ATOMIC_ACQUIRE);
++        if (!tid || !task_id) continue;
++        struct lr37_row *dst = &rows[count++];
++        *dst = (struct lr37_row){.tid = tid, .task_id = task_id};
++        for (unsigned cpu = 0; cpu < LR37_CPUS; ++cpu) {
++            dst->ticks[cpu] = __atomic_load_n(&src->ticks[cpu], __ATOMIC_RELAXED);
++            dst->switches[cpu] = __atomic_load_n(&src->switches[cpu], __ATOMIC_RELAXED);
++            dst->expiries[cpu] = __atomic_load_n(&src->expiries[cpu], __ATOMIC_RELAXED);
++        }
++        dst->last_tick = __atomic_load_n(&src->last_tick, __ATOMIC_RELAXED);
++        dst->backwards = __atomic_load_n(&src->backwards, __ATOMIC_RELAXED);
++    }
++    *dropped = __atomic_load_n(&lr37_dropped, __ATOMIC_RELAXED);
++    return count;
++}
+diff --git a/ports/hakios-lithium/diagnostics/cpu-sched-report-r37.inc b/ports/hakios-lithium/diagnostics/cpu-sched-report-r37.inc
+new file mode 100644
+index 0000000..4062936
+--- /dev/null
++++ b/ports/hakios-lithium/diagnostics/cpu-sched-report-r37.inc
+@@ -0,0 +1,142 @@
++/* Ordinary thread_call only. Names/main tags are discovery metadata, never
++ * read from an unlocked proc in a scheduler/interrupt callback. */
++#include "cpu-sched-r37.h"
++static thread_call_t lr37_report_call;
++static struct lr37_row *lr37_snap, *lr37_previous;
++static unsigned lr37_report_sequence;
++static struct {
++    uint64_t tid, task_id;
++    bool main;
++    unsigned group;
++    char name[64];
++} lr37_names[LR37_SLOTS];
++static unsigned lr37_name_count;
++
++static void
++lr37_discover(void)
++{
++    task_t found[2] = {TASK_NULL, TASK_NULL}, task;
++    lck_mtx_lock(&tasks_threads_lock);
++    queue_iterate(&tasks, task, task_t, tasks) {
++        struct proc *proc = get_bsdtask_info(task);
++        if (!proc) continue;
++        const char *name = proc_best_name(proc);
++        int group = !strcmp(name, "SpringBoard") ? 0 :
++            !strcmp(name, "backboardd") ? 1 : -1;
++        if (group >= 0 && !found[group]) {
++            task_reference(task);
++            found[group] = task;
++        }
++    }
++    lck_mtx_unlock(&tasks_threads_lock);
++    for (unsigned group = 0; group < 2; ++group) {
++        task = found[group];
++        if (!task) continue;
++        /* Match lr37_get(), not the unrelated BSD process unique ID. */
++        const uint64_t unique = task->task_uniqueid;
++        lithium_sched_r37_select(group, unique);
++        task_lock(task);
++        thread_t thread;
++        queue_iterate(&task->threads, thread, thread_t, task_threads) {
++            const uint64_t tid = thread_tid(thread);
++            unsigned slot;
++            for (slot = 0; slot < lr37_name_count; ++slot)
++                if (lr37_names[slot].tid == tid) break;
++            if (slot == LR37_SLOTS) continue;
++            if (slot == lr37_name_count) ++lr37_name_count;
++            lr37_names[slot].tid = tid;
++            lr37_names[slot].task_id = unique;
++            lr37_names[slot].group = group;
++            lr37_names[slot].main = !!(thread_get_tag(thread) & THREAD_TAG_MAINTHREAD);
++            lr37_names[slot].name[0] = 0;
++            if (get_bsdthread_info(thread))
++                bsd_getthreadname(get_bsdthread_info(thread), lr37_names[slot].name);
++            lr37_names[slot].name[63] = 0;
++        }
++        task_unlock(task);
++        task_deallocate(task);
++    }
++}
++
++static uint64_t
++lr37_us(uint64_t ticks)
++{
++    uint64_t ns;
++    absolutetime_to_nanoseconds(ticks, &ns);
++    return ns / 1000;
++}
++
++static void
++lr37_report(__unused thread_call_param_t p0, __unused thread_call_param_t p1)
++{
++    lr37_discover();
++    lithium_slowcores_r37_report();
++    uint64_t dropped = 0, at = mach_absolute_time();
++    unsigned count = lithium_sched_r37_snapshot(lr37_snap, LR37_SLOTS, &dropped);
++    printf("LITHIUM SCHED window=%u at_abs=%llu uptime_us=%llu rows=%u dropped=%llu scope=completed_switch_residency timer_role=callback_not_execution\n",
++        lr37_report_sequence, at, lr37_us(at), count, dropped);
++    unsigned emitted = 0, incidental = 0, omitted = 0;
++    for (unsigned i = 0; i < count; ++i) {
++        struct lr37_row *row = &lr37_snap[i], *previous = NULL;
++        for (unsigned j = 0; j < LR37_SLOTS; ++j)
++            if (lr37_previous[j].tid == row->tid) { previous = &lr37_previous[j]; break; }
++        const char *name = "";
++        const char *process = "unknown";
++        bool main = false;
++        for (unsigned j = 0; j < lr37_name_count; ++j)
++            if (lr37_names[j].tid == row->tid) {
++                name = lr37_names[j].name;
++                process = lr37_names[j].group == 0 ? "SpringBoard" : "backboardd";
++                main = lr37_names[j].main;
++                break;
++            }
++        for (unsigned cpu = 0; cpu < LR37_CPUS; ++cpu) {
++            uint64_t ticks = row->ticks[cpu] - (previous ? previous->ticks[cpu] : 0);
++            uint64_t sw = row->switches[cpu] - (previous ? previous->switches[cpu] : 0);
++            uint64_t expiry = row->expiries[cpu] - (previous ? previous->expiries[cpu] : 0);
++            if (!ticks && !sw && !expiry) continue;
++            /* Main and timer expiry rows are always emitted. Bound incidental
++             * worker noise to 24 rows/window to avoid recreating UI log load. */
++            if (!main && !expiry && (lr37_us(ticks) < 1000 || incidental >= 24)) {
++                ++omitted;
++                continue;
++            }
++            if (!main && !expiry) ++incidental;
++            ++emitted;
++            printf("LITHIUM SCHED thread window=%u at_abs=%llu task=%llu tid=%llu main_tag=%u process=%s name=%s logical=%u residency_us=%llu switches=%llu timer_expiries_on_cpu=%llu last_abs=%llu backwards=%llu\n",
++                lr37_report_sequence, at, row->task_id, row->tid, main, process, name,
++                cpu, lr37_us(ticks), sw, expiry, row->last_tick, row->backwards);
++        }
++    }
++    printf("LITHIUM SCHED window_end=%u emitted=%u omitted_low_activity=%u completed_intervals_only=1\n",
++        lr37_report_sequence, emitted, omitted);
++    bzero(lr37_previous, sizeof(*lr37_previous) * LR37_SLOTS);
++    memcpy(lr37_previous, lr37_snap, sizeof(*lr37_snap) * count);
++    if (++lr37_report_sequence < 360) {
++        uint64_t deadline;
++        clock_interval_to_deadline(5, NSEC_PER_SEC, &deadline);
++        thread_call_enter_delayed(lr37_report_call, deadline);
++    } else printf("LITHIUM SCHED stopped reason=bounded_360_windows\n");
++}
++
++void
++lithium_sched_r37_init(void)
++{
++    unsigned enabled = 0;
++    PE_parse_boot_argn("ui_sched_diag", &enabled, sizeof(enabled));
++    if (enabled != 1 || lr37_report_call) return;
++    lr37_snap = kalloc_data(sizeof(*lr37_snap) * LR37_SLOTS, Z_WAITOK | Z_ZERO);
++    lr37_previous = kalloc_data(sizeof(*lr37_previous) * LR37_SLOTS, Z_WAITOK | Z_ZERO);
++    if (!lr37_snap || !lr37_previous) {
++        printf("LITHIUM SCHED disabled reason=allocation\n");
++        return;
++    }
++    lr37_report_call = thread_call_allocate(lr37_report, NULL);
++    if (!lr37_report_call) {
++        printf("LITHIUM SCHED disabled reason=thread_call\n");
++        return;
++    }
++    lithium_sched_r37_enable();
++    thread_call_enter(lr37_report_call);
++    printf("LITHIUM SCHED armed interval_ms=5000 windows=360 main_source=THREAD_TAG_MAINTHREAD counter=on_cpu_residency_including_interrupts\n");
++}
+diff --git a/ports/hakios-lithium/diagnostics/cpu-slowcores-r37.inc b/ports/hakios-lithium/diagnostics/cpu-slowcores-r37.inc
+new file mode 100644
+index 0000000..42bb4c9
+--- /dev/null
++++ b/ports/hakios-lithium/diagnostics/cpu-slowcores-r37.inc
+@@ -0,0 +1,101 @@
++/* Included in sched_prim.c. Software recommendation policy only, no CPU_OFF,
++ * clock/voltage access, hardware topology change or scheduler lock bypass.
++ * Not a strict user-thread ban: bound work, direct handoff, sleep and failsafe
++ * can bypass ordinary recommendation-based placement. */
++#include <pexpert/pexpert.h>
++static bool lr37_slowcore_applied;
++
++static void
++lr37_policy_snapshot(void)
++{
++    for (unsigned cpu = 0; cpu < 3; ++cpu) {
++        processor_t p = cpu_to_processor((int)cpu);
++        spl_t level = splsched();
++        pset_lock(p->processor_set);
++        unsigned state = p->state, recommended = p->is_recommended;
++        uint64_t mask = p->processor_set->recommended_bitmask;
++        pset_unlock(p->processor_set);
++        splx(level);
++        printf("LITHIUM CPU POLICY logical=%u state=%u recommended=%u pset_mask=0x%llx online_preserved=1 at_abs=%llu\n",
++            cpu, state, recommended, mask, mach_absolute_time());
++    }
++}
++
++void
++lithium_slowcores_r37_report(void)
++{
++    if (__atomic_load_n(&lr37_slowcore_applied, __ATOMIC_ACQUIRE)) lr37_policy_snapshot();
++}
++
++void
++lithium_slowcores_r37(void)
++{
++    unsigned enabled = 0;
++    PE_parse_boot_argn("slowcores_idle", &enabled, sizeof(enabled));
++    /* Omitted/zero does not look up CPUs or mutate any scheduler mask. */
++    if (enabled != 1 || __atomic_load_n(&lr37_slowcore_applied, __ATOMIC_ACQUIRE)) return;
++    if (!ml_get_interrupts_enabled() || ml_at_interrupt_context() ||
++        !preemption_enabled() || ml_get_max_cpu_number() != 2) {
++        printf("LITHIUM CPU POLICY declined reason=context_or_topology mask_changed=0\n");
++        return;
++    }
++    processor_t cpus[3];
++    for (unsigned i = 0; i < 3; ++i) {
++        cpus[i] = cpu_to_processor((int)i);
++        if (!cpus[i] || cpus[i]->cpu_id != (int)i) {
++            printf("LITHIUM CPU POLICY declined reason=offline_or_slot mask_changed=0\n");
++            return;
++        }
++        spl_t level = splsched();
++        pset_lock(cpus[i]->processor_set);
++        bool online = cpus[i]->state == PROCESSOR_RUNNING || cpus[i]->state == PROCESSOR_IDLE;
++        pset_unlock(cpus[i]->processor_set);
++        splx(level);
++        if (!online) {
++            printf("LITHIUM CPU POLICY declined reason=offline_or_slot mask_changed=0\n");
++            return;
++        }
++    }
++    if (cpus[0] != master_processor) {
++        printf("LITHIUM CPU POLICY declined reason=master_map mask_changed=0\n");
++        return;
++    }
++    uint64_t affinities[3] = {0};
++    processor_t original = thread_bind(cpus[0]);
++    bool match = true;
++    const uint64_t expected[3] = {1, 0x100, 0x101};
++    for (unsigned i = 0; i < 3; ++i) {
++        thread_bind(cpus[i]);
++        thread_block(THREAD_CONTINUE_NULL);
++        affinities[i] = __builtin_arm_rsr64("MPIDR_EL1") & 0x000000ff00ffffffULL;
++        if (cpu_number() != (int)i || affinities[i] != expected[i]) match = false;
++    }
++    thread_bind(original);
++    thread_block(THREAD_CONTINUE_NULL);
++    if (!match) {
++        printf("LITHIUM CPU POLICY declined reason=physical_map actual=0x%llx,0x%llx,0x%llx mask_changed=0\n",
++            affinities[0], affinities[1], affinities[2]);
++        return;
++    }
++    bool old_requests[2];
++    spl_t level = splsched();
++    simple_lock(&sched_available_cores_lock, LCK_GRP_NULL);
++    old_requests[0] = !!(usercontrol_requested_recommended_cores & (1ULL << 1));
++    old_requests[1] = !!(usercontrol_requested_recommended_cores & (1ULL << 2));
++    simple_unlock(&sched_available_cores_lock);
++    splx(level);
++    kern_return_t r1 = sched_processor_enable(cpus[1], FALSE);
++    kern_return_t r2 = r1 == KERN_SUCCESS ? sched_processor_enable(cpus[2], FALSE) : KERN_FAILURE;
++    if (r1 != KERN_SUCCESS || r2 != KERN_SUCCESS) {
++        kern_return_t restore1 = sched_processor_enable(cpus[1], old_requests[0]);
++        kern_return_t restore2 = sched_processor_enable(cpus[2], old_requests[1]);
++        printf("LITHIUM CPU POLICY failed rc1=%d rc2=%d restore1=%d restore2=%d\n",
++            r1, r2, restore1, restore2);
++        lr37_policy_snapshot();
++        return;
++    }
++    __atomic_store_n(&lr37_slowcore_applied, true, __ATOMIC_RELEASE);
++    printf("LITHIUM CPU POLICY requested slowcores_idle=1 keep_affinity=0x1 unrecommend=0x100,0x101 rc1=%d rc2=%d bound_handoff_overrides_possible=1 clocks_changed=0\n",
++        r1, r2);
++    lr37_policy_snapshot();
++}
+diff --git a/ports/hakios-lithium/patches/0026-lithium-cpu-r37.patch b/ports/hakios-lithium/patches/0026-lithium-cpu-r37.patch
+new file mode 100644
+index 0000000..2598661
+--- /dev/null
++++ b/ports/hakios-lithium/patches/0026-lithium-cpu-r37.patch
+@@ -0,0 +1,56 @@
++--- a/xnu/apply.sh
+++++ b/xnu/apply.sh
++@@ -27,6 +27,7 @@
++ [ "$(git rev-parse HEAD)" = "$BASE" ] || { echo "apply.sh: $TAG is $(git rev-parse HEAD), expected $BASE" >&2; false; }
++ echo 'BUILD/' >> .git/info/exclude
++ git apply --whitespace=nowarn "$HERE/hakios.patch"
+++git apply --whitespace=nowarn "$HERE/lithium-cpu-r37.patch"
++ cp -a "$HERE/files/." .
++ # HFS Plus (the data volume): Apple's release, fetched like XNU, and this port's changes over it
++ "$HERE/hfs/hfs.sh" put "$DIR"
++--- /dev/null
+++++ b/xnu/lithium-cpu-r37.patch
++@@ -0,0 +1,43 @@
+++--- a/osfmk/kern/sched_prim.c
++++++ b/osfmk/kern/sched_prim.c
+++@@ -805,10 +805,18 @@
+++  *	Thread wait timer expiration.
+++  *	Runs in timer interrupt context with interrupts disabled.
+++  */
++++#if defined(LITHIUM_ARMV8_0)
++++#include "../../../../devices/lithium/diagnostics/cpu-sched-r37.inc"
++++#include "../../../../devices/lithium/diagnostics/cpu-slowcores-r37.inc"
++++#endif
++++
+++ void
+++ thread_timer_expire(void *p0, __unused void *p1)
+++ {
+++ 	thread_t thread = (thread_t)p0;
++++#if defined(LITHIUM_ARMV8_0)
++++	lithium_sched_r37_expiry(thread, (unsigned)cpu_number());
++++#endif
+++ 
+++ 	assert_thread_magic(thread);
+++ 
+++@@ -3105,6 +3113,10 @@
+++ 
+++ 			self->reason = reason;
+++ 
++++#if defined(LITHIUM_ARMV8_0)
++++			lithium_sched_r37_switch(self, (unsigned)processor->cpu_id,
++++			    processor->last_dispatch, ctime);
++++#endif
+++ 			processor->last_dispatch = ctime;
+++ 			self->last_run_time = ctime;
+++ 			timer_update(&thread->runnable_timer, ctime);
+++@@ -3247,6 +3259,10 @@
+++ 
+++ 	self->reason = reason;
+++ 
++++#if defined(LITHIUM_ARMV8_0)
++++	lithium_sched_r37_switch(self, (unsigned)processor->cpu_id,
++++	    processor->last_dispatch, ctime);
++++#endif
+++ 	processor->last_dispatch = ctime;
+++ 	self->last_run_time = ctime;
+++ 	timer_update(&thread->runnable_timer, ctime);
+diff --git a/project.json b/project.json
+index 1617d8f..ba51336 100644
+--- a/project.json
++++ b/project.json
+@@ -42,7 +42,7 @@
+     "hardware_started": true,
+     "ios14_compatibility_verified": false,
+     "springboard_verified": true,
+-    "status": "R36 touch_smp candidate compiled and packaged; not booted",
++    "status": "R37 CPU diagnostics and opt-in scheduling mitigation built and frozen; hardware unverified",
+     "configuration_scaffold_created": true,
+     "upstream_config_checks_passed": true,
+     "platform_uefi_verified": true,
+@@ -50,14 +50,14 @@
+     "hello_started": true,
+     "hardware_evidence_report": "reports\\hakios-ios16-device-r20-display.json",
+     "latest_kernel_binary_hardware_verified": false,
+-    "kernel_sha256": "b36b86bd944f1a6bd871d8e175c1e65941edab00b0fb9fcf17a00247bd9d9daa",
+-    "latest_kernel_binary_verification_scope": "Host build and focused tests only; R35 runtime remains separate",
++    "kernel_sha256": "cdd261e6be574dce61c4781b0b034a4d8412ff039c44b16a9f0cedbaba26cec4",
++    "latest_kernel_binary_verification_scope": "R37 final incremental link, focused host tests and five written package readbacks; no R37 boot",
+     "springboard_display_verified": true,
+     "last_hardware_verified_kernel_sha256": "86f36fdf4e047e0f2da18138a39629e584975e4c6689036946ae71195bd924aa",
+     "latest_kernel_binary_hardware_report": "reports/hakios-ios16-device-r35-ui-perf-combined.json"
+   },
+   "schema": 2,
+-  "stage": "iOS16 phase4: R35 touch admission miss diagnosed; R36 SMP-touch host candidate ready",
++  "stage": "iOS16 phase4: R37 frequency, timer, scheduler and slow-core mitigation host candidates ready",
+   "project_instructions_path": "AGENTS.md",
+   "plan_path": "PLAN.md",
+   "operations_path": "OPERATIONS.md",
+@@ -67,7 +67,7 @@
+   "active_workspace": "/home/jia/ios-mix1-build/hakios-lithium-ios16",
+   "source_lock_path": "upstreams.lock.json",
+   "source_audit_report": "reports/hakios-p0-audit.md",
+-  "current_device_status": "R35 combined saved USB shows three CPUs online; touch blocked before init; physical screen unobserved",
++  "current_device_status": "User reports usable touch and a jittering Clock icon in three-core desktop use; R37 not booted and current phone state not queried",
+   "device_state": {
+     "last_observation_baseline": "ios16_r20_display_hakios",
+     "live_state_requeried": true,
+@@ -80,8 +80,8 @@
+     "latest_device_test_report": "reports/hakios-ios16-device-r35-ui-perf-combined.json",
+     "last_screen_observation_source": "R26 same-run user photograph, original archived with SHA256",
+     "last_screen_observation": "UEFI TIMER DEADLINE REACHED; NO PANIC TEXT IN RETAINED LOG; drain1",
+-    "current_physical_state_source": "saved same-run USB, not new phone query",
+-    "current_physical_state": "R35 combined saved USB shows three CPUs online; touch blocked before init; physical screen unobserved",
++    "current_physical_state_source": "User's latest visual account; no new phone query",
++    "current_physical_state": "User reports usable touch and a jittering Clock icon in three-core desktop use; current mode unverified",
+     "current_state_host_queried": false,
+     "userdata_journal_initialized": false,
+     "userdata_journal_repair_report": null,
+@@ -172,20 +172,20 @@
+     "large_tasks_sequential": true
+   },
+   "work_status": {
+-    "status": "ios16_r36_touch_smp_host_ready",
++    "status": "ios16_r37_cpu_diagnostics_host_ready",
+     "phase2_approved": true,
+     "device_operations_performed": true,
+     "device_boots_performed": true,
+     "partition_writes_performed": true,
+     "hakios_temporary_boot_count": 62,
+     "backup_branch": "archive/ios14-r31-20261116",
+-    "next_step": "manual Fastboot readiness, then one explicit R36 test; no automatic retry",
++    "next_step": "Run the R37 final reference, frequency, timer, scheduler and idle profiles in order with one added option per test; no automatic boot or retry",
+     "phase3_approved": true,
+     "auxiliary_stock_reader_boots_accepted": 4,
+     "ios16_boots_performed": 31,
+     "auxiliary_stock_reader_adb_runtime_observations": 3,
+-    "latest_evidence_recorded_at": "2026-11-20T18:29:41.575849+08:00",
+-    "latest_host_report": "reports/hakios-ios16-touch-smp-r36-prepared.md",
++    "latest_evidence_recorded_at": "2026-11-20T18:57:39.9900073+08:00",
++    "latest_host_report": "reports/hakios-ios16-cpu-r37-prepared.md",
+     "r5_backup_branch": "archive/ios16-r5-20261117",
+     "r6_backup_branch": "archive/ios16-r6-20261117",
+     "r7_backup_branch": "archive/ios16-r7-20261117",
+@@ -206,8 +206,8 @@
+   "refactor_report": "reports/hakios-project-refactor.md",
+   "test_package_report": "reports/hakios-test-package.json",
+   "p0_closure_report": "reports/hakios-p0-closure.json",
+-  "current_report": "reports/hakios-ios16-touch-smp-r36-prepared.json",
+-  "latest_diagnosis_report": "reports/hakios-ios16-r34-input-performance.md",
++  "current_report": "reports/hakios-ios16-cpu-r37-prepared.json",
++  "latest_diagnosis_report": "reports/hakios-ios16-cpu-r37-prepared.md",
+   "repeat_ready_report": null,
+   "platform_observation_workflow": {
+     "manual_stopwatch_required": false,
+diff --git a/reports/hakios-ios16-cpu-r37-prepared.json b/reports/hakios-ios16-cpu-r37-prepared.json
+new file mode 100644
+index 0000000..6c2b53d
+--- /dev/null
++++ b/reports/hakios-ios16-cpu-r37-prepared.json
+@@ -0,0 +1,149 @@
++{
++  "recorded_at": "2026-11-20T19:01:29.778657+08:00",
++  "revision": "R37-cpu-final",
++  "kernel_sha256": "cdd261e6be574dce61c4781b0b034a4d8412ff039c44b16a9f0cedbaba26cec4",
++  "host_ready": true,
++  "device_operations": 0,
++  "images": [
++    {
++      "profile": "reference",
++      "image": "artifacts/hakios/lithium-ios16/phase4-r37-cpu-final/reference/lithium-hakios-ios16-r37-cpu-reference.img",
++      "sha256": "10115394cff611685e32733eb9ab840cbf70372f3a4f82fb4ce79a8596f35922",
++      "bytes": 16330752,
++      "cmdline": "bootcpu=1 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1 touch_smp=1",
++      "newly_added_arg": null,
++      "command_budget": {
++        "capacity_including_nul": 608,
++        "reserved_bytes": 497,
++        "spare_bytes": 111
++      },
++      "readback": {
++        "android_header_and_sha1": true,
++        "gzip_dtb_fat": true,
++        "shim_literal_and_mu": true,
++        "xnup_exact_entries": true,
++        "fat_loader": true,
++        "all_written_components": true
++      }
++    },
++    {
++      "profile": "frequency",
++      "image": "artifacts/hakios/lithium-ios16/phase4-r37-cpu-final/frequency/lithium-hakios-ios16-r37-cpu-frequency.img",
++      "sha256": "069ea504d9ccabe4c605ac6d8411bcf1db9ee06e0c0064662f3c4fe2f072a4be",
++      "bytes": 16330752,
++      "cmdline": "bootcpu=1 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1 touch_smp=1 cpu_freq_diag=1",
++      "newly_added_arg": "cpu_freq_diag=1",
++      "command_budget": {
++        "capacity_including_nul": 608,
++        "reserved_bytes": 513,
++        "spare_bytes": 95
++      },
++      "readback": {
++        "android_header_and_sha1": true,
++        "gzip_dtb_fat": true,
++        "shim_literal_and_mu": true,
++        "xnup_exact_entries": true,
++        "fat_loader": true,
++        "all_written_components": true
++      }
++    },
++    {
++      "profile": "timer",
++      "image": "artifacts/hakios/lithium-ios16/phase4-r37-cpu-final/timer/lithium-hakios-ios16-r37-cpu-timer.img",
++      "sha256": "e9581e20d541bd6e0bff9a98e9d600ebec907ece66ad91a499e94287763c738c",
++      "bytes": 16330752,
++      "cmdline": "bootcpu=1 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1 touch_smp=1 cpu_freq_diag=1 timer_migrate_diag=1",
++      "newly_added_arg": "timer_migrate_diag=1",
++      "command_budget": {
++        "capacity_including_nul": 608,
++        "reserved_bytes": 534,
++        "spare_bytes": 74
++      },
++      "readback": {
++        "android_header_and_sha1": true,
++        "gzip_dtb_fat": true,
++        "shim_literal_and_mu": true,
++        "xnup_exact_entries": true,
++        "fat_loader": true,
++        "all_written_components": true
++      }
++    },
++    {
++      "profile": "scheduler",
++      "image": "artifacts/hakios/lithium-ios16/phase4-r37-cpu-final/scheduler/lithium-hakios-ios16-r37-cpu-scheduler.img",
++      "sha256": "121c1ae8d6b072412dfb1c743f433ef48a22eddcb3d1596aaaae7682560a289f",
++      "bytes": 16330752,
++      "cmdline": "bootcpu=1 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1 touch_smp=1 cpu_freq_diag=1 timer_migrate_diag=1 ui_sched_diag=1",
++      "newly_added_arg": "ui_sched_diag=1",
++      "command_budget": {
++        "capacity_including_nul": 608,
++        "reserved_bytes": 550,
++        "spare_bytes": 58
++      },
++      "readback": {
++        "android_header_and_sha1": true,
++        "gzip_dtb_fat": true,
++        "shim_literal_and_mu": true,
++        "xnup_exact_entries": true,
++        "fat_loader": true,
++        "all_written_components": true
++      }
++    },
++    {
++      "profile": "idle",
++      "image": "artifacts/hakios/lithium-ios16/phase4-r37-cpu-final/idle/lithium-hakios-ios16-r37-cpu-idle.img",
++      "sha256": "6c449b8eed22583cd4928340546c4105e04cb13f90319c8a340fb16caa9efb48",
++      "bytes": 16330752,
++      "cmdline": "bootcpu=1 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1 touch_smp=1 cpu_freq_diag=1 timer_migrate_diag=1 ui_sched_diag=1 slowcores_idle=1",
++      "newly_added_arg": "slowcores_idle=1",
++      "command_budget": {
++        "capacity_including_nul": 608,
++        "reserved_bytes": 567,
++        "spare_bytes": 41
++      },
++      "readback": {
++        "android_header_and_sha1": true,
++        "gzip_dtb_fat": true,
++        "shim_literal_and_mu": true,
++        "xnup_exact_entries": true,
++        "fat_loader": true,
++        "all_written_components": true
++      }
++    }
++  ],
++  "preserved_frozen_hashes": {
++    "lithium-hakios-ios16-r20-display.img": "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82",
++    "lithium-hakios-ios16-r34-touch-live-ufs.img": "47740664f56fcf021096493444cc96934223f49ce0dfc099920bfb73cfc426ed",
++    "lithium-hakios-ios16-r35-ui-perf-combined.img": "bfc3a041b7d81f33582dae04ba9894c53b3b44f16e1b5f70ba10b1672500370d",
++    "lithium-hakios-ios16-r36-touch-smp.img": "d4f2d0ee4f4be24952d7439b17834d0d159fa76e78da40bec59622b6623b5669"
++  },
++  "hardware_clock_voltage_writes": false,
++  "frequency_mhz": {
++    "0x1": null,
++    "0x100": null,
++    "0x101": null
++  },
++  "cntfrq_hz_historical": {
++    "0x1": 19200000,
++    "0x100": 19200000,
++    "0x101": 19200000
++  },
++  "timer_migration": "unverified",
++  "desktop_jitter_schedule_correlation": "unverified",
++  "slowcores_idle_effect": "unverified",
++  "cpu_on_clock_source": "unverified",
++  "hardware_voltage": "unverified",
++  "fixed_frequency_design": "withheld_pending_1_to_5",
++  "frequency_mock_checks": [
++    2107,
++    2103
++  ],
++  "scheduler_cases": 13,
++  "policy_cases": 34,
++  "clock_evidence": "evidence/cpu-r37-20261120/clocks/r37-clock-root-cause.md",
++  "rollback_patch": "reports/hakios-ios16-cpu-r37-prepared.patch",
++  "recorded_accepted_boot_counts": {
++    "hakios": 62,
++    "ios16": 31
++  }
++}
+diff --git a/reports/hakios-ios16-cpu-r37-prepared.md b/reports/hakios-ios16-cpu-r37-prepared.md
+new file mode 100644
+index 0000000..29ad62e
+--- /dev/null
++++ b/reports/hakios-ios16-cpu-r37-prepared.md
+@@ -0,0 +1,73 @@
++# R37：三核频率、计时和 SpringBoard 调度诊断
++
++2026-11-20。主机端构建与离线验证完成，尚未启动 R37。用户报告三核能进桌面、触摸可用，Clock 图标指针一快一慢；单核匀速。把这条记录为目视现象，尚无同次调度或频率数据可以解释它。
++
++## 1. 每核频率
++
++| XNU logical / phys | 时钟簇 | R35 CNTFRQ | R35 整数 / memcpy | R37 实际 CPU MHz |
++| --- | --- | ---: | ---: | --- |
++| 0 / `0x1` | `pwrcl` | 19.2 MHz | 2491 µs / 3534 MB/s | 未验证 |
++| 1 / `0x100` | `perfcl` | 19.2 MHz | 162535 µs / 110 MB/s | 未验证 |
++| 2 / `0x101` | `perfcl` | 19.2 MHz | 162603 µs / 110 MB/s | 未验证 |
++
++R35 同次保存日志：`reports/local/20261120-r35-ui-perf-combined-attempt2/console.log`，第 119、122–124、145–149、1007–1009 行。物理 `0x0` 在本配置由 UEFI/UFS 驻留线程使用，不是第四个可供 XNU 测量的核。
++
++`cpu_freq_diag=1` 在 launchd 前把同一工作线程绑到各在线核，用 `CNTVCT_EL0` 前后夹取 `PMCCNTR_EL0`，按 `CNTFRQ_EL0` 换算五组约 1 ms 忙窗口的有效 MHz。保留控制位、计数差、取样括号误差界和 min/avg/max；`calibrated_mhz_milli` 除以 1000 得 MHz，仅采用 `valid=1` 的行。考虑 PMCR LC/D 与 EL1 过滤，不用整数测试反推频率。这个结果以架构计时器标称频率为基准，也不能单独证明 PLL 来源或桌面运行时频率。
++
++当前 XNU 的通用 KPC 为空实现，构建锁定其哈希，实际 MONOTONIC 为 0。对未启用且使能、中断和导出掩码无占用的 PMU，诊断可以短暂使能周期计数并恢复配置和读回；不清计数器或溢出状态。`cpu_freq_pmu_setup=0` 可禁止配置写入。EL2/EL3 访问控制和固件 PMU 所有权未验证；启用后原始寄存器访问没有 trap 恢复，若在探测开始后中止，不得当成零频率或重试同配置。默认无寄存器探测。
++
++## 2. 计时器
++
++`timer_migrate_diag=1` 打印每核 MPIDR、CurrentEL、CNTFRQ，对六个有向迁移各采八次。记录迁移前后的 `mach_absolute_time`、虚拟计数、物理计数，当场区分倒退和正向差值，输出 min/avg/max、延迟直方图、代表性原始快照。样本 `v0 <= p - offset <= v1` 可提供 `p-v1 <= offset <= p-v0` 的区间估计，前提是计数源一致、访问有效且无回绕；迁移耗时自身不能用来推断偏移。EL1 不直接读 `CNTVOFF_EL2`；CNTPCT 访问是否受更高异常级限制未验证，也没有外部独立时间基准。结果全部待上机，旧日志中相同 CNTFRQ 不能排除偏移、计时中断延迟或异常跳变。
++
++## 3. SpringBoard 与卡顿对齐
++
++`ui_sched_diag=1` 在 XNU 的两个实际线程切换路径累计 SpringBoard/backboardd 的 TID 按核执行时间与切换次数。普通线程每约 5 秒输出 `LITHIUM SCHED` 窗口，`main_tag=1` 来自实际 XNU 主线程标记。`residency_us` 只结算已经切出的区间，包含该区间内的中断时间，不等于用户态 CPU 时间，也不含等待；正在运行的区间要等下次切出。线程名称可辅助识别；`timer_expiries_on_cpu` 只计 XNU 等待超时回调在哪个核执行，不能当作 Clock 动画回调所在核。没有独立动画线程证据时标未验证。输出有容量和数量上限，带遗漏计数。
++
++到主屏后，保持在 Clock 图标所在页，观察约 30 秒并记下抽搐发生的大致主机时间。使用同一台电脑给实时接收的 `LITHIUM SCHED window` 行记到达时间，并依据其 `at_abs` / `uptime_us` 排窗口；USB 缓冲可能使到达时间滞后。回传抽搐前后各两个窗口、SpringBoard `main_tag=1`/相关 TID 行和同时段帧率。先查慢核驻留是否随抽搐增加，再用第 4 步做对照。只有肉眼现象、缺少时间对应或观测到窗口内没有足够样本时，结论仍为未验证。
++
++USB 接收器开始写 `console.log` 后，在另一个 PowerShell 窗口对该文件的新增行加主机时间。替换 `$consoleLog` 为当轮接收文件的路径；它只读取主机文件，用 Ctrl+C 结束。
++
++```powershell
++Get-Content -LiteralPath $consoleLog -Tail 0 -Wait | ForEach-Object {
++    if ($_ -match 'LITHIUM SCHED|LITHIUM CPU POLICY|MiniIOMobileFramebuffer: .*frames') {
++        '{0:o} {1}' -f (Get-Date), $_
++    }
++}
++```
++
++## 4. 慢核临时止血
++
++`ports/hakios-lithium/diagnostics/cpu-slowcores-r37.inc:31`：默认关闭的 `slowcores_idle=1`。在正常线程上下文、确认三个 CPU 在线及逻辑/物理映射后，经 XNU `sched_processor_enable(..., FALSE)` 取消 logical1/2 的普通调度推荐，让常规未绑核工作优先留在 logical0。实际读取 `recommended=` 和 `pset_mask=`，并保留原绑定。没有参数或值为 0 时，没有推荐掩码写入。在线、IPI、定时器和绑核工作仍可运行；直接交接、绑核及系统安全覆盖可能绕过普通选核。它不保证慢核零用户代码，也可能把其他普通内核工作挤回快核。
++
++## 5. 根因只读调查
++
++Linux MSM8996 时钟驱动和 MiCode 的 Mi MIX 共用 `scorpio-n-oss` 源码都将 `0x100/0x101` 映射到性能簇。按源码模型，主 mux 和次 mux 都选 0 时可走标称 19.2 MHz 的 XO。HakiOS 当前两处 PSCI `CPU_ON` 调用传入目标核、入口、上下文，没有配置 APCC PLL、ACD 或供电；**本机安全固件启动从核后选择了哪个源仍未验证**。即使 PMU 接近 19.2 MHz，也需核对有效 mux、自动切换、主/备 PLL 的锁定与分频状态，才能归因为 XO。设备树 `clock-frequency` 只是静态元数据。
++
++Linux 源码与 MiCode Pro 配置、APCC/ACD/CBF、CPR、PM8994 S11 供电及 128 项频率/档位表详见 `evidence/cpu-r37-20261120/clocks/r37-clock-root-cause.md` 和 `frequency-voltage-source-tables.csv`。档位是 CPR corner 编号，DT 约束不是本机实际电压；设备 efuse bin/revision、实测电压与安全固件状态均未验证。ACD 间接寄存器读取需要写 selector，本轮未加入。未设计或实现固定频率或动态调速器。先收齐 1–5 的真机证据，再按匹配的 Pro 硬件计划评估电压、频率切换和失败恢复。
++
++## 真机顺序和精确参数
++
++只用 `artifacts/hakios/lithium-ios16/phase4-r37-cpu-final/`。同名非 `-final` 目录是修复任务 ID 与跨核标志之前的留档，不上机。以下是参考包的完整内嵌参数：
++
++```text
++bootcpu=1 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1 touch_smp=1
++```
++
++| 包 | 相对上一包唯一变化（累加） | 需要看到 |
++| --- | --- | --- |
++| `reference` | 以上参考参数 | 三核在线、主屏、触摸和指针基线 |
++| `frequency` | 加 `cpu_freq_diag=1` | 三核 `LITHIUM CPU FREQ` 的 PMU、有效值和恢复行 |
++| `timer` | 加 `timer_migrate_diag=1` | `LITHIUM TIMER cpu/migration/snapshot`，尤其倒退和大正向差值 |
++| `scheduler` | 加 `ui_sched_diag=1` | 指针抽搐前后 `LITHIUM SCHED`、CPU 放置与帧间隔 |
++| `idle` | 加 `slowcores_idle=1` | logical1/2 `recommended=0`、仍在线；同场景下按核驻留与指针响应 |
++
++五套完整参数、镜像路径和 SHA256 在同目录 `profiles.json`。使用已有 Fastboot 临时启动流程，参数已经内嵌；UFS Data 正常运行可能写入，`ui_lite=1` 延续既有的持久偏好。各轮已加参数留在下一轮，若诊断失败，先回退失败项，不带着不明确的停点直接测下一包。止血对照可直接改回 `scheduler` 包，取消 `slowcores_idle`。这轮没有发出手机命令。
++
++## 构建、验证及归档
++
++- 生产入口：`cpu-sanity.inc:85`；频率与计时：`cpu-frequency-r37.inc:271`、`:473`；调度记录与输出：`cpu-sched-r37.inc:53`、`cpu-sched-report-r37.inc:66`；XNU 集成：`patches/0026-lithium-cpu-r37.patch`。
++- Popper 实现频率/迁移，主代理复核测量边界、锁定 KPC 后端和修正实际 OSFMK 头文件冲突。Clang ASan/UBSan 模拟检查 2107（允许配置）/2103（禁配置）通过；去掉 BSD 头只修复实际内核编译冲突，不改变模拟路径。
++- James 核对实际 non-AMP clutch 调度器与推荐接口。主代理复核源码，修复慢核状态标志的跨核发布并复跑 34 个策略检查。Locke 覆盖热路径和报告器，主代理修正 BSD/Mach ID 混用及输出配额并复跑 9 个核心、4 个报告器专项检查；发现问题的初次测试记录保留。
++- Chandrasekhar 完成板级时钟来源调查；主代理复核三核历史日志、时钟驱动与 Pro DT 的关键锚点。证据保留在 `evidence/cpu-r37-20261120/`，未提交参考源码或固件。
++- 实际增量编译链接、最终整包逐层读回通过。上游 wrapper 在链接成功后按原规则分类已知 kext symbol-set 检查退出；没有把首次真实编译失败当作通过。内核 SHA256 `cdd261e6be574dce61c4781b0b034a4d8412ff039c44b16a9f0cedbaba26cec4`。构建：`pwsh -File reports/local/run-cpu-r37-build.ps1 -Task prepare`、同入口 `-Task kernel`；打包：`wsl -d Ubuntu -u jia --exec python3 -B /mnt/f/IOS-MIX1/scripts/package-hakios-cpu-r37.py`。
+diff --git a/reports/local/run-cpu-r37-build.ps1 b/reports/local/run-cpu-r37-build.ps1
+new file mode 100644
+index 0000000..0f13fc4
+--- /dev/null
++++ b/reports/local/run-cpu-r37-build.ps1
+@@ -0,0 +1,15 @@
++param(
++    [Parameter(Mandatory=$true)]
++    [ValidateSet('prepare','kernel')]
++    [string]$Task
++)
++$ErrorActionPreference = 'Stop'
++$arguments = @('-d','Ubuntu','-u','root','--exec','systemd-run',
++    '--unit=ios-mix1-cpu-r37','--wait','--pipe','--collect',
++    '-p','MemoryMax=14G','-p','MemoryHigh=12G','-p','MemorySwapMax=1G',
++    '-p','CPUQuota=1200%','-p','TasksMax=1024','-p','User=jia',
++    '-p','WorkingDirectory=/mnt/f/IOS-MIX1',
++    '--setenv=JOBS=12','--setenv=MAKEFLAGS=-j12','--setenv=MAKEJOBS=--jobs=12',
++    '/usr/bin/python3','-B','/mnt/f/IOS-MIX1/scripts/build-hakios-cpu-r37.py',$Task)
++& wsl.exe @arguments
++exit $LASTEXITCODE
+diff --git a/scripts/build-hakios-cpu-r37.py b/scripts/build-hakios-cpu-r37.py
+new file mode 100644
+index 0000000..a61950a
+--- /dev/null
++++ b/scripts/build-hakios-cpu-r37.py
+@@ -0,0 +1,87 @@
++#!/usr/bin/env python3
++"""Build the opt-in R37 measurement/scheduling candidate; no device access."""
++import argparse
++import hashlib
++import json
++import os
++from pathlib import Path
++import shutil
++import subprocess
++import sys
++import time
++
++sys.dont_write_bytecode = True
++import hakios
++
++ROOT = Path(__file__).resolve().parents[1]
++WORK = Path("/home/jia/ios-mix1-build/hakios-lithium-ios16")
++EVIDENCE = ROOT / "evidence/cpu-r37-20261120/main"
++
++
++def verify_pmu_backend():
++    tree = WORK / "xnu-src/xnu-8796.121.2"
++    kpc = tree / "osfmk/arm64/kpc.c"
++    assert hashlib.sha256(kpc.read_bytes()).hexdigest() == \
++        "31cd51ee78b5cc06eb5787ee18bf22b75a9592c1dbff758c461ab445521f1365", \
++        "PMU backend changed; re-evaluate diagnostic ownership before enabling setup"
++    for sub in ("bsd", "osfmk"):
++        header = tree / f"BUILD/obj/DEVELOPMENT_ARM64_BCM2837/{sub}/DEVELOPMENT/monotonic.h"
++        assert header.read_text().strip() == "#define NMONOTONIC 0", \
++            "Monotonic configuration changed; do not claim exclusive PMU ownership"
++
++
++def run(label, argv, *, env=None, cwd=WORK):
++    path = EVIDENCE / (label + "-" + str(time.time_ns()) + ".log")
++    with path.open("x") as log:
++        proc = subprocess.run(argv, cwd=cwd, env=env, stdout=log, stderr=subprocess.STDOUT)
++    if proc.returncode:
++        print(path.read_text(errors="replace")[-6000:])
++        raise RuntimeError(f"{label} failed ({proc.returncode}); retained {path}")
++    print("PASS " + label, flush=True)
++    return path
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("phase", choices=("prepare", "kernel"))
++    opts = parser.parse_args()
++    hakios.resource_check()
++    spec = hakios.read(hakios.MANIFEST)
++    verify_pmu_backend()
++    if opts.phase == "prepare":
++        hakios.prepare(spec, hakios.policy(spec))
++        tree = WORK / "xnu-src/xnu-8796.121.2"
++        source = tree / "osfmk/kern/sched_prim.c"
++        if "lithium_sched_r37_switch" not in source.read_text():
++            patch = WORK / "xnu/lithium-cpu-r37.patch"
++            run("apply-actual-check", ["git", "apply", "--check", str(patch)], cwd=tree)
++            run("apply-actual", ["git", "apply", str(patch)], cwd=tree)
++        # The existing quiet policy was compiled in R35/R36 and is preserved.
++        assert "exec_applog_ui_quiet" in (tree / "bsd/kern/kern_exec.c").read_text()
++        assert source.read_text().count("lithium_sched_r37_switch(self,") == 2
++        assert "lithium_sched_r37_expiry(thread," in source.read_text()
++        print("R37 observations prepared; unchanged firmware and userland reused.")
++        return
++    hakios.verify_workspace(spec)
++    deps = hakios.read(ROOT / "reports/hakios-ios16-dependencies.json")
++    env = dict(os.environ, HAKIOS_SOC="msm8996", JOBS="12",
++               MAKEFLAGS="-j12", MAKEJOBS="--jobs=12", THEOS=deps["theos_linux_path"])
++    env["PATH"] = "/home/jia/ios-mix1-build/venv/bin:" + env["PATH"]
++    log = run("kernel", ["make", "kernel", "SHELL=/bin/bash",
++                        "MAKEJOBS=--jobs=12", "DEVICE=lithium", "JOBS=12"], env=env)
++    kernel = WORK / "hakios-kernel"
++    data = kernel.read_bytes()
++    for marker in (b"cpu_freq_diag", b"timer_migrate_diag", b"ui_sched_diag",
++                   b"slowcores_idle", b"LITHIUM TOUCH smp context=poll"):
++        assert marker in data, marker
++    frozen = WORK / "hakios-kernel.r37-final"
++    assert not frozen.exists(), "Frozen R37 kernel exists; inspect, never overwrite"
++    shutil.copyfile(kernel, frozen)
++    hakios.write(EVIDENCE / "kernel-result-final.json",
++        dict(passed=True, kernel=str(frozen), sha256=hakios.sha(frozen), bytes=len(data),
++             inputs=hakios.inputs(spec), command_log=str(log), device_operations=0,
++             unchanged_userspace_firmware_reused=True))
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/scripts/package-hakios-cpu-r37.py b/scripts/package-hakios-cpu-r37.py
+new file mode 100644
+index 0000000..e75e59c
+--- /dev/null
++++ b/scripts/package-hakios-cpu-r37.py
+@@ -0,0 +1,82 @@
++#!/usr/bin/env python3
++"""Freeze same-kernel R37 profiles, adding exactly one diagnostic variable."""
++import importlib.util
++import json
++from pathlib import Path
++import sys
++
++sys.dont_write_bytecode = True
++ROOT = Path(__file__).resolve().parents[1]
++
++
++def main():
++    spec = importlib.util.spec_from_file_location("r37_profiles",
++        ROOT / "scripts/package-hakios-ui-perf-r35.py")
++    profiles = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(profiles)
++    live = profiles.load_live()
++    frozen, version = profiles.frozen_contract(live)
++    build = json.loads((ROOT / "evidence/cpu-r37-20261120/main/kernel-result-final.json").read_text())
++    kernel = Path(build["kernel"])
++    data = kernel.read_bytes()
++    live.require(live.digest(data) == build["sha256"], "R37 kernel differs")
++    root = ROOT / "artifacts/hakios/lithium-ios16/phase4-r35-ui-perf/quiet/root.apfs"
++    live.require(live.digest(root.read_bytes()) == profiles.ROOT_SHA, "Frozen root differs")
++    base = ROOT / "artifacts/hakios/lithium-ios16/phase4-r37-cpu-final"
++    live.require(not base.exists(), "R37 package output exists; retain it and stop")
++    r36 = json.loads((ROOT /
++        "artifacts/hakios/lithium-ios16/phase4-r36-touch-smp/contract.json").read_text())
++    # These older observers/benchmarks are removed in EVERY R37 profile,
++    # including reference, to leave command space and avoid repeated HFS tests.
++    removed = {"ustacks=SpringBoard", "ustacks_at=180",
++               "hfsdiag=1", "cpu_sanity=1", "hfs_bench=1"}
++    words = [word for word in r36["cmdline"].split() if word not in removed]
++    reference = " ".join(words)
++    previous = reference
++    images = []
++    base.mkdir()
++    for profile, added in (("reference", None), ("frequency", "cpu_freq_diag=1"),
++                           ("timer", "timer_migrate_diag=1"),
++                           ("scheduler", "ui_sched_diag=1"),
++                           ("idle", "slowcores_idle=1")):
++        if added:
++            words.append(added)
++        args = " ".join(words)
++        if added:
++            live.require(args.split() == previous.split() + [added],
++                         "Profiles must add only one variable")
++        plan = profiles.profile_plan(live, frozen, version, "lite")
++        plan.update(profile="cpu-r37-" + profile, boot_args=args, cpus=3,
++            cpu3_diagnostic_only=True, touch_smp_opt_in=True,
++            cumulative_one_new_arg=added, reference_args=reference,
++            all_profiles_remove_legacy_observers=sorted(removed))
++        plan["command_budget"] = live.command_budget(args, version, "ufs")
++        output = base / profile
++        contract = profiles.package_one(live, frozen, plan, kernel, root, output, build["sha256"])
++        previous_name = contract["image"]["path"]
++        name = "lithium-hakios-ios16-r37-cpu-" + profile + ".img"
++        (output / previous_name).rename(output / name)
++        contract["components"][name] = contract["components"].pop(previous_name)
++        contract["image"]["path"] = name
++        contract.update(schema="hakios-cpu-r37-package-v1", candidate="R37-cpu-" + profile,
++            default_profile="reference", script_sha256=live.digest(Path(__file__).read_bytes()),
++            actual_cpu_mhz_hardware_verified=False, timer_migration_hardware_verified=False,
++            schedule_attribution_hardware_verified=False, policy_hardware_verified=False,
++            hardware_clock_voltage_writes=False, dynamic_governor=False,
++            new_arg_compared_to_previous_profile=added)
++        (output / "contract.json").write_text(json.dumps(contract, indent=2) + "\n")
++        live.require(live.digest((output / name).read_bytes()) == contract["image"]["sha256"],
++                     "Written R37 image differs")
++        images.append(dict(profile=profile, image=str(output / name),
++            sha256=contract["image"]["sha256"], bytes=contract["image"]["bytes"],
++            cmdline=args, newly_added_arg=added,
++            command_budget=plan["command_budget"], readback=contract["readback"]))
++        previous = args
++    result = dict(host_ready=True, kernel_sha256=build["sha256"], images=images,
++                  device_operations=0, physical_results="unverified")
++    (base / "profiles.json").write_text(json.dumps(result, indent=2) + "\n")
++    print(json.dumps(result, indent=2))
++
++
++if __name__ == "__main__":
++    main()

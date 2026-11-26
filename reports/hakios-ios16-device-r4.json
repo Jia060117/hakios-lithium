@@ -1,0 +1,402 @@
+{
+  "schema": 1,
+  "revision": 4,
+  "checked_at": "2026-11-16T22:13:46.386055+08:00",
+  "connected": true,
+  "identity_verified": true,
+  "temporary_boot_issued": true,
+  "command_accepted": true,
+  "image_sha256": "8a3230840e8b5636be18fa92e13cef781811e45f057632072a95b6ea2a1bad6d",
+  "readiness_report": "reports/hakios-ios16-boot-ready.json",
+  "local_log_path": "reports\\local\\20261116-221346-357368-ios16-r4",
+  "host_partition_flash_issued": false,
+  "kernel_data_writes_enabled": true,
+  "kernel_data_write_hardware_verified": true,
+  "hardware_verified": false,
+  "screen_observation_pending": false,
+  "full_services_verified": false,
+  "springboard_display_verified": false,
+  "physical_touch_verified": false,
+  "usb_log_transfer_verified": true,
+  "all_6gb_exposed": false,
+  "qemu_used": false,
+  "legacy_7195_used": false,
+  "userdata_bytes": 250710192128,
+  "bootloader_unlocked": true,
+  "battery_soc_ok": true,
+  "started_at": "2026-11-16T22:13:46.602238+08:00",
+  "usb_capture_started": true,
+  "usb_capture_status_path": "reports\\local\\20261116-221346-357368-ios16-r4\\usb-status.json",
+  "boot_entry_sha256": "948fb0b45ec1e03748d6417cd78e56ea95ac0191d04ebfac9c2458d4cbe0359d",
+  "fastboot_returncode": 0,
+  "outcome": "returned_to_uefi_timer_deadline",
+  "kernel_hardware_started": true,
+  "original_launchd_pid1_verified": true,
+  "early_boot_complete_observed": true,
+  "ufs_root_runtime_mounted": true,
+  "os_cryptex_runtime_mounted": true,
+  "app_cryptex_runtime_mounted": true,
+  "data_runtime_read_write_verified": true,
+  "init_checks_passed": 45,
+  "init_checks_failed": 0,
+  "usb_enumeration_verified": true,
+  "usb_endpoint_configuration_verified": true,
+  "usb_runtime_snapshot": {
+    "recorded_at": "2026-11-16T22:23:39.843143+08:00",
+    "snapshot_path": "reports/local/20261116-221346-357368-ios16-r4/snapshot-222339-841588",
+    "raw_bytes": 183931,
+    "console_bytes": 81883,
+    "raw_sha256": "44260e0792d0477a48f9d66c8f4f13308f7933814f4e74a5134eac99ed99f845",
+    "console_sha256": "285b2581621b4fb3d63b048ef4d70b8a7b9a589e8c815ebc4bd6a5a53054072d",
+    "capture_source_sha256": "d5a9aecdd3c5ac728b233628d9ae810a598a35ba05d9068d0db3ed70fde3791c",
+    "frames": 3189,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "incomplete_frame_bytes": 0,
+    "decoded_console_prefix_matches": true,
+    "capture_still_running": true,
+    "capture_status": "capturing",
+    "first_log_line": "Darwin Kernel Version 22.5.0: Mon Nov 16 21:58:20 CST 2026; jia:xnu-8796.121.2[xnu-8796.121.2-dirty]/BUILD/obj/DEVELOPMENT_ARM64_BCM2837",
+    "from_launchd_start": true,
+    "return_tail_captured": false,
+    "evidence": {
+      "kernel_banner": [
+        {
+          "line": 1,
+          "text": "Darwin Kernel Version 22.5.0: Mon Nov 16 21:58:20 CST 2026; jia:xnu-8796.121.2[xnu-8796.121.2-dirty]/BUILD/obj/DEVELOPMENT_ARM64_BCM2837"
+        },
+        {
+          "line": 169,
+          "text": "Darwin Kernel Version 22.5.0: Mon Nov 16 21:58:20 CST 2026; jia:xnu-8796.121.2[xnu-8796.121.2-dirty]/BUILD/obj/DEVELOPMENT_ARM64_BCM2837"
+        }
+      ],
+      "ufs_system_mounted": [
+        {
+          "line": 139,
+          "text": "[ ok ] mount the Darwin volume read only"
+        }
+      ],
+      "os_cryptex_mounted": [
+        {
+          "line": 163,
+          "text": "[ ok ] the OS cryptex (/dev/ufs_userdata,c=1) on /private/preboot/Cryptexes/OS"
+        }
+      ],
+      "app_cryptex_mounted": [
+        {
+          "line": 166,
+          "text": "[ ok ] the App cryptex (/dev/ufs_userdata,c=2) on /private/preboot/Cryptexes/App"
+        }
+      ],
+      "data_mount": [
+        {
+          "line": 180,
+          "text": "[ ok ] mount the data volume on /private/var"
+        }
+      ],
+      "data_write_readback": [
+        {
+          "line": 676,
+          "text": "[ ok ] create a file, write 100 KB, read it back"
+        }
+      ],
+      "init_checks": [
+        {
+          "line": 830,
+          "text": "=== 45 checks, 0 failed ==="
+        }
+      ],
+      "original_launchd_pid1": [
+        {
+          "line": 911,
+          "text": "com.apple.xpc.launchd|1970-01-01 08:07:40.393821 <Notice>: launchd logging initialized. name: com.apple.xpc.launchd pid: 1"
+        }
+      ],
+      "early_boot_complete": [
+        {
+          "line": 934,
+          "text": "com.apple.xpc.launchd|1970-01-01 08:07:40.434702 (boot) <Notice>: Early boot complete. Continuing system boot."
+        },
+        {
+          "line": 935,
+          "text": "[System Event] [9587156795] [INFO] [Subsystem: launchd] [Event: boot] Early boot complete. Continuing system boot."
+        }
+      ],
+      "springboard_code_executed": [
+        {
+          "line": 1011,
+          "text": "hakios: SpringBoard: activation answered here, setup assistant refused, application snapshots as JPEG, the side button's long press checked, battery level from QG, battery state from QG, poster switcher not offered"
+        }
+      ],
+      "springboard_running": [],
+      "backboardd_running": [],
+      "containermanagerd_running": [],
+      "container_patch": [],
+      "window_server_hooks": [],
+      "frame_submission": [],
+      "deadline_marker": [],
+      "panic_marker": [],
+      "usertrap": []
+    }
+  },
+  "user_screen_observation": "本轮已结束，UEFI 摘要确认定时返回；用户随后提供白苹果录像截图",
+  "user_screen_observation_source": "R4 user confirmation, final summary photo and boot logo video screenshot",
+  "usb_log_complete": false,
+  "return_reason_verified": true,
+  "returned_to_uefi_verified": true,
+  "panic_observed": false,
+  "panic_absence_verified": false,
+  "runtime_verification_scope": "Final 6229-frame/206173-byte USB log exact-decodes with no missing/duplicate/incomplete frames, from kernel banner through launchd and userspace display startup. Apple ProgressUI logo and three real framebuffer swaps plus user image verify physical graphical output. UEFI photo verifies timer return. USB return tail absent; interactive SpringBoard, full container RPC, physical touch, A530 acceleration, all RAM and post-reboot persistence remain unverified.",
+  "springboard_code_executed": true,
+  "springboard_process_running_observed": true,
+  "backboardd_process_running_observed": true,
+  "containermanagerd_process_running_observed": true,
+  "graphics_frame_submission_observed": true,
+  "upstream_container_patch_observed": true,
+  "transient_usb_pause_observed": true,
+  "transient_usb_pause_recovered": true,
+  "usb_final_snapshot": {
+    "recorded_at": "2026-11-16T22:58:03.934156+08:00",
+    "snapshot_path": "reports/local/20261116-221346-357368-ios16-r4/snapshot-final",
+    "raw_bytes": 405501,
+    "console_bytes": 206173,
+    "raw_sha256": "97d6f5beabfbb84e4f999c71ad2d5e813f8cc2391c549162c3ecf3a81ed70aa9",
+    "console_sha256": "8c36fc8b168c679cbf6d43328725fbf2e2d573f6eab975c4fdac077d4be0aaed",
+    "capture_source_sha256": "d5a9aecdd3c5ac728b233628d9ae810a598a35ba05d9068d0db3ed70fde3791c",
+    "frames": 6229,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "incomplete_frame_bytes": 0,
+    "decoded_console_matches": true,
+    "capture_still_running": false,
+    "capture_status": "capture_failed",
+    "capture_failure": "[Errno 32] Pipe error",
+    "capture_finished_at": "2026-11-16T22:44:25.712945+08:00",
+    "first_log_line": "Darwin Kernel Version 22.5.0: Mon Nov 16 21:58:20 CST 2026; jia:xnu-8796.121.2[xnu-8796.121.2-dirty]/BUILD/obj/DEVELOPMENT_ARM64_BCM2837",
+    "from_launchd_start": true,
+    "return_tail_captured": false,
+    "evidence": {
+      "kernel_banner": [
+        {
+          "line": 1,
+          "text": "Darwin Kernel Version 22.5.0: Mon Nov 16 21:58:20 CST 2026; jia:xnu-8796.121.2[xnu-8796.121.2-dirty]/BUILD/obj/DEVELOPMENT_ARM64_BCM2837"
+        },
+        {
+          "line": 169,
+          "text": "Darwin Kernel Version 22.5.0: Mon Nov 16 21:58:20 CST 2026; jia:xnu-8796.121.2[xnu-8796.121.2-dirty]/BUILD/obj/DEVELOPMENT_ARM64_BCM2837"
+        }
+      ],
+      "launchd_pid1": [
+        {
+          "line": 911,
+          "text": "com.apple.xpc.launchd|1970-01-01 08:07:40.393821 <Notice>: launchd logging initialized. name: com.apple.xpc.launchd pid: 1"
+        }
+      ],
+      "early_boot_complete": [
+        {
+          "line": 934,
+          "text": "com.apple.xpc.launchd|1970-01-01 08:07:40.434702 (boot) <Notice>: Early boot complete. Continuing system boot."
+        },
+        {
+          "line": 935,
+          "text": "[System Event] [9587156795] [INFO] [Subsystem: launchd] [Event: boot] Early boot complete. Continuing system boot."
+        }
+      ],
+      "springboard_running": [
+        {
+          "line": 1531,
+          "text": "com.apple.xpc.launchd|1970-01-01 08:09:32.971618 (user/501/com.apple.SpringBoard [8]) <Notice>: service state: running"
+        },
+        {
+          "line": 1652,
+          "text": "com.apple.xpc.launchd|1970-01-01 08:14:49.382653 (user/501/com.apple.SpringBoard [8]) <Notice>: job state = running"
+        }
+      ],
+      "backboardd_running": [
+        {
+          "line": 1615,
+          "text": "com.apple.xpc.launchd|1970-01-01 08:12:48.041454 (user/501/com.apple.backboardd [13]) <Notice>: service state: running"
+        },
+        {
+          "line": 1826,
+          "text": "com.apple.xpc.launchd|1970-01-01 08:19:42.134978 (user/501/com.apple.backboardd [13]) <Notice>: job state = running"
+        }
+      ],
+      "container_running": [
+        {
+          "line": 1679,
+          "text": "com.apple.xpc.launchd|1970-01-01 08:15:57.888575 (user/501/com.apple.containermanagerd [14]) <Notice>: service state: running"
+        }
+      ],
+      "container_patch": [
+        {
+          "line": 1077,
+          "text": "hakios: container manager: no personas"
+        }
+      ],
+      "usable_container_path": [
+        {
+          "line": 1116,
+          "text": "1970-01-01 08:22:31.541936+0800 backboardd[13:211] [Display] StartWindowServer: Initializing shader cache path: /private/var/containers/Data/System/E539A646-45F7-45CB-9A25-16D4AD1B6B7D/Library/Caches"
+        }
+      ],
+      "apple_logo_loaded": [
+        {
+          "line": 1188,
+          "text": "1970-01-01 08:23:49.427551+0800 backboardd[13:211] [core] PUIProgressWindow trying to load image source for /System/Library/PrivateFrameworks/ProgressUI.framework/apple-logo@3x~iphone.png"
+        },
+        {
+          "line": 1421,
+          "text": "1970-01-01 08:28:48.106306+0800 backboardd[13:322] [core] PUIProgressWindow trying to load image source for /System/Library/PrivateFrameworks/ProgressUI.framework/apple-logo@3x~iphone.png"
+        }
+      ],
+      "frame_submission": [
+        {
+          "line": 1226,
+          "text": "MiniIOMobileFramebuffer: swap 1 (#0): surfaces 1 0 0 0, layers set 0x80000007 cleared 0x80000006"
+        },
+        {
+          "line": 1243,
+          "text": "MiniIOMobileFramebuffer: swap 2 (#1): surfaces 1 0 0 0, layers set 0x1 cleared 0x0"
+        },
+        {
+          "line": 1441,
+          "text": "MiniIOMobileFramebuffer: swap 3 (#2): surfaces 3 0 0 0, layers set 0x1 cleared 0x0"
+        }
+      ],
+      "frame_layers": [
+        {
+          "line": 1227,
+          "text": "MiniIOMobileFramebuffer: swap 1 layer 0: surface 1 (750x1334 'BGRA') from 0,0 750x1334 to 0,0 750x1334, layers set 0x80000007"
+        },
+        {
+          "line": 1244,
+          "text": "MiniIOMobileFramebuffer: swap 2 layer 0: surface 1 (750x1334 'BGRA') from 0,0 750x1334 to 0,0 750x1334, layers set 0x1"
+        },
+        {
+          "line": 1442,
+          "text": "MiniIOMobileFramebuffer: swap 3 layer 0: surface 3 (750x1334 'BGRA') from 0,0 750x1334 to 0,0 750x1334, layers set 0x1"
+        }
+      ],
+      "frame_timing": [
+        {
+          "line": 1246,
+          "text": "MiniIOMobileFramebuffer: 2 frames in 8920 ms (0 a second), 4304368 us each in the driver, after 13 us waiting for the GPU and, 0 of them, 0 us for the next refresh; 0 swaps waited for the frame before, 0 gave up; 0 swaps came a refresh late themselves; 0 1970-01-01 08:24:35.767084+0800 backboardd[13:211] [Common]       backlight ready in 17.8114s. overall 523.118s"
+        }
+      ],
+      "startup_timing": [
+        {
+          "line": 1085,
+          "text": "1970-01-01 08:19:24.482303+0800 backboardd[13:211] [Common]       CoreAccessories ready in 211.406s. overall 211.832s"
+        },
+        {
+          "line": 1108,
+          "text": "1970-01-01 08:22:19.093718+0800 backboardd[13:211] [Common]       HID system open ready in 171.522s. overall 386.447s"
+        },
+        {
+          "line": 1112,
+          "text": "1970-01-01 08:22:23.924540+0800 backboardd[13:211] [Common]       HID system ready in 176.407s. overall 391.278s"
+        },
+        {
+          "line": 1205,
+          "text": "1970-01-01 08:24:17.561417+0800 backboardd[13:211] [Common]       window server ready in 113.207s. overall 504.915s"
+        },
+        {
+          "line": 1246,
+          "text": "MiniIOMobileFramebuffer: 2 frames in 8920 ms (0 a second), 4304368 us each in the driver, after 13 us waiting for the GPU and, 0 of them, 0 us for the next refresh; 0 swaps waited for the frame before, 0 gave up; 0 swaps came a refresh late themselves; 0 1970-01-01 08:24:35.767084+0800 backboardd[13:211] [Common]       backlight ready in 17.8114s. overall 523.118s"
+        }
+      ],
+      "software_renderer": [
+        {
+          "line": 1217,
+          "text": "hakios: no accelerated renderer; the software one will draw"
+        },
+        {
+          "line": 1218,
+          "text": "1970-01-01 08:24:20.676474+0800 backboardd[13:331] [WindowServer] CoreAnimation: Software renderer! Simulating crash!"
+        }
+      ],
+      "surface_allocation": [
+        {
+          "line": 1220,
+          "text": "MiniIOSurface: backboardd[13] created surface 1: 750x1334 'BGRA', 3072 bytes per row, 0 planes, 4112384 bytes"
+        },
+        {
+          "line": 1437,
+          "text": "MiniIOSurface: backboardd[13] created surface 3: 750x1334 'BGRA', 3072 bytes per row, 0 planes, 4112384 bytes"
+        }
+      ],
+      "deadline_marker": [],
+      "panic_marker": [],
+      "critical_process_exit": [],
+      "memory_final": [
+        {
+          "line": 1980,
+          "text": "memory: free 1956, files 715, programs 42, wired 165 (3 surfaces 11, ramfs 0), compressor 0 (holding 0) MB; available 2671, kills below 274 (the idle) and 137 (anybody)"
+        }
+      ]
+    },
+    "photos": [
+      {
+        "path": "reports/local/20261116-221346-357368-ios16-r4/photos/r4-return-summary.jpg",
+        "sha256": "a74ba2ebc919d20f8c2f9883efc0b83e785b228736d3ad31a59589d9e3a57f10",
+        "kind": "retained_return_summary",
+        "partial_manual_transcription": [
+          "HAKIOS UEFI LOG",
+          "LITHIUM IOS16 RETURN RAW BYTES 257260",
+          "RETURN: TIMER DEADLINE REACHED",
+          "NO PANIC TEXT IN RETAINED LOG",
+          "RAW LOG RETAINED IN RAM",
+          "SUMMARY RETAINED UNTIL REBOOT",
+          "LITHIUM SESSION ENDED"
+        ]
+      },
+      {
+        "path": "reports/local/20261116-221346-357368-ios16-r4/photos/r4-apple-logo-video-screenshot.png",
+        "sha256": "2cc486483b4b9854177b0bba0fc6e540ab028d766c225974fdef3ec7631164bf",
+        "kind": "user_supplied_video_screenshot_of_boot_logo",
+        "observation": "Phone screen displays a white Apple logo; the supplied file is a screenshot of a video player. It does not show an interactive SpringBoard desktop."
+      }
+    ]
+  },
+  "usb_capture_terminal_error": "[Errno 32] Pipe error",
+  "return_reason": "timer_deadline_reached",
+  "return_reason_evidence": "Retained UEFI summary photo explicitly reports TIMER DEADLINE REACHED and NO PANIC TEXT IN RETAINED LOG",
+  "final_summary_raw_log_bytes": 257260,
+  "container_cache_path_observed": true,
+  "full_container_rpc_verified": false,
+  "observed_display_swaps": 3,
+  "ios16_boot_logo_display_verified": true,
+  "software_renderer_observed": true,
+  "physical_panel_image_verified": true,
+  "real_springboard_desktop_verified": false,
+  "a530_acceleration_verified": false,
+  "startup_timing": {
+    "source": "backboardd internal stage durations; not host stopwatch measurements",
+    "core_accessories_seconds": 211.406,
+    "hid_system_open_seconds": 171.522,
+    "hid_system_total_seconds": 176.407,
+    "window_server_seconds": 113.207,
+    "backlight_seconds": 17.8114,
+    "overall_to_backlight_ready_seconds": 523.118
+  },
+  "frame_timing": {
+    "observed_frames": 2,
+    "interval_ms": 8920,
+    "reported_driver_us_per_frame": 4304368,
+    "includes_scheduling_logging_and_rendering": true,
+    "pure_blit_time_measured": false,
+    "steady_state_fps_measured": false
+  },
+  "next_step": "Profile dependency waits and the software renderer/panel copy; inspect SpringBoard boot ownership handoff. Keep full HakiOS and UFS; no unchanged-image retry or blind repartitioning.",
+  "final_observation_recorded_at": "2026-11-16T23:07:12.038255+08:00",
+  "system_shell_connection_observed": true,
+  "springboard_screen_ownership_verified": false,
+  "boot_ui_waits_observed": {
+    "no_explicit_screen_owner": true,
+    "activity_assertion_acquire_reported_seconds": 262.966,
+    "main_screen_digitizer_wait_observed": true,
+    "digitizer_elapsed_negative": true,
+    "clock_fault_proven": false
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "feature": "R33-return-fastboot",
+  "default_off": true,
+  "hardware_verified": false,
+  "ufs_auto_return_supported": false,
+  "initial_acceptance": "isolated_ram_software_timer",
+  "r32_image_sha256": "b260776a3fff5513134b2c594e364eb58fb95a495c9a7625e6866354345fe767",
+  "post_r32_port_sha256": {
+    "drivers/usb/hakios.lithium_usb.c": "aead98757e0f98094585e818e45763f7efdc517c488902370eca940d3e821b5a",
+    "firmware/lithiumPkg/Drivers/LithiumFastbootDxe/LithiumFastbootDxe.c": "44fd61d2f3b6faf1725098080f9665fa6354e1d0ac19d9afdbfe7cd67a2ece40",
+    "firmware/lithiumPkg/Drivers/LithiumFastbootDxe/LithiumFastbootDxe.inf": "81806663cfb20b37268ae8b291b040f8f014f8a53e5edac241858e124d712252",
+    "firmware/lithiumPkg/Library/MemoryMapLib/MemoryMap.c": "f3ae181304999e44ba26295b06e7dc592c0f1651e4acd564565ba65a3e6afa6b",
+    "firmware/lithiumPkg/lithium.dsc": "048e94813a3afccbae87767f84fbfd6165166e98edadbf908a865bdae186a7f0",
+    "firmware/lithiumPkg/lithium.fdf": "a44cf2b4863ebc2de66d862937619b705893b675a9f9423a55dab67078005076",
+    "patches/0023-lithium-return-fastboot.patch": "961a62d1b2f6ca09db8d7f30ca2a0d61a976436c46482244c4459ac1b1b397ea",
+    "return-fastboot/contract.h": "dca2e5477799b250be8ce88ebe9e725061cf47577b090775ef16662c0489ea52",
+    "return-fastboot/firmware-protocol.h": "7cfcc3ef6bcdbc45a396412ff6bb0d6f2503847900fd8e064803fec301811b8b",
+    "return-fastboot/init.inc": "46c92fc2a9a8dd51ba8bb1a22e2f8cca25adaec2378d8dcb8c2eb69c6f251dce",
+    "return-fastboot/kernel.inc": "742bb5892b13f99bca354f6e290892e61be5441e5b93546ebdfc076bf0a6be63",
+    "return-fastboot/loader.inc": "33c4ad175e3e618762888960f3a17292ef85ca86cd0034d7e42c72e12869c7ae",
+    "return-fastboot/profile.h": "15f47d8ad1753bf2ef9e7ae522bbc2e368d62e3e8c93c700adcc1e6bf7817c35",
+    "return-fastboot/reset-core.h": "7f28adbbc8f38a0338fb697c172d65226ac789fc0eba7c96630962ee5d791930",
+    "return-fastboot/storage.inc": "0cf69353ce2c941e5aab228b410ee1de1b88fc1e49a3c3ad0dc21835a97a0fb4"
+  }
+}

@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+"""Reuse pinned sailfish's built-in SHA-256 provider for XNU7195's legacy API."""
+import difflib
+import importlib.util
+from pathlib import Path
+import subprocess
+import tempfile
+
+ROOT = Path(__file__).resolve().parents[1]
+PATCH = ROOT / 'ports/lithium/patches/xnu-7195/0023-lithium-native-sha256.patch'
+REFERENCE = ROOT / 'upstream/research/ios-sailfish/xnu/patches/0023-sweet-builtin-sha256-for-libkern.patch'
+
+
+def main():
+    spec = importlib.util.spec_from_file_location('baseline', ROOT / 'scripts/prepare-ios14-native-alias-probe.py')
+    helper = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(helper)
+    path = 'libkern/crypto/corecrypto_sha2.c'
+    old = helper.baseline(path, PATCH)
+    reference = REFERENCE.read_text().replace('SWEET', 'LITHIUM')
+    with tempfile.TemporaryDirectory(prefix='lithium-sha256-') as temp:
+        temp = Path(temp)
+        source = temp / path
+        source.parent.mkdir(parents=True)
+        source.write_text(old)
+        subprocess.run(['git', '-C', temp, 'apply', '-'], input=reference, text=True, check=True)
+        new = source.read_text()
+    edits = {path: (old, new)}
+    path = 'libkern/conf/Makefile.template'
+    old = helper.baseline(path, PATCH)
+    edits[path] = (old, old + '''
+# The SHA-256 KPI now calls the existing scalar XNU digest provider.
+ifeq ($(CURRENT_MACHINE_CONFIG),LITHIUM)
+corecrypto_sha2.o_CFLAGS_ADD += -mgeneral-regs-only
+endif
+''')
+    patch = 'Subject: lithium: built-in SHA-256 for the legacy libkern API\n\n'
+    patch += 'Reuse ios-sailfish 6f27e41ff249f2680540ebe8ee5ab982c5e641c9 patch 0023.\n'
+    patch += 'Preserve the XNU7195 digest context and non-LITHIUM provider paths.\n\n'
+    for path, (old, new) in edits.items():
+        patch += f'diff --git a/{path} b/{path}\n'
+        patch += ''.join(difflib.unified_diff(old.splitlines(True), new.splitlines(True),
+            fromfile='a/' + path, tofile='b/' + path))
+    PATCH.write_text(patch)
+    print(PATCH)
+
+
+if __name__ == '__main__':
+    main()

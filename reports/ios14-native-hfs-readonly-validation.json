@@ -1,0 +1,48 @@
+{
+  "all_passed": true,
+  "host_cases": 51,
+  "sanitizer": "ASan + UBSan",
+  "scope": "Actual early/late HFS init and journal_is_clean/checksum; host buffer/catalog/device shims",
+  "native_helper_call_sites": 2,
+  "kernel_sha256": "f2ea131e460ce9a98351cd1f48396ca0e448f208058d7818f0f8f5647bee38e5",
+  "root_journal": {
+    "image_sha256": "396e0b17d99eae20abda540f35834f95cd2857c858cc1a959f709cc7194ef6b3",
+    "first_block_crc32": "0x6143e5cf",
+    "attributes": "0x80002100",
+    "last_mounted_version": "0x31302e30",
+    "jib_flags": "0x5",
+    "journal_offset": "0x82000",
+    "journal_size": "0x800000",
+    "header_all_zero": true,
+    "catalog": {
+      "/.journal_info_block": [
+        4096,
+        129,
+        1
+      ],
+      "/.journal": [
+        8388608,
+        130,
+        2048
+      ]
+    },
+    "reads_from": "host installed-image source; full digest rechecked by boot packager"
+  },
+  "input_sha256": {
+    "/mnt/f/IOS-MIX1/ports/lithium/host/hfs-readonly-test.c": "0c57ad219e5756a729e6eb3e4f28cab2467ed26d390c0632aba3136f4c59478d",
+    "/mnt/f/IOS-MIX1/ports/lithium/host/hfs-root-copy.c": "6e4e0e87deb90144b200b2de2bf671c70e55be14f66e80cf3b4412d97c220b48",
+    "/home/jia/ios-mix1-build/hfs-host/build/hfs/libhfs.a": "509ec1335255d4849be32a2f4d430a36ce51fe9d4413927030495ae1ab25eeb5",
+    "/home/jia/ios-mix1-build/hfs-host/build/common/libcommon.a": "74c981e561e5154da3908f50ea2be87fbd768c031ac613c0556aec50b1e75451",
+    "/mnt/f/IOS-MIX1/scripts/validate-ios14-native-hfs-readonly.py": "02d88a199f2d12137ccedfcefeb7d33e607b895a1ace9121cb9b3b8d10e3dfc1",
+    "/home/jia/ios-mix1-build/xnu7195-lithium/src/bsd/lithium_hfs/core/hfs_vfsutils.c": "2526d6e6ad6e7ac6ee501c5edd7b9b51fa8c0a0734b39c536d2ba5922d9fbf66",
+    "/home/jia/ios-mix1-build/xnu7195-lithium/src/bsd/lithium_hfs/core/hfs_vfsops.c": "51bf95ebc07b91bd4c422499ac08d86f6129bcb05f5d34d8ea6124389dae7139",
+    "/home/jia/ios-mix1-build/xnu7195-lithium/src/bsd/lithium_hfs/core/hfs_format.h": "8ac2afc412220f401f7c966a08f1d0ea7199345eb4d8cefa7dc28281fb0e8cb6",
+    "/home/jia/ios-mix1-build/xnu7195-lithium/src/bsd/lithium_hfs/core/hfs_journal.c": "386785839906439ce8f9ca6653b47ff72744fa245076642c4946dc9a214b89ca",
+    "/home/jia/ios-mix1-build/xnu7195-lithium/src/bsd/lithium_hfs/core/hfs_journal.h": "6ba02edf7f7cbfccabf28319b7ab6cacf1e53dc082a113c7cb2f95cca7e4c800",
+    "/home/jia/ios-mix1-build/xnu7195-lithium/src/bsd/lithium_hfs/core/hfs_unistr.h": "fe22ca3ff255369fe5d45e4b749bfb4e1e7cac320e2269ced432890953752d81",
+    "/mnt/f/IOS-MIX1/ports/lithium/patches/hfs-556/0001-lithium-readonly-root-journal.patch": "0852f87accdcf33d887fd2d5fdc65a74d57c4dd83440b2f3cd9044dc76bdec4e"
+  },
+  "log": "/home/jia/ios-mix1-build/xnu7195-lithium/hfs-readonly-validation/test.log",
+  "device_operations": false,
+  "qemu_used": false
+}

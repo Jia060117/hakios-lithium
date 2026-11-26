@@ -1,0 +1,169 @@
+#!/usr/bin/env python3
+"""Generate a pinned HFS patch for a genuinely read-only root device."""
+import difflib
+from pathlib import Path
+import subprocess
+
+ROOT = Path(__file__).resolve().parents[1]
+SOURCE = Path.home() / 'ios-mix1-build/xnu7195-lithium/deps/hfs'
+PIN = 'ba1a9cdc6e83ae9dfb61e4b5a822fbf185ae5866'
+PATCH = ROOT / 'ports/lithium/patches/hfs-556/0001-lithium-readonly-root-journal.patch'
+
+HELPER = r'''
+#if defined(ARM64_BOARD_CONFIG_LITHIUM)
+static int
+lithium_hfs_readonly_root(struct hfsmount *hfsmp)
+{
+    return (hfsmp->hfs_flags & (HFS_READ_ONLY | HFS_WRITEABLE_MEDIA)) == HFS_READ_ONLY &&
+        (vfs_flags(hfsmp->hfs_mp) & MNT_ROOTFS);
+}
+
+/* TN1150: NeedInit means the header is invalid and there are no valid
+ * transactions. A clean, consistent, correctly located fresh journal can
+ * remain uninitialized on immutable media. Never initialize/replay it here.
+ * Existing journals must pass Apple's checksum and empty-log validation.
+ */
+static int __attribute__((noinline))
+lithium_hfs_check_readonly_journal(struct hfsmount *hfsmp,
+    HFSPlusVolumeHeader *vhp, uint32_t flags, uint64_t offset,
+    uint64_t size, off_t embedded)
+{
+    uint32_t attrs = SWAP_BE32(vhp->attributes);
+    uint64_t block = SWAP_BE32(vhp->blockSize);
+    uint64_t blocks = SWAP_BE32(vhp->totalBlocks);
+    uint64_t info = SWAP_BE32(vhp->journalInfoBlock);
+    uint64_t bytes = block * blocks;
+    int error;
+
+    if (!lithium_hfs_readonly_root(hfsmp) ||
+        !(attrs & kHFSVolumeJournaledMask) ||
+        !(attrs & kHFSVolumeUnmountedMask) ||
+        (attrs & (kHFSVolumeInconsistentMask | kHFSBootVolumeInconsistentMask)) ||
+        !(flags & kJIJournalInFSMask) ||
+        (flags & ~(kJIJournalInFSMask | kJIJournalNeedInitMask)) ||
+        block < 512 || (block & (block - 1)) ||
+        block < hfsmp->hfs_logical_block_size || !blocks ||
+        embedded < 0 || (uint64_t)embedded > hfsmp->hfs_logical_bytes ||
+        bytes > hfsmp->hfs_logical_bytes - (uint64_t)embedded ||
+        info == 0 || info >= blocks || offset < block || offset % block ||
+        size < 256 * 1024 || size > 1024 * 1024 * 1024 || size % block ||
+        offset > bytes || size > bytes - offset ||
+        (info * block >= offset && info * block < offset + size)) {
+        printf("LITHIUM HFS: read-only root journal metadata rejected\n");
+        return EINVAL;
+    }
+    if (flags & kJIJournalNeedInitMask) {
+        printf("LITHIUM HFS: clean fresh journal; initialization deferred on read-only root\n");
+        return 0;
+    }
+    error = journal_is_clean(hfsmp->hfs_devvp, offset + embedded, size,
+        hfsmp->hfs_devvp, hfsmp->hfs_logical_block_size);
+    printf("LITHIUM HFS: read-only root journal check=%d\n", error);
+    return error;
+}
+#endif
+
+'''
+
+
+def once(text, old, new):
+    assert text.count(old) == 1, old
+    return text.replace(old, new)
+
+
+def main():
+    assert subprocess.check_output(['git', '-C', SOURCE, 'rev-parse', 'HEAD'], text=True).strip() == PIN
+    edits = {}
+    name = 'core/hfs_vfsutils.c'
+    old = subprocess.check_output(['git', '-C', SOURCE, 'show', 'HEAD:' + name], text=True)
+    new = once(old, 'int\nhfs_early_journal_init(', HELPER + 'int\nhfs_early_journal_init(')
+    anchor = '\tjib_size   = SWAP_BE64(jibp->size);\n\n\tif (jib_flags & kJIJournalInFSMask) {'
+    new = once(new, anchor, '''\tjib_size   = SWAP_BE64(jibp->size);
+#if defined(ARM64_BOARD_CONFIG_LITHIUM)
+    if (lithium_hfs_readonly_root(hfsmp)) {
+        jib_offset = SWAP_BE64(jibp->offset);
+        retval = lithium_hfs_check_readonly_journal(hfsmp, vhp,
+            jib_flags, jib_offset, jib_size, embeddedOffset);
+        if (!retval) {
+            hfsmp->jvp = devvp;
+            hfsmp->jnl = NULL;
+            hfsmp->jnl_start = jib_offset / SWAP_BE32(vhp->blockSize);
+            hfsmp->jnl_size = jib_size;
+        }
+        buf_brelse(jinfo_bp);
+        goto cleanup_dev_name;
+    }
+#endif
+
+\tif (jib_flags & kJIJournalInFSMask) {''')
+    # Fail closed in late init before upstream's repair/disable fallbacks.
+    for anchor, release in (
+        ('\t\tprintf("hfs: can\'t find the .journal_info_block!', False),
+        ('\t\tprintf("hfs: The journal_info_block moved', False),
+        ('\t\tprintf("hfs: can\'t read journal info block.', False),
+        ('\t\tprintf("hfs: can\'t find the journal file!', True),
+        ('\t\tprintf("hfs: The journal file moved', True),
+        ('\t\tprintf("hfs: The journal file changed size!', True),
+    ):
+        guard = '#if defined(ARM64_BOARD_CONFIG_LITHIUM)\n'
+        guard += '        if (lithium_hfs_readonly_root(hfsmp)) {\n'
+        if release:
+            guard += '            buf_brelse(jinfo_bp);\n'
+        guard += '            return EINVAL;\n        }\n#endif\n'
+        new = once(new, anchor, guard + anchor)
+    anchor = '\tif (jib_flags & kJIJournalInFSMask) {\n\t\thfsmp->jvp = hfsmp->hfs_devvp;\n\t\tjib_offset += (off_t)vcb->hfsPlusIOPosOffset;'
+    new = once(new, anchor, '''#if defined(ARM64_BOARD_CONFIG_LITHIUM)
+    if (lithium_hfs_readonly_root(hfsmp)) {
+        /* The catalog and JIB must agree exactly; never repair them here. */
+        if (jib_fork.cf_size != (off_t)vcb->blockSize ||
+            jib_fork.cf_extents[0].blockCount != 1 ||
+            jfork.cf_size != (off_t)jib_size) {
+            buf_brelse(jinfo_bp);
+            return EINVAL;
+        }
+        retval = lithium_hfs_check_readonly_journal(hfsmp, vhp,
+            jib_flags, jib_offset, jib_size, vcb->hfsPlusIOPosOffset);
+        if (!retval) {
+            hfsmp->jvp = devvp;
+            hfsmp->jnl = NULL;
+            hfsmp->jnl_start = (jib_offset + vcb->hfsPlusIOPosOffset) / vcb->blockSize;
+            hfsmp->jnl_size = jib_size;
+        }
+        buf_brelse(jinfo_bp);
+        return retval;
+    }
+#endif
+''' + anchor)
+    edits[name] = (old, new)
+    name = 'core/hfs_vfsops.c'
+    old = subprocess.check_output(['git', '-C', SOURCE, 'show', 'HEAD:' + name], text=True)
+    anchor = '\t\t\t\tif (mp)\n\t\t\t\t\tvfs_setflags(mp, (u_int64_t)((unsigned int)MNT_JOURNALED));\n\t\t\t} else {\n'
+    new = once(old, anchor, '''#if defined(ARM64_BOARD_CONFIG_LITHIUM)
+                if (mp && hfsmp->jnl)
+#else
+\t\t\t\tif (mp)
+#endif
+\t\t\t\t\tvfs_setflags(mp, (u_int64_t)((unsigned int)MNT_JOURNALED));
+\t\t\t} else {
+#if defined(ARM64_BOARD_CONFIG_LITHIUM)
+                /* Immutable root cannot be repaired by a later fsck. */
+                if ((hfsmp->hfs_flags & (HFS_READ_ONLY | HFS_WRITEABLE_MEDIA)) == HFS_READ_ONLY &&
+                    (vfs_flags(mp) & MNT_ROOTFS))
+                    goto error_exit;
+#endif
+''')
+    edits[name] = (old, new)
+    patch = 'Subject: lithium: validate fresh/empty journals on immutable HFS roots\n\n'
+    patch += 'Pinned hfs-556.100.11; no journal replay, creation, or metadata writes.\n'
+    patch += 'TN1150 defines NeedInit as having no valid journal transactions.\n\n'
+    for name, (old, new) in edits.items():
+        patch += f'diff --git a/{name} b/{name}\n'
+        patch += ''.join(difflib.unified_diff(old.splitlines(True), new.splitlines(True),
+            fromfile='a/' + name, tofile='b/' + name))
+    PATCH.parent.mkdir(parents=True, exist_ok=True)
+    PATCH.write_text(patch)
+    print(PATCH)
+
+
+if __name__ == '__main__':
+    main()

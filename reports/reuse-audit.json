@@ -1,0 +1,361 @@
+{
+  "schema": 1,
+  "recorded_at": "2026-11-12T22:45:28.273150+08:00",
+  "target": "iOS 14.8 / 18H17 on Xiaomi lithium; native ARM64",
+  "sailfish_commit": "6f27e41ff249f2680540ebe8ee5ab982c5e641c9",
+  "apple_xnu_7195_commit": "776661b72c2db9861865df68d309f6f35faccff4",
+  "source_patch_count": 183,
+  "selected_driver_patch_count": 125,
+  "applied_reference_driver_patches": [
+    "xnu/patches/0004-sweet-machine-config.patch",
+    "xnu/patches/0016-sweet-device-tree-platform-expert.patch",
+    "xnu/patches/0018-sweet-boot-cpu-driver.patch",
+    "xnu/patches/0028-sweet-ufs-root-device.patch",
+    "xnu/patches/0030-sweet-ufs-writes.patch",
+    "xnu/patches/0034-sweet-ufs-dma-above-4g.patch",
+    "xnu/patches/0035-sweet-amfi-entitlements-platform-binaries.patch",
+    "xnu/patches/0038-sweet-applekeystore.patch",
+    "xnu/patches/0040-sweet-iowatchdog.patch",
+    "xnu/patches/0043-sweet-console-crash-log.patch",
+    "xnu/patches/0045-sweet-iowatchdog-pmu-primary.patch",
+    "xnu/patches/0046-sweet-iosurface-iomfb.patch",
+    "xnu/patches/0047-sweet-persistent-console-log.patch",
+    "xnu/patches/0054-sweet-process-sampler.patch",
+    "xnu/patches/0055-sweet-aks-ext-state-sampler-depth.patch",
+    "xnu/patches/0056-sweet-fb-throttled-present.patch",
+    "xnu/patches/0058-sweet-hid-event-services.patch",
+    "xnu/patches/0059-sweet-iphone-identity.patch",
+    "xnu/patches/0060-sweet-keys-touch-drivers.patch",
+    "xnu/patches/0061-sweet-iphone-x-display-size.patch",
+    "xnu/patches/0062-sweet-touch-power-battery.patch",
+    "xnu/patches/0063-sweet-goodix-geni-packing.patch",
+    "xnu/patches/0065-sweet-smp-psci.patch",
+    "xnu/patches/0067-sweet-console-mute.patch",
+    "xnu/patches/0068-sweet-surface-lookup-cached.patch",
+    "xnu/patches/0069-sweet-ufs-faster.patch",
+    "xnu/patches/0071-sweet-touch-edge.patch",
+    "xnu/patches/0072-sweet-usb-probe.patch",
+    "xnu/patches/0073-sweet-usb-device-ep0.patch",
+    "xnu/patches/0074-sweet-usb-vbus-override.patch",
+    "xnu/patches/0075-sweet-usb-ecm.patch",
+    "xnu/patches/0076-sweet-usb-rx-mbuf.patch",
+    "xnu/patches/0077-sweet-usb-live-log.patch",
+    "xnu/patches/0078-sweet-smp-8-cores.patch",
+    "xnu/patches/0080-sweet-armv8.0-baseline.patch",
+    "xnu/patches/0081-sweet-pixel1-early-log-pstore.patch",
+    "xnu/patches/0087-sweet-pixel1-applelcd-24bpp-scaled.patch",
+    "xnu/patches/0088-sweet-pixel1-smp-mpidr.patch",
+    "xnu/patches/0089-sweet-pixel1-keys.patch",
+    "xnu/patches/0090-sweet-perf-probe.patch",
+    "xnu/patches/0091-sweet-pixel1-blit-word-pack.patch",
+    "xnu/patches/0092-sweet-fb-present-in-swap.patch",
+    "xnu/patches/0093-sweet-pixel1-perf-cluster-pll.patch",
+    "xnu/patches/0094-sweet-pixel1-apc-voltage-probe.patch",
+    "xnu/patches/0095-sweet-pixel1-perf-1363-cbf-pll.patch",
+    "xnu/patches/0096-sweet-pixel1-touch-rmi4.patch",
+    "xnu/patches/0097-sweet-pixel1-touch-i2c-mux.patch",
+    "xnu/patches/0098-sweet-pixel1-touch-rail-probe.patch",
+    "xnu/patches/0099-sweet-pixel1-panel-kick-after-done.patch",
+    "xnu/patches/0100-sailfish-touch-rails-via-rpm-glink.patch",
+    "xnu/patches/0102-sailfish-turbo-clocks-via-saw.patch",
+    "xnu/patches/0103-sailfish-panel-copy-rate-turbo-readback-retry.patch",
+    "xnu/patches/0105-sailfish-diag-odd-surface-format-backtrace.patch",
+    "xnu/patches/0106-sailfish-diag-log-odd-swaps.patch",
+    "xnu/patches/0107-sailfish-turbo-opt-in.patch",
+    "xnu/patches/0108-sailfish-diag-black-frame.patch",
+    "xnu/patches/0109-sailfish-diag-cpu-top.patch",
+    "xnu/patches/0111-sailfish-diag-profiler.patch",
+    "xnu/patches/0113-sailfish-diag-profiler-kernel-callers.patch",
+    "xnu/patches/0114-sailfish-battery-pmi8994.patch",
+    "xnu/patches/0115-sailfish-fastboot-reboot-battery-diag.patch",
+    "xnu/patches/0116-sailfish-diag-pmic-read-failure.patch",
+    "xnu/patches/0117-sailfish-fastboot-pshold-pmic-cache-32.patch",
+    "xnu/patches/0118-sailfish-charger-setup.patch",
+    "xnu/patches/0119-sailfish-gpu-power-probe.patch",
+    "xnu/patches/0120-sailfish-gpu-cp-test.patch",
+    "xnu/patches/0121-sailfish-gpu-smmu-identity.patch",
+    "xnu/patches/0122-sailfish-gpu-smmu-trace.patch",
+    "xnu/patches/0123-sailfish-gpu-smmu-stream0.patch",
+    "xnu/patches/0124-sailfish-gpu-mmio-no-wzr.patch",
+    "xnu/patches/0125-sailfish-gpu-no-trust-write.patch",
+    "xnu/patches/0126-sailfish-gpu-2d-blit.patch",
+    "xnu/patches/0127-sailfish-gpu-rbccu-sp-power.patch",
+    "xnu/patches/0128-sailfish-gpu-64bit-blocks.patch",
+    "xnu/patches/0129-sailfish-gpu-try-unsecure.patch",
+    "xnu/patches/0130-sailfish-gpu-zap-shader.patch",
+    "xnu/patches/0131-sailfish-gpu-compute.patch",
+    "xnu/patches/0132-sailfish-gpu-compute-offset-hi.patch",
+    "xnu/patches/0133-sailfish-gpu-blend-kernel.patch",
+    "xnu/patches/0134-sailfish-gpu-bench.patch",
+    "xnu/patches/0135-sailfish-gpu-bench-blend4-300mhz.patch",
+    "xnu/patches/0136-sailfish-gpu-textured-quad.patch",
+    "xnu/patches/0137-sailfish-gpu-va-space.patch",
+    "xnu/patches/0138-sailfish-gpu-user-client.patch",
+    "xnu/patches/0140-sailfish-gpu-service-fast-start.patch",
+    "xnu/patches/0141-sailfish-gpu-safe-quads.patch",
+    "xnu/patches/0142-sailfish-gpu-quad-blend-modes.patch",
+    "xnu/patches/0143-sailfish-gpu-sample4.patch",
+    "xnu/patches/0144-sailfish-gpu-400mhz.patch",
+    "xnu/patches/0145-sailfish-measure-ddr-clock.patch",
+    "xnu/patches/0146-sailfish-ddr-vote.patch",
+    "xnu/patches/0147-sailfish-rpm-clock-scaling.patch",
+    "xnu/patches/0148-sailfish-profiler-user-stacks.patch",
+    "xnu/patches/0149-sailfish-gpu-quad-v2.patch",
+    "xnu/patches/0150-sailfish-gpu-bo-submit.patch",
+    "xnu/patches/0151-sailfish-gpu-bo-cached.patch",
+    "xnu/patches/0152-sweet-iosurface-refuse-wrap.patch",
+    "xnu/patches/0153-sweet-iosurface-row-align-explicit.patch",
+    "xnu/patches/0154-sweet-fb-shadow-stride-64.patch",
+    "xnu/patches/0155-sailfish-gpu-smmu-faults-nonfatal.patch",
+    "xnu/patches/0156-sailfish-gpu-vm-pad-scratch.patch",
+    "xnu/patches/0157-sweet-iosurface-client-address.patch",
+    "xnu/patches/0158-sweet-iosurface-client-memory-readonly.patch",
+    "xnu/patches/0159-sweet-iosurface-client-rows-exact.patch",
+    "xnu/patches/0160-sweet-iosurface-rows-as-asked.patch",
+    "xnu/patches/0161-sailfish-gpu-s2-read-retry.patch",
+    "xnu/patches/0162-sweet-iosurface-rows-coreui-only.patch",
+    "xnu/patches/0164-sailfish-gpu-present-600mhz.patch",
+    "xnu/patches/0166-sweet-ioacceleratores-iokit-quiet.patch",
+    "xnu/patches/0167-sailfish-display-sleep.patch",
+    "xnu/patches/0168-sailfish-panel-brightness.patch",
+    "xnu/patches/0169-sailfish-wlan-pcie-stage1.patch",
+    "xnu/patches/0170-sailfish-wlan-firmware.patch",
+    "xnu/patches/0171-sailfish-wlan-htc-wmi.patch",
+    "xnu/patches/0172-sailfish-wlan-scan.patch",
+    "xnu/patches/0173-sailfish-wlan-connect.patch",
+    "xnu/patches/0174-sailfish-wlan-en0.patch",
+    "xnu/patches/0175-sailfish-wlan-iokit.patch",
+    "xnu/patches/0176-sailfish-reset-to-fastboot.patch",
+    "xnu/patches/0178-sailfish-wlan-rejoin.patch",
+    "xnu/patches/0179-sailfish-wlan-apple80211.patch",
+    "xnu/patches/0180-sailfish-idle-cache-pmap-aks.patch",
+    "xnu/patches/0181-sailfish-interrupts-wlan-touch.patch",
+    "xnu/patches/0182-sailfish-perf.patch",
+    "xnu/patches/0183-sailfish-cpu-boost.patch"
+  ],
+  "reconstructed_files": [
+    {
+      "path": "bsd/dev/sailfish_wlan.c",
+      "bytes": 134129,
+      "lines": 3700,
+      "sha256": "9419d7fa5f943b977dcc25908961a13d31f460f3ed3efd336a28cf53118c85fb"
+    },
+    {
+      "path": "bsd/dev/sweet_gpu.c",
+      "bytes": 82391,
+      "lines": 2250,
+      "sha256": "7a940e5f59c4c3badc653cae27cbdfc63ce5dcc4788c8be13d969739e0f28df5"
+    },
+    {
+      "path": "bsd/dev/sweet_gpu.h",
+      "bytes": 4089,
+      "lines": 109,
+      "sha256": "f23f03bd289dc57d74ebb042512674b79fe018cc7aacc82ffd8aa74a2140a433"
+    },
+    {
+      "path": "bsd/dev/sweet_gpu_shaders.h",
+      "bytes": 12284,
+      "lines": 153,
+      "sha256": "a7a75dc00ccf385a968ce6ba5f7d8d8ee0b79c236b2b03c508dac5d1b50ca211"
+    },
+    {
+      "path": "bsd/dev/sweet_keys.c",
+      "bytes": 9512,
+      "lines": 310,
+      "sha256": "ed7501c8e0653ac36ed6f6f80f98eaed32c92eab475dd52a02e75af16d5005e9"
+    },
+    {
+      "path": "bsd/dev/sweet_perf.c",
+      "bytes": 24169,
+      "lines": 644,
+      "sha256": "c05ec35bb1574778960251ca093a702a614e5ed54b2c35cce2da4b5a968ec87d"
+    },
+    {
+      "path": "bsd/dev/sweet_rpm.c",
+      "bytes": 17674,
+      "lines": 519,
+      "sha256": "51211c4ddfb1eb5c3315e40ce806d573cd791c336a7ce49d4164aea1cd41fb82"
+    },
+    {
+      "path": "bsd/dev/sweet_rpmh.c",
+      "bytes": 11658,
+      "lines": 358,
+      "sha256": "45c1c6cfe722a813aed3d6cb53551486222ea884772fb67094373d331896c530"
+    },
+    {
+      "path": "bsd/dev/sweet_sample.c",
+      "bytes": 5761,
+      "lines": 195,
+      "sha256": "2e3fe5c2c118a8394fd8d3333d79c8911a6f22ac45806530a955363372278bce"
+    },
+    {
+      "path": "bsd/dev/sweet_spmi.c",
+      "bytes": 3598,
+      "lines": 126,
+      "sha256": "2ad89a1e69caf1f577d8af4f200313831fb5bfe71e6e3b3b01a7de1bea96778a"
+    },
+    {
+      "path": "bsd/dev/sweet_spmi.h",
+      "bytes": 395,
+      "lines": 14,
+      "sha256": "2c06d6d15274d7a3ac7b1f5a3908580f0ab9d32bc2e0a881df6c636bdba74320"
+    },
+    {
+      "path": "bsd/dev/sweet_touch.c",
+      "bytes": 21671,
+      "lines": 642,
+      "sha256": "8fb1d70d9a946f911860afa59dda0aa19a96d02e56b229c64de412e8f6c44a40"
+    },
+    {
+      "path": "bsd/dev/sweet_ufs.c",
+      "bytes": 24480,
+      "lines": 837,
+      "sha256": "75005f1c10bb59f97875b597484bd1ad1e969983cb8da4eef51300d78289c686"
+    },
+    {
+      "path": "bsd/dev/sweet_usb.c",
+      "bytes": 29059,
+      "lines": 895,
+      "sha256": "2eb5b473d4d39de63865d390017ce83c50fbc37b932fcb8307fce8a8c6066ce8"
+    },
+    {
+      "path": "iokit/Kernel/arm/SweetBattery.cpp",
+      "bytes": 12292,
+      "lines": 358,
+      "sha256": "fb07437985a7cd5c7e441cf166b7d41dc7abfa01c5e2d51e99b6634c66cbcaf1"
+    },
+    {
+      "path": "iokit/Kernel/arm/SweetCPU.cpp",
+      "bytes": 9753,
+      "lines": 274,
+      "sha256": "fd24815bb87f0a4c2721e8b251df373a74d207010a7ce4806e7afa94f30d6a2f"
+    },
+    {
+      "path": "iokit/Kernel/arm/SweetEntitlements.cpp",
+      "bytes": 4739,
+      "lines": 184,
+      "sha256": "59ff9f774d7228dc0ad0b13bb1350dbeaf2627e8180f362c388433733a77fe51"
+    },
+    {
+      "path": "iokit/Kernel/arm/SweetFramebuffer.cpp",
+      "bytes": 37769,
+      "lines": 1119,
+      "sha256": "8bd37a7e644666dc1572125e7e7b0235b704989cac584bf0eb3142f068ea637d"
+    },
+    {
+      "path": "iokit/Kernel/arm/SweetGPU.cpp",
+      "bytes": 22113,
+      "lines": 667,
+      "sha256": "f5938b91c0898a9a7f3fa240778b6c3f99c20ae91f556e012036e5330f139a59"
+    },
+    {
+      "path": "iokit/Kernel/arm/SweetKeyStore.cpp",
+      "bytes": 7640,
+      "lines": 247,
+      "sha256": "f44bced19ff6507ef42b0dc4ad381872aeef8a6a9be3d311ec35305316031020"
+    },
+    {
+      "path": "iokit/Kernel/arm/SweetPlatformExpert.cpp",
+      "bytes": 2520,
+      "lines": 82,
+      "sha256": "812fc196f13fcf9d0be766d2cdfb9ac79cbc926848a266353490c1c4fa079e8c"
+    },
+    {
+      "path": "iokit/Kernel/arm/SweetSurface.cpp",
+      "bytes": 31519,
+      "lines": 972,
+      "sha256": "8388323168a35212cce5ee4f8847a04edc6bd48b05aacc18f797a77e6c517e92"
+    },
+    {
+      "path": "iokit/Kernel/arm/SweetSurface.h",
+      "bytes": 2358,
+      "lines": 67,
+      "sha256": "34d69397a10299abc7fa4d62bdf40edcd888e1b3a028abe479b3ac6d9fc574ca"
+    },
+    {
+      "path": "iokit/Kernel/arm/SweetWatchdog.cpp",
+      "bytes": 3437,
+      "lines": 107,
+      "sha256": "21df34ee7be7c60f9f9866d4e659ca610385e21007b4a7a61ab99afaeb9fb9e1"
+    },
+    {
+      "path": "iokit/Kernel/arm/hid/SweetHID.cpp",
+      "bytes": 16645,
+      "lines": 566,
+      "sha256": "90a467e3355217435e9927273e6fd6f77c6c07b2d744e5814444257e8d21a0ac"
+    },
+    {
+      "path": "pexpert/pexpert/arm64/SWEET.h",
+      "bytes": 3145,
+      "lines": 90,
+      "sha256": "0f0455779794d00f7fbf63f7aacd9e62b258987554ccd3f5f146719b625d889a"
+    }
+  ],
+  "snapshot": "out/reuse/sailfish-drivers-6f27e41ff249",
+  "reconstructed_driver_source_verified": true,
+  "kernel_compiled": false,
+  "hardware_reference_reproduced": false,
+  "raw_patch_checks": [
+    {
+      "patch": "0004-sweet-machine-config.patch",
+      "check": "individual raw patch against pristine Apple 7195; no dependencies applied",
+      "applies": false,
+      "diagnostic": [
+        "error: patch failed: makedefs/MakeInc.def:29",
+        "error: makedefs/MakeInc.def: patch does not apply",
+        "error: patch failed: osfmk/arm64/proc_reg.h:213",
+        "error: osfmk/arm64/proc_reg.h: patch does not apply",
+        "error: patch failed: osfmk/arm64/start.s:745",
+        "error: osfmk/arm64/start.s: patch does not apply",
+        "error: patch failed: pexpert/pexpert/arm64/Makefile:17",
+        "error: pexpert/pexpert/arm64/Makefile: patch does not apply"
+      ]
+    },
+    {
+      "patch": "0016-sweet-device-tree-platform-expert.patch",
+      "check": "individual raw patch against pristine Apple 7195; no dependencies applied",
+      "applies": true,
+      "diagnostic": []
+    },
+    {
+      "patch": "0017-sweet-device-tree-virtual-timer-irq.patch",
+      "check": "individual raw patch against pristine Apple 7195; no dependencies applied",
+      "applies": false,
+      "diagnostic": [
+        "error: patch failed: pexpert/arm/pe_fiq.c:3",
+        "error: pexpert/arm/pe_fiq.c: patch does not apply",
+        "error: patch failed: osfmk/arm64/sleh.c:1867",
+        "error: osfmk/arm64/sleh.c: patch does not apply",
+        "error: patch failed: pexpert/pexpert/arm/protos.h:36",
+        "error: pexpert/pexpert/arm/protos.h: patch does not apply"
+      ]
+    },
+    {
+      "patch": "0079-sweet-pixel1-gic-stride-fbcon-24bpp.patch",
+      "check": "individual raw patch against pristine Apple 7195; no dependencies applied",
+      "applies": false,
+      "diagnostic": [
+        "error: patch failed: pexpert/arm/pe_fiq.c:20",
+        "error: pexpert/arm/pe_fiq.c: patch does not apply",
+        "error: patch failed: pexpert/arm/pe_serial.c:717",
+        "error: pexpert/arm/pe_serial.c: patch does not apply"
+      ]
+    },
+    {
+      "patch": "0080-sweet-armv8.0-baseline.patch",
+      "check": "individual raw patch against pristine Apple 7195; no dependencies applied",
+      "applies": false,
+      "diagnostic": [
+        "error: patch failed: makedefs/MakeInc.def:61",
+        "error: makedefs/MakeInc.def: patch does not apply",
+        "error: pexpert/pexpert/arm64/SWEET.h: No such file or directory"
+      ]
+    }
+  ],
+  "limitations": [
+    "Reference driver reconstruction is not a 7195 backport or successful kernel build.",
+    "Staging scripts for external dependencies were inspected but never executed.",
+    "Pixel panel, touchscreen, RAM reservations and partition offsets must not be used on lithium.",
+    "Author-reported iOS16 runtime is not verified here; the target remains iOS14."
+  ]
+}

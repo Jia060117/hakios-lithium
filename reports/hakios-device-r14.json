@@ -1,0 +1,124 @@
+{
+  "schema": 1,
+  "attempt": "HakiOS lithium R14",
+  "started_at": "2026-11-15T17:50:02.900136+08:00",
+  "recorded_at": "2026-11-15T17:50:04.373622+08:00",
+  "baseline": {
+    "project": "HakiOS",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2"
+  },
+  "package": {
+    "image_sha256": "4c954331d209d50c1b51d595fa8e8e69a54e9db24886c1584ff0cac6b9a0db36",
+    "image_bytes": 15724544,
+    "kernel_sha256": "3c55962843b7bbc072981c647297ad0631f9e405ef250ff62e94c61a5433098a",
+    "loader_sha256": "8f7e1bb4e497fbad9026da7c30a19c2990357156898083718d088fe6334f6e2e",
+    "fd_sha256": "0620f1d9249be1bbefe5287c8d21fbec8097237c5127bddcbb25c8b141dee11b",
+    "payload_sha256": "3775c3e3ca99cf8a5352859bb0e31149f8d3387c407cff4d91e5fc3327a4876b",
+    "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=2 lithium_storage_test=1 loader_return_after=120",
+    "stock_dtb_table_sha256": "ab929abf55ad4822ae83489a58d6b550b7b24ea8398ce8ead1de7b1d2caed6aa",
+    "test_profile": "p2-storage-readonly",
+    "ramdisk_sha256": "e4c662b50594b0bbe58166fc1bbafc5637907f1dfba2d797aa62e44c6aeeef44",
+    "storage_probe_sha256": "77000ea899388da732a183b514704b58fb41bc959bee747b65225c0557b6e1b0"
+  },
+  "frozen_artifacts_path": "artifacts/hakios/p2-storage-ready-bds-volume",
+  "frozen_boot_image": "reports/local/20261115-175002-880957-hakios-preflight/lithium-hakios-test.img",
+  "local_log_path": "reports/local/20261115-175002-880957-hakios-preflight",
+  "test_contract_path": "reports/local/20261115-175002-880957-hakios-preflight/test-contract.json",
+  "identity_verified": true,
+  "bootloader_unlocked": true,
+  "userdata_bytes": 250710192128,
+  "temporary_boot_issued": true,
+  "fastboot_returncode": 0,
+  "command_accepted": true,
+  "fastboot_boot_output": "Sending 'boot.img' (15356 KB)                      OKAY [  0.372s]\nBooting                                            OKAY [  0.786s]\nFinished. Total time: 1.164s\n",
+  "latest_usb": {
+    "checked_at": "2026-11-15T17:50:04.373622+08:00",
+    "authorized_device_in_fastboot": false,
+    "adb_present": false,
+    "local_log_path": "reports/local/20261115-175002-880957-hakios-preflight/post-boot-usb.json"
+  },
+  "battery_preflight": {
+    "battery_soc_ok": "yes",
+    "local_log_path": "reports/local/20261115-175002-880957-hakios-preflight/battery-query.json"
+  },
+  "user_screen_observation": {
+    "source": "user_photo",
+    "observation_pending": false,
+    "current_screen": "Retained panic summary: initproc failed to start, namespace 2 subcode 0xa",
+    "automatic_reboot_observed": null
+  },
+  "verified_stages": {
+    "fastboot_command": true,
+    "uefi": true,
+    "mmu_hobs": false,
+    "bds": true,
+    "gop": true,
+    "efi_file_hash": true,
+    "loader": true,
+    "kernel": true,
+    "hello": false,
+    "storage_probe": false,
+    "hfs_mount": false,
+    "warm_ufs_ready": true,
+    "loader_userdata_hfsx_header": true
+  },
+  "outcome": "UEFI_UFS_HFSX_header_ready_kernel_initproc_SIGBUS",
+  "exact_failure_stage": "diagnostic_PID1_startup_SIGBUS_fault_address_unknown",
+  "runtime_acceptance": {
+    "storage_test_passed": false,
+    "final_summary_pending": false,
+    "kernel_started": true,
+    "hfs_mount_verified": false,
+    "ios14_file_reads_verified": false,
+    "orderly_return_observed": false,
+    "panic_return_observed": true,
+    "final_summary_retained": true
+  },
+  "hardware_verified": false,
+  "ios14_compatibility_verified": false,
+  "partition_writes_performed": false,
+  "qemu_used": false,
+  "observation_recorded_at": "2026-11-15T17:57:37.022125+08:00",
+  "screen_evidence": {
+    "photos": [
+      {
+        "path": "reports/local/20261115-175002-880957-hakios-preflight/r14-initproc-sigbus.jpg",
+        "sha256": "70536921eb708e7b2cae10a4c4d04b6ba0800b7e47e7ff85f43eefd783ab5888"
+      }
+    ],
+    "transcription_path": "reports/local/20261115-175002-880957-hakios-preflight/r14-screen-transcription.txt"
+  },
+  "failure": {
+    "reason_namespace": 2,
+    "reason_namespace_name": "OS_REASON_SIGNAL",
+    "subcode": 10,
+    "signal": "SIGBUS",
+    "panic_caller": "0xfffffff0077888e4",
+    "fault_pc": null,
+    "fault_far": null,
+    "ios14_launchd_was_tested": false
+  },
+  "measurements": {
+    "loader_return_log_bytes": 22830,
+    "ufs_stage": 6,
+    "ufs_cap": "0x107001f",
+    "ufs_hce": 1,
+    "ufs_hcs": "0x10f",
+    "ufs_ver": "0x10100",
+    "ufs_doorbell": 0,
+    "ufs_rc_ocs_st": 0,
+    "clock_ticks_start": 2341674246,
+    "clock_ticks_end": 2545353344,
+    "frequency_hz": 19200000,
+    "hardware_elapsed_ms": 10608,
+    "clock_valid": true,
+    "ppi27_start": 0,
+    "ppi27_end": 742,
+    "irq_delta": 742,
+    "samples": 0,
+    "stalled": 0,
+    "min_step": 0
+  },
+  "kernel_execution_verified": true
+}

@@ -1,0 +1,107 @@
+{
+  "schema": 1,
+  "phase": 3,
+  "completed": true,
+  "reported_at": "2026-11-16T19:55:16.404805+08:00",
+  "status": "complete_waiting_phase4_confirmation",
+  "report": "reports/hakios-ios16-migration-phase3.md",
+  "baseline": {
+    "project": "complete HakiOS",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu": "8796.121.2"
+  },
+  "target": {
+    "version": "16.5",
+    "build": "20F66",
+    "identity": "iPhone10,3 / D22AP",
+    "architecture": "arm64"
+  },
+  "source_policy": "Only user-supplied IPSW; no Apple binaries or firmware in Git or shareable outputs",
+  "backup_branch": "archive/ios14-r31-20261116",
+  "private_verified_backup_exists": true,
+  "computer_preparation": {
+    "complete_upstream_userspace_built": true,
+    "launchd_job_count": 413,
+    "apfs_inode_permissions_checked": 421,
+    "data_contents_permissions_links_readback_passed": true,
+    "data_fsck_passed": true,
+    "full_kernel_mu_loader_build_passed": true,
+    "instruction_scan_count": 46,
+    "data_write_transport_host_checks_passed": true,
+    "installer_gpt_case_count": 19,
+    "reader_shell_read_and_root_protection_host_checks_passed": true
+  },
+  "installation": {
+    "performed": true,
+    "target": "userdata",
+    "flash_command_count": 1,
+    "successful_segments": 30,
+    "fastboot_flash_seconds": 284.595,
+    "logical_layout_bytes": 21474836480,
+    "sparse_bytes": 7915843396,
+    "sparse_sha256": "8b54b946b0f7336cb9cfd097127b627213b943f47174761a22b07e43e7ad06ce",
+    "live_gpt_geometry_checks_passed": true,
+    "gpt_unchanged": true,
+    "gpt_readback_bytes": 24576,
+    "component_headers_readback_bytes": 32768,
+    "sampled_headers_matched": true,
+    "full_partition_readback_verified": false,
+    "other_partition_writes_performed": false,
+    "returned_to_fastboot": true,
+    "attempt_reports": [
+      "reports/hakios-ios16-install-attempt1.json",
+      "reports/hakios-ios16-install-attempt2.json",
+      "reports/hakios-ios16-install-attempt3.json"
+    ]
+  },
+  "device_operations": {
+    "auxiliary_stock_reader_boots_accepted": 4,
+    "auxiliary_reader_adb_runtime_observations": 3,
+    "historical_hakios_boot_count": 31,
+    "ios16_boot_count": 0,
+    "auxiliary_adb_is_hakios_usb_proof": false
+  },
+  "runtime_acceptance": {
+    "ios16_kernel_boot_verified": false,
+    "data_hfs_runtime_read_write_verified": false,
+    "containermanagerd_response_verified": false,
+    "springboard_display_verified": false,
+    "physical_touch_verified": false,
+    "a530_acceleration_verified": false,
+    "all_usable_6gb_exposed": false,
+    "current_xnu_memory_window_mib": 2880,
+    "hakios_usb_enumeration_verified": false,
+    "hakios_usb_log_transfer_verified": false
+  },
+  "next_phase": {
+    "number": 4,
+    "approved": false,
+    "action": "Package frozen full HakiOS/Mu/D22AP loader and tiny boot volumes; capture early logs and jointly debug original services, display and SpringBoard",
+    "risks": [
+      "Expanded memory hardware boot",
+      "UFS persistent Data mount/write/flush",
+      "Container service responses",
+      "Software rendering and CPU-feature compatibility",
+      "HakiOS USB enumeration and log transport"
+    ]
+  },
+  "evidence_sha256": {
+    "hakios-ios16-userspace-inputs.json": "dbe5b42db4c5fb4ab8d1d0a8fd01de36a385503412493200ed65792ec5393181",
+    "hakios-ios16-userspace-build.json": "376a316c121d22447ccee48223f4862f81995f4a2d6d6b58597b118701193cdf",
+    "hakios-ios16-storage-ready.json": "2d7c48e7df0139e05db8ef1a5c832cd16b533a1ea533015e927c4ee1e61502c0",
+    "hakios-ios16-phase3-build-checks.json": "67a14279565f6e52696f0418be4fa94128a80726b6f9e2b9f1f0dedefd9df6ac",
+    "hakios-ios16-source-review.json": "9a49f1cf410e8f6beac10aefb9e9c381c7a7db554b69ebc43d022a36fd9e46e3",
+    "hakios-ios16-storage-host-checks.json": "ba498960f3f8a051dc7531af29b5b807a3cb306ab1668b16ac737c42ed940ebe",
+    "hakios-ios16-installer-host-checks.json": "a2cbf4fd613e57cc32790fa2ef721105a6b444a29913cad359578469576a169c",
+    "hakios-ios16-storage-reader-ready.json": "ca0dbce441fe126d65c9cd86bfd8347c89602e6e5ef86e0a819ca3042bd46e45",
+    "hakios-ios16-storage-reader-host-checks.json": "c72772451d6e45202879d9720d0c5813229a645245b33b531b1bc3f9c2018bb1",
+    "hakios-ios16-userspace-ready.json": "f2b45390b6b19f1bed2d3bf4a59c8e992d2263a5dc15f25477467e7d545a55af",
+    "hakios-ios16-install.json": "c1a1811944d62325fffd5b3883d6631c544aa3197c37f4b5f047d0a737d521d9",
+    "hakios-ios16-install-attempt1.json": "1f2892795547368601fe0aec851e7090949e64e7ba45eb4f2ba65bfc148b33c3",
+    "hakios-ios16-install-attempt2.json": "5244a3073cc866e50848ee90ca124dd5696bccdb9c7757d4eb2c0bb873dec7e5",
+    "hakios-ios16-install-attempt3.json": "c1a1811944d62325fffd5b3883d6631c544aa3197c37f4b5f047d0a737d521d9"
+  },
+  "legacy_7195_used": false,
+  "qemu_used": false,
+  "apple_binaries_shareable": false
+}

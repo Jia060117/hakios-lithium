@@ -1,0 +1,19 @@
+{
+  "baseline": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+  "scope": "ARMv8.0 board capability, GIC stride and lithium loader parameters, including a board-selected EFI PE preferred address and lithium exception log hold; lithium cache handoff bounded to its declared UEFI stack",
+  "original_files": {
+    "xnu/hakios.patch": "0d3f8ae3b78e78f611448f8563dfe41d16333413d38bb75a155315a508f65b8e",
+    "xnu/files/osfmk/arm64/gic_v3_irq.c": "efc5fb6dd1366db577c993d16956c0f3004819b66b25599d5cb462a47268c731",
+    "xnuloader/loader.c": "8796088683fcd6f2a28232e1623e4915cb2e1fe1ab10c6ce78a3a613c8440099",
+    "xnuloader/build.sh": "7d5cd24a8a153dde804ba8d139ec5c60405f476e3233870c2768e1e0c31296f7"
+  },
+  "patch_sha256": "4c9dddf9e46e0477455eded85c5dde11ee3f13cc67fcaadf2fa80957016076a1",
+  "sources": [
+    "HakiOS complete pinned port",
+    "MIX original DTB/entry/display records",
+    "ios-sailfish 0079 redistributor-stride interface reference",
+    "ios-sailfish 0003 framebuffer serial-console component adapted for BGR24"
+  ],
+  "framebuffer_component_sha256": "c154bf44b1df3585999eeb4f117756ea98fdbdd42d084c07d2fbd9662fcbbedf",
+  "hardware_verified": false
+}

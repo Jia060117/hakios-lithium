@@ -1,0 +1,1599 @@
+{
+  "schema": "hakios-gpu-g1-precheck-saved-runtime-v1",
+  "analyzed_at": "2026-11-22T20:44:53.662097+00:00",
+  "attempt": "gpu-g1-precheck-02",
+  "passed": true,
+  "status": "precheck_capture_passed",
+  "accepted_at": "2026-11-23T04:37:46.086139+08:00",
+  "image_sha256": "24f53f36277df2ccdd4cb2bc5e4226ea5edda403435820ff55a7a586d5b4bc6a",
+  "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_sanity=1 cpu_perf_fixed=1 cpu_perf_hz=614400000 cpu_thermal_diag=1 cpu_inherited_supply_r39=1 gpu_stage=0 gpu_probe=1 gpu_wd=1 gpu_power_diag=1 lithium_log_retry=1",
+  "fuse_capture_passed": true,
+  "supply_capture_passed": true,
+  "cleanup_observed": true,
+  "summary": {
+    "fuse_valid0": "0x3f",
+    "fuse_valid1": "0x3f",
+    "fuse_stable": "0x3f",
+    "gfx_valid0": "0x7f",
+    "gfx_valid1": "0x7f",
+    "gfx_stable": "0x7f",
+    "gfx_error": "0",
+    "mx_valid0": "0x7f",
+    "mx_valid1": "0x7f",
+    "mx_stable": "0x7f",
+    "mx_error": "0",
+    "reads": "4038",
+    "fuse_reads": "12",
+    "observer_cmd_writes": "28",
+    "poisoned": "0",
+    "gpu_writes": "0",
+    "regulator_writes": "0",
+    "settled": "UNVERIFIED",
+    "chip_id": "UNREAD"
+  },
+  "fuse_rows": [
+    {
+      "line": 136,
+      "text": "LITHIUM GPU fuse pass=0 row=39 pa=0x74138 bits=64 valid=1 raw=0x401103ea7ab389d6 stable=1",
+      "fields": {
+        "pass": "0",
+        "row": "39",
+        "pa": "0x74138",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x401103ea7ab389d6",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 137,
+      "text": "LITHIUM GPU fuse pass=1 row=39 pa=0x74138 bits=64 valid=1 raw=0x401103ea7ab389d6 stable=1",
+      "fields": {
+        "pass": "1",
+        "row": "39",
+        "pa": "0x74138",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x401103ea7ab389d6",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 138,
+      "text": "LITHIUM GPU fuse pass=0 row=41 pa=0x74148 bits=64 valid=1 raw=0xd4c1838e02e761f0 stable=1",
+      "fields": {
+        "pass": "0",
+        "row": "41",
+        "pa": "0x74148",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0xd4c1838e02e761f0",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 139,
+      "text": "LITHIUM GPU fuse pass=1 row=41 pa=0x74148 bits=64 valid=1 raw=0xd4c1838e02e761f0 stable=1",
+      "fields": {
+        "pass": "1",
+        "row": "41",
+        "pa": "0x74148",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0xd4c1838e02e761f0",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 140,
+      "text": "LITHIUM GPU fuse pass=0 row=63 pa=0x741f8 bits=64 valid=1 raw=0x3a5b3bb5f3badb39 stable=1",
+      "fields": {
+        "pass": "0",
+        "row": "63",
+        "pa": "0x741f8",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x3a5b3bb5f3badb39",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 141,
+      "text": "LITHIUM GPU fuse pass=1 row=63 pa=0x741f8 bits=64 valid=1 raw=0x3a5b3bb5f3badb39 stable=1",
+      "fields": {
+        "pass": "1",
+        "row": "63",
+        "pa": "0x741f8",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x3a5b3bb5f3badb39",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 142,
+      "text": "LITHIUM GPU fuse pass=0 row=64 pa=0x74200 bits=64 valid=1 raw=0xc1dde74d5f3995ed stable=1",
+      "fields": {
+        "pass": "0",
+        "row": "64",
+        "pa": "0x74200",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0xc1dde74d5f3995ed",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 143,
+      "text": "LITHIUM GPU fuse pass=1 row=64 pa=0x74200 bits=64 valid=1 raw=0xc1dde74d5f3995ed stable=1",
+      "fields": {
+        "pass": "1",
+        "row": "64",
+        "pa": "0x74200",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0xc1dde74d5f3995ed",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 144,
+      "text": "LITHIUM GPU fuse pass=0 row=66 pa=0x74210 bits=64 valid=1 raw=0xab0e61ddc60a1d04 stable=1",
+      "fields": {
+        "pass": "0",
+        "row": "66",
+        "pa": "0x74210",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0xab0e61ddc60a1d04",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 145,
+      "text": "LITHIUM GPU fuse pass=1 row=66 pa=0x74210 bits=64 valid=1 raw=0xab0e61ddc60a1d04 stable=1",
+      "fields": {
+        "pass": "1",
+        "row": "66",
+        "pa": "0x74210",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0xab0e61ddc60a1d04",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 146,
+      "text": "LITHIUM GPU fuse pass=0 row=68 pa=0x74220 bits=64 valid=1 raw=0x00700000043ac54b stable=1",
+      "fields": {
+        "pass": "0",
+        "row": "68",
+        "pa": "0x74220",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x00700000043ac54b",
+        "stable": "1"
+      }
+    },
+    {
+      "line": 147,
+      "text": "LITHIUM GPU fuse pass=1 row=68 pa=0x74220 bits=64 valid=1 raw=0x00700000043ac54b stable=1",
+      "fields": {
+        "pass": "1",
+        "row": "68",
+        "pa": "0x74220",
+        "bits": "64",
+        "valid": "1",
+        "raw": "0x00700000043ac54b",
+        "stable": "1"
+      }
+    }
+  ],
+  "supply_rows": [
+    {
+      "line": 157,
+      "text": "LITHIUM GPU supply pass=0 rail=GFX_PMI8994_S2 sid=3 reg=TYPE addr=0x1704 valid=1 raw=0x1c error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "0",
+        "rail": "GFX_PMI8994_S2",
+        "sid": "3",
+        "reg": "TYPE",
+        "addr": "0x1704",
+        "valid": "1",
+        "raw": "0x1c",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 162,
+      "text": "LITHIUM GPU supply pass=0 rail=GFX_PMI8994_S2 sid=3 reg=SUBTYPE addr=0x1705 valid=1 raw=0x09 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "0",
+        "rail": "GFX_PMI8994_S2",
+        "sid": "3",
+        "reg": "SUBTYPE",
+        "addr": "0x1705",
+        "valid": "1",
+        "raw": "0x09",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 166,
+      "text": "LITHIUM GPU supply pass=0 rail=GFX_PMI8994_S2 sid=3 reg=RANGE addr=0x1740 valid=1 raw=0x00 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "0",
+        "rail": "GFX_PMI8994_S2",
+        "sid": "3",
+        "reg": "RANGE",
+        "addr": "0x1740",
+        "valid": "1",
+        "raw": "0x00",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 169,
+      "text": "LITHIUM GPU supply pass=0 rail=GFX_PMI8994_S2 sid=3 reg=VSET addr=0x1741 valid=1 raw=0xb8 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "0",
+        "rail": "GFX_PMI8994_S2",
+        "sid": "3",
+        "reg": "VSET",
+        "addr": "0x1741",
+        "valid": "1",
+        "raw": "0xb8",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 170,
+      "text": "LITHIUM GPU supply pass=0 rail=GFX_PMI8994_S2 sid=3 reg=MODE addr=0x1745 valid=1 raw=0x40 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "0",
+        "rail": "GFX_PMI8994_S2",
+        "sid": "3",
+        "reg": "MODE",
+        "addr": "0x1745",
+        "valid": "1",
+        "raw": "0x40",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 171,
+      "text": "LITHIUM GPU supply pass=0 rail=GFX_PMI8994_S2 sid=3 reg=ENABLE addr=0x1746 valid=1 raw=0x00 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "0",
+        "rail": "GFX_PMI8994_S2",
+        "sid": "3",
+        "reg": "ENABLE",
+        "addr": "0x1746",
+        "valid": "1",
+        "raw": "0x00",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 173,
+      "text": "LITHIUM GPU supply pass=0 rail=GFX_PMI8994_S2 sid=3 reg=STEP addr=0x1761 valid=1 raw=0x82 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "0",
+        "rail": "GFX_PMI8994_S2",
+        "sid": "3",
+        "reg": "STEP",
+        "addr": "0x1761",
+        "valid": "1",
+        "raw": "0x82",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 175,
+      "text": "LITHIUM GPU supply pass=1 rail=GFX_PMI8994_S2 sid=3 reg=TYPE addr=0x1704 valid=1 raw=0x1c error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "1",
+        "rail": "GFX_PMI8994_S2",
+        "sid": "3",
+        "reg": "TYPE",
+        "addr": "0x1704",
+        "valid": "1",
+        "raw": "0x1c",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 176,
+      "text": "LITHIUM GPU supply pass=1 rail=GFX_PMI8994_S2 sid=3 reg=SUBTYPE addr=0x1705 valid=1 raw=0x09 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "1",
+        "rail": "GFX_PMI8994_S2",
+        "sid": "3",
+        "reg": "SUBTYPE",
+        "addr": "0x1705",
+        "valid": "1",
+        "raw": "0x09",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 177,
+      "text": "LITHIUM GPU supply pass=1 rail=GFX_PMI8994_S2 sid=3 reg=RANGE addr=0x1740 valid=1 raw=0x00 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "1",
+        "rail": "GFX_PMI8994_S2",
+        "sid": "3",
+        "reg": "RANGE",
+        "addr": "0x1740",
+        "valid": "1",
+        "raw": "0x00",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 178,
+      "text": "LITHIUM GPU supply pass=1 rail=GFX_PMI8994_S2 sid=3 reg=VSET addr=0x1741 valid=1 raw=0xb8 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "1",
+        "rail": "GFX_PMI8994_S2",
+        "sid": "3",
+        "reg": "VSET",
+        "addr": "0x1741",
+        "valid": "1",
+        "raw": "0xb8",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 179,
+      "text": "LITHIUM GPU supply pass=1 rail=GFX_PMI8994_S2 sid=3 reg=MODE addr=0x1745 valid=1 raw=0x40 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "1",
+        "rail": "GFX_PMI8994_S2",
+        "sid": "3",
+        "reg": "MODE",
+        "addr": "0x1745",
+        "valid": "1",
+        "raw": "0x40",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 180,
+      "text": "LITHIUM GPU supply pass=1 rail=GFX_PMI8994_S2 sid=3 reg=ENABLE addr=0x1746 valid=1 raw=0x00 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "1",
+        "rail": "GFX_PMI8994_S2",
+        "sid": "3",
+        "reg": "ENABLE",
+        "addr": "0x1746",
+        "valid": "1",
+        "raw": "0x00",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 181,
+      "text": "LITHIUM GPU supply pass=1 rail=GFX_PMI8994_S2 sid=3 reg=STEP addr=0x1761 valid=1 raw=0x82 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "1",
+        "rail": "GFX_PMI8994_S2",
+        "sid": "3",
+        "reg": "STEP",
+        "addr": "0x1761",
+        "valid": "1",
+        "raw": "0x82",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 185,
+      "text": "LITHIUM GPU supply pass=0 rail=MX_PM8994_S2 sid=1 reg=TYPE addr=0x1704 valid=1 raw=0x1c error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "0",
+        "rail": "MX_PM8994_S2",
+        "sid": "1",
+        "reg": "TYPE",
+        "addr": "0x1704",
+        "valid": "1",
+        "raw": "0x1c",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 186,
+      "text": "LITHIUM GPU supply pass=0 rail=MX_PM8994_S2 sid=1 reg=SUBTYPE addr=0x1705 valid=1 raw=0x09 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "0",
+        "rail": "MX_PM8994_S2",
+        "sid": "1",
+        "reg": "SUBTYPE",
+        "addr": "0x1705",
+        "valid": "1",
+        "raw": "0x09",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 187,
+      "text": "LITHIUM GPU supply pass=0 rail=MX_PM8994_S2 sid=1 reg=RANGE addr=0x1740 valid=1 raw=0x00 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "0",
+        "rail": "MX_PM8994_S2",
+        "sid": "1",
+        "reg": "RANGE",
+        "addr": "0x1740",
+        "valid": "1",
+        "raw": "0x00",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 188,
+      "text": "LITHIUM GPU supply pass=0 rail=MX_PM8994_S2 sid=1 reg=VSET addr=0x1741 valid=1 raw=0x9a error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "0",
+        "rail": "MX_PM8994_S2",
+        "sid": "1",
+        "reg": "VSET",
+        "addr": "0x1741",
+        "valid": "1",
+        "raw": "0x9a",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 189,
+      "text": "LITHIUM GPU supply pass=0 rail=MX_PM8994_S2 sid=1 reg=MODE addr=0x1745 valid=1 raw=0x40 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "0",
+        "rail": "MX_PM8994_S2",
+        "sid": "1",
+        "reg": "MODE",
+        "addr": "0x1745",
+        "valid": "1",
+        "raw": "0x40",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 190,
+      "text": "LITHIUM GPU supply pass=0 rail=MX_PM8994_S2 sid=1 reg=ENABLE addr=0x1746 valid=1 raw=0x80 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "0",
+        "rail": "MX_PM8994_S2",
+        "sid": "1",
+        "reg": "ENABLE",
+        "addr": "0x1746",
+        "valid": "1",
+        "raw": "0x80",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 191,
+      "text": "LITHIUM GPU supply pass=0 rail=MX_PM8994_S2 sid=1 reg=STEP addr=0x1761 valid=1 raw=0x82 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "0",
+        "rail": "MX_PM8994_S2",
+        "sid": "1",
+        "reg": "STEP",
+        "addr": "0x1761",
+        "valid": "1",
+        "raw": "0x82",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 195,
+      "text": "LITHIUM GPU supply pass=1 rail=MX_PM8994_S2 sid=1 reg=TYPE addr=0x1704 valid=1 raw=0x1c error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "1",
+        "rail": "MX_PM8994_S2",
+        "sid": "1",
+        "reg": "TYPE",
+        "addr": "0x1704",
+        "valid": "1",
+        "raw": "0x1c",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 196,
+      "text": "LITHIUM GPU supply pass=1 rail=MX_PM8994_S2 sid=1 reg=SUBTYPE addr=0x1705 valid=1 raw=0x09 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "1",
+        "rail": "MX_PM8994_S2",
+        "sid": "1",
+        "reg": "SUBTYPE",
+        "addr": "0x1705",
+        "valid": "1",
+        "raw": "0x09",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 197,
+      "text": "LITHIUM GPU supply pass=1 rail=MX_PM8994_S2 sid=1 reg=RANGE addr=0x1740 valid=1 raw=0x00 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "1",
+        "rail": "MX_PM8994_S2",
+        "sid": "1",
+        "reg": "RANGE",
+        "addr": "0x1740",
+        "valid": "1",
+        "raw": "0x00",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 198,
+      "text": "LITHIUM GPU supply pass=1 rail=MX_PM8994_S2 sid=1 reg=VSET addr=0x1741 valid=1 raw=0x9a error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "1",
+        "rail": "MX_PM8994_S2",
+        "sid": "1",
+        "reg": "VSET",
+        "addr": "0x1741",
+        "valid": "1",
+        "raw": "0x9a",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 199,
+      "text": "LITHIUM GPU supply pass=1 rail=MX_PM8994_S2 sid=1 reg=MODE addr=0x1745 valid=1 raw=0x40 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "1",
+        "rail": "MX_PM8994_S2",
+        "sid": "1",
+        "reg": "MODE",
+        "addr": "0x1745",
+        "valid": "1",
+        "raw": "0x40",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 200,
+      "text": "LITHIUM GPU supply pass=1 rail=MX_PM8994_S2 sid=1 reg=ENABLE addr=0x1746 valid=1 raw=0x80 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "1",
+        "rail": "MX_PM8994_S2",
+        "sid": "1",
+        "reg": "ENABLE",
+        "addr": "0x1746",
+        "valid": "1",
+        "raw": "0x80",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    },
+    {
+      "line": 201,
+      "text": "LITHIUM GPU supply pass=1 rail=MX_PM8994_S2 sid=1 reg=STEP addr=0x1761 valid=1 raw=0x82 error=0 phase=7 status_valid=1 status=0x1 attempted=1 completed=1 polls=2",
+      "fields": {
+        "pass": "1",
+        "rail": "MX_PM8994_S2",
+        "sid": "1",
+        "reg": "STEP",
+        "addr": "0x1761",
+        "valid": "1",
+        "raw": "0x82",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "attempted": "1",
+        "completed": "1",
+        "polls": "2"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "line": 151,
+      "text": "LITHIUM GPU supply route rail=GFX_PMI8994_S2 sid=3 base=0x1700 error=0 version=0x20010000 apid=52 mapping=0x00031700 matches=1 observer_pa=0x4da0000",
+      "fields": {
+        "rail": "GFX_PMI8994_S2",
+        "sid": "3",
+        "base": "0x1700",
+        "error": "0",
+        "version": "0x20010000",
+        "apid": "52",
+        "mapping": "0x00031700",
+        "matches": "1",
+        "observer_pa": "0x4da0000"
+      }
+    },
+    {
+      "line": 183,
+      "text": "LITHIUM GPU supply route rail=MX_PM8994_S2 sid=1 base=0x1700 error=0 version=0x20010000 apid=127 mapping=0x00011700 matches=1 observer_pa=0x4ff8000",
+      "fields": {
+        "rail": "MX_PM8994_S2",
+        "sid": "1",
+        "base": "0x1700",
+        "error": "0",
+        "version": "0x20010000",
+        "apid": "127",
+        "mapping": "0x00011700",
+        "matches": "1",
+        "observer_pa": "0x4ff8000"
+      }
+    }
+  ],
+  "rail_captures": [
+    {
+      "rail": "GFX_PMI8994_S2",
+      "sid": 3,
+      "base": 5888,
+      "fields": {
+        "TYPE": 28,
+        "SUBTYPE": 9,
+        "RANGE": 0,
+        "VSET": 184,
+        "MODE": 64,
+        "ENABLE": 0,
+        "STEP": 130
+      },
+      "valid_fields": [
+        "TYPE",
+        "SUBTYPE",
+        "RANGE",
+        "VSET",
+        "MODE",
+        "ENABLE",
+        "STEP"
+      ],
+      "stable_fields": [
+        "TYPE",
+        "SUBTYPE",
+        "RANGE",
+        "VSET",
+        "MODE",
+        "ENABLE",
+        "STEP"
+      ]
+    },
+    {
+      "rail": "MX_PM8994_S2",
+      "sid": 1,
+      "base": 5888,
+      "fields": {
+        "TYPE": 28,
+        "SUBTYPE": 9,
+        "RANGE": 0,
+        "VSET": 154,
+        "MODE": 64,
+        "ENABLE": 128,
+        "STEP": 130
+      },
+      "valid_fields": [
+        "TYPE",
+        "SUBTYPE",
+        "RANGE",
+        "VSET",
+        "MODE",
+        "ENABLE",
+        "STEP"
+      ],
+      "stable_fields": [
+        "TYPE",
+        "SUBTYPE",
+        "RANGE",
+        "VSET",
+        "MODE",
+        "ENABLE",
+        "STEP"
+      ]
+    }
+  ],
+  "digital_supply_decoded": [
+    {
+      "rail": "GFX_PMI8994_S2",
+      "decoded": true,
+      "digital_setpoint_uv": 1000000,
+      "analog_voltage_uv": null,
+      "settled_permission": false,
+      "hardware_verified": false,
+      "coherent_cross_field_snapshot_verified": false,
+      "source": "MiCode 1492c8e4373b7428bb0accc4f4881e97b36508b9 qpnp-regulator.c",
+      "error": null,
+      "sid": 3,
+      "base": 5888,
+      "layout": "FTSMPS2p5/common",
+      "register_interpretation": "0x40=range selector; 0x41=8-bit voltage code",
+      "range_selector": 0,
+      "programmable_range_and_grid_valid": true,
+      "preferred_selector_valid": true,
+      "required_bytes_two_pass_stable": true,
+      "digital_sw_enable_bit": false,
+      "mode_raw": 64,
+      "enable_raw": 0,
+      "step_raw": 130
+    },
+    {
+      "rail": "MX_PM8994_S2",
+      "decoded": true,
+      "digital_setpoint_uv": 850000,
+      "analog_voltage_uv": null,
+      "settled_permission": false,
+      "hardware_verified": false,
+      "coherent_cross_field_snapshot_verified": false,
+      "source": "MiCode 1492c8e4373b7428bb0accc4f4881e97b36508b9 qpnp-regulator.c",
+      "error": null,
+      "sid": 1,
+      "base": 5888,
+      "layout": "FTSMPS2p5/common",
+      "register_interpretation": "0x40=range selector; 0x41=8-bit voltage code",
+      "range_selector": 0,
+      "programmable_range_and_grid_valid": true,
+      "preferred_selector_valid": true,
+      "required_bytes_two_pass_stable": true,
+      "digital_sw_enable_bit": true,
+      "mode_raw": 64,
+      "enable_raw": 128,
+      "step_raw": 130
+    }
+  ],
+  "independent_stock133_arithmetic": {
+    "init0": 20,
+    "signed_steps": -4,
+    "source_fuse_uv": 630000,
+    "stock_trim_uv": -85000,
+    "unaged_open_loop_uv": 545000,
+    "unaged_floor_uv": 520000,
+    "maximum_startup_aging_uv": 15000,
+    "stock_startup_open_loop_uv": 560000,
+    "stock_startup_floor_uv": 535000,
+    "scope": "Independent corner2 arithmetic; formal pinned-policy result checked separately",
+    "gpu_write_permission": false
+  },
+  "usb": {
+    "raw_bytes": 73605,
+    "console_bytes": 65189,
+    "frames": 263,
+    "raw_sha256": "7a1d6ea942f4a427de5ed86f347df634950d14356a2fcd3f03f1702c9b7cbef9",
+    "console_sha256": "8e2cc7ddbc8fba63800ece9d5cd3ef1a5de5e940f58af64dc8171c8544469497",
+    "first_offset": 0,
+    "final_offset": 65189,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "incomplete_frame_bytes": 0,
+    "device_lost_max": 0,
+    "frames_reporting_device_loss": 0,
+    "independent_parser_agrees_with_frozen_receiver": true,
+    "frozen_redecode_equals_complete_console": true,
+    "transport_verified": true,
+    "kernel_banner_offset": 0,
+    "timer_offset": 63720,
+    "normal_return_offset": 65073,
+    "drain_success": true,
+    "drain_records": [
+      {
+        "offset": 65140,
+        "drained": 1,
+        "target": 65140
+      }
+    ],
+    "emitted_kernel_stream_through_timer_verified": true,
+    "all_firmware_daemon_and_original_printf_logs_complete": false,
+    "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
+  },
+  "receiver_terminal": {
+    "started_at": "2026-11-23T04:37:44.814092+08:00",
+    "enumerated": true,
+    "frames": 263,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "status": "capture_failed",
+    "output": "F:\\IOS-MIX1\\evidence\\gpu-g1-20261123\\package\\runs\\gpu-g1-precheck-02\\console.log",
+    "device_commands_sent": false,
+    "candidate_seen": true,
+    "identity_verified": true,
+    "descriptor_errors": 0,
+    "descriptor_error_samples": [],
+    "configuration_verified": true,
+    "console_bytes": 65189,
+    "failure_stage": "capturing",
+    "failure": "[Errno 32] Pipe error",
+    "finished_at": "2026-11-23T04:41:18.753736+08:00"
+  },
+  "return_verification": {
+    "started_at": "2026-11-23T04:42:09.269336+08:00",
+    "elapsed_seconds": 263.183197,
+    "devices_query_count": 1,
+    "product_query_count": 1,
+    "device_rows": [
+      [
+        "54223ce9",
+        "fastboot"
+      ]
+    ],
+    "same_serial_fastboot": true,
+    "observed_product": "MSM8996_A8",
+    "product_verified": true,
+    "passed": true,
+    "retry": false,
+    "attempt_id": "gpu-g1-precheck-02",
+    "phase": "g1-precheck",
+    "capture_stop_requested": true,
+    "finished_at": "2026-11-23T04:42:10.221557+08:00"
+  },
+  "source_dropped_bytes": 0,
+  "cpu_temperature_peak_native_mC": {
+    "0x0": 52200,
+    "0x1": 52800,
+    "0x100": 49300,
+    "0x101": 50200
+  },
+  "stop_temperature_rows": [
+    {
+      "line": 408,
+      "text": "LITHIUM CPU TEMP phase=stop affinity=0x0 sensor=TSENS0 id=4 raw=0x002041f3 enabled=1 valid=1 native_mC=49900 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=52378995240 calibration_verified=0 freshness_verified=0",
+      "fields": {
+        "phase": "stop",
+        "affinity": "0x0",
+        "sensor": "TSENS0",
+        "id": "4",
+        "raw": "0x002041f3",
+        "enabled": "1",
+        "valid": "1",
+        "native_mC": "49900",
+        "reason": "native_hardware_units",
+        "trdy_read": "1",
+        "trdy": "0",
+        "status_reads": "1",
+        "reads": "4",
+        "at_abs": "52378995240",
+        "calibration_verified": "0",
+        "freshness_verified": "0"
+      }
+    },
+    {
+      "line": 409,
+      "text": "LITHIUM CPU TEMP phase=stop affinity=0x1 sensor=TSENS0 id=6 raw=0x002061d3 enabled=1 valid=1 native_mC=46700 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=52378995240 calibration_verified=0 freshness_verified=0",
+      "fields": {
+        "phase": "stop",
+        "affinity": "0x1",
+        "sensor": "TSENS0",
+        "id": "6",
+        "raw": "0x002061d3",
+        "enabled": "1",
+        "valid": "1",
+        "native_mC": "46700",
+        "reason": "native_hardware_units",
+        "trdy_read": "1",
+        "trdy": "0",
+        "status_reads": "1",
+        "reads": "4",
+        "at_abs": "52378995240",
+        "calibration_verified": "0",
+        "freshness_verified": "0"
+      }
+    },
+    {
+      "line": 410,
+      "text": "LITHIUM CPU TEMP phase=stop affinity=0x100 sensor=TSENS0 id=9 raw=0x002091cd enabled=1 valid=1 native_mC=46100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=52378995240 calibration_verified=0 freshness_verified=0",
+      "fields": {
+        "phase": "stop",
+        "affinity": "0x100",
+        "sensor": "TSENS0",
+        "id": "9",
+        "raw": "0x002091cd",
+        "enabled": "1",
+        "valid": "1",
+        "native_mC": "46100",
+        "reason": "native_hardware_units",
+        "trdy_read": "1",
+        "trdy": "0",
+        "status_reads": "1",
+        "reads": "4",
+        "at_abs": "52378995240",
+        "calibration_verified": "0",
+        "freshness_verified": "0"
+      }
+    },
+    {
+      "line": 411,
+      "text": "LITHIUM CPU TEMP phase=stop affinity=0x101 sensor=TSENS0 id=11 raw=0x0020b1cd enabled=1 valid=1 native_mC=46100 reason=native_hardware_units trdy_read=1 trdy=0 status_reads=1 reads=4 at_abs=52378995240 calibration_verified=0 freshness_verified=0",
+      "fields": {
+        "phase": "stop",
+        "affinity": "0x101",
+        "sensor": "TSENS0",
+        "id": "11",
+        "raw": "0x0020b1cd",
+        "enabled": "1",
+        "valid": "1",
+        "native_mC": "46100",
+        "reason": "native_hardware_units",
+        "trdy_read": "1",
+        "trdy": "0",
+        "status_reads": "1",
+        "reads": "4",
+        "at_abs": "52378995240",
+        "calibration_verified": "0",
+        "freshness_verified": "0"
+      }
+    }
+  ],
+  "map_trace": [
+    {
+      "line": 134,
+      "action": "map",
+      "fields": {
+        "physical": "0x74000",
+        "allocation": "0xfffffff6db25c000",
+        "bytes": "16384",
+        "valid": "1"
+      }
+    },
+    {
+      "line": 135,
+      "action": "unmap",
+      "fields": {
+        "allocation": "0xfffffff6db25c000",
+        "bytes": "16384"
+      }
+    },
+    {
+      "line": 149,
+      "action": "map",
+      "fields": {
+        "physical": "0x400c000",
+        "allocation": "0xfffffff6db25c000",
+        "bytes": "16384",
+        "valid": "1"
+      }
+    },
+    {
+      "line": 152,
+      "action": "map",
+      "fields": {
+        "physical": "0x4da0000",
+        "allocation": "0xfffffff6db260000",
+        "bytes": "16384",
+        "valid": "1"
+      }
+    },
+    {
+      "line": 182,
+      "action": "unmap",
+      "fields": {
+        "allocation": "0xfffffff6db260000",
+        "bytes": "16384"
+      }
+    },
+    {
+      "line": 184,
+      "action": "map",
+      "fields": {
+        "physical": "0x4ff8000",
+        "allocation": "0xfffffff6db260000",
+        "bytes": "16384",
+        "valid": "1"
+      }
+    },
+    {
+      "line": 202,
+      "action": "unmap",
+      "fields": {
+        "allocation": "0xfffffff6db260000",
+        "bytes": "16384"
+      }
+    },
+    {
+      "line": 203,
+      "action": "unmap",
+      "fields": {
+        "allocation": "0xfffffff6db25c000",
+        "bytes": "16384"
+      }
+    }
+  ],
+  "g0_summary": [
+    {
+      "line": 132,
+      "text": "LITHIUM GPU stage=0 end status=snapshot_complete valid0=0x1ff valid1=0x1ff stable_mask=0x1ff unstable_mask=0x0 reads=18 loads=18 read_failures=0 completed_passes=2 errors=0x0 elapsed_us=18 gpu_writes=0 power_verified=0 chip_id=UNREAD",
+      "fields": {
+        "stage": "0",
+        "status": "snapshot_complete",
+        "valid0": "0x1ff",
+        "valid1": "0x1ff",
+        "stable_mask": "0x1ff",
+        "unstable_mask": "0x0",
+        "reads": "18",
+        "loads": "18",
+        "read_failures": "0",
+        "completed_passes": "2",
+        "errors": "0x0",
+        "elapsed_us": "18",
+        "gpu_writes": "0",
+        "power_verified": "0",
+        "chip_id": "UNREAD"
+      }
+    }
+  ],
+  "interleaved_printf_line_numbers": [
+    152
+  ],
+  "printf_lines_are_all_atomic": false,
+  "no_panic_text_in_collected_stream": true,
+  "physical_screen_observed": false,
+  "measured_gpu_chip_id": null,
+  "gpu_stage1_passed": false,
+  "gpu_acceleration_verified": false,
+  "regulator_writes": 0,
+  "gpu_clock_writes": 0,
+  "spmi_read_commands_observed": 28,
+  "rail_settled_or_analog_voltage_verified": false,
+  "pas13_called": false,
+  "next": "GFX enable + regulator-settled/RPM/bus/clock prerequisites before GPU domain power-on",
+  "input_sha256": {
+    "console.log": "8e2cc7ddbc8fba63800ece9d5cd3ef1a5de5e940f58af64dc8171c8544469497",
+    "console.frames": "7a1d6ea942f4a427de5ed86f347df634950d14356a2fcd3f03f1702c9b7cbef9",
+    "capture-host.py": "d5a9aecdd3c5ac728b233628d9ae810a598a35ba05d9068d0db3ed70fde3791c",
+    "result.json": "e424ae9e38c8ae95209b9121a96a11df17055e53a53f29265d291ac03a7b7f74",
+    "usb-status.json": "fd542c1fb963a372714758a6f5640525f6ceb73576a80330a78630edd22d62d5",
+    "return-verification.json": "58adefb5d60caf299d1e404657939287692e1956da095cf21566d2777cca0fd4"
+  },
+  "report": "reports/hakios-ios16-gpu-g1-precheck-02.md",
+  "stock133_fuse_model": {
+    "schema": "gpu-g1-stock133-model-v1",
+    "attempt_id": "gpu-g1-precheck-02",
+    "assessment_phase": "final",
+    "snapshot_finality": "final snapshot after main end notification",
+    "created_at": "2026-11-23T04:43:27.998219+08:00",
+    "source_pin": "1492c8e4373b7428bb0accc4f4881e97b36508b9",
+    "source_hashes_verified": {
+      "evidence/gpu-g0-20261123/power-zap/sources/micode/drivers/regulator/cpr3-mmss-regulator.c": "8864d338a4fc011b4ab3d5f2394d16e3589eccccb67b7b3a8a1877621d667fcf",
+      "evidence/gpu-g1-20261123/fuses/micode-cpr3-util.c": "46187dd2028533b6459d5506ab72c738c49039a3f3363f8b46b16d3c14cefe8a",
+      "evidence/gpu-g0-20261123/power-zap/sources/micode/drivers/regulator/cpr3-regulator.c": "a8d2efa596f6a4d47dd4c1a000373eacc16285b918e3d58cb764e9a1f0382c06",
+      "evidence/gpu-g0-20261123/power-zap/sources/stock/lithium-stock.dts": "2252e2fb6c8b28c4d5db6e390e3618e5e6a0a42d51779822f16d0ea640c45df8",
+      "artifacts/stock/V9.5.2.0.NAHCNFA/dtbs/03.dtb": "93dc50ef24a5a6e56c19346ce5c1aa43c11f1e1842970d150020cde6c3b79985"
+    },
+    "original_calculator_sha256": "1f17307d1cf3f45f3a64a518092821173e05f6f304eca0ecac01c8f6f364b43f",
+    "calculator_functions_used": [
+      "pinned_policy",
+      "decode",
+      "target_policy",
+      "compute"
+    ],
+    "capture_validation": {
+      "per_pass_ascending": true,
+      "indices_unique_disjoint": true,
+      "actual_line_order_preserved": true,
+      "full64bit_two_pass_stability": true,
+      "validmasks": [
+        63,
+        63
+      ],
+      "stablemask": 63,
+      "fuse_reads": 12
+    },
+    "capture_provenance": {
+      "kind": "captured_console",
+      "source": "evidence/gpu-g1-20261123/fuses/runtime-precheck02/console-final.snapshot.log",
+      "sha256": "8e2cc7ddbc8fba63800ece9d5cd3ef1a5de5e940f58af64dc8171c8544469497",
+      "bytes": 65189,
+      "original_console": "evidence/gpu-g1-20261123/package/runs/gpu-g1-precheck-02/console.log",
+      "snapshot_bytes_unmodified": true,
+      "console_reordered": false,
+      "actual_emit_order": "row-major/pass-interleaved"
+    },
+    "guard_provenance": {
+      "records": {
+        "boot-intent": {
+          "source": "evidence/gpu-g1-20261123/package/runs/gpu-g1-precheck-02/boot-intent.json",
+          "snapshot": "evidence/gpu-g1-20261123/fuses/runtime-precheck02/guard-boot-intent-final.json",
+          "sha256": "44c957146522d2bbfcc906f69c7b1d3ee32a939b0e79b408fb5bea3241f77f53"
+        },
+        "authorization": {
+          "source": "evidence/gpu-g1-20261123/package/runs/gpu-g1-precheck-02/authorization.json",
+          "snapshot": "evidence/gpu-g1-20261123/fuses/runtime-precheck02/guard-authorization-final.json",
+          "sha256": "135824c7056f53ca3208617c8a058faa912961ac2424566291946530d4a1ad1a"
+        },
+        "result": {
+          "source": "evidence/gpu-g1-20261123/package/runs/gpu-g1-precheck-02/result.json",
+          "snapshot": "evidence/gpu-g1-20261123/fuses/runtime-precheck02/guard-result-final.json",
+          "sha256": "e424ae9e38c8ae95209b9121a96a11df17055e53a53f29265d291ac03a7b7f74"
+        },
+        "kernel-result": {
+          "source": "evidence/gpu-g1-20261123/package/g1-precheck-02/kernel-result.json",
+          "snapshot": "evidence/gpu-g1-20261123/fuses/runtime-precheck02/guard-kernel-result-final.json",
+          "sha256": "7ded8fe0c73f2e9ac3f47be01d6f44daa46dddfe4e6155970786039226554eae"
+        },
+        "contract": {
+          "source": "evidence/gpu-g1-20261123/package/g1-precheck-02/contract.json",
+          "snapshot": "evidence/gpu-g1-20261123/fuses/runtime-precheck02/guard-contract-final.json",
+          "sha256": "f6b7428eeb21dd712ef4f8661a16b9388740413eeb4bfd0c82c77fb125256d0d"
+        }
+      },
+      "attempt_id": "gpu-g1-precheck-02",
+      "accepted_at": "2026-11-23T04:37:46.086139+08:00",
+      "accepted_image_sha256": "24f53f36277df2ccdd4cb2bc5e4226ea5edda403435820ff55a7a586d5b4bc6a",
+      "kernel_sha256_from_build_manifest": "7c63f434fcae955c07299cf135025fb6b349bab854df3e7d8acf2c974ca090e8",
+      "actual_runtime_bootargs_match": true,
+      "production_source_sha256": {
+        "gpu/g1-fuse.h": "65a8dd90ddff560f7378f9e813e6690448fccebe36dfbcdec3d19c1915368b69",
+        "gpu/g1-precheck.inc": "fa417243536b6a93cd445ce43c2c847fb0d9e16e1714f8de5a24c60b9bfdc5e1"
+      },
+      "source_guard_semantics": {
+        "owner": "logical0/affinity1 with interrupts enabled",
+        "budget_us": 250000,
+        "access_cap": 9000,
+        "capture_order": "pass0 six rows then pass1 six rows in source",
+        "print_order": "row-major pass0/pass1 pairs; source g1-precheck.inc:149-157",
+        "validity": "64-bit load, barrier, pre/post lg1_open checks",
+        "stability": "full uint64 equality and both valid masks, source149-163"
+      },
+      "authorization_json_is_preflight_intent": true,
+      "actual_preflight_acceptance_basis": "result.json + boot-intent.json",
+      "new_device_queries": 0,
+      "boot_reissued": false,
+      "lifecycle_and_USB_audit": "owned by main; not certified by this calculation"
+    },
+    "decoded": {
+      "revision": 1,
+      "speedbin": 0,
+      "limitation": 0,
+      "initcode": [
+        20,
+        22,
+        25,
+        27
+      ],
+      "offsetraw_turbo": 0,
+      "offsetraw_svs": 0,
+      "aging": 1,
+      "aging_init_quot_diff": 2
+    },
+    "stock_compatible": "qcom,cpr3-msm8996pro-mmss-regulator",
+    "stock_policy": {
+      "soc_variant": "MSM8996 Pro",
+      "soc_match_table_id": 4,
+      "combo": 1,
+      "revision": 1,
+      "speedbin": 0,
+      "stock_corner": 2,
+      "array_index": 1,
+      "frequency_hz": 133000000,
+      "fuse_corner_index": 0,
+      "interpolation_at_target": false,
+      "array_selection": {
+        "qcom,cpr-corner-fmax-map": {
+          "selector": "speed_bin",
+          "offset": 0,
+          "cells": 8,
+          "tuple_size": 4,
+          "selected": [
+            2,
+            4,
+            6,
+            9
+          ]
+        },
+        "qcom,cpr-voltage-floor": {
+          "selector": "speed_bin",
+          "offset": 0,
+          "cells": 18,
+          "tuple_size": 9,
+          "selected": [
+            400000,
+            520000,
+            520000,
+            520000,
+            520000,
+            520000,
+            520000,
+            520000,
+            520000
+          ]
+        },
+        "qcom,cpr-voltage-ceiling": {
+          "selector": "speed_bin",
+          "offset": 0,
+          "cells": 18,
+          "tuple_size": 9,
+          "selected": [
+            400000,
+            670000,
+            670000,
+            745000,
+            825000,
+            905000,
+            960000,
+            1015000,
+            1065000
+          ]
+        },
+        "qcom,corner-frequencies": {
+          "selector": "speed_bin",
+          "offset": 0,
+          "cells": 18,
+          "tuple_size": 9,
+          "selected": [
+            0,
+            133000000,
+            214000000,
+            315000000,
+            401800000,
+            510000000,
+            560000000,
+            624000000,
+            652800000
+          ]
+        },
+        "qcom,cpr-open-loop-voltage-fuse-adjustment": {
+          "selector": "speed_bin",
+          "offset": 0,
+          "cells": 8,
+          "tuple_size": 4,
+          "selected": [
+            4294882296,
+            4294952296,
+            4294952296,
+            4294927296
+          ],
+          "selected_signed_uv": [
+            -85000,
+            -15000,
+            -15000,
+            -40000
+          ]
+        },
+        "qcom,cpr-floor-to-ceiling-max-range": {
+          "selector": "speed_bin",
+          "offset": 0,
+          "cells": 18,
+          "tuple_size": 9,
+          "selected": [
+            0,
+            70000,
+            70000,
+            75000,
+            80000,
+            90000,
+            95000,
+            100000,
+            100000
+          ]
+        },
+        "qcom,cpr-aging-max-voltage-adjustment": {
+          "selector": "shared",
+          "offset": 0,
+          "cells": 1,
+          "tuple_size": 1,
+          "selected": [
+            15000
+          ]
+        },
+        "qcom,allow-aging-voltage-adjustment": {
+          "selector": "shared",
+          "offset": 0,
+          "cells": 1,
+          "tuple_size": 1,
+          "selected": [
+            1
+          ]
+        },
+        "qcom,allow-aging-open-loop-voltage-adjustment": {
+          "selector": "shared",
+          "offset": 0,
+          "cells": 1,
+          "tuple_size": 1,
+          "selected": [
+            1
+          ]
+        }
+      },
+      "reference_uv": [
+        670000,
+        745000,
+        905000,
+        1065000
+      ],
+      "fuse_adjustment_uv": [
+        -85000,
+        -15000,
+        -15000,
+        -40000
+      ],
+      "round_up_step_uv": 5000,
+      "absolute_ceiling_uv": 670000,
+      "initial_dt_floor_uv": 520000,
+      "max_floor_to_ceiling_range_uv": 70000,
+      "maximum_startup_aging_uv": 15000,
+      "formula": {
+        "signed_steps": "(code & 0x10) ? -(code & 0xf) : (code & 0xf)",
+        "decoded_fuse_uv": "670000 + signed_steps * 10000",
+        "trimmed_fuse_uv": "decoded_fuse_uv - 85000",
+        "unaged_open_loop_uv": "clamp(round_up_5000(trimmed_fuse_uv), 520000, 670000)",
+        "unaged_ceiling_uv": "unaged_open_loop_uv",
+        "unaged_floor_uv": "max(520000, round_up_5000(unaged_ceiling_uv - 70000))",
+        "aged_ceiling_uv": "min(unaged_ceiling_uv + 15000, 670000)",
+        "aged_floor_uv": "min(unaged_floor_uv + 15000, aged_ceiling_uv)",
+        "aged_open_loop_uv": "min(unaged_open_loop_uv + 15000, aged_ceiling_uv)"
+      }
+    },
+    "row63_independent_check": {
+      "raw": "0x3a5b3bb5f3badb39",
+      "actual_lines": [
+        140,
+        141
+      ],
+      "bitstrings": [
+        "10100",
+        "10110",
+        "11001",
+        "11011"
+      ],
+      "initcodes": [
+        20,
+        22,
+        25,
+        27
+      ],
+      "signed_steps": [
+        -4,
+        -6,
+        -9,
+        -11
+      ],
+      "kernel_decode_matches": true,
+      "source_fused_uv": [
+        630000,
+        685000,
+        815000,
+        955000
+      ],
+      "stock_adjusted_fused_uv": [
+        545000,
+        670000,
+        800000,
+        915000
+      ]
+    },
+    "computed": {
+      "initcode0": 20,
+      "signed_steps": -4,
+      "decoded_fuse_uv": 630000,
+      "dt_fused_trim_uv": -85000,
+      "trimmed_fuse_uv": 545000,
+      "unaged": {
+        "floor_uv": 520000,
+        "open_loop_uv": 545000,
+        "ceiling_uv": 545000
+      },
+      "maximum_aging_added_uv": 15000,
+      "stock_startup": {
+        "floor_uv": 535000,
+        "open_loop_uv": 560000,
+        "ceiling_uv": 560000
+      }
+    },
+    "independent_stock_startup": {
+      "floor_uv": 535000,
+      "open_loop_uv": 560000,
+      "ceiling_uv": 560000
+    },
+    "modelready": true,
+    "state": "computed_stock_policy_only",
+    "raw_rows": {
+      "39": "0x401103ea7ab389d6",
+      "41": "0xd4c1838e02e761f0",
+      "63": "0x3a5b3bb5f3badb39",
+      "64": "0xc1dde74d5f3995ed",
+      "66": "0xab0e61ddc60a1d04",
+      "68": "0x00700000043ac54b"
+    },
+    "missing_rows": [],
+    "unstable_rows": [],
+    "cpu_baseline_config_hz": 614400000,
+    "measured_rail_uv": null,
+    "required_rail_write_uv": null,
+    "analog_voltage_verified": false,
+    "settled_verified": false,
+    "gpu_write_permission": false,
+    "device_operations": 0,
+    "main_lifecycle_USB_end_review_pending": false,
+    "main_end_notification": {
+      "basis": "user/main final notification, not independently re-queried",
+      "console_bytes": 65189,
+      "pipe_error_at": "2026-11-23T04:41:18+08:00",
+      "normal_timer_four_stop_drain1": true,
+      "drain_target": 65140,
+      "source_dropped_bytes": 0,
+      "same_fastboot_verified_at": "2026-11-23T04:42:09+08:00",
+      "sole_devices_product_check_by_main": true
+    },
+    "protected_originals_before": {
+      "evidence/gpu-g1-20261123/fuses/calculate-stock133.py": "1f17307d1cf3f45f3a64a518092821173e05f6f304eca0ecac01c8f6f364b43f",
+      "evidence/gpu-g1-20261123/fuses/pending-raw-input.json": "f7b942351c3453af92c2e1a0d4bfb85d9c7de359a6f56266fa2419da292120ea",
+      "evidence/gpu-g1-20261123/fuses/stock133-model.json": "88b004349bfd50697e639eb0d6a472087145c0b21fd56ed357b2c8f77865ed22",
+      "ports/hakios-lithium/gpu/g1-fuse.h": "65a8dd90ddff560f7378f9e813e6690448fccebe36dfbcdec3d19c1915368b69",
+      "scripts/tests/test-gpu-g1-fuse.c": "df5bfd4a95a912c0360da400998ff7c04b6c549312b654d9733d54f89de00653",
+      "evidence/gpu-g1-20261123/fuses/calculator-qa.py": "9cf31d13781100827972c91661efacf58bfdeb34e6198ee2392bac1e17505b7e",
+      "evidence/gpu-g1-20261123/fuses/run-tests.py": "f41ed4049b19d6c50801131f46d61686f60abb3afebb2b97c3d090fab3413e85"
+    },
+    "protected_originals_after": {
+      "evidence/gpu-g1-20261123/fuses/calculate-stock133.py": "1f17307d1cf3f45f3a64a518092821173e05f6f304eca0ecac01c8f6f364b43f",
+      "evidence/gpu-g1-20261123/fuses/pending-raw-input.json": "f7b942351c3453af92c2e1a0d4bfb85d9c7de359a6f56266fa2419da292120ea",
+      "evidence/gpu-g1-20261123/fuses/stock133-model.json": "88b004349bfd50697e639eb0d6a472087145c0b21fd56ed357b2c8f77865ed22",
+      "ports/hakios-lithium/gpu/g1-fuse.h": "65a8dd90ddff560f7378f9e813e6690448fccebe36dfbcdec3d19c1915368b69",
+      "scripts/tests/test-gpu-g1-fuse.c": "df5bfd4a95a912c0360da400998ff7c04b6c549312b654d9733d54f89de00653",
+      "evidence/gpu-g1-20261123/fuses/calculator-qa.py": "9cf31d13781100827972c91661efacf58bfdeb34e6198ee2392bac1e17505b7e",
+      "evidence/gpu-g1-20261123/fuses/run-tests.py": "f41ed4049b19d6c50801131f46d61686f60abb3afebb2b97c3d090fab3413e85"
+    }
+  },
+  "independent_s2_decode_report": "evidence/gpu-g1-20261123/spmi/runtime-precheck02/runtime-decode.json",
+  "stock133_fuse_report": "evidence/gpu-g1-20261123/fuses/runtime-precheck02/model-final.json",
+  "index_sha256": "fdf775be66b9e456182cd10df6271edadef7f977b6d0b02fa275030f985d1eb2",
+  "accepted_boot_counts": {
+    "hakios": 98,
+    "ios16": 67
+  },
+  "next_power_on_device_authorized": false,
+  "baseline_preserved": true
+}

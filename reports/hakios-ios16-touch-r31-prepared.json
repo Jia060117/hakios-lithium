@@ -1,0 +1,127 @@
+{
+  "schema": 1,
+  "revision": "R31-touch-qup-phase",
+  "recorded_at": "2026-11-20T01:33:06.097698+08:00",
+  "phase": "host_prepared_before_device_operations",
+  "passed": true,
+  "image_path": "artifacts/hakios/lithium-ios16/phase4-r31-touch-qup-phase/lithium-hakios-ios16-r31-touch-qup-phase.img",
+  "image_sha256": "a6bd21ef428e620f4cf9fe9f5d954c23c00c12d3d19efe523a70b67b2e2d0f53",
+  "image_bytes": 16293888,
+  "kernel_sha256": "ce7b0b0e81830f27d5e0133460cad8378b8c66c11b5527abba1d9bccb1a7a1c3",
+  "payload_boot_args": "bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 touch_stage=1 touch_clock_init=1 touch_diag=1 touch_qup_phase=1",
+  "package_contract": "artifacts/hakios/lithium-ios16/phase4-r31-touch-qup-phase/contract.json",
+  "display_baseline": "R20-display",
+  "full_hakios_build": true,
+  "normal_mu_d22ap_support_build": true,
+  "launchd_jobs": 413,
+  "source_review_checks": 82,
+  "instruction_scans": 46,
+  "base_suites": 32,
+  "followup_suites": 17,
+  "total_suites": 49,
+  "core_enabled_scenarios": 50762,
+  "adapter_scenarios": 35040,
+  "adapter_assertions": 5371812,
+  "diagnostic_init_scenarios": 378,
+  "packager_tests": 130,
+  "packager_subtests": 820,
+  "merged_source_hashes": 111,
+  "sanitizers": [
+    "ASan",
+    "UBSan"
+  ],
+  "status_policy": "experimental_exact_observed_pair_by_phase",
+  "reset_status_words": [
+    "0x0c000000"
+  ],
+  "run_clock_pause_status_words": [
+    "0x0c000000",
+    "0x0c110000"
+  ],
+  "source_defines_field_layout_and_order_only": true,
+  "numeric_fsm_semantics_verified": false,
+  "architectural_status_legality_verified": false,
+  "pause_pair_legality_verified": false,
+  "poll_slots_max": 4,
+  "poll_fields_each": 5,
+  "exact_failed_poll_preserved": true,
+  "poll_logging_extra_mmio": false,
+  "poll_logging_extra_time_callback": false,
+  "new_features_default_off": true,
+  "new_fifo_data_port_access": false,
+  "new_fifo_tags_requested": false,
+  "id_requested": false,
+  "max_sw_reset": 1,
+  "max_run_writes": 1,
+  "max_qup_writes": 18,
+  "first_run_bus_activity_unverified": true,
+  "terminal_gic": "unread",
+  "hardware_verified": false,
+  "physical_touch_verified": false,
+  "old_ten_modules_and_patch_byte_identical": true,
+  "source_backup_files": 904,
+  "original_index_preserved": true,
+  "historical_aggregate_passed": false,
+  "historical_note": "R9 old geometry0021 aggregate hash gate remains unresolved; not relabelled passed",
+  "parallel_execution": [
+    {
+      "agent": "Euler",
+      "work": "Pinned STATUS field/order audit and primary Git tree/blob validation",
+      "main_review": "Independently rehashed 7 local sources/blobs and 3259 canonical trees; read decoder196-214; numeric legality not proven"
+    },
+    {
+      "agent": "Hume",
+      "work": "Separate default-off core, exact failed-poll preservation and exhaustive phase-policy tests",
+      "main_review": "Reviewed last-pass/failure-slot publication, accepted-read time provenance, poison and exact A/B checks; full50762 cases independently rerun"
+    },
+    {
+      "agent": "Euclid",
+      "work": "Actual adapter/core fixture and fault-injection suites",
+      "main_review": "Reviewed independent18write/17read policy and every poll field; initial format mismatch aligned to actual unread semantics, no excluded groups; full35040 cases rerun"
+    },
+    {
+      "agent": "Sartre",
+      "work": "R31 packager and130 synthetic validator tests",
+      "main_review": "Reviewed immutableR30 ancestry/currentsource closure/APFS readback; interimstrict evidence retained, finalexactpair metadata and130tests independently rerun"
+    },
+    {
+      "agent": "Singer",
+      "work": "Independent production audit, small syntax/context probes",
+      "main_review": "Read final report/source line windows, no source blockers; actual linked prologue readback separately performed by main"
+    }
+  ],
+  "device_queries": 0,
+  "device_boots": 0,
+  "adb_commands": 0,
+  "partition_operations": 0,
+  "qemu": false,
+  "boot_totals_unchanged": {
+    "hakios": 54,
+    "ios16": 23
+  },
+  "corrections": [
+    "Core strictly gated version preserved as PHASE1 evidence; final amendment explicitly approved only exact observed pair in post-RESET phases",
+    "Actual adapter test initially expected numeric done_us=0 despite zero valid reads; changed expected log to unread and reran all groups",
+    "Host-only timeout for new fulladapter suite is60s since sanitizer run~24s; nodevice/coretimeout ortestassertions changed",
+    "First package launch did not reach Python because WSL system bus was unavailable; saved failure, verified PID1/systemd bus running and no jobs, then reran host packaging without device operations"
+  ],
+  "unverified": [
+    "Numeric O_FSM1/I_FSM2 meanings and PAUSE legality; field layout/source order are established",
+    "R31 physical reset effect, ownership, electrical readiness and transient bus activity",
+    "R31 real phase/timer/USB/end-screen behavior; candidate not booted at host report time",
+    "Divider actualSCL, full/count phase semantics, IRQ/HID and physical touch",
+    "PermanentMMIO/map/barrier stalls orabort/SError/XPU not contained by softwarebudget"
+  ],
+  "evidence_sha256": {
+    "evidence/touch-r31-20261120/main/final-offline-preflight.json": "faa6a84e1c1fad77ee3bbe2a8c25e35c50d3ae422c88e320779030836d6c4f03",
+    "evidence/touch-r31-20261120/main/production-freeze.json": "2662302544f6ea1694b9fb2cfca5f89d492fe110ff8cf8d7e11aa8d5ecb24a8a",
+    "evidence/touch-r31-20261120/main/primary-source-review.json": "a3a206d805e0cab6d682ee7708dec9ed5bd0bed88d7e7c156eefa64deaac8fe4",
+    "evidence/touch-r31-20261120/main/kernel-stack-review.json": "833a859ab552bb56b137cd2e9f3a94fa3f8e4f79ffaa6f5fb92cbddf7fc84f32",
+    "evidence/touch-r31-20261120/protocol/findings.md": "d1d72c0f4b09e42a027f47613684318dceacaa9e26875ee972b244dea3b25316",
+    "evidence/touch-r31-20261120/protocol/source-manifest.json": "c27cd151c4f090319e631a88eb4e9cae6a206b97d3ea0d5bf162141f40da9ed9",
+    "evidence/touch-r31-20261120/core/phase2-amended/final-freeze.json": "0fc9965e3d1946d11017f93cb57ac2f792b478d8f6ba81bc1568bc066b2034a1",
+    "evidence/touch-r31-20261120/adapter/final-results.json": "84261bbfe68d2434a3fc7741904333af071c41725c19e4a3f79bd750bce18100",
+    "evidence/touch-r31-20261120/independent-review/report.json": "3f07692f832696536ee772109611b55fcb8761a77bf2e84855bb4e6f2e913798",
+    "evidence/touch-r31-20261120/packager/unit-tests.json": "67e689527ea2f46eb3a959b65ef03b88976964ddf14231972e42dbc5b595c1fa"
+  }
+}

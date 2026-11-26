@@ -1,0 +1,55 @@
+{
+  "all_passed": true,
+  "qemu_used": false,
+  "hardware_verified": false,
+  "kernel_sha256": "f2ea131e460ce9a98351cd1f48396ca0e448f208058d7818f0f8f5647bee38e5",
+  "root_bytes": 17179869184,
+  "volatile_limit_bytes": 67108864,
+  "lower_scsi_readonly_unchanged": true,
+  "exact_driver_strategy_tested": true,
+  "seed_init_rollback_tested": true,
+  "native_calls_verified": true,
+  "allocator_nopagewait_verified": true,
+  "seeded_root_fsck_and_full_comparison": true,
+  "seed_sha256": "87705c528286bd3f14e6a6868aacb3805616915be4c710cf547de989c912a2c9",
+  "seed_report_sha256": "41e9201f010dab006932d47ce3cd6c4c7adc2cb1804b73ab834e4e45573d8cff",
+  "host_logs": [
+    {
+      "path": "out/mount-phase1/cow-validation/ufs-cow-test.log",
+      "sha256": "3a544f85814f2fbdd046038f409d03e626bd9977c7ba9707b357daea24f8830f",
+      "passed_groups": 5
+    },
+    {
+      "path": "out/mount-phase1/cow-validation/ufs-cow-adapter-test.log",
+      "sha256": "6d0dc6445259c710cde98ed8447c8587b0eeacefd273c8b9047c6ef7367a827f",
+      "passed_groups": 5
+    }
+  ],
+  "input_sha256": {
+    "/mnt/f/IOS-MIX1/ports/lithium/native/ufs_cow.h": "4a19eda852fbf5b1a82a92a53fccc525b851099c3c798af6edb11f92c7ddae61",
+    "/mnt/f/IOS-MIX1/ports/lithium/native/ufs_cow_adapter.inc": "9152b23b55a6347e645c236cec0a9d35345b08163c2b256f1e5d35c1ffa7cf81",
+    "/mnt/f/IOS-MIX1/ports/lithium/patches/xnu-7195/0026-lithium-volatile-root.patch": "7ad3cc1442e82dd343939d7eb7a94cf92907dcf765798f26fe4f1df855eda4f1",
+    "/mnt/f/IOS-MIX1/scripts/validate-ios14-native-cow.py": "285191cba212502db769a9e1bd5977dced2645aa71c3f741f2345102b076b9c5",
+    "/home/jia/ios-mix1-build/xnu7195-lithium/src/bsd/dev/lithium_ufs.c": "336cc2c95547bc39f9472fee22dd5e3c7b4816e95946034a3831411892c6d8de",
+    "/home/jia/ios-mix1-build/xnu7195-lithium/src/bsd/vfs/vfs_subr.c": "9f195a1d03f0d180dfca9f8c2282225b83d0ac0def83e7033a54fdaaf06b9cbf",
+    "/mnt/f/IOS-MIX1/ports/lithium/host/ufs-cow-test.c": "d0e482ecf1c0dda567eb2c251a8aa89c6bcdca91b0134e999c0f4f05a865f762",
+    "/mnt/f/IOS-MIX1/ports/lithium/host/ufs-cow-adapter-test.c": "bbf0074eba6fcc29b3104f954d1b4a82a373a024c2bb78f824c48d476c5faa83",
+    "/mnt/f/IOS-MIX1/ports/lithium/host/hfs-image-compare.inc": "858ee8b470e23a41332f3d494a17ab9c7f8616fa5c97993fe7686d10d7b0797d",
+    "/home/jia/ios-mix1-build/xnu7195-lithium/src/osfmk/kern/zalloc.h": "74fb1db4f7b935a4e237032cb9a4328873cdbc045a4e780e652912626bff0246",
+    "/mnt/f/IOS-MIX1/reports/ios14-preboot-seed.json": "41e9201f010dab006932d47ce3cd6c4c7adc2cb1804b73ab834e4e45573d8cff",
+    "/mnt/f/IOS-MIX1/out/mount-phase1/preboot-seed.bin": "87705c528286bd3f14e6a6868aacb3805616915be4c710cf547de989c912a2c9"
+  },
+  "evidence_sha256": {
+    "out/mount-phase1/cow-validation/driver-strategy.inc": "4fc9d0f7c93d814e4722fb471f3360fdb1d285c7d10557a17bb15030d2412455",
+    "out/mount-phase1/cow-validation/lc_read.asm": "f7b4cb1fea2093939bba153b753fbbc52586843b259614f35948ae034680e876",
+    "out/mount-phase1/cow-validation/lc_write.asm": "d04a44d3bb918503eb75c093f5c789cd2f16b6f58ded81b0a5f922148007f09a",
+    "out/mount-phase1/cow-validation/lithium_ufs_ioctl.asm": "2443638bd60d6e3f065d1dd92ff31b333f81227e79a82afac37989626442425d",
+    "out/mount-phase1/cow-validation/lithium_ufs_strategy.asm": "1afbf7173d6153b8f9c6cb03dbe8738d0fdca377071fee4759a33134b7a0f1d8",
+    "out/mount-phase1/cow-validation/lithium_ufs_write.asm": "0f8009d0574472b9fe94526aa9bea70f34702a87b6ab3e1096c63bd967a6868b",
+    "out/mount-phase1/cow-validation/ufs-cow-adapter-test.log": "6d0dc6445259c710cde98ed8447c8587b0eeacefd273c8b9047c6ef7367a827f",
+    "out/mount-phase1/cow-validation/ufs-cow-test.log": "3a544f85814f2fbdd046038f409d03e626bd9977c7ba9707b357daea24f8830f",
+    "out/mount-phase1/cow-validation/ufs_cow_alloc.asm": "d6f83863857c8c884ff55dd85b0a6a8742196e54acf4f15537306a1c9c03442d",
+    "out/mount-phase1/cow-validation/ufs_cow_init.asm": "32139dcc29559e3d97ce0735864f1287ab1a8404fcd834ec9eb66f6eafae7347",
+    "out/mount-phase1/cow-validation/vfs_mountroot.asm": "ac45861954f7f5248b09f72d5e79bc18d232417733d66f9f085612748bdc6028"
+  }
+}

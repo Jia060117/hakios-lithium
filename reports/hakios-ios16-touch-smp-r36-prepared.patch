@@ -1,0 +1,1001 @@
+diff --git a/AGENTS.md b/AGENTS.md
+index b63e93d..acb2985 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -1,3 +1,5 @@
++2026-11-20 R36三核触摸兼容主机候选完成：R35 combined于18:14:16单次启动，三核online/ICM1，但旧touch单核门禁在affinity101/max2拒绝初始化，不能作三核触摸性能验收。整数2491/162535/162603us、memcpy3534/110/110MBps，慢核仍约65倍，MHz/cache命中未测。新默认关闭touch_smp1，初始化和每次poll绑定logical0并核对affinity1后才MMIO，退出恢复原绑定；旧诊断门禁保留。实际HakiOS增量链接、68项专项及整包逐层读回通过，镜像d4f2d0ee4f4be24952d7439b17834d0d159fa76e78da40bec59622b6623b5669；未改PLL/电压、未重建未改Mu/用户态。Harvey提取CPU、Nietzsche专项/复核，主代理实际源码/日志/哈希独立读回。本阶段无新设备命令，62/31不变；保持当前R35，R36未上机，三核收益未验证。R20及旧冻结/原索引保留；UFS自动返回仍关。见reports/hakios-ios16-touch-smp-r36-prepared.md/json，运行见reports/hakios-ios16-device-r35-ui-perf-combined.md。
++
+ 2026-11-20 R35三项合并包已准备、预检等待：用户反馈lite仍点不动并要求前述选项一起试；已说明lite原含applog_ui_quiet1/ui_lite1，本包仅新增cpus3，bootcpu1不变。同冻结内核/根APFS、无重编译，实际整包读回通过；镜像bfc3a041b7d81f33582dae04ba9894c53b3b44f16e1b5f70ba10b1672500370d。唯一一次只读fastboot devices返回0但枚举空，未到身份/电量、无新USB/boot/复位/分区/ADB/QEMU/重试；61/30不变，启动未消费。保留旧lite与空枚举记录；用户手动返回Fastboot确认后，复用冻结包建立新独立预检尝试，不自动查询。三核/流畅度未验证，未启用8996未适配调频，UFS自动返回仍关。见reports/hakios-ios16-r35-ui-performance-combined-prepared.md/json及reports/local/20261120-r35-ui-perf-combined-approved/。
+ 
+ 2026-11-20 R35 lite单次上机运行中：用户要求“试试看？”后，18:07:16.936822+08:00 Fastboot接受冻结lite镜像fda8fd7a18b8f0468c7be483e3080a30a2b9aee97d862fefc077f4c99eced9d3一次，五项只读预检通过；正常Data及辅助功能偏好写入已说明。actualaffinity1/bootcpu1/cpus1，MIDR512f2011/SCTLR34d4593d/I-C-M均1，整数2472us/memcpy3485MBps；非慢核或实时MHz结论。ui_lite1执行日志已见，SB main_queue_enter相对constructor71445ms，触摸IDe7/至少4200报告无read/report错误。18:09:28快照1932帧/446148字节连续前缀独立重放一致、gap/dup/残帧/lost0，USB仍采集，无最终timer/drain或用户流畅度反馈。quiet+lite同时启用，不做单变量归因；三核未启动，未改频率/电压/缓存策略。无刷分区/ADB/Android/Recovery/QEMU/启动后设备查询或重试，计数61/30。保持同次运行和USB，等待桌面/后台卡片/返回桌面对比；不自动新启动。R20/R32/R33/R34/R35冻结与原索引保留。见reports/hakios-ios16-device-r35-ui-perf-lite.md/json。
+diff --git a/maintenance/hakios-lithium/peripherals/touch-smp-test.c b/maintenance/hakios-lithium/peripherals/touch-smp-test.c
+new file mode 100644
+index 0000000..1241c76
+--- /dev/null
++++ b/maintenance/hakios-lithium/peripherals/touch-smp-test.c
+@@ -0,0 +1,296 @@
++/* R36 focused host test. Actual production headers/include, existing Stage1
++ * RAM fixture only; retained_stage1_main is deliberately never run.
++ * Scheduler migration is a mock, not hardware/MMIO/ownership validation. */
++#define main retained_stage1_main
++#include "touch-stage1-test.c"
++#undef main
++#include "../../../ports/hakios-lithium/peripherals/boot-options.h"
++
++typedef struct mock_processor {
++    int logical;
++    uint64_t affinity;
++} *processor_t;
++typedef int kern_return_t;
++typedef int processor_flavor_t;
++typedef void *host_t;
++typedef int *processor_info_t;
++typedef unsigned mach_msg_type_number_t;
++typedef struct {
++    int cpu_type, cpu_subtype, running, slot_num, is_master;
++} processor_basic_info_data_t;
++#define KERN_SUCCESS 0
++#define PROCESSOR_BASIC_INFO 1
++#define PROCESSOR_BASIC_INFO_COUNT \
++    ((mach_msg_type_number_t)(sizeof(processor_basic_info_data_t) / sizeof(int)))
++#define THREAD_CONTINUE_NULL ((void (*)(void))0)
++static struct mock_processor target, prior;
++static processor_t binding, binds[4];
++static unsigned bind_count, block_count, lookup_count, info_count, cases;
++static int logical, mismatch;
++static bool missing;
++static kern_return_t info_error;
++static mach_msg_type_number_t returned_count;
++static processor_basic_info_data_t returned_info;
++
++static processor_t cpu_to_processor(int cpu)
++{
++    assert(cpu == 0);
++    ++lookup_count;
++    return missing ? NULL : &target;
++}
++static kern_return_t processor_info(processor_t processor,
++    processor_flavor_t flavor, host_t *host, processor_info_t output,
++    mach_msg_type_number_t *count)
++{
++    ++info_count;
++    assert(processor == &target && flavor == PROCESSOR_BASIC_INFO);
++    assert(host && *host == NULL);
++    assert(count && *count == PROCESSOR_BASIC_INFO_COUNT);
++    memcpy(output, &returned_info, sizeof(returned_info));
++    *count = returned_count;
++    return info_error;
++}
++static processor_t thread_bind(processor_t next)
++{
++    assert(bind_count < sizeof(binds) / sizeof(binds[0]));
++    processor_t old = binding;
++    binds[bind_count++] = next;
++    binding = next;
++    return old;
++}
++static void thread_block(void (*continuation)(void))
++{
++    assert(continuation == THREAD_CONTINUE_NULL);
++    ++block_count;
++    if (block_count == 1 && mismatch) {
++        logical = mismatch == 1 ? 2 : 0;
++        mock.affinity = mismatch == 1 ? 1 : 2;
++    } else if (binding) {
++        logical = binding->logical;
++        mock.affinity = binding->affinity;
++    }
++}
++static int cpu_number(void) { return logical; }
++#define LITHIUM_TOUCH_CPU_SCOPE_HOST_TEST 1
++#include "../../../ports/hakios-lithium/peripherals/touch-cpu-scope.h"
++
++static void setup(void)
++{
++    reset();
++    target = (struct mock_processor){0, 1};
++    prior = (struct mock_processor){2, 3};
++    binding = &prior;
++    logical = 2;
++    mock.affinity = 3;
++    mock.max_cpu = 2;
++    memset(binds, 0, sizeof(binds));
++    bind_count = block_count = lookup_count = info_count = 0;
++    mismatch = 0;
++    missing = false;
++    info_error = KERN_SUCCESS;
++    returned_count = PROCESSOR_BASIC_INFO_COUNT;
++    returned_info = (processor_basic_info_data_t){.running = 1, .slot_num = 0};
++}
++static void pass(const char *name)
++{
++    ++cases;
++    printf("PASS %s\n", name);
++}
++static void no_io(void)
++{
++    assert(mock.maps == 0 && mock.reads == 0 && mock.writes == 0);
++}
++static void scope_tests(void)
++{
++    const int bad_max[] = {-2147483647 - 1, -1, 3, 2147483647};
++    for (unsigned i = 0; i < sizeof(bad_max) / sizeof(bad_max[0]); ++i) {
++        setup();
++        mock.max_cpu = bad_max[i];
++        struct lithium_touch_cpu_scope s = {&prior, true};
++        assert(!lithium_touch_cpu_enter(&s));
++        assert(!s.bound && binding == &prior);
++        assert(bind_count == 0 && block_count == 0 && lookup_count == 0);
++        assert(info_count == 0);
++        lithium_touch_cpu_leave(&s);
++        no_io();
++        pass("scope invalid max declines before lookup/bind");
++    }
++    for (unsigned i = 0; i < 3; ++i) {
++        setup();
++        if (i == 0) mock.interrupt_context = 1;
++        if (i == 1) mock.interrupts_enabled = 0;
++        if (i == 2) missing = true;
++        struct lithium_touch_cpu_scope s = {0};
++        assert(!lithium_touch_cpu_enter(&s));
++        assert(!s.bound && binding == &prior);
++        assert(bind_count == 0 && block_count == 0);
++        assert(lookup_count == (i < 2 ? 0u : 1u));
++        assert(info_count == 0);
++        lithium_touch_cpu_leave(&s);
++        no_io();
++        pass("scope IRQ/disabled/missing declines before bind");
++    }
++    static const char *const info_cases[] = {
++        "scope processor_info API failure declines before bind",
++        "scope processor_info zero count declines before bind",
++        "scope processor_info short count declines before bind",
++        "scope processor_info oversized count declines before bind",
++        "scope processor_info not running declines before bind",
++        "scope processor_info negative slot declines before bind",
++        "scope processor_info nonzero slot declines before bind",
++    };
++    for (unsigned i = 0; i < sizeof(info_cases) / sizeof(info_cases[0]); ++i) {
++        setup();
++        if (i == 0) info_error = 5;
++        if (i == 1) returned_count = 0;
++        if (i == 2) returned_count = PROCESSOR_BASIC_INFO_COUNT - 1;
++        if (i == 3) returned_count = PROCESSOR_BASIC_INFO_COUNT + 1;
++        if (i == 4) returned_info.running = 0;
++        if (i == 5) returned_info.slot_num = -1;
++        if (i == 6) returned_info.slot_num = 1;
++        struct lithium_touch_cpu_scope s = {0};
++        assert(!lithium_touch_cpu_enter(&s));
++        assert(!s.bound && binding == &prior);
++        assert(info_count == 1 && lookup_count == 1);
++        assert(bind_count == 0 && block_count == 0);
++        lithium_touch_cpu_leave(&s);
++        no_io();
++        pass(info_cases[i]);
++    }
++    for (int max = 0; max <= 2; ++max)
++            for (unsigned unbound = 0; unbound < 2; ++unbound) {
++                setup();
++                mock.max_cpu = max;
++                processor_t saved = unbound ? NULL : &prior;
++                binding = saved;
++                struct lithium_touch_cpu_scope s = {0};
++                assert(lithium_touch_cpu_enter(&s));
++                assert(logical == 0 && mock.affinity == 1);
++                assert(s.bound && s.previous == saved && binding == &target);
++                assert(bind_count == 1 && block_count == 1);
++                assert(info_count == 1);
++                lithium_touch_cpu_leave(&s);
++                assert(!s.bound && binding == saved && binds[1] == saved);
++                assert(bind_count == 2 && block_count == 2);
++                lithium_touch_cpu_leave(&s);
++                assert(bind_count == 2 && block_count == 2);
++                no_io();
++                pass("scope migrates logical0/aff1 and restores prior/null binding");
++            }
++    for (int fail = 1; fail <= 2; ++fail)
++        for (unsigned unbound = 0; unbound < 2; ++unbound) {
++            setup();
++            mismatch = fail;
++            processor_t saved = unbound ? NULL : &prior;
++            binding = saved;
++            struct lithium_touch_cpu_scope s = {0};
++            assert(!lithium_touch_cpu_enter(&s));
++            assert(!s.bound && binding == saved && binds[1] == saved);
++            assert(bind_count == 2 && block_count == 2);
++            lithium_touch_cpu_leave(&s);
++            assert(bind_count == 2);
++            no_io();
++            pass("scope logical/affinity mismatch restores prior/null binding");
++        }
++}
++static void parser_tests(void)
++{
++    static const struct { const char *args; bool valid, touch, smp; } rows[] = {
++        {"", true, false, false},
++        {"touch=1", true, true, false},
++        {"touch=0", true, false, false},
++        {"touch=1 touch_smp=1", true, true, true},
++        {"touch_smp=1 touch=1", true, true, true},
++        {"touch=1 touch_smp=0", true, true, false},
++        {"touch=1 touch_smp=1 touch_log=1 touch_poll=1", true, true, true},
++        {"touch=1 touch_smp=1 gpu_probe=0 gpu_stage=0", true, true, true},
++        {"touch_smp=1", false, false, false},
++        {"touch_smp=0", false, false, false},
++        {"touch=0 touch_smp=1", false, false, false},
++        {"touch=0 touch_smp=0", false, false, false},
++        {"touch=1 touch_smp=1 touch_smp=1", false, false, false},
++        {"touch=1 touch_smp=0 touch_smp=1", false, false, false},
++        {"touch=1 touch_smp=0 touch_smp=0", false, false, false},
++        {"touch=1 touch_smp=2", false, false, false},
++        {"touch=1 touch_smp=9", false, false, false},
++        {"touch=1 touch_smp=-1", false, false, false},
++        {"touch=1 touch_smp=01", false, false, false},
++        {"touch=1 touch_smp=", false, false, false},
++        {"touch=1 touch_smp", false, false, false},
++        {"touch=1 touch_smp=x", false, false, false},
++        {"touch=1 touch_smp=1 touch_stage=0", false, false, false},
++        {"touch=1 touch_smp=1 touch_stage=1", false, false, false},
++        {"touch=1 touch_smp=0 touch_stage=1", false, false, false},
++        {"touch=1 touch_smp=1 gpu_probe=1", false, false, false},
++        {"touch=1 touch_smp=0 gpu_probe=1", false, false, false},
++        {"touch=1 touch_smp=1 gpu_stage=1", false, false, false},
++        {"touch=1 touch_smp=1 gpu_stage=4", false, false, false},
++        {"touch=1 touch_smp=0 gpu_stage=1", false, false, false},
++    };
++    for (unsigned i = 0; i < sizeof(rows) / sizeof(rows[0]); ++i) {
++        struct lithium_peripheral_options o;
++        memset(&o, 0xa5, sizeof(o));
++        bool valid = lithium_peripheral_options_parse(rows[i].args,
++            strlen(rows[i].args), &o);
++        assert(valid == rows[i].valid);
++        assert(o.touch == rows[i].touch && o.touch_smp == rows[i].smp);
++        if (!valid) {
++            struct lithium_peripheral_options zero = {0};
++            assert(memcmp(&o, &zero, sizeof(o)) == 0);
++        }
++        pass(rows[i].args[0] ? rows[i].args : "parser default off");
++    }
++}
++static void stage_tests(void)
++{
++    for (int max = 0; max <= 2; ++max) {
++        reset();
++        mock.max_cpu = max;
++        lithium_touch_stage1_probe();
++        if (max == 0) complete();
++        else { stopped("execution_context", true); no_io(); }
++        pass("Stage1 legacy probe preserves single-core gate");
++        reset();
++        mock.max_cpu = max;
++        lithium_touch_stage1_initialize();
++        if (max == 0) complete();
++        else { stopped("execution_context", true); no_io(); }
++        pass("Stage1 legacy initialize preserves single-core gate");
++    }
++    for (int max = 1; max <= 2; ++max) {
++        setup();
++        mock.max_cpu = max;
++        struct lithium_touch_cpu_scope s = {0};
++        assert(lithium_touch_cpu_enter(&s));
++        lithium_touch_stage1_run_context(true, true);
++        complete();
++        lithium_touch_cpu_leave(&s);
++        assert(binding == &prior && !s.bound && bind_count == 2);
++        pass("Stage1 opt-in SMP succeeds in bound mock context, binding restored");
++    }
++    for (unsigned i = 0; i < 6; ++i) {
++        reset();
++        mock.max_cpu = 2;
++        if (i == 0) mock.max_cpu = -1;
++        if (i == 1) mock.max_cpu = 3;
++        if (i == 2) mock.interrupt_context = 1;
++        if (i == 3) mock.interrupts_enabled = 0;
++        if (i == 4) mock.affinity = 0;
++        if (i == 5) mock.affinity = 2;
++        lithium_touch_stage1_run_context(true, true);
++        stopped("execution_context", true);
++        no_io();
++        pass("Stage1 opt-in retains max/IRQ/interrupt/affinity rejection");
++    }
++}
++int main(void)
++{
++    scope_tests();
++    unsigned scope_cases = cases;
++    parser_tests();
++    unsigned parser_cases = cases - scope_cases;
++    stage_tests();
++    printf("RESULT PASS cases=%u scope=%u parser=%u stage=%u hardware_mmio_verified=0\n",
++        cases, scope_cases, parser_cases, cases - scope_cases - parser_cases);
++    return 0;
++}
+diff --git a/ports/hakios-lithium/peripherals/boot-options.h b/ports/hakios-lithium/peripherals/boot-options.h
+index b51f268..2de893c 100644
+--- a/ports/hakios-lithium/peripherals/boot-options.h
++++ b/ports/hakios-lithium/peripherals/boot-options.h
+@@ -8,6 +8,7 @@ struct lithium_peripheral_options {
+     bool touch;
+     bool touch_log;
+     bool touch_poll;
++    bool touch_smp;
+     bool touch_stage_requested;
+     unsigned touch_stage;
+     bool touch_clock_init;
+@@ -43,6 +44,7 @@ enum lithium_peripheral_option_id {
+     LITHIUM_GPU_PROBE,
+     LITHIUM_GPU_STAGE,
+     LITHIUM_GPU_WD,
++    LITHIUM_TOUCH_SMP,
+     LITHIUM_OPTION_COUNT
+ };
+ 
+@@ -112,6 +114,7 @@ lithium_peripheral_options_parse(const char *args, size_t length,
+         [LITHIUM_GPU_PROBE] = {"gpu_probe", sizeof("gpu_probe") - 1, 1},
+         [LITHIUM_GPU_STAGE] = {"gpu_stage", sizeof("gpu_stage") - 1, 4},
+         [LITHIUM_GPU_WD] = {"gpu_wd", sizeof("gpu_wd") - 1, 1},
++        [LITHIUM_TOUCH_SMP] = {"touch_smp", sizeof("touch_smp") - 1, 1},
+     };
+     unsigned values[LITHIUM_OPTION_COUNT] = {0};
+     unsigned seen = 0;
+@@ -243,7 +246,15 @@ lithium_peripheral_options_parse(const char *args, size_t length,
+          values[LITHIUM_TOUCH_ID_PROBE] != 0 ||
+          values[LITHIUM_TOUCH_SNAPSHOT] != 0 ||
+          !lithium_touch_id_ram_args(args, length))) return false;
++    /* Live touch only: retain legacy diagnostic/GPU single-core contracts.
++     * Explicit zero also belongs to a live-touch request, not another probe. */
++    if ((seen & (1u << LITHIUM_TOUCH_SMP)) != 0 &&
++        (values[LITHIUM_TOUCH] != 1 ||
++         (seen & (1u << LITHIUM_TOUCH_STAGE)) != 0 ||
++         values[LITHIUM_GPU_PROBE] != 0 || values[LITHIUM_GPU_STAGE] != 0))
++        return false;
+     options->touch = values[LITHIUM_TOUCH] != 0;
++    options->touch_smp = options->touch && values[LITHIUM_TOUCH_SMP] != 0;
+     options->touch_log = options->touch && values[LITHIUM_TOUCH_LOG] != 0;
+     options->touch_poll = options->touch && values[LITHIUM_TOUCH_POLL] != 0;
+     options->touch_stage_requested = (seen & (1u << LITHIUM_TOUCH_STAGE)) != 0;
+diff --git a/ports/hakios-lithium/peripherals/kernel.inc b/ports/hakios-lithium/peripherals/kernel.inc
+index 463f0eb..896a5ff 100644
+--- a/ports/hakios-lithium/peripherals/kernel.inc
++++ b/ports/hakios-lithium/peripherals/kernel.inc
+@@ -11,6 +11,10 @@
+     (__builtin_arm_rsr64("MPIDR_EL1") & 0xff00ffffffULL)
+ #endif
+ 
++#if !defined(LITHIUM_PERIPHERAL_HOST_TEST)
++#include "touch-cpu-scope.h"
++#endif
++
+ #ifndef LITHIUM_TOUCH_STAGE1_PROBE
+ #include "touch-stage1.inc"
+ #define LITHIUM_TOUCH_STAGE1_PROBE() lithium_touch_stage1_probe()
+@@ -56,6 +60,22 @@ static struct lithium_peripheral_options lithium_peripheral_requested;
+ static void
+ lithium_peripheral_worker(__unused thread_call_param_t p0, __unused thread_call_param_t p1)
+ {
++#if !defined(LITHIUM_PERIPHERAL_HOST_TEST)
++    if (lithium_peripheral_requested.touch &&
++        lithium_peripheral_requested.touch_smp) {
++        struct lithium_touch_cpu_scope scope;
++        if (!lithium_touch_cpu_enter(&scope)) {
++            printf("LITHIUM TOUCH status=blocked reason=smp_cpu_bind mmio=0\n");
++            return;
++        }
++        printf("LITHIUM TOUCH smp context=init logical=%d affinity=0x%llx max_logical=%d bound=1\n",
++            cpu_number(), (unsigned long long)LITHIUM_PERIPHERAL_AFFINITY(),
++            ml_get_max_cpu_number());
++        lithium_touch_live_start(lithium_peripheral_requested.touch_log);
++        lithium_touch_cpu_leave(&scope);
++        return;
++    }
++#endif
+     const bool needs_cpu = lithium_peripheral_requested.touch ||
+         (lithium_peripheral_requested.touch_stage_requested &&
+          lithium_peripheral_requested.touch_stage != 0) ||
+diff --git a/ports/hakios-lithium/peripherals/touch-cpu-scope.h b/ports/hakios-lithium/peripherals/touch-cpu-scope.h
+new file mode 100644
+index 0000000..3585d5b
+--- /dev/null
++++ b/ports/hakios-lithium/peripherals/touch-cpu-scope.h
+@@ -0,0 +1,57 @@
++/* Opt-in live-touch CPU binding. No device access occurs in these helpers.
++ * Shared thread-call workers must always recover their previous binding. */
++#ifndef LITHIUM_TOUCH_CPU_SCOPE_H
++#define LITHIUM_TOUCH_CPU_SCOPE_H
++
++#if !defined(LITHIUM_TOUCH_CPU_SCOPE_HOST_TEST)
++#include <kern/processor.h>
++#include <kern/sched_prim.h>
++#include <mach/processor_info.h>
++/* BSD consumers see an opaque processor_t, so use the info API rather than
++ * depending on the private struct layout. Signatures match osfmk sources. */
++extern processor_t thread_bind(processor_t);
++extern kern_return_t processor_info(processor_t, processor_flavor_t, host_t *,
++    processor_info_t, mach_msg_type_number_t *);
++#endif
++
++struct lithium_touch_cpu_scope {
++    processor_t previous;
++    bool bound;
++};
++
++static void
++lithium_touch_cpu_leave(struct lithium_touch_cpu_scope *scope)
++{
++    if (!scope->bound) return;
++    thread_bind(scope->previous);
++    scope->bound = false;
++    thread_block(THREAD_CONTINUE_NULL);
++}
++
++static bool
++lithium_touch_cpu_enter(struct lithium_touch_cpu_scope *scope)
++{
++    *scope = (struct lithium_touch_cpu_scope){0};
++    const int max = ml_get_max_cpu_number();
++    if (max < 0 || max > 2 || ml_at_interrupt_context() ||
++        !ml_get_interrupts_enabled()) return false;
++    processor_t target = cpu_to_processor(0);
++    if (!target) return false;
++    processor_basic_info_data_t info = {0};
++    mach_msg_type_number_t count = PROCESSOR_BASIC_INFO_COUNT;
++    host_t host = 0;
++    if (processor_info(target, PROCESSOR_BASIC_INFO, &host,
++            (processor_info_t)&info, &count) != KERN_SUCCESS ||
++        count != PROCESSOR_BASIC_INFO_COUNT || !info.running ||
++        info.slot_num != 0) return false;
++    scope->previous = thread_bind(target);
++    scope->bound = true;
++    thread_block(THREAD_CONTINUE_NULL);
++    if (cpu_number() != 0 || LITHIUM_PERIPHERAL_AFFINITY() != 1) {
++        lithium_touch_cpu_leave(scope);
++        return false;
++    }
++    return true;
++}
++
++#endif
+diff --git a/ports/hakios-lithium/peripherals/touch-live.inc b/ports/hakios-lithium/peripherals/touch-live.inc
+index 41fe1d8..06272e9 100644
+--- a/ports/hakios-lithium/peripherals/touch-live.inc
++++ b/ports/hakios-lithium/peripherals/touch-live.inc
+@@ -14,7 +14,7 @@ static struct {
+     struct ltle_state events;
+     uint64_t reports, posted, failures, malformed;
+     uint32_t consecutive_errors;
+-    bool running, verbose;
++    bool running, verbose, smp, smp_poll_logged;
+ } lt_live;
+ 
+ void hakios_lithium_touch_stop(void);
+@@ -90,8 +90,7 @@ static int lt_live_emit(void *cookie, const struct ltle_batch *batch)
+     return 0;
+ }
+ 
+-static void lt_live_poll(__unused thread_call_param_t p0,
+-    __unused thread_call_param_t p1)
++static void lt_live_poll_work(void)
+ {
+     if (!__atomic_load_n(&lt_live.running, __ATOMIC_ACQUIRE)) return;
+     uint8_t report[63];
+@@ -129,10 +128,34 @@ static void lt_live_poll(__unused thread_call_param_t p0,
+     thread_call_enter_delayed(lt_live.poll_call, deadline);
+ }
+ 
++static void lt_live_poll(__unused thread_call_param_t p0,
++    __unused thread_call_param_t p1)
++{
++    if (!__atomic_load_n(&lt_live.running, __ATOMIC_ACQUIRE)) return;
++    struct lithium_touch_cpu_scope scope = {0};
++    if (lt_live.smp) {
++        if (!lithium_touch_cpu_enter(&scope)) {
++            __atomic_store_n(&lt_live.running, false, __ATOMIC_RELEASE);
++            (void)ltle_release_all(&lt_live.events, lt_live_emit, NULL);
++            printf("LITHIUM TOUCH stopped reason=smp_poll_cpu_bind mmio=0\n");
++            return;
++        }
++        if (!lt_live.smp_poll_logged) {
++            printf("LITHIUM TOUCH smp context=poll logical=%d affinity=0x%llx max_logical=%d bound=1\n",
++                cpu_number(), (unsigned long long)LITHIUM_PERIPHERAL_AFFINITY(),
++                ml_get_max_cpu_number());
++            lt_live.smp_poll_logged = true;
++        }
++    }
++    lt_live_poll_work();
++    lithium_touch_cpu_leave(&scope);
++}
++
+ static __attribute__((noinline)) void lithium_touch_live_start(bool verbose)
+ {
+     if (lt_live.running || lt_live.poll_call) return;
+-    lithium_touch_stage1_run(true);
++    lt_live.smp = lithium_peripheral_requested.touch_smp;
++    lithium_touch_stage1_run_context(true, lt_live.smp);
+     if (!lts1.clocks_ready || !lts1.pins_ready || lts1.poisoned) {
+         printf("LITHIUM TOUCH live stopped reason=controller_clock_or_pin_setup\n");
+         return;
+diff --git a/ports/hakios-lithium/peripherals/touch-stage1.inc b/ports/hakios-lithium/peripherals/touch-stage1.inc
+index 48bc494..ed2d50f 100644
+--- a/ports/hakios-lithium/peripherals/touch-stage1.inc
++++ b/ports/hakios-lithium/peripherals/touch-stage1.inc
+@@ -183,14 +183,17 @@ static bool lts1_root_known(uint32_t cfg, bool initialize_clocks)
+     return field == 1u || (initialize_clocks && field == 0u);
+ }
+ 
+-static void lithium_touch_stage1_run(bool initialize_clocks)
++static void lithium_touch_stage1_run_context(bool initialize_clocks, bool live_smp)
+ {
+     bool not_started = false;
+     if (!__atomic_compare_exchange_n(&lts1.started, &not_started, true, false,
+             __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE)) return;
+     lts1.start_us = lts1.last_us = lts1_now();
+     if (ml_at_interrupt_context() || !ml_get_interrupts_enabled() ||
+-        LITHIUM_PERIPHERAL_AFFINITY() != 1 || ml_get_max_cpu_number() != 0) {
++        LITHIUM_PERIPHERAL_AFFINITY() != 1 ||
++        (ml_get_max_cpu_number() != 0 &&
++         !(live_smp && ml_get_max_cpu_number() > 0 &&
++           ml_get_max_cpu_number() <= 2))) {
+         lts1_stop("execution_context");
+         goto finish;
+     }
+@@ -253,6 +256,11 @@ finish:
+         (unsigned long long)(lts1.last_us - lts1.start_us), lts1.clocks_ready, lts1.pins_ready);
+ }
+ 
++static void lithium_touch_stage1_run(bool initialize_clocks)
++{
++    lithium_touch_stage1_run_context(initialize_clocks, false);
++}
++
+ static void lithium_touch_stage1_probe(void)
+ {
+     lithium_touch_stage1_run(false);
+diff --git a/project.json b/project.json
+index 997a839..1617d8f 100644
+--- a/project.json
++++ b/project.json
+@@ -42,22 +42,22 @@
+     "hardware_started": true,
+     "ios14_compatibility_verified": false,
+     "springboard_verified": true,
+-    "status": "R35 UIquiet and percorecache diagnostic built; runtime not tested",
++    "status": "R36 touch_smp candidate compiled and packaged; not booted",
+     "configuration_scaffold_created": true,
+     "upstream_config_checks_passed": true,
+     "platform_uefi_verified": true,
+     "loader_started": true,
+     "hello_started": true,
+     "hardware_evidence_report": "reports\\hakios-ios16-device-r20-display.json",
+-    "latest_kernel_binary_hardware_verified": true,
+-    "kernel_sha256": "86f36fdf4e047e0f2da18138a39629e584975e4c6689036946ae71195bd924aa",
+-    "latest_kernel_binary_verification_scope": "R35lite actualaffinity1/SCTLR ICM, ID/report, ui_lite execution, SB mainqueue observed; performance not verified",
++    "latest_kernel_binary_hardware_verified": false,
++    "kernel_sha256": "b36b86bd944f1a6bd871d8e175c1e65941edab00b0fb9fcf17a00247bd9d9daa",
++    "latest_kernel_binary_verification_scope": "Host build and focused tests only; R35 runtime remains separate",
+     "springboard_display_verified": true,
+-    "last_hardware_verified_kernel_sha256": "799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c",
+-    "latest_kernel_binary_hardware_report": "reports/hakios-ios16-device-r35-ui-perf-lite.json"
++    "last_hardware_verified_kernel_sha256": "86f36fdf4e047e0f2da18138a39629e584975e4c6689036946ae71195bd924aa",
++    "latest_kernel_binary_hardware_report": "reports/hakios-ios16-device-r35-ui-perf-combined.json"
+   },
+   "schema": 2,
+-  "stage": "iOS16 phase4: R35 combined cpus3+UIquiet+UIlite accepted; runtime observation in progress",
++  "stage": "iOS16 phase4: R35 touch admission miss diagnosed; R36 SMP-touch host candidate ready",
+   "project_instructions_path": "AGENTS.md",
+   "plan_path": "PLAN.md",
+   "operations_path": "OPERATIONS.md",
+@@ -67,7 +67,7 @@
+   "active_workspace": "/home/jia/ios-mix1-build/hakios-lithium-ios16",
+   "source_lock_path": "upstreams.lock.json",
+   "source_audit_report": "reports/hakios-p0-audit.md",
+-  "current_device_status": "Combined boot accepted at18:14:16+08:00; actualCPU/USB/UI not yetobserved",
++  "current_device_status": "R35 combined saved USB shows three CPUs online; touch blocked before init; physical screen unobserved",
+   "device_state": {
+     "last_observation_baseline": "ios16_r20_display_hakios",
+     "live_state_requeried": true,
+@@ -80,9 +80,9 @@
+     "latest_device_test_report": "reports/hakios-ios16-device-r35-ui-perf-combined.json",
+     "last_screen_observation_source": "R26 same-run user photograph, original archived with SHA256",
+     "last_screen_observation": "UEFI TIMER DEADLINE REACHED; NO PANIC TEXT IN RETAINED LOG; drain1",
+-    "current_physical_state_source": "Single Fastboot accept; no post-bootdevicequery",
+-    "current_physical_state": "Combined boot accepted at18:14:16+08:00; actualCPU/USB/UI not yetobserved",
+-    "current_state_host_queried": true,
++    "current_physical_state_source": "saved same-run USB, not new phone query",
++    "current_physical_state": "R35 combined saved USB shows three CPUs online; touch blocked before init; physical screen unobserved",
++    "current_state_host_queried": false,
+     "userdata_journal_initialized": false,
+     "userdata_journal_repair_report": null,
+     "userdata_hfs_mount_verified": true,
+@@ -172,20 +172,20 @@
+     "large_tasks_sequential": true
+   },
+   "work_status": {
+-    "status": "ios16_r35_combined_running_observing",
++    "status": "ios16_r36_touch_smp_host_ready",
+     "phase2_approved": true,
+     "device_operations_performed": true,
+     "device_boots_performed": true,
+     "partition_writes_performed": true,
+     "hakios_temporary_boot_count": 62,
+     "backup_branch": "archive/ios14-r31-20261116",
+-    "next_step": "Observe actual3core/bench/cache and UI performance in samecombined run; no new boot or retry",
++    "next_step": "manual Fastboot readiness, then one explicit R36 test; no automatic retry",
+     "phase3_approved": true,
+     "auxiliary_stock_reader_boots_accepted": 4,
+     "ios16_boots_performed": 31,
+     "auxiliary_stock_reader_adb_runtime_observations": 3,
+-    "latest_evidence_recorded_at": "2026-11-20T18:15:12.375591+08:00",
+-    "latest_host_report": "reports/hakios-ios16-r35-ui-performance-prepared.md",
++    "latest_evidence_recorded_at": "2026-11-20T18:29:41.575849+08:00",
++    "latest_host_report": "reports/hakios-ios16-touch-smp-r36-prepared.md",
+     "r5_backup_branch": "archive/ios16-r5-20261117",
+     "r6_backup_branch": "archive/ios16-r6-20261117",
+     "r7_backup_branch": "archive/ios16-r7-20261117",
+@@ -196,9 +196,9 @@
+     "current_run_shutdown_authorized": false,
+     "host_shutdown_request_scope": "Historical R8 only; no R15 shutdown requested",
+     "latest_device_report": "reports/hakios-ios16-device-r35-ui-perf-combined.md",
+-    "current_turn_new_kernel_builds": false,
+-    "current_turn_device_queries": true,
+-    "current_turn_device_boots": true,
++    "current_turn_new_kernel_builds": true,
++    "current_turn_device_queries": false,
++    "current_turn_device_boots": false,
+     "current_turn_partition_writes": false
+   },
+   "active_workspace_report": "reports/hakios-workspace.json",
+@@ -206,7 +206,7 @@
+   "refactor_report": "reports/hakios-project-refactor.md",
+   "test_package_report": "reports/hakios-test-package.json",
+   "p0_closure_report": "reports/hakios-p0-closure.json",
+-  "current_report": "reports/hakios-ios16-device-r35-ui-perf-combined.json",
++  "current_report": "reports/hakios-ios16-touch-smp-r36-prepared.json",
+   "latest_diagnosis_report": "reports/hakios-ios16-r34-input-performance.md",
+   "repeat_ready_report": null,
+   "platform_observation_workflow": {
+diff --git a/reports/hakios-ios16-device-r35-ui-perf-combined.json b/reports/hakios-ios16-device-r35-ui-perf-combined.json
+index 7aed152..47453f1 100644
+--- a/reports/hakios-ios16-device-r35-ui-perf-combined.json
++++ b/reports/hakios-ios16-device-r35-ui-perf-combined.json
+@@ -19,7 +19,7 @@
+   "started_at": "2026-11-20T18:14:15.207590+08:00",
+   "preflight_passed": true,
+   "preflight_finished_at": "2026-11-20T18:14:15.405791+08:00",
+-  "outcome": "boot_accepted_observation_pending",
++  "outcome": "three_cpus_online_touch_blocked_by_single_core_admission",
+   "command_accepted": true,
+   "accepted_at": "2026-11-20T18:14:16.880545+08:00",
+   "boot_totals": {
+@@ -27,10 +27,22 @@
+     "ios16": 31
+   },
+   "resumed_authorization": "User: 已进入 after empty preflight; one independent resumed attempt",
+-  "recorded_at": "2026-11-20T18:15:12.375591+08:00",
++  "recorded_at": "2026-11-20T18:29:41.575849+08:00",
+   "report": "reports/hakios-ios16-device-r35-ui-perf-combined.json",
+   "local_evidence": "reports/local/20261120-r35-ui-perf-combined-attempt2",
+   "prior_empty_preflight": "reports/local/20261120-r35-ui-perf-combined-approved",
+-  "actual_cpu_running_unverified": true,
+-  "performance_improvement_verified": false
++  "actual_cpu_running_unverified": false,
++  "performance_improvement_verified": false,
++  "actual_online_affinities": [
++    "0x1",
++    "0x100",
++    "0x101"
++  ],
++  "touch_initialization": "blocked_before_mmio_by_cpu_contract",
++  "ui_touch_performance_verified": false,
++  "current_physical_screen": "unobserved",
++  "run_end_verified": false,
++  "prefix_audit": "evidence/touch-smp-r36-20261120/main/r35-prefix-audit.json",
++  "cpu_evidence": "evidence/ui-perf-r35-20261120/combined-cpu/combined-cpu.json",
++  "no_new_device_commands_during_closeout": true
+ }
+diff --git a/reports/hakios-ios16-device-r35-ui-perf-combined.md b/reports/hakios-ios16-device-r35-ui-perf-combined.md
+new file mode 100644
+index 0000000..a8f4d04
+--- /dev/null
++++ b/reports/hakios-ios16-device-r35-ui-perf-combined.md
+@@ -0,0 +1,30 @@
++# R35 combined — 三核运行已证实，触摸在初始化前被拦截
++
++2026-11-20 18:14:16.880545+08:00 单次临时启动被接受，累计 HakiOS 62 / iOS16 31。
++镜像 `bfc3a041b7d81f33582dae04ba9894c53b3b44f16e1b5f70ba10b1672500370d`；原五项只读预检及一次 boot 记录保留。
++
++现有触摸初始化检查同时要求 affinity=1 和 max_logical=0。
++本轮后台线程实际位于 affinity=0x101、max_logical=2，因此打印
++`LITHIUM TOUCH status=blocked reason=cpu_contract` 后返回，没有启动真实触摸。
++这是本次集成遗漏，不能用本轮“点不动”判断三核触摸延迟或芯片无应答。
++
++| affinity | 整数平均 µs | memcpy MB/s | SCTLR I/C/M |
++|---|---:|---:|---|
++| 0x1 | 2491 | 3534 | 1/1/1 |
++| 0x100 | 162535 | 110 | 1/1/1 |
++| 0x101 | 162603 | 110 | 1/1/1 |
++
++三个核心均有在线记录、逐核 logical_match=1，五样本均 errors=0。
++慢核现象仍在；启用位不能证明 cache 命中正常，也不是实际 MHz 测量。
++定时器 CNTFRQ=19200000 是计时频率，不是 CPU 频率。没有修改频率、电压或缓存策略。
++SB 已出现 constructor/main_queue 日志；真实屏幕及 UI 可用性未由本轮目视确认。
++
++截至 2026-11-20T18:29:41.575849+08:00，只从主机保存文件取得连续前缀：
++11842 帧 / 2454508 console 字节，
++独立重放一致、缺口/重复/残帧/device-loss 均为零。
++这是运行前缀，不是结束日志；没有取得本轮 timer/drain 或物理终态。
++接收器保持原运行，不额外查询、重启或重试手机。
++
++下一候选为 R36：显式 touch_smp=1，仅把触摸初始化与每次轮询绑定至
++logical0/affinity1，保留三核调度与 quiet/lite。慢核与桌面性能尚未解决。
++运行原始证据：`reports/local/20261120-r35-ui-perf-combined-attempt2/`。
+diff --git a/reports/hakios-ios16-touch-smp-r36-prepared.json b/reports/hakios-ios16-touch-smp-r36-prepared.json
+new file mode 100644
+index 0000000..c983b9f
+--- /dev/null
++++ b/reports/hakios-ios16-touch-smp-r36-prepared.json
+@@ -0,0 +1,38 @@
++{
++  "recorded_at": "2026-11-20T18:29:41.575849+08:00",
++  "revision": "R36-touch-smp",
++  "host_ready": true,
++  "device_booted": false,
++  "device_operations_during_host_phase": 0,
++  "image": "artifacts/hakios/lithium-ios16/phase4-r36-touch-smp/lithium-hakios-ios16-r36-touch-smp.img",
++  "image_sha256": "d4f2d0ee4f4be24952d7439b17834d0d159fa76e78da40bec59622b6623b5669",
++  "image_bytes": 16318464,
++  "kernel_sha256": "b36b86bd944f1a6bd871d8e175c1e65941edab00b0fb9fcf17a00247bd9d9daa",
++  "cmdline": "bootcpu=1 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1 touch_smp=1",
++  "focused_tests": 68,
++  "actual_kernel_incremental_build": true,
++  "package_written_layers_readback": {
++    "android_header_and_sha1": true,
++    "gzip_dtb_fat": true,
++    "shim_literal_and_mu": true,
++    "xnup_exact_entries": true,
++    "fat_loader": true,
++    "all_written_components": true
++  },
++  "unchanged_userspace_and_firmware_reused": true,
++  "feature_default_off": true,
++  "new_opt_in": "touch_smp=1",
++  "cpu_scope": "init and every poll bind logical0, verify affinity1, restore prior binding",
++  "smp_touch_hardware_verified": false,
++  "cpu_governor_fixed": false,
++  "ui_performance_fixed": false,
++  "cpu_mhz_measured": false,
++  "ufs_automatic_fastboot": false,
++  "normal_boot_may_write_data": true,
++  "agents": {
++    "Harvey": "saved-log CPU evidence; main checked actual lines",
++    "Nietzsche": "68 focused cases and wrapper review; main checked hashes and sources"
++  },
++  "first_compile_failure": "opaque processor_t and missing private declarations; corrected to processor_info API with exact source signatures",
++  "next_step": "manual Fastboot readiness, then one explicit R36 test; no automatic retry"
++}
+diff --git a/reports/hakios-ios16-touch-smp-r36-prepared.md b/reports/hakios-ios16-touch-smp-r36-prepared.md
+new file mode 100644
+index 0000000..991480e
+--- /dev/null
++++ b/reports/hakios-ios16-touch-smp-r36-prepared.md
+@@ -0,0 +1,53 @@
++# R36 — 三核下保持真实触摸初始化和轮询
++
++主机候选已完成，尚未上机。R35 combined 的触摸被旧单核准入条件拦截，
++本修订修复这一集成问题，不宣称慢核、调频或桌面性能已修好。
++
++新增默认关闭的 `touch_smp=1`。初始化和每次轮询先查询 logical0 是否在线，
++保存原线程绑定，绑定并迁移至 logical0，实际核对 affinity=0x1 后才访问控制器；
++成功、早退和核对失败都恢复原绑定。Stage1 增加仅供 live SMP 的显式上下文，
++旧诊断及默认单核限制保留。I2C 事务、GPIO 值、坐标和事件协议不变。
++
++关键文件：
++- `ports/hakios-lithium/peripherals/touch-cpu-scope.h`：绑定/核验/恢复。
++- `peripherals/kernel.inc`：仅显式 live SMP 初始化入口。
++- `peripherals/touch-live.inc`：初始化和每次 poll 包装。
++- `peripherals/touch-stage1.inc`：显式 SMP 上下文，旧包装保持。
++- `peripherals/boot-options.h`：严格解析，默认关闭。
++
++实际完整 HakiOS 活动内核增量编译链接通过；未重建未改的 Mu、loader、用户态或任务。
++首次编译曾因 BSD 下 processor_t 不透明及私有函数声明失败，已改用 processor_info，
++根据实际 XNU 源码核对五参数签名，并重新完成实际编译；失败日志保留。
++Nietzsche 运行当前源码的 68 项专项（scope24/parser30/Stage1 14），
++Clang18.1.3、warnings-as-errors、ASan/UBSan 通过。主代理独立核对其引用源码哈希、
++初始化/每次 poll 的恢复路径及实际内核输入；没有复跑历史总回归。
++Harvey 提取三核记录；主代理复查实际保存日志，慢核仍约65倍差距，原因未验证。
++
++构建命令：
++```powershell
++pwsh -File reports/local/run-touch-smp-r36-build.ps1 -Task prepare
++pwsh -File reports/local/run-touch-smp-r36-build.ps1 -Task kernel
++wsl -d Ubuntu -u jia -- python3 -B /mnt/f/IOS-MIX1/scripts/package-hakios-touch-smp-r36.py
++```
++专项复现命令见 `evidence/touch-smp-r36-20261120/test/review.md`。
++实际整包及各层写回读验通过，命令行预留41字节。
++
++镜像：`artifacts/hakios/lithium-ios16/phase4-r36-touch-smp/lithium-hakios-ios16-r36-touch-smp.img`
++SHA256：`d4f2d0ee4f4be24952d7439b17834d0d159fa76e78da40bec59622b6623b5669`
++内核 SHA256：`b36b86bd944f1a6bd871d8e175c1e65941edab00b0fb9fcf17a00247bd9d9daa`
++
++```text
++bootcpu=1 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1 touch_smp=1
++```
++
++合并配置保持 quiet/lite/cpus3，仅新增 touch_smp=1。
++UFS 正常启动会写 Data，lite 偏好可能持久化；不刷分区。UFS 自动返回仍关闭。
++预期日志为 `LITHIUM TOUCH smp context=init` 和 `context=poll`，
++两者 logical0/affinity1/bound1，然后 ID0xe7、ready、DOWN/MOVE/UP 和用户实际点击。
++主机测试不证明硬件迁移/时延、三核收益、缓存命中或调频。
++本阶段没有新的设备命令，计数保持62/31。当前R35运行保留，不能自动重试旧启动入口。
++
++风险顺序：其余两核仍非常慢，可能拖慢关键 UI 线程；其次绑定迁移的运行时开销；
++软件合成耗时仍在。若核绑定或ID失败，保留精确日志，不猜硬件原因。
++四核仍需先解决 phys0 被 UEFI/UFS worker 占用，未擅改存储交接或PLL/电压。
++回退补丁与 checkpoint 与本报告同名；现有冻结包和 Git 索引保持。
+diff --git a/reports/local/run-touch-smp-r36-build.ps1 b/reports/local/run-touch-smp-r36-build.ps1
+new file mode 100644
+index 0000000..2f94c67
+--- /dev/null
++++ b/reports/local/run-touch-smp-r36-build.ps1
+@@ -0,0 +1,15 @@
++param(
++    [Parameter(Mandatory=$true)]
++    [ValidateSet('prepare','kernel')]
++    [string]$Task
++)
++$ErrorActionPreference = 'Stop'
++$arguments = @('-d','Ubuntu','-u','root','--exec','systemd-run',
++    '--unit=ios-mix1-touch-smp-r36','--wait','--pipe','--collect',
++    '-p','MemoryMax=14G','-p','MemoryHigh=12G','-p','MemorySwapMax=1G',
++    '-p','CPUQuota=1200%','-p','TasksMax=1024','-p','User=jia',
++    '-p','WorkingDirectory=/mnt/f/IOS-MIX1',
++    '--setenv=JOBS=12','--setenv=MAKEFLAGS=-j12','--setenv=MAKEJOBS=--jobs=12',
++    '/usr/bin/python3','-B','/mnt/f/IOS-MIX1/scripts/build-hakios-touch-smp-r36.py',$Task)
++& wsl.exe @arguments
++exit $LASTEXITCODE
+diff --git a/scripts/build-hakios-touch-smp-r36.py b/scripts/build-hakios-touch-smp-r36.py
+new file mode 100644
+index 0000000..ce1a9ec
+--- /dev/null
++++ b/scripts/build-hakios-touch-smp-r36.py
+@@ -0,0 +1,79 @@
++#!/usr/bin/env python3
++"""Prepare and incrementally build R36 live-touch SMP changes; never open a device."""
++import argparse
++import json
++import os
++from pathlib import Path
++import shutil
++import subprocess
++import sys
++import time
++
++sys.dont_write_bytecode = True
++import hakios
++
++ROOT = Path(__file__).resolve().parents[1]
++WORK = Path('/home/jia/ios-mix1-build/hakios-lithium-ios16')
++EVIDENCE = ROOT/'evidence/touch-smp-r36-20261120/main'
++
++
++def run(label, argv, *, env=None, cwd=WORK):
++    path = EVIDENCE/(label+'.log')
++    if path.exists():
++        path = EVIDENCE/(label+'-'+str(time.time_ns())+'.log')
++    with path.open('w') as log:
++        proc = subprocess.run(argv, cwd=cwd, env=env,
++                              stdout=log, stderr=subprocess.STDOUT)
++    if proc.returncode:
++        print(path.read_text(errors='replace')[-7000:])
++        raise RuntimeError(f'{label} failed ({proc.returncode}); retained {path}')
++    print('PASS '+label, flush=True)
++    return path
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('phase', choices=('prepare', 'kernel'))
++    args = parser.parse_args()
++    EVIDENCE.mkdir(parents=True, exist_ok=True)
++    hakios.resource_check()
++    spec = hakios.read(hakios.MANIFEST)
++    if args.phase == 'prepare':
++        hakios.prepare(spec, hakios.policy(spec))
++        delta = ROOT/'evidence/ui-perf-r35-20261120/ui/actual-kern-exec.patch'
++        source = WORK/'xnu-src/xnu-8796.121.2/bsd/kern/kern_exec.c'
++        if 'exec_applog_ui_quiet' not in source.read_text():
++            run('apply-kern-exec', ['git', 'apply', '--check', str(delta)],
++                cwd=source.parents[2])
++            run('apply-kern-exec-write', ['git', 'apply', str(delta)],
++                cwd=source.parents[2])
++        assert 'exec_applog_ui_quiet' in source.read_text()
++        assert 'SCTLR_EL1' in (WORK/'devices/lithium/diagnostics/cpu-sanity.inc').read_text()
++        print('R36 touch-SMP sources prepared; unchanged firmware and userspace reused.')
++        return
++    hakios.verify_workspace(spec)
++    deps = hakios.read(ROOT/'reports/hakios-ios16-dependencies.json')
++    env = dict(os.environ, HAKIOS_SOC='msm8996', JOBS='12',
++               MAKEFLAGS='-j12', MAKEJOBS='--jobs=12', THEOS=deps['theos_linux_path'])
++    env['PATH'] = '/home/jia/ios-mix1-build/venv/bin:'+env['PATH']
++    log = run('kernel', ['make', 'kernel', 'SHELL=/bin/bash',
++              'MAKEJOBS=--jobs=12', 'DEVICE=lithium', 'JOBS=12'], env=env)
++    kernel = WORK/'hakios-kernel'
++    data = kernel.read_bytes()
++    assert b'LITHIUM TOUCH live ready' in data
++    assert b'applog_ui_quiet' in data
++    assert b'touch_smp' in data and b'LITHIUM TOUCH smp context=poll' in data
++    assert b'sctlr_i=' in data and b'logical_match=' in data
++    frozen = WORK/'hakios-kernel.r36'
++    if frozen.exists():
++        raise RuntimeError('R36 kernel output already exists; retain it and review before replacing')
++    shutil.copyfile(kernel, frozen)
++    hakios.write(EVIDENCE/'kernel-result.json',
++                 dict(passed=True, kernel=str(frozen), sha256=hakios.sha(frozen),
++                      bytes=len(data), inputs=hakios.inputs(spec),
++                      command_log=str(log), device_operations=0,
++                      unchanged_userspace_firmware_reused=True))
++
++
++if __name__ == '__main__':
++    main()
+diff --git a/scripts/package-hakios-touch-smp-r36.py b/scripts/package-hakios-touch-smp-r36.py
+new file mode 100644
+index 0000000..3961c9d
+--- /dev/null
++++ b/scripts/package-hakios-touch-smp-r36.py
+@@ -0,0 +1,56 @@
++#!/usr/bin/env python3
++"""Package the opt-in live-touch/three-core compatibility fix, host only."""
++import importlib.util
++import json
++from pathlib import Path
++import sys
++
++sys.dont_write_bytecode = True
++ROOT = Path(__file__).resolve().parents[1]
++WORK = Path('/home/jia/ios-mix1-build/hakios-lithium-ios16')
++
++
++def main():
++    spec = importlib.util.spec_from_file_location(
++        'r36_ui_profiles', ROOT/'scripts/package-hakios-ui-perf-r35.py')
++    profiles = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(profiles)
++    live = profiles.load_live()
++    frozen, version = profiles.frozen_contract(live)
++    result = json.loads((ROOT/'evidence/touch-smp-r36-20261120/main/kernel-result.json').read_text())
++    kernel = Path(result['kernel'])
++    root = ROOT/'artifacts/hakios/lithium-ios16/phase4-r35-ui-perf/quiet/root.apfs'
++    output = ROOT/'artifacts/hakios/lithium-ios16/phase4-r36-touch-smp'
++    live.require(not output.exists(), 'R36 output exists; retain it and stop')
++    live.require(live.digest(kernel.read_bytes()) == result['sha256'], 'R36 kernel differs')
++    live.require(b'LITHIUM TOUCH smp context=poll' in kernel.read_bytes(), 'SMP touch producer missing')
++    live.require(live.digest(root.read_bytes()) == profiles.ROOT_SHA, 'Frozen root differs')
++    plan = profiles.profile_plan(live, frozen, version, 'lite')
++    words = plan['boot_args'].split()
++    live.require(words.count('cpus=1') == 1, 'Unexpected CPU arguments')
++    words[words.index('cpus=1')] = 'cpus=3'
++    words.append('touch_smp=1')
++    plan.update(profile='touch-smp', boot_args=' '.join(words), cpus=3,
++                cpu3_diagnostic_only=True, touch_smp_opt_in=True)
++    plan['command_budget'] = live.command_budget(plan['boot_args'], version, 'ufs')
++    contract = profiles.package_one(live, frozen, plan, kernel, root, output, result['sha256'])
++    previous = contract['image']['path']
++    name = 'lithium-hakios-ios16-r36-touch-smp.img'
++    (output/previous).rename(output/name)
++    contract['components'][name] = contract['components'].pop(previous)
++    contract['image']['path'] = name
++    contract.update(schema='hakios-touch-smp-r36-package-v1', candidate='R36-touch-smp',
++                    default_profile='touch-smp', script_sha256=live.digest(Path(__file__).read_bytes()),
++                    live_touch_cpu_affinity='0x1', live_touch_logical_cpu=0,
++                    init_and_poll_binding_required=True, hardware_smp_touch_verified=False)
++    (output/'contract.json').write_text(json.dumps(contract, indent=2)+'\n')
++    live.require(live.digest((output/name).read_bytes()) == contract['image']['sha256'],
++                 'R36 final image differs after renaming')
++    print(json.dumps(dict(image=str(output/name), sha256=contract['image']['sha256'],
++                          kernel_sha256=result['sha256'], cmdline=contract['cmdline'],
++                          command_budget=plan['command_budget'], device_operations=0,
++                          hardware_verified=False), indent=2))
++
++
++if __name__ == '__main__':
++    main()

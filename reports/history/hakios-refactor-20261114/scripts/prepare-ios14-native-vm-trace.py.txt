@@ -1,0 +1,70 @@
+#!/usr/bin/env python3
+"""Add native checkpoints around the exact arm_vm_init hardware stop."""
+import difflib
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+SRC=Path.home()/'ios-mix1-build/xnu7195-lithium/src'
+def main():
+    edits={}
+    def replace(path,old,new):
+        if path not in edits:
+            text=(SRC/path).read_text(); edits[path]=[text,text]
+        text=edits[path][1]
+        if text.count(old)!=1: raise ValueError(f'{path}: anchor count {text.count(old)} {old[:80]!r}')
+        edits[path][1]=text.replace(old,new)
+    path='osfmk/arm64/lithium_early.c'
+    replace(path,'if (!started) { started = 1; clear_row(); }','''if (!started) {
+        started = 1;
+        /* Keep the loader's build header; clear its old body before kernel logs. */
+        for (unsigned int y = row * CELL_H; y < HEIGHT - 32; y++)
+            for (unsigned int x = 0; x < WIDTH; x++) pixel(x, y, 0);
+    }''')
+    replace(path,'void lithium_early_relocate(uint64_t base)',r'''void lithium_early_hex(const char *label, uint64_t value)
+{
+    static const char digits[] = "0123456789abcdef";
+    string(label); string("=0x");
+    for (int shift = 60; shift >= 0; shift -= 4)
+        lithium_early_putc(digits[(value >> shift) & 15]);
+    lithium_early_putc('\n');
+}
+void lithium_early_relocate(uint64_t base)''')
+    path='osfmk/arm64/lithium_early.h'
+    replace(path,'void lithium_early_putc(char c);','void lithium_early_putc(char c);\nvoid lithium_early_hex(const char *label, uint64_t value);')
+    path='osfmk/arm64/arm_vm_init.c'
+    def before(anchor,label): replace(path,anchor,f'\tlithium_early_mark(8, "{label}");\n'+anchor)
+    def after(anchor,label): replace(path,anchor,anchor+f'\n\tlithium_early_mark(8, "{label}");')
+    before('\tgVirtBase = args->virtBase;','VM01 reading boot args')
+    after('\tmem_actual = args->memSizeActual ? args->memSizeActual : mem_size;','VM02 memory sizes computed')
+    replace(path,'\t// Slide the physical aperture to a random page-aligned location within the slide range','''#if defined(LITHIUM)
+    lithium_early_hex("VM physBase", gPhysBase);
+    lithium_early_hex("VM memSize", mem_size);
+    lithium_early_hex("VM top", args->topOfKernelData);
+#endif
+\tlithium_early_mark(8, "VM03 before early_random");
+\t// Slide the physical aperture to a random page-aligned location within the slide range''')
+    after('\tuint64_t physmap_slide = early_random() & ARM64_PHYSMAP_SLIDE_MASK & ~((uint64_t)PAGE_MASK);','VM04 early_random returned')
+    before('\tboot_tte = (tt_entry_t *)&bootstrap_pagetables;','VM05 layout computed')
+    before('\tinvalid_tte = (tt_entry_t *)alloc_ptpage(TRUE);','VM06 allocating invalid page')
+    after('\tbzero(invalid_tte, ARM_PGBYTES);','VM07 invalid page ready')
+    after('\tbzero(cpu_tte, ARM_PGBYTES);','VM08 L1 root allocated')
+    before('\tinit_ptpages(cpu_tte, gVirtBase, dynamic_memory_begin, TRUE, 0);','VM09 creating kernel page tables')
+    after('\tinit_ptpages(cpu_tte, gVirtBase, dynamic_memory_begin, TRUE, 0);','VM10 kernel page tables ready')
+    before('\tsegPRELINKTEXTB  = (vm_offset_t) getsegdatafromheader(&_mh_execute_header, "__PRELINK_TEXT", &segSizePRELINKTEXT);','VM11 inspecting Mach-O segments')
+    before('\t(void) PE_parse_boot_argn("use_contiguous_hint", &use_contiguous_hint, sizeof(use_contiguous_hint));','VM12 Mach-O segments read')
+    before('\tarm_vm_prot_init(args);','VM13 constructing protections')
+    after('\tarm_vm_prot_init(args);','VM14 protections ready')
+    after('\t*cpu_l2_tte = (kvtophys(ptpage_vaddr) & ARM_TTE_TABLE_MASK) | ARM_TTE_TYPE_TABLE | ARM_TTE_VALID | ARM_TTE_TABLE_PXN | ARM_TTE_TABLE_XN;\n\tbzero((void *)ptpage_vaddr, ARM_PGBYTES);','VM15 low globals ready')
+    before('\tinit_ptpages(cpu_tte, dynamic_memory_begin, VM_MAX_KERNEL_ADDRESS, TRUE, ARM_DYNAMIC_TABLE_XN);','VM16 creating dynamic page tables')
+    after('\tinit_ptpages(cpu_tte, dynamic_memory_begin, VM_MAX_KERNEL_ADDRESS, TRUE, ARM_DYNAMIC_TABLE_XN);','VM17 dynamic page tables ready')
+    before('    lithium_early_map_final();','VM18 installing final screen alias')
+    after('    lithium_early_map_final();','VM19 screen alias installed')
+    before('\tarm_vm_physmap_init(args);','VM20 creating physmap')
+    after('\tarm_vm_physmap_init(args);','VM21 physmap ready; switching TTBR1')
+    after('\tset_mmu_ttb_alternate(cpu_ttep & TTBR_BADDR_MASK);','VM22 TTBR1 switched')
+    patch='Subject: lithium: locate real arm_vm_init stop; clear old loader body\n\n'
+    for path,(old,new) in edits.items():
+        patch+=f'diff --git a/{path} b/{path}\n'+''.join(difflib.unified_diff(old.splitlines(True),new.splitlines(True),fromfile='a/'+path,tofile='b/'+path))
+    target=ROOT/'ports/lithium/patches/xnu-7195/0014-lithium-native-vm-trace.patch'
+    target.write_text(patch)
+    print(f'{target}: native arm_vm_init phases VM01..VM22')
+if __name__=='__main__': main()

@@ -1,0 +1,468 @@
+{
+  "schema": 1,
+  "revision": "clock-power05",
+  "attempt": {
+    "schema": 1,
+    "revision": "R37-ram-measure",
+    "phase": "frequency",
+    "attempt_id": "r37-frequency-09",
+    "started_at": "2026-11-21T00:02:22.698845+08:00",
+    "package": "F:\\IOS-MIX1\\artifacts\\hakios\\lithium-ios16\\phase4-r37-ram-frequency-09",
+    "candidate": "R37-frequency-09",
+    "profile": "r37-frequency",
+    "image_sha256": "ec7f2b5dd80b7d0c468fcb6005b35c48a63b087fa8ffa77a311b07d6d7c01deb",
+    "image_bytes": 16334848,
+    "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_clock_diag=1 cpu_power_diag=1 cpu_freq_pmu_setup=0 cpu_sanity=1 cpu_spmi_diag=1 cpu_freq_diag=1",
+    "preflight_passed": true,
+    "boot_attempted": true,
+    "command_accepted": true,
+    "automatic_retry": false,
+    "partition_commands": 0,
+    "flash_commands": 0,
+    "erase_commands": 0,
+    "adb_commands": 0,
+    "android_recovery_boots": 0,
+    "qemu": false,
+    "preflight": {
+      "passed": true,
+      "finished_at": "2026-11-21T00:02:22.905096+08:00",
+      "device_commands": 5,
+      "retry": false
+    },
+    "private_image": "F:\\IOS-MIX1\\reports\\local\\r37-attempts\\r37-frequency-09\\lithium-hakios-ios16-r37-ram-frequency-09.img",
+    "usb_capture_started_at": "2026-11-21T00:02:23.137052+08:00",
+    "boot_output": "Sending 'boot.img' (15952 KB)                      OKAY [  0.385s]\nBooting                                            OKAY [  0.834s]\nFinished. Total time: 1.227s\n",
+    "boot_returncode": 0,
+    "accepted_at": "2026-11-21T00:02:24.398851+08:00",
+    "outcome": "boot_accepted_observation_pending"
+  },
+  "return_verification": {
+    "started_at": "2026-11-21T00:06:29.794185+08:00",
+    "elapsed_seconds": 245.394801,
+    "devices_query_count": 1,
+    "product_query_count": 1,
+    "device_rows": [
+      [
+        "54223ce9",
+        "fastboot"
+      ]
+    ],
+    "same_serial_fastboot": true,
+    "observed_product": "MSM8996_A8",
+    "product_verified": true,
+    "passed": true,
+    "retry": false,
+    "attempt_id": "r37-frequency-09",
+    "phase": "frequency",
+    "capture_stop_requested": true,
+    "finished_at": "2026-11-21T00:06:29.923686+08:00"
+  },
+  "usb_audit": {
+    "raw_bytes": 42393,
+    "console_bytes": 37401,
+    "frames": 156,
+    "raw_sha256": "84b6a59ffc79197712c56269abfc6ab292ea88ff6193a1f93cc14c2d721c2ef1",
+    "console_sha256": "4dcd9b2bffa5014527d1532878a99761e673bff882cbbe3d4706ca1910e43c8a",
+    "first_offset": 0,
+    "final_offset": 37401,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "incomplete_frame_bytes": 0,
+    "device_lost_max": 0,
+    "frames_reporting_device_loss": 0,
+    "independent_parser_agrees_with_frozen_receiver": true,
+    "frozen_redecode_equals_complete_console": true,
+    "transport_verified": true,
+    "kernel_banner_offset": 0,
+    "timer_offset": 36909,
+    "normal_return_offset": 37285,
+    "drain_success": true,
+    "drain_records": [
+      {
+        "offset": 37352,
+        "drained": 1,
+        "target": 37352
+      }
+    ],
+    "emitted_kernel_stream_through_timer_verified": true,
+    "all_firmware_daemon_and_original_printf_logs_complete": false,
+    "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
+  },
+  "records": [
+    {
+      "line": 286,
+      "text": "LITHIUM CPU S11 begin affinity=0x1 once=1 ee=0 sid=1 ppid=0x132 regulator_writes=0 clock_writes=0 fault_guard=0",
+      "fields": {
+        "affinity": "0x1",
+        "once": "1",
+        "ee": "0",
+        "sid": "1",
+        "ppid": "0x132",
+        "regulator_writes": "0",
+        "clock_writes": "0",
+        "fault_guard": "0"
+      }
+    },
+    {
+      "line": 287,
+      "text": "LITHIUM CPU S11 map pa=0x400f000 allocation=0xfffffff943b68000 bytes=16384 data_offset=12288 valid=1",
+      "fields": {
+        "pa": "0x400f000",
+        "allocation": "0xfffffff943b68000",
+        "bytes": "16384",
+        "data_offset": "12288",
+        "valid": "1"
+      }
+    },
+    {
+      "line": 288,
+      "text": "LITHIUM CPU S11 route error=0 version=0x20010000 apid=2 mapping=0x00013200 matches=1 observer_pa=0x4c10000 reads=129",
+      "fields": {
+        "error": "0",
+        "version": "0x20010000",
+        "apid": "2",
+        "mapping": "0x00013200",
+        "matches": "1",
+        "observer_pa": "0x4c10000",
+        "reads": "129"
+      }
+    },
+    {
+      "line": 289,
+      "text": "LITHIUM CPU S11 map pa=0x4c10000 allocation=0xfffffff943b6c000 bytes=16384 data_offset=0 valid=1",
+      "fields": {
+        "pa": "0x4c10000",
+        "allocation": "0xfffffff943b6c000",
+        "bytes": "16384",
+        "data_offset": "0",
+        "valid": "1"
+      }
+    },
+    {
+      "line": 290,
+      "text": "LITHIUM CPU S11 pass=0 reg=TYPE addr=0x3204 valid=1 raw=0x1c error=0 phase=7 status_valid=1 status=0x1 command_attempted=1 completed=1 polls=2 start_us=142217524 end_us=142217591",
+      "fields": {
+        "pass": "0",
+        "reg": "TYPE",
+        "addr": "0x3204",
+        "valid": "1",
+        "raw": "0x1c",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "command_attempted": "1",
+        "completed": "1",
+        "polls": "2",
+        "start_us": "142217524",
+        "end_us": "142217591"
+      }
+    },
+    {
+      "line": 291,
+      "text": "LITHIUM CPU S11 pass=0 reg=SUBTYPE addr=0x3205 valid=1 raw=0x09 error=0 phase=7 status_valid=1 status=0x1 command_attempted=1 completed=1 polls=2 start_us=142217920 end_us=142217959",
+      "fields": {
+        "pass": "0",
+        "reg": "SUBTYPE",
+        "addr": "0x3205",
+        "valid": "1",
+        "raw": "0x09",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "command_attempted": "1",
+        "completed": "1",
+        "polls": "2",
+        "start_us": "142217920",
+        "end_us": "142217959"
+      }
+    },
+    {
+      "line": 292,
+      "text": "LITHIUM CPU S11 pass=0 reg=RANGE addr=0x3240 valid=1 raw=0x00 error=0 phase=7 status_valid=1 status=0x1 command_attempted=1 completed=1 polls=2 start_us=142218287 end_us=142218305",
+      "fields": {
+        "pass": "0",
+        "reg": "RANGE",
+        "addr": "0x3240",
+        "valid": "1",
+        "raw": "0x00",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "command_attempted": "1",
+        "completed": "1",
+        "polls": "2",
+        "start_us": "142218287",
+        "end_us": "142218305"
+      }
+    },
+    {
+      "line": 293,
+      "text": "LITHIUM CPU S11 pass=0 reg=VSET addr=0x3241 valid=1 raw=0xa5 error=0 phase=7 status_valid=1 status=0x1 command_attempted=1 completed=1 polls=2 start_us=142218632 end_us=142218665",
+      "fields": {
+        "pass": "0",
+        "reg": "VSET",
+        "addr": "0x3241",
+        "valid": "1",
+        "raw": "0xa5",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "command_attempted": "1",
+        "completed": "1",
+        "polls": "2",
+        "start_us": "142218632",
+        "end_us": "142218665"
+      }
+    },
+    {
+      "line": 294,
+      "text": "LITHIUM CPU S11 pass=0 reg=MODE addr=0x3245 valid=1 raw=0x40 error=0 phase=7 status_valid=1 status=0x1 command_attempted=1 completed=1 polls=2 start_us=142218993 end_us=142219147",
+      "fields": {
+        "pass": "0",
+        "reg": "MODE",
+        "addr": "0x3245",
+        "valid": "1",
+        "raw": "0x40",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "command_attempted": "1",
+        "completed": "1",
+        "polls": "2",
+        "start_us": "142218993",
+        "end_us": "142219147"
+      }
+    },
+    {
+      "line": 295,
+      "text": "LITHIUM CPU S11 pass=0 reg=STEP addr=0x3261 valid=1 raw=0x82 error=0 phase=7 status_valid=1 status=0x1 command_attempted=1 completed=1 polls=2 start_us=142219474 end_us=142219518",
+      "fields": {
+        "pass": "0",
+        "reg": "STEP",
+        "addr": "0x3261",
+        "valid": "1",
+        "raw": "0x82",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "command_attempted": "1",
+        "completed": "1",
+        "polls": "2",
+        "start_us": "142219474",
+        "end_us": "142219518"
+      }
+    },
+    {
+      "line": 296,
+      "text": "LITHIUM CPU S11 pass=1 reg=TYPE addr=0x3204 valid=1 raw=0x1c error=0 phase=7 status_valid=1 status=0x1 command_attempted=1 completed=1 polls=2 start_us=142220987 end_us=142221017",
+      "fields": {
+        "pass": "1",
+        "reg": "TYPE",
+        "addr": "0x3204",
+        "valid": "1",
+        "raw": "0x1c",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "command_attempted": "1",
+        "completed": "1",
+        "polls": "2",
+        "start_us": "142220987",
+        "end_us": "142221017"
+      }
+    },
+    {
+      "line": 297,
+      "text": "LITHIUM CPU S11 pass=1 reg=SUBTYPE addr=0x3205 valid=1 raw=0x09 error=0 phase=7 status_valid=1 status=0x1 command_attempted=1 completed=1 polls=2 start_us=142221344 end_us=142221400",
+      "fields": {
+        "pass": "1",
+        "reg": "SUBTYPE",
+        "addr": "0x3205",
+        "valid": "1",
+        "raw": "0x09",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "command_attempted": "1",
+        "completed": "1",
+        "polls": "2",
+        "start_us": "142221344",
+        "end_us": "142221400"
+      }
+    },
+    {
+      "line": 298,
+      "text": "LITHIUM CPU S11 pass=1 reg=RANGE addr=0x3240 valid=1 raw=0x00 error=0 phase=7 status_valid=1 status=0x1 command_attempted=1 completed=1 polls=2 start_us=142221729 end_us=142221764",
+      "fields": {
+        "pass": "1",
+        "reg": "RANGE",
+        "addr": "0x3240",
+        "valid": "1",
+        "raw": "0x00",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "command_attempted": "1",
+        "completed": "1",
+        "polls": "2",
+        "start_us": "142221729",
+        "end_us": "142221764"
+      }
+    },
+    {
+      "line": 299,
+      "text": "LITHIUM CPU S11 pass=1 reg=VSET addr=0x3241 valid=1 raw=0xa5 error=0 phase=7 status_valid=1 status=0x1 command_attempted=1 completed=1 polls=2 start_us=142222090 end_us=142222120",
+      "fields": {
+        "pass": "1",
+        "reg": "VSET",
+        "addr": "0x3241",
+        "valid": "1",
+        "raw": "0xa5",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "command_attempted": "1",
+        "completed": "1",
+        "polls": "2",
+        "start_us": "142222090",
+        "end_us": "142222120"
+      }
+    },
+    {
+      "line": 300,
+      "text": "LITHIUM CPU S11 pass=1 reg=MODE addr=0x3245 valid=1 raw=0x40 error=0 phase=7 status_valid=1 status=0x1 command_attempted=1 completed=1 polls=2 start_us=142222447 end_us=142222477",
+      "fields": {
+        "pass": "1",
+        "reg": "MODE",
+        "addr": "0x3245",
+        "valid": "1",
+        "raw": "0x40",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "command_attempted": "1",
+        "completed": "1",
+        "polls": "2",
+        "start_us": "142222447",
+        "end_us": "142222477"
+      }
+    },
+    {
+      "line": 301,
+      "text": "LITHIUM CPU S11 pass=1 reg=STEP addr=0x3261 valid=1 raw=0x82 error=0 phase=7 status_valid=1 status=0x1 command_attempted=1 completed=1 polls=2 start_us=142222805 end_us=142222835",
+      "fields": {
+        "pass": "1",
+        "reg": "STEP",
+        "addr": "0x3261",
+        "valid": "1",
+        "raw": "0x82",
+        "error": "0",
+        "phase": "7",
+        "status_valid": "1",
+        "status": "0x1",
+        "command_attempted": "1",
+        "completed": "1",
+        "polls": "2",
+        "start_us": "142222805",
+        "end_us": "142222835"
+      }
+    },
+    {
+      "line": 302,
+      "text": "LITHIUM CPU S11 unmap index=0 allocation=0xfffffff943b68000 bytes=16384",
+      "fields": {
+        "index": "0",
+        "allocation": "0xfffffff943b68000",
+        "bytes": "16384"
+      }
+    },
+    {
+      "line": 303,
+      "text": "LITHIUM CPU S11 unmap index=1 allocation=0xfffffff943b6c000 bytes=16384",
+      "fields": {
+        "index": "1",
+        "allocation": "0xfffffff943b6c000",
+        "bytes": "16384"
+      }
+    },
+    {
+      "line": 304,
+      "text": "LITHIUM CPU S11 end error=0 valid=12 stable=1 reads=1749 observer_cmd_writes=12 regulator_writes=0 clock_writes=0 voltage_uv=UNVERIFIED",
+      "fields": {
+        "error": "0",
+        "valid": "12",
+        "stable": "1",
+        "reads": "1749",
+        "observer_cmd_writes": "12",
+        "regulator_writes": "0",
+        "clock_writes": "0",
+        "voltage_uv": "UNVERIFIED"
+      }
+    }
+  ],
+  "end": {
+    "error": "0",
+    "valid": "12",
+    "stable": "1",
+    "reads": "1749",
+    "observer_cmd_writes": "12",
+    "regulator_writes": "0",
+    "clock_writes": "0",
+    "voltage_uv": "UNVERIFIED"
+  },
+  "valid_fields_by_pass": [
+    {
+      "TYPE": 28,
+      "SUBTYPE": 9,
+      "RANGE": 0,
+      "VSET": 165,
+      "MODE": 64,
+      "STEP": 130
+    },
+    {
+      "TYPE": 28,
+      "SUBTYPE": 9,
+      "RANGE": 0,
+      "VSET": 165,
+      "MODE": 64,
+      "STEP": 130
+    }
+  ],
+  "s11_programmed_uv": 905000,
+  "s11_analog_voltage_measured": false,
+  "clock_writes": 0,
+  "regulator_writes": 0,
+  "frequency_fixed": false,
+  "four_xnu_cpus_verified": false,
+  "hardware_context": "isolated RAM; three XNU CPUs",
+  "receiver_terminal_status": {
+    "started_at": "2026-11-21T00:02:23.128209+08:00",
+    "enumerated": true,
+    "frames": 156,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "status": "capture_failed",
+    "output": "F:\\IOS-MIX1\\reports\\local\\r37-attempts\\r37-frequency-09\\console.log",
+    "device_commands_sent": false,
+    "candidate_seen": true,
+    "identity_verified": true,
+    "descriptor_errors": 0,
+    "descriptor_error_samples": [],
+    "configuration_verified": true,
+    "console_bytes": 37401,
+    "failure_stage": "capturing",
+    "failure": "[Errno 32] Pipe error",
+    "finished_at": "2026-11-21T00:05:56.256730+08:00"
+  }
+}

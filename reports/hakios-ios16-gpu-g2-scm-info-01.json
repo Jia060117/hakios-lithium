@@ -1,0 +1,264 @@
+{
+  "query_passed": true,
+  "input_frames_valid": true,
+  "begins": [
+    {
+      "logical": "0",
+      "affinity": "0x1",
+      "abi": "smc64",
+      "call_cap": "4",
+      "returning_call_budget_us": "200000",
+      "nonreturning_call_abort": "0",
+      "worker": "dedicated_thread",
+      "gpu_mmio": "0",
+      "pas_operations": "0"
+    }
+  ],
+  "calls": [
+    {
+      "line": 108,
+      "index": "0",
+      "in0": "0xc2000601",
+      "in1": "0x1",
+      "in2": "0x82000601",
+      "tail_zero": "1"
+    },
+    {
+      "line": 110,
+      "index": "1",
+      "in0": "0x42000601",
+      "in1": "0x1",
+      "in2": "0x2000201",
+      "tail_zero": "1"
+    },
+    {
+      "line": 112,
+      "index": "2",
+      "in0": "0x42000601",
+      "in1": "0x1",
+      "in2": "0x2000202",
+      "tail_zero": "1"
+    },
+    {
+      "line": 114,
+      "index": "3",
+      "in0": "0x42000601",
+      "in1": "0x1",
+      "in2": "0x2000205",
+      "tail_zero": "1"
+    }
+  ],
+  "returned": [
+    {
+      "line": 109,
+      "index": "0",
+      "callback": "0",
+      "out0": "0x0",
+      "out1": "0x1",
+      "out2": "0x0",
+      "out3": "0x0"
+    },
+    {
+      "line": 111,
+      "index": "1",
+      "callback": "0",
+      "out0": "0x0",
+      "out1": "0x1",
+      "out2": "0x0",
+      "out3": "0x0"
+    },
+    {
+      "line": 113,
+      "index": "2",
+      "callback": "0",
+      "out0": "0x0",
+      "out1": "0x1",
+      "out2": "0x0",
+      "out3": "0x0"
+    },
+    {
+      "line": 115,
+      "index": "3",
+      "callback": "0",
+      "out0": "0x0",
+      "out1": "0x1",
+      "out2": "0x0",
+      "out3": "0x0"
+    }
+  ],
+  "summary": {
+    "error": "0",
+    "calls": "4",
+    "abi_confirmed": "1",
+    "availability_known": "0x7",
+    "available": "0x7",
+    "elapsed_us": "156",
+    "gpu_mmio": "0",
+    "pas_operations": "0",
+    "pas13_supported": "unverified",
+    "firmware_loaded": "0",
+    "retry": "0"
+  },
+  "schema": "lithium-gpu-scm-info-runtime-v1",
+  "passed": true,
+  "analyzed_at": "2026-11-25T19:59:06.639608+00:00",
+  "accepted_at": "2026-11-26T03:54:48.002067+08:00",
+  "image_sha256": "bc0e4d9e220afbfa743648239b22876d9536f3cfe1cd89fcd860ac4d2ba90056",
+  "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_sanity=1 cpu_perf_fixed=1 cpu_perf_hz=614400000 cpu_thermal_diag=1 cpu_inherited_supply_r39=1 gpu_stage=0 gpu_probe=1 gpu_wd=1 lithium_log_retry=1 gpu_scm_diag=1",
+  "automatic_fastboot_observed": true,
+  "source_log_drops": [
+    0
+  ],
+  "stop_temperature_records": [
+    {
+      "phase": "stop",
+      "affinity": "0x0",
+      "sensor": "TSENS0",
+      "id": "4",
+      "raw": "0x002041ed",
+      "enabled": "1",
+      "valid": "1",
+      "native_mC": "49300",
+      "reason": "native_hardware_units",
+      "trdy_read": "1",
+      "trdy": "0",
+      "status_reads": "1",
+      "reads": "4",
+      "at_abs": "49695268051",
+      "calibration_verified": "0",
+      "freshness_verified": "0"
+    },
+    {
+      "phase": "stop",
+      "affinity": "0x1",
+      "sensor": "TSENS0",
+      "id": "6",
+      "raw": "0x002061d0",
+      "enabled": "1",
+      "valid": "1",
+      "native_mC": "46400",
+      "reason": "native_hardware_units",
+      "trdy_read": "1",
+      "trdy": "0",
+      "status_reads": "1",
+      "reads": "4",
+      "at_abs": "49695268051",
+      "calibration_verified": "0",
+      "freshness_verified": "0"
+    },
+    {
+      "phase": "stop",
+      "affinity": "0x100",
+      "sensor": "TSENS0",
+      "id": "9",
+      "raw": "0x002091ca",
+      "enabled": "1",
+      "valid": "1",
+      "native_mC": "45800",
+      "reason": "native_hardware_units",
+      "trdy_read": "1",
+      "trdy": "0",
+      "status_reads": "1",
+      "reads": "4",
+      "at_abs": "49695268051",
+      "calibration_verified": "0",
+      "freshness_verified": "0"
+    },
+    {
+      "phase": "stop",
+      "affinity": "0x101",
+      "sensor": "TSENS0",
+      "id": "11",
+      "raw": "0x0020b1cd",
+      "enabled": "1",
+      "valid": "1",
+      "native_mC": "46100",
+      "reason": "native_hardware_units",
+      "trdy_read": "1",
+      "trdy": "0",
+      "status_reads": "1",
+      "reads": "4",
+      "at_abs": "49695268051",
+      "calibration_verified": "0",
+      "freshness_verified": "0"
+    }
+  ],
+  "usb": {
+    "raw_bytes": 63632,
+    "console_bytes": 56304,
+    "frames": 229,
+    "raw_sha256": "655f3595682a0797be2ece4f297d0a2ad148299d7c3241842fdf725250a309fa",
+    "console_sha256": "c2fdda53e0528559115ed28821e82c4a0d312f939948ee91eff07b581060b784",
+    "first_offset": 0,
+    "final_offset": 56304,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "incomplete_frame_bytes": 0,
+    "device_lost_max": 0,
+    "frames_reporting_device_loss": 0,
+    "independent_parser_agrees_with_frozen_receiver": true,
+    "frozen_redecode_equals_complete_console": true,
+    "transport_verified": true,
+    "kernel_banner_offset": 0,
+    "timer_offset": 54835,
+    "normal_return_offset": 56188,
+    "drain_success": true,
+    "drain_records": [
+      {
+        "offset": 56255,
+        "drained": 1,
+        "target": 56255
+      }
+    ],
+    "emitted_kernel_stream_through_timer_verified": true,
+    "all_firmware_daemon_and_original_printf_logs_complete": false,
+    "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
+  },
+  "receiver_status": {
+    "started_at": "2026-11-26T03:54:46.738571+08:00",
+    "enumerated": true,
+    "frames": 229,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "status": "capture_failed",
+    "output": "F:\\IOS-MIX1\\evidence\\gpu-metal-20261123\\package\\runs\\gpu-g2-scm-info-01\\console.log",
+    "device_commands_sent": false,
+    "candidate_seen": true,
+    "identity_verified": true,
+    "descriptor_errors": 0,
+    "descriptor_error_samples": [],
+    "configuration_verified": true,
+    "console_bytes": 56304,
+    "failure_stage": "capturing",
+    "failure": "[Errno 32] Pipe error",
+    "finished_at": "2026-11-26T03:58:20.669141+08:00"
+  },
+  "return_verification": {
+    "started_at": "2026-11-26T03:59:06.013073+08:00",
+    "elapsed_seconds": 258.010498,
+    "devices_query_count": 1,
+    "product_query_count": 1,
+    "device_rows": [
+      [
+        "54223ce9",
+        "fastboot"
+      ]
+    ],
+    "same_serial_fastboot": true,
+    "observed_product": "MSM8996_A8",
+    "product_verified": true,
+    "passed": true,
+    "retry": false,
+    "attempt_id": "gpu-g2-scm-info-01",
+    "phase": "g2-scm-info",
+    "capture_stop_requested": true,
+    "finished_at": "2026-11-26T03:59:06.514678+08:00"
+  },
+  "pas13_supported": null,
+  "pas_operations": 0,
+  "gpu_aperture_access": false,
+  "gpu_power_writes": 0,
+  "firmware_loaded": false,
+  "cp_verified": false,
+  "metal_acceleration_verified": false
+}

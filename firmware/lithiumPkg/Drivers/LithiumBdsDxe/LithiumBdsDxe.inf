@@ -1,0 +1,38 @@
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+[Defines]
+  INF_VERSION = 0x00010005
+  BASE_NAME = LithiumBdsDxe
+  FILE_GUID = 5C086B58-2FD0-43BC-A15C-95B364A1D327
+  MODULE_TYPE = DXE_DRIVER
+  VERSION_STRING = 0.1
+  ENTRY_POINT = LithiumBdsEntry
+[Sources]
+  LithiumBdsDxe.c
+[Packages]
+  MdePkg/MdePkg.dec
+  lithiumPkg/lithiumPkg.dec
+  UniXNUPkg/UniXNUPkg.dec
+[LibraryClasses]
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  UefiRuntimeServicesTableLib
+  BaseMemoryLib
+  FdtLib
+  CacheMaintenanceLib
+  PrintLib
+  BaseLib
+  DevicePathLib
+  MemoryAllocationLib
+  DebugLib
+  UefiLib
+[Guids]
+  gEfiEndOfDxeEventGroupGuid
+[Protocols]
+  gEfiBdsArchProtocolGuid
+  gEfiGraphicsOutputProtocolGuid
+  gEfiBlockIoProtocolGuid
+  gEfiSimpleFileSystemProtocolGuid
+  gUniXNULoaderProtocolGuid
+  gEfiSimpleTextOutProtocolGuid
+[Depex]
+  gEfiGraphicsOutputProtocolGuid AND gEfiSimpleTextOutProtocolGuid

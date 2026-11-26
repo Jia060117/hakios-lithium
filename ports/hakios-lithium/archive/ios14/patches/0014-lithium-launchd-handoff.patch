@@ -1,0 +1,33 @@
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -445,7 +445,7 @@
+ 	if (log == NULL) { print("KERNEL NOT STARTED; STORAGE/PSCI STOP\n"); return; }
+ 	print("P2 STORAGE KERNEL:\n");
+ 	static const char *launch[] = {"LITHIUM P2 LAUNCHSTART ", "LITHIUM P2 LAUNCHROOT ",
+-	    "LITHIUM P2 DYNFILE LAUNCHD ", "LITHIUM P2 LAUNCHMOUNTS ", "LITHIUM P2 LAUNCHHANDOFF ", "LITHIUM P2 LAUNCHBOOT ", "LITHIUM P2 LAUNCHSTDIO ",
++	    "LITHIUM P2 DYNFILE LAUNCHD ", "LITHIUM P2 LAUNCHMOUNTS ", "LITHIUM P2 LAUNCHHANDOFF ", "LITHIUM P2 LAUNCHBOOT ", "LITHIUM P2 LAUNCHSTDIO ", "LITHIUM P2 LAUNCHFD step=open ", "LITHIUM P2 LAUNCHFD step=dup0 ", "LITHIUM P2 LAUNCHFD step=dup1 ", "LITHIUM P2 LAUNCHFD step=close ", "LITHIUM P2 LAUNCHFD step=tty ", "LITHIUM P2 LAUNCHEXEC ",
+ 	    "LITHIUM P2 LAUNCHJOB ", "LITHIUM P2 LAUNCHPROC PID1 ",
+ 	    "LITHIUM P2 LAUNCHPROC NOTIFYD ", "LITHIUM P2 LAUNCHPROC CFPREFSD ", "LITHIUM P2 LAUNCHRESULT "};
+ 	for (unsigned i=0; i<sizeof(launch)/sizeof(launch[0]); i++)
+--- a/userland/src/init.c
++++ b/userland/src/init.c
+@@ -1330,7 +1330,19 @@
+ 		if (flash_root_mode && strcmp(argv[1], "/sbin/launchd.darwin") == 0) {
+ 			argv[1] = "/sbin/launchd";      /* the root is Darwin's own volume: its launchd is that */
+ 		}
++#if defined(HAKIOS_LITHIUM_LAUNCHD)
++		int lithium_exec = flash_root_mode && getpid() == 1 && strcmp(argv[1], "/sbin/launchd") == 0;
++		if (lithium_exec) dprintf(2, "LITHIUM P2 LAUNCHEXEC pid=1 attempted=1 path=/sbin/launchd\n");
++#endif
+ 		execve(argv[1], argv + 1, envp);
++#if defined(HAKIOS_LITHIUM_LAUNCHD)
++		if (lithium_exec) {
++			int err = errno;
++			dprintf(2, "LITHIUM P2 LAUNCHEXEC failed=1 rc=-1 errno=%d\n", err);
++			errno = err;
++			return;
++		}
++#endif
+ 		printf("%s: %s\n", argv[1], strerror(errno));
+ 		return;
+ 	}

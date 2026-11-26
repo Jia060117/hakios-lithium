@@ -1,0 +1,187 @@
+{
+  "recorded_at": "2026-11-12T07:17:20.118781+00:00",
+  "repositories": [
+    {
+      "name": "edk2-lithium",
+      "path": "upstream/research/edk2-lithium",
+      "url": "https://github.com/S-8506/edk2-lithium.git",
+      "commit": "8cb11dff6e3ce5e491297188179aa7327f07a8cf",
+      "status": "",
+      "shallow": true
+    },
+    {
+      "name": "uefi-g0245d",
+      "path": "upstream/research/uefi-g0245d",
+      "url": "https://github.com/midopix/uefi-g0245d.git",
+      "commit": "5cc683992122b7bb711d878d7919f1ae0af81c1f",
+      "status": "",
+      "shallow": true
+    },
+    {
+      "name": "UniXNU-g0245d",
+      "path": "upstream/research/UniXNU-g0245d",
+      "url": "https://github.com/midopix/UniXNU-g0245d.git",
+      "commit": "c4a44fa3588e49ed5fd9df9eba2ef2adfc7ca992",
+      "status": "",
+      "shallow": true
+    },
+    {
+      "name": "UniXNU-msm8996-common",
+      "path": "upstream/research/UniXNU-msm8996-common",
+      "url": "https://github.com/midopix/UniXNU-msm8996-common.git",
+      "commit": "4007997af4ed9db34c8dadcd44d9ce7a8b22ab7a",
+      "status": "",
+      "shallow": true
+    },
+    {
+      "name": "xnu-7195.141.2",
+      "path": "upstream/research/xnu-7195.141.2",
+      "url": "https://github.com/apple-oss-distributions/xnu.git",
+      "commit": "776661b72c2db9861865df68d309f6f35faccff4",
+      "status": "",
+      "shallow": true
+    },
+    {
+      "name": "ios-sailfish",
+      "path": "upstream/research/ios-sailfish",
+      "url": "https://github.com/joranv1/ios-sailfish.git",
+      "commit": "6f27e41ff249f2680540ebe8ee5ab982c5e641c9",
+      "commit_date": "2026-10-22T19:12:18Z",
+      "status": "",
+      "shallow": true,
+      "role": "same-Snapdragon821 reference; selectively backport to Apple7195; retain iOS14 target",
+      "runtime_claims_independently_verified": false
+    }
+  ],
+  "remote_observations": [
+    {
+      "path": "artifacts/research/apple-7195-remote-tags.txt",
+      "sha256": "e77bcbfc64c6f6bc5069234f2247170aab887ba3e3e6bd2afed63b0d640439e2",
+      "refs": [
+        {
+          "object_id": "5c9c14d487e36cc7259f691e8607171a8638d45c",
+          "ref": "refs/tags/xnu-7195.101.1"
+        },
+        {
+          "object_id": "ca32a94769198f2189fa4d06a9e25c0696aa1a29",
+          "ref": "refs/tags/xnu-7195.101.1^{}"
+        },
+        {
+          "object_id": "f3fc7232a1920ad0937107ef105912edf37d0d8d",
+          "ref": "refs/tags/xnu-7195.121.3"
+        },
+        {
+          "object_id": "2a647cb3489890a0948eb7ee3a118307d39bb574",
+          "ref": "refs/tags/xnu-7195.121.3^{}"
+        },
+        {
+          "object_id": "a68d2d254c515421bac4d7e9fa0fe8b43b2d9fed",
+          "ref": "refs/tags/xnu-7195.141.2"
+        },
+        {
+          "object_id": "776661b72c2db9861865df68d309f6f35faccff4",
+          "ref": "refs/tags/xnu-7195.141.2^{}"
+        },
+        {
+          "object_id": "dcb148221a6c890bf68288ae793bc58b2b14d4db",
+          "ref": "refs/tags/xnu-7195.50.7.100.1"
+        },
+        {
+          "object_id": "bb611c8fecc755a0d8e56e2fa51513527c5b7a0e",
+          "ref": "refs/tags/xnu-7195.50.7.100.1^{}"
+        },
+        {
+          "object_id": "76670bb0cc455cc16dc9a9d943d2feb09508d309",
+          "ref": "refs/tags/xnu-7195.60.75"
+        },
+        {
+          "object_id": "b967469df23b10bc70788727627457ebdfe3653f",
+          "ref": "refs/tags/xnu-7195.60.75^{}"
+        },
+        {
+          "object_id": "9acda412b2c89d68ac05d97f67aebda86c19000b",
+          "ref": "refs/tags/xnu-7195.81.3"
+        },
+        {
+          "object_id": "e890dd3c5b68b2b8f7c726c8812e74cc347cb0ba",
+          "ref": "refs/tags/xnu-7195.81.3^{}"
+        }
+      ]
+    },
+    {
+      "path": "artifacts/research/mu-v4.1-remote-tags.txt",
+      "sha256": "1156994926e2397224ed481a194d3d2bec1c533fedd334720a363b2f688ee812",
+      "refs": [
+        {
+          "object_id": "6b3d90b79e191e08171bfedd3980234a7e49d340",
+          "ref": "refs/tags/v4.1"
+        }
+      ]
+    }
+  ],
+  "planned_firmware_base": {
+    "repository": "https://github.com/Project-Silicium/Mu-Silicium.git",
+    "tag": "v4.1",
+    "commit": "6b3d90b79e191e08171bfedd3980234a7e49d340",
+    "checkout_present": true,
+    "submodules_pinned": true,
+    "status": "full recursive checkout; isolated lithium overlay builds with CLANGPDB",
+    "external_build_path": "/home/jia/ios-mix1-build/Mu-Silicium",
+    "recursive_submodules": [
+      " 9f4dbfd7d61acdae69fd5bb48720ce7e53711e25 Binaries (9f4dbfd7)",
+      " 566cf5c8c2c8adf8e1a337ced1d147bc6246856f Common/Mu (566cf5c)",
+      " 9292f9254adb94c5e5bb09a370b9662fcd66a953 Common/Mu_OEM_Sample (9292f92)",
+      " 42d6d889f7c1f27e3226b44074b8a0ffe21cd988 Mu_Basecore (42d6d88)",
+      " e230f474b87134e8c6c85b630084c612057f253e Mu_Basecore/BaseTools/Source/C/BrotliCompress/brotli (e230f47)",
+      " e230f474b87134e8c6c85b630084c612057f253e Mu_Basecore/MdeModulePkg/Library/BrotliCustomDecompressLib/brotli (e230f47)",
+      " 4ef89209a239c1aea328cf13c05a2807e5c146d1 Mu_Basecore/MdeModulePkg/Universal/RegularExpressionDxe/oniguruma (4ef8920)",
+      " cfff805481bdea27f900c32698171286542b8d3c Mu_Basecore/MdePkg/Library/BaseFdtLib/libfdt (cfff805)",
+      " 370b5944c046bab043dd8b133727b2135af7747a Mu_Basecore/MdePkg/Library/MipiSysTLib/mipisyst (370b594)",
+      " a6f06bf2fd3b832822cd4e9e554b7d47f32ec084 Mu_Basecore/MdePkg/Library/MipiSysTLib/mipisyst/external/googletest (a6f06bf)",
+      " c53fdab93af76106b963216d85897614b996f8b6 Mu_Basecore/MdePkg/Library/MipiSysTLib/mipisyst/external/pugixml (c53fdab)",
+      " f55cf6d48ec69b4ac60a63903e9c6a2cb0fd155d Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm (f55cf6d)",
+      " 107ea89daaefb9867ea9121002fbbdf926780e98 Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/mbedtlslib/mbedtls (107ea89)",
+      " 94599c0e3b5036e086446a51a3f79640f70f22f6 Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/mbedtlslib/mbedtls/framework (94599c0)",
+      " aea7aaf2abb04789f5868cbabec406ea43aa84bf Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl (aea7aaf)",
+      " 7ab6a55cfe471267d61e4d28ba43d41defcd87e0 Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/cloudflare-quiche (7ab6a55)",
+      " f1c75347daa2ea81a941e953f2263e0a4d970c8d Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/cloudflare-quiche/quiche/deps/boringssl (f1c7534)",
+      " ce771805c094d098c25a218bc8e9f7344eccbc5a Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/fuzz/corpora (ce771805)",
+      " 74b1f4fddbc2d6de969815b1992ddc1ae7c643fe Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/gost-engine (74b1f4f)",
+      " 0b445c73ae1e87577430c6884cdeeca1afa36dbd Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/gost-engine/libprov (0b445c7)",
+      " 784c38f50e70a739400cdd3f2620bac2e2788e6c Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/krb5 (784c38f)",
+      " 7bc597c04b534ddea9b6654481deb31ded8e1bbc Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/oqs-provider (7bc597c)",
+      " 898b1079d95453dc5d0f378dd15a75b99252caf3 Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/pkcs11-provider (898b107)",
+      " ea9666903c109a8e88a37eb1c60d4e98f01f0299 Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/pkcs11-provider/python-ecdsa (ea96669)",
+      " 32fcb0d8e78fd9ffc4568d11ba5916936a46af8c Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/pkcs11-provider/tlsfuzzer (32fcb0d)",
+      " 4e16574d7c52f17c81c3f5e0aa547776a67fdf8e Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/pkcs11-provider/tlslite-ng (4e16574)",
+      " 7e33b0e7739d633c77b8c478620167f693ed13f4 Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/pyca-cryptography (7e33b0e)",
+      " 4096fa01715929e08b97e73f3173aee9d57f2a3f Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/python-ecdsa (4096fa0)",
+      " 61f45d9701294fd87ef92d2a7e3dfb076653a562 Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/tlsfuzzer (61f45d9)",
+      " 77ef321dde1a9e6bcf94d73c80f8789a770d8031 Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/tlslite-ng (77ef321)",
+      " 2196000605e45d91097147c9c71f26b72af58003 Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/os_stub/openssllib/openssl/wycheproof (2196000)",
+      " a01cc69ee9536f90e57c61a198f2d1944d3d4313 Mu_Basecore/SecurityPkg/DeviceSecurity/SpdmLib/libspdm/unit_test/cmockalib/cmocka (a01cc69)",
+      " 1cc9cde3448cdd2e000886a26acf1caac2db7cf1 Mu_Basecore/UnitTestFrameworkPkg/Library/CmockaLib/cmocka (1cc9cde)",
+      " 86add13493e5c881d7e4ba77fb91c1f57752b3a4 Mu_Basecore/UnitTestFrameworkPkg/Library/GoogleTestLib/googletest (86add13)",
+      " 83d4e1ebef3588fae48b69a7352cc21801cb70bc Mu_Basecore/UnitTestFrameworkPkg/Library/SubhookLib/subhook (heads/main)",
+      " f50bc115dccdea12e44efb550fd783d1daafc739 Silicium-ACPI (f50bc11)",
+      " 67b5686b4419b4cb8caa502711c41815f5279751 Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl (67b5686)",
+      " 7ab6a55cfe471267d61e4d28ba43d41defcd87e0 Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/cloudflare-quiche (7ab6a55)",
+      " f1c75347daa2ea81a941e953f2263e0a4d970c8d Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/cloudflare-quiche/quiche/deps/boringssl (f1c7534)",
+      " ce771805c094d098c25a218bc8e9f7344eccbc5a Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/fuzz/corpora (ce771805)",
+      " 74b1f4fddbc2d6de969815b1992ddc1ae7c643fe Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/gost-engine (74b1f4f)",
+      " 0b445c73ae1e87577430c6884cdeeca1afa36dbd Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/gost-engine/libprov (0b445c7)",
+      " 784c38f50e70a739400cdd3f2620bac2e2788e6c Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/krb5 (784c38f)",
+      " 7bc597c04b534ddea9b6654481deb31ded8e1bbc Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/oqs-provider (7bc597c)",
+      " 663dea335c80bec7fd96d544ff875af08d6461a9 Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/pkcs11-provider (663dea3)",
+      " ea9666903c109a8e88a37eb1c60d4e98f01f0299 Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/pkcs11-provider/python-ecdsa (ea96669)",
+      " 32fcb0d8e78fd9ffc4568d11ba5916936a46af8c Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/pkcs11-provider/tlsfuzzer (32fcb0d)",
+      " 4e16574d7c52f17c81c3f5e0aa547776a67fdf8e Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/pkcs11-provider/tlslite-ng (4e16574)",
+      " 7e33b0e7739d633c77b8c478620167f693ed13f4 Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/pyca-cryptography (7e33b0e)",
+      " 4096fa01715929e08b97e73f3173aee9d57f2a3f Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/python-ecdsa (4096fa0)",
+      " 61f45d9701294fd87ef92d2a7e3dfb076653a562 Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/tlsfuzzer (61f45d9)",
+      " 77ef321dde1a9e6bcf94d73c80f8789a770d8031 Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/tlslite-ng (77ef321)",
+      " 2196000605e45d91097147c9c71f26b72af58003 Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl/wycheproof (2196000)"
+    ]
+  },
+  "reuse_route_updated_at": "2026-11-12T22:51:22.929163+08:00"
+}

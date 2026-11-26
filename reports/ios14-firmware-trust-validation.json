@@ -1,0 +1,104 @@
+{
+  "all_passed": true,
+  "host_cases": [
+    "all-2181-firmware-records-and-special-flags",
+    "invalid-blob-flags-do-not-gain-trust",
+    "algorithm-exact-match-and-unsupported-algorithms",
+    "unknown-hashes-before-and-after-cache",
+    "43620-mutated-cdhashes-versus-independent-linear-oracle",
+    "null-arguments-bounded",
+    "writes-only-cs-flags-and-preserves-other-outputs",
+    "actual-XNU-invalid-code-page-denied-and-SIGKILL-requested"
+  ],
+  "firmware": [
+    {
+      "path": "/home/jia/ios-mix1-build/dyld-inspection/fsck",
+      "sha256": "bbb2e4d21cd75683699c3ff0b7b72f5b50c546961be51b05b5771405955ec54d",
+      "code_directories": [
+        {
+          "slot": 0,
+          "cdhash": "07e565101db5c7bc7232f2c5de915fb812544d03",
+          "hash_type": 2,
+          "code_directory_flags": "0x2",
+          "code_limit": 52560,
+          "code_pages_checked": 13,
+          "code_mutation_detected": true,
+          "directory_mutation_not_trusted": true
+        }
+      ]
+    },
+    {
+      "path": "/home/jia/ios-mix1-build/dyld-inspection/launchd",
+      "sha256": "cb34041d66dfbeee006ac0f69e4f217b223ad2a7df6046c9f28f317786cf951d",
+      "code_directories": [
+        {
+          "slot": 0,
+          "cdhash": "5e1e0f6e9669f156a8977e8e32e6e1a1f9a0f2dd",
+          "hash_type": 2,
+          "code_directory_flags": "0x2",
+          "code_limit": 398784,
+          "code_pages_checked": 98,
+          "code_mutation_detected": true,
+          "directory_mutation_not_trusted": true
+        }
+      ]
+    },
+    {
+      "path": "/home/jia/ios-mix1-build/dyld-inspection/dyld",
+      "sha256": "54fd7d7f710554dc976dddcdb0902fe7a779d37634c0ffc343b6febca61e6c2b",
+      "code_directories": [
+        {
+          "slot": 0,
+          "cdhash": "08c9c81d4fc3356a1f476e63ee3686a40c4d723f",
+          "hash_type": 2,
+          "code_directory_flags": "0x2",
+          "code_limit": 727680,
+          "code_pages_checked": 178,
+          "code_mutation_detected": true,
+          "directory_mutation_not_trusted": true
+        }
+      ]
+    }
+  ],
+  "cache": {
+    "firmware": "14.8 / 18H17 / D20AP",
+    "cache_sha256": "38cfec2c89fa5c186aee2c02e143b9ac449cf18f9e925d60a03c4db45c4b7118",
+    "manifest_sha256": "bccabec682b7fbc080cf4e853b125b4f3c38228bef7dfbf6c87c4da6c5bec65e",
+    "manifest_sha384_matched": true,
+    "manifest_signature_chain_verified": false,
+    "version": 1,
+    "entries": 2181,
+    "ordinary_entries": 2177,
+    "duplicate_identical_entries": 2,
+    "uuid": "ef1a75ab0ecb4c7a87a5e153d0678df7",
+    "trust_basis": "Fixed project IPSW input; exact CDHash and algorithm membership, no path-based trust",
+    "unsupported_special_flags": [
+      1,
+      2
+    ],
+    "entitlement_overrides": false
+  },
+  "sanitizer": "ASan + UBSan",
+  "exhaustive_mutated_hashes": 43620,
+  "actual_xnu_invalid_page_tested": true,
+  "scope": "Pinned firmware membership; code-page fixture hashes and actual invalid-page denial tested separately; full UBC/pager integration requires hardware",
+  "entitlement_overrides": false,
+  "qemu_used": false,
+  "device_operations": false,
+  "kernel_sha256": "f2ea131e460ce9a98351cd1f48396ca0e448f208058d7818f0f8f5647bee38e5",
+  "native_cache_bytes_verified": 47982,
+  "native_callback_verified": true,
+  "existing_ubc_pager_exec_unchanged": true,
+  "input_sha256": {
+    "/mnt/f/IOS-MIX1/ports/lithium/native/lithium_firmware_trust.c": "ddc616d539f0fc597b50e3a75a99dd9cb61177f7aacf9d2cad5fa48d191d4631",
+    "/home/jia/ios-mix1-build/xnu7195-lithium/src/bsd/kern/lithium_firmware_trust_data.h": "a7f440266bf440e28b9feb442ee7da275be8d2d2a73308b8dd3cada86176fc0f",
+    "/mnt/f/IOS-MIX1/ports/lithium/host/firmware-trust-test.c": "9f0ea917c8c750f51050708faff16386f283fbf4ffd47799550f1d96ee49372a",
+    "/home/jia/ios-mix1-build/xnu7195-lithium/src/bsd/kern/kern_cs.c": "09266c0681859ed9f31128f06c9d10cca75a2ba0ad69139f8cb5ff4bedd62ef9",
+    "/home/jia/ios-mix1-build/xnu7195-lithium/src/osfmk/kern/cs_blobs.h": "7ed89ed614f1e299ab0edd3f371257d09aae94d97f0b30c79d26b4f1ad89053e",
+    "/mnt/f/IOS-MIX1/scripts/validate-ios14-firmware-trust.py": "a5cfb2c590441eeeb07941d5111cf9b7b5a995fff6809d6857a6db064c82c1ac",
+    "/mnt/f/IOS-MIX1/scripts/prepare-ios14-firmware-trust.py": "1924a1d3fd39488c32d49dc01495bf6458e796219ec60dad7c925af8942976be",
+    "/mnt/f/IOS-MIX1/ports/lithium/patches/xnu-7195/0025-lithium-firmware-trust.patch": "0260a72b8ddc8dde6c6a450f58d60bc94608ceab61873896df719e5fcd1f5956",
+    "/mnt/f/IOS-MIX1/artifacts/research/ios14-local-d20ap/BuildManifest.plist": "bccabec682b7fbc080cf4e853b125b4f3c38228bef7dfbf6c87c4da6c5bec65e",
+    "/mnt/f/IOS-MIX1/artifacts/research/ios14-local-d20ap/018-62062-016.dmg.trustcache": "38cfec2c89fa5c186aee2c02e143b9ac449cf18f9e925d60a03c4db45c4b7118"
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "real full boot roundtrip",
+      "accepted": true,
+      "passed": true
+    },
+    {
+      "case": "reject magic",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "reject kernel address",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "reject ramdisk address",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "reject tags address",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "reject page size",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "reject digest",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "reject unrelated header field",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "reject compressed image",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "reject FAT bytes",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "reject truncated boot",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "real dual-volume XNUP",
+      "accepted": true,
+      "passed": true
+    },
+    {
+      "case": "reject bad XNUP size",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "reject reserved XNUP field",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "reject missing terminator",
+      "accepted": false,
+      "passed": true
+    },
+    {
+      "case": "real dual-volume source overlap: early write corrupts, deferred write preserves copy",
+      "passed": true
+    }
+  ],
+  "image_sha256": "b5fba1b39c2da034b957e5b977fe81ce08dbe1ebbbbd0171de73e34556c4b18f",
+  "package_script_sha256": "0f118ad307f1302edca043f8b6913d15f871251bf57e6bed7e4ca899d1010877",
+  "test_script_sha256": "50c401bee9096a664045ae20454d2f446b7a60ce7ff7b172d921057cdd5e2694",
+  "actual_boot_roundtrip_exercised": true,
+  "copy_boundary_model_only": true,
+  "device_operations": false,
+  "hardware_verified": false,
+  "qemu_used": false
+}

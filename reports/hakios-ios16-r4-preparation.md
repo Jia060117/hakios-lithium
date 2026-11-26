@@ -1,0 +1,1 @@
+R4 已冻结，完整 HakiOS、真实 D22AP loader 和 Mu 构建、46 项指令检查、实际控制台/返回摘要 ASan/UBSan 及 16 项实际包检查通过。镜像 SHA256 8a3230840e8b5636be18fa92e13cef781811e45f057632072a95b6ea2a1bad6d。本轮将实际 BSD printf 输出接入 USB，移除 kmoutput 重复采集，关闭全局 systrace 并保留 usertraps；返回摘要区分明确 timer、panic 和未知原因。R3 报告已独立归档。用户已确认 Fastboot；准备时尚未启动 R4，不重复刷 userdata。真实桌面、容器响应、触摸、A530、完整 6GB 与跨重启持久读回仍待验证。

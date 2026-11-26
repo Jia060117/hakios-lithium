@@ -1,0 +1,56 @@
+--- a/xnu/files/osfmk/arm64/psci_smp.h
++++ b/xnu/files/osfmk/arm64/psci_smp.h
+@@ -22,6 +22,7 @@
+ extern void             psci_smp_cpu_off(void) __dead2;
+ 
+ extern void             psci_smp_stop_others(void);
++extern bool             psci_smp_stopped_strict(void);
+ extern void             psci_smp_stop_here(void);
+ 
+ /* osfmk/arm64/gic_v3_irq.c */
+--- a/xnu/files/osfmk/arm64/psci_smp.c
++++ b/xnu/files/osfmk/arm64/psci_smp.c
+@@ -358,6 +358,28 @@
+ 	}
+ }
+ 
++
++/* Only an exact firmware OFF result proves a started secondary has stopped.
++ * The older stop routine's negative-state shortcut is not such proof. */
++bool
++psci_smp_stopped_strict(void)
++{
++    int max_cpu = ml_get_max_cpu_number();
++    uint32_t started = psci_smp_started;
++    if (cpu_number() != master_cpu || max_cpu < 0 || max_cpu >= 32)
++        return false;
++    if (max_cpu < 31 && (started >> (max_cpu + 1)) != 0)
++        return false;
++    for (int cpu = 0; cpu <= max_cpu; cpu++) {
++        if (cpu == master_cpu || !(started & (1u << cpu))) continue;
++        cpu_data_t *cdp = cpu_datap(cpu);
++        if (cdp == NULL ||
++            psci_call(PSCI_AFFINITY_INFO, cdp->cpu_phys_id, 0, 0) != PSCI_AFFINITY_OFF)
++            return false;
++    }
++    return true;
++}
++
+ /*
+  * Where a processor learns that the system is ending: the interrupt psci_smp_stop_rest() sends,
+  * and the loop in which the processors wait while another one panics (they have their
+--- a/xnu/files/osfmk/arm64/loader_return.c
++++ b/xnu/files/osfmk/arm64/loader_return.c
+@@ -448,6 +448,12 @@
+ 	 * on that processor only (on another one it has it call loader_return() in its turn).
+ 	 */
+ 	psci_smp_stop_others();
++#if defined(LITHIUM_ARMV8_0)
++	if (!lithium_fastboot_handoff_allowed()) {
++		loader_log_puts("\nLITHIUM FASTBOOT status=blocked reason=secondary_not_off\n");
++		for (;;) __builtin_arm_wfi();
++	}
++#endif
+ #endif
+ #if HAKIOS_LITHIUM_USB_LOG
+     extern void lithium_usb_quiesce(void);

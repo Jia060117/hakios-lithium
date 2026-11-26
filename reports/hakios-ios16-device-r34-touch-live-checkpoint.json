@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "recorded_at": "2026-11-20T17:15:23.363150+08:00",
+  "patch": "reports/hakios-ios16-device-r34-touch-live.patch",
+  "patch_sha256": "07ee13b7baf1394c0f7e77d888951c967cd770f7f1487347c5687c6b9df065ff",
+  "reverse_check_passed": true,
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "before_sha256": "3db0fe992b2e7f38862bc092157bab091b33a51d02aa2b8a8c0901fcd03849f0",
+      "after_sha256": "5a637697e836aaaf1b2f24e49698770438186a706de1d005963dc2bbf640c0a5"
+    },
+    {
+      "path": "project.json",
+      "before_sha256": "fb58d526e9f824e3fa5449c3a18e2a68353141b9bb843cfde1de35be6419f83c",
+      "after_sha256": "a26975ef1f52f04788e1656306ae2254c55147e513c6cd8cf529990d160569ea"
+    },
+    {
+      "path": "reports/hakios-ios16-device-r34-touch-live.md",
+      "before_sha256": null,
+      "after_sha256": "cd350bdec5c6c4a46c74b16d0f309e92fdb48a9198d2bfaa4dcb73b5b5207516"
+    },
+    {
+      "path": "reports/hakios-ios16-device-r34-touch-live.json",
+      "before_sha256": null,
+      "after_sha256": "7ecce3c5d06e2fec0029e0a183ededc3f7145d202e156b838b54b75bce5e6e92"
+    },
+    {
+      "path": "reports/local/run-ios16-r34-touch-live.py",
+      "before_sha256": null,
+      "after_sha256": "2d5c8608c91d0eaa85097a6b962be559d024cab55d2f95a20bcf401582ac8c6c"
+    }
+  ],
+  "host_preparation_patch": "reports/hakios-ios16-touch-r34-prepared.patch",
+  "index_sha256": "ead184543d0a1d907521c4acaddb65b98f8e8a8783bb05c16eff8dea64011f47",
+  "frozen_source_and_image_hashes_verified": [
+    "ports/hakios-lithium/peripherals/kernel.inc",
+    "ports/hakios-lithium/peripherals/touch-live.inc",
+    "ports/hakios-lithium/peripherals/touch-live-qup.h",
+    "ports/hakios-lithium/peripherals/touch-live-events.h",
+    "ports/hakios-lithium/patches/0024-lithium-touch-live.patch",
+    "maintenance/hakios-lithium/peripherals/touch-live-qup-test.c",
+    "maintenance/hakios-lithium/peripherals/touch-live-events-test.c",
+    "scripts/prepare-hakios-touch-live.py",
+    "scripts/build-hakios-touch-live.py",
+    "scripts/package-hakios-touch-live.py",
+    "reports/local/run-touch-live-build.ps1",
+    "artifacts/hakios/lithium-ios16/phase4-r20-display/lithium-hakios-ios16-r20-display.img",
+    "artifacts/hakios/lithium-ios16/phase4-r32-touch-qup-transfer/lithium-hakios-ios16-r32-touch-qup-transfer.img",
+    "artifacts/hakios/lithium-ios16/phase4-r33-return-fastboot/lithium-hakios-ios16-r33-return-fastboot.img",
+    "artifacts\\hakios\\lithium-ios16\\phase4-r34-touch-live-ram-final\\lithium-hakios-ios16-r34-touch-live-ram.img",
+    "artifacts\\hakios\\lithium-ios16\\phase4-r34-touch-live-ufs-final\\lithium-hakios-ios16-r34-touch-live-ufs.img"
+  ],
+  "raw_evidence_directory": "reports/local/20261120-r34-touch-live-approved",
+  "device_operations_after_return_check": 0,
+  "new_builds_during_closeout": 0,
+  "new_test_suites_during_closeout": 0
+}

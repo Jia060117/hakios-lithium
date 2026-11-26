@@ -1,0 +1,21 @@
+{
+  "source": "lithium_images_V9.5.2.0.NAHCNFA_20180405.0000.00_7.0_cn/images/emmc_appsboot.mbn",
+  "sha256": "91835d1f70edaad214d72dca22f13230edcfd62849c3f5b79409d1cc673e3081",
+  "entry": "0x92a00000",
+  "load_start": "0x92a00000",
+  "load_end": "0x92bd74f8",
+  "analysis_elf_is_flashable": false,
+  "observations": {
+    "arm64_magic": "0x92a38dd4..0x92a38de4 compares Image+0x38 with 0x644d5241 (ARMd)",
+    "arm64_handoff": "0x92a38ee4..0x92a38ef4 passes kernel and DT physical addresses to 0x92a1ebfc",
+    "scm": "0x92a1ebfc uses SCM service 1, command 15; kernel at argument+0x48, DT at argument+0; fallback call ID 0x0200010f",
+    "address_override": "0x92a37840 overrides header addresses: runtime RAM base + 0x80000 for ARM64, +0x2800000 DT, +0x2a00000 ramdisk",
+    "runtime_base": "0x92a05554 loads a runtime 64-bit global; base=0x40000000 inferred from observed initrd=0x42a00000, pending probe PC proof",
+    "gzip_fastboot": "0x92a3b190 decompresses gzip to a scratch buffer; 0x92a3b07c..0x92a3b088 copies decompressed bytes to the overridden kernel address"
+  },
+  "limitations": [
+    "Firmware has no symbols; function roles inferred from data flow and messages.",
+    "Static analysis cannot establish the final EL/register/cache state.",
+    "No secure firmware changes or commands are issued by this script."
+  ]
+}

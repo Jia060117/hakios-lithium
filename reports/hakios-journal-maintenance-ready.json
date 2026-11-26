@@ -1,0 +1,67 @@
+{
+  "purpose": "Initialize existing empty HFSX journal for HakiOS P2; auxiliary stock Linux maintenance only",
+  "active_kernel": "complete HakiOS 8796.121.2",
+  "stock_kernel_unchanged": true,
+  "image_path": "out/hakios-journal-maintenance/lithium-hakios-journal-maintenance.img",
+  "image_sha256": "41b8e9a6f68794e07773a04cad1152876590997d6a7b986cbbc410ede3b1fe0d",
+  "bytes": 22294528,
+  "host_cases_passed": 7,
+  "bounded_writer_cases_passed": 11,
+  "host_asan_ubsan_passed": true,
+  "physical_write_performed": false,
+  "device_boot_issued": false,
+  "source_functions": {
+    "calc_checksum": "0c065e9cf24e5e168d2424b5dfe17750e76aec5ac90248a313e9aea3232e0401",
+    "swap_journal_header": "7fefd3e8d15da6de5393a263f529af250b9b5bd2e7bf2b8fef0dca8188affb1c",
+    "size_up_tbuffer": "8c9b2b3955af34fc436adf1dd51407fae12924a6a4b3efb0ea2d8f55af05033f",
+    "journal_create": "b92a5fb1045a8b42002ac90382cc2324cd05dd601f16d8edf2c03c546ef240be",
+    "journal_is_clean": "ca583973860e722ab6f81bbffafa50823d8cdf08e3715cd5f70de20eb9767349"
+  },
+  "integrated_source_sha256": {
+    "hfs_journal.c": "750db9aec63ba98013b641ab3aba416c442caf6949e9a8b69f3d653541c05312",
+    "hfs_journal.h": "1de7e23acb743775d99970ce83ddad68d2f56200ab52f5dfd7aafa8038b4aa40",
+    "hfs_vfsutils.c": "7e84e0fa7ee08e94bfe68e6320bbf1cf4ed2f26ab6c84e27cf8ec7f07a600b5f"
+  },
+  "source_dependency_commit": "31d5ec238dfab485e78a9a30b8b92d13e8914f03",
+  "write_order": [
+    {
+      "offset": 532480,
+      "bytes": 4096,
+      "purpose": "valid empty journal header"
+    },
+    {
+      "offset": 528384,
+      "bytes": 4096,
+      "purpose": "clear only NeedInit bit"
+    }
+  ],
+  "payload_sha256": {
+    "expected_volume": "4b423d5cd6c6a721f21da1bc3cc86a3fcfb28d4a996716a5d3527d8ae76652bd",
+    "expected_jib": "5669ad902d33309b6a8c0b6e1bb43f7c56bcf6e8666c7bdc5b9c838dcf92c4de",
+    "initialized_jib": "60fb38040bdcef25ac5b005fe75fdb4042b3bd4b941a673d49bca8663479c7ca",
+    "initialized_header": "34f0d29b099d6ceed699486dcebb47ed1a4a0d6d923a785db32b066d42f93ad5"
+  },
+  "evidence_sha256": {
+    "scripts/build-hakios-journal-maintenance.py": "760eee18100deed20cc2cf2c643ee08bbef4f2169da54b1370a4fe3b6a21d8d3",
+    "maintenance/hakios-lithium/journal-maintenance.c": "96792d5518758cd84ac3878aaf4257fb89b93c8c7dbdd7a2ecbddbd227d5621c",
+    "maintenance/hakios-lithium/journal-maintenance-host-test.c": "8f1eb8a92a418059b88dc91199eca0e00dfe2ed7e723eeae557225c40cdf9260",
+    "maintenance/hakios-lithium/journal-init.rc": "93e3119b6daa02559e8f9a0a7515fba6b6c198d9e526fe972d7f402c6f7d5ad5",
+    "out/hakios-journal-maintenance/upstream-journal-host.c": "f415373eb28de440a846e5c98db95f7f6caed5d31def42ff51de9b15e943ff16",
+    "out/hakios-journal-maintenance/journal-payload.h": "ad2f5f4577d19210d51e5a632e139b9ceb6c4c45ec39ed4ad01acbd20d3bbb3e",
+    "out/hakios-journal-maintenance/maintainer": "5995f9bd0bb4f0b801b8fe41789fe19c399fc7e336441809fb72813f058ae3a5",
+    "out/hakios-journal-maintenance/upstream-host-tests.txt": "6e998c56293eb2b5c5ff125edeec1c7056fb7450c77e648a34bfc7f9795d585f",
+    "out/hakios-journal-maintenance/maintainer-host-tests.txt": "684c46ed2e91789c12e533a4572d6ac6081f08e4f57a59e2835d13cc43c37151"
+  },
+  "journal_size": 8388608,
+  "journal_all_zero_before": true,
+  "volume_header_unchanged": true,
+  "block_mounts": [],
+  "services": [
+    "ueventd",
+    "adbd"
+  ],
+  "writes_bounded_to_two_blocks": true,
+  "qemu_used": false,
+  "legacy_7195_used": false,
+  "hfs_mount_verified": false
+}

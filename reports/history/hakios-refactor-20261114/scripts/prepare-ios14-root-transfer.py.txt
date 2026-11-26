@@ -1,0 +1,135 @@
+#!/usr/bin/env python3
+"""Encode a verified HFS image with Android libsparse, verify all decoded bytes.
+
+Host files only. FILL chunks write their pattern; DONT_CARE chunks are rejected
+so flashing over Android cannot leave old bytes within the new HFS image.
+"""
+import argparse
+from collections import Counter
+from datetime import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import struct
+import subprocess
+
+ROOT=Path(__file__).resolve().parents[1]
+TOOLS=Path('/home/jia/ios-mix1-build/sparse-tools')
+
+def digest(path):
+    h=hashlib.sha256()
+    with path.open('rb') as f:
+        while b:=f.read(8*1048576):h.update(b)
+    return h.hexdigest()
+
+def archive_file(source,destination,expected_sha,resume=False):
+    """Resume a verified prefix with bounded buffers, publish only complete files."""
+    size=source.stat().st_size
+    if destination.exists() and destination.stat().st_size==size:
+        assert resume and digest(destination)==expected_sha,'existing archive differs from source'
+        print('Reusing verified archive '+destination.name,flush=True)
+        return
+    partial=destination.with_name(destination.name+'.partial')
+    assert not (destination.exists() and partial.exists()),'ambiguous archive/partial files'
+    existing=destination if destination.exists() else partial
+    offset=existing.stat().st_size if existing.exists() else 0
+    assert not existing.exists() or resume,'archive exists; use --resume to validate and continue'
+    assert offset<=size,'partial archive exceeds source size'
+    h=hashlib.sha256()
+    with source.open('rb') as src:
+        if existing.exists():
+            print(f'Checking archive prefix {destination.name}: {offset} bytes',flush=True)
+            with existing.open('rb') as old:
+                left=offset
+                while left:
+                    block=src.read(min(left,8*1048576))
+                    assert block and old.read(len(block))==block,'partial archive prefix differs from source'
+                    h.update(block);left-=len(block)
+            if existing==destination:destination.rename(partial)
+        with partial.open('ab') as dst:
+            next_progress=(offset//(1024*1048576)+1)*(1024*1048576)
+            while block:=src.read(8*1048576):
+                dst.write(block);h.update(block);offset+=len(block)
+                if offset>=next_progress:
+                    print(f'Archiving {destination.name}: {offset//1048576}/{size//1048576} MiB',flush=True)
+                    next_progress+=1024*1048576
+            dst.flush();os.fsync(dst.fileno())
+    assert offset==size and h.hexdigest()==expected_sha,'archive differs from verified source'
+    assert partial.stat().st_size==size and not destination.exists()
+    partial.rename(destination)
+
+def verify_sparse(path,expected_bytes,expected_sha):
+    counts=Counter();h=hashlib.sha256();position=0
+    with path.open('rb') as f:
+        magic,major,minor,fh,ch,bs,blocks,chunks,crc=struct.unpack('<I4H4I',f.read(28))
+        assert (magic,major,minor,fh,ch,bs)==(0xed26ff3a,1,0,28,12,4096)
+        assert blocks*bs==expected_bytes
+        for _ in range(chunks):
+            kind,reserved,n,size=struct.unpack('<2H2I',f.read(12))
+            assert reserved==0 and n>0 and position+n*bs<=expected_bytes
+            if kind==0xcac1:
+                assert size==12+n*bs
+                left=n*bs
+                while left:
+                    b=f.read(min(left,8*1048576));assert b
+                    h.update(b);left-=len(b)
+            elif kind==0xcac2:
+                assert size==16
+                pattern=f.read(4);assert len(pattern)==4
+                buf=pattern*(2*1048576);left=n*bs
+                while left:
+                    amount=min(left,len(buf));h.update(buf[:amount]);left-=amount
+            else:
+                raise ValueError(f'unsupported/unsafe sparse chunk {kind:#x} (no skipped blocks allowed)')
+            counts[hex(kind)]+=1;position+=n*bs
+        assert not f.read(1) and position==expected_bytes
+    assert h.hexdigest()==expected_sha, 'decoded sparse data differs from verified HFS image'
+    return dict(decoded_sha256=h.hexdigest(),decoded_bytes=position,chunk_types=counts,chunks=chunks,
+                skipped_blocks=0,all_bytes_verified=True)
+
+def main():
+    p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--fixture',action='store_true')
+    p.add_argument('--resume',action='store_true',help='Validate existing sparse data and archive prefixes before continuing')
+    p.add_argument('--report',type=Path,default=ROOT/'reports/ios14-hfs-root.json')
+    p.add_argument('--artifact-dir',type=Path,default=Path('/mnt/e/IOS-MIX1-artifacts/ios14-d20ap'))
+    a=p.parse_args();root=json.loads(a.report.read_text())
+    assert root['fixture']==a.fixture and root['fsck_passed'] and root['contents_and_metadata_verified']
+    source=Path(root['image']);assert source.is_file() and source.stat().st_size==root['image_bytes']
+    sparse=source.with_suffix('.sparse.img')
+    tool=TOOLS/'root/usr/bin/img2simg'
+    env=dict(os.environ,LD_LIBRARY_PATH=str(TOOLS/'root/usr/lib/x86_64-linux-gnu/android'))
+    if sparse.exists():
+        assert a.resume,'sparse image exists; use --resume to verify it'
+        print('Reusing existing sparse image; full decoded verification follows',flush=True)
+    else:
+        print('Encoding Android sparse image with pinned Ubuntu platform-tools package',flush=True)
+        subprocess.run([tool,source,sparse,'4096'],env=env,check=True)
+    print('Verifying every decoded sparse byte against the HFS SHA256',flush=True)
+    verified=verify_sparse(sparse,root['image_bytes'],root['sha256'])
+    sparse_sha=digest(sparse)
+    a.artifact_dir.mkdir(parents=True,exist_ok=True)
+    archived=[]
+    # Publish only completed files. Keep earlier partial work in its own folder.
+    for src in (source,sparse,Path(root['manifest']),source.with_suffix('.build.json')):
+        dst=a.artifact_dir/src.name
+        if src.resolve()!=dst.resolve():
+            print('Archiving '+src.name,flush=True)
+            expected_sha=root['sha256'] if src==source else sparse_sha if src==sparse else digest(src)
+            archive_file(src,dst,expected_sha,a.resume)
+        archived.append(str(dst))
+    assert digest(a.artifact_dir/source.name)==root['sha256']
+    assert digest(a.artifact_dir/sparse.name)==sparse_sha
+    record=dict(prepared_at=datetime.now().astimezone().isoformat(),fixture=a.fixture,
+        root_image_sha256=root['sha256'],root_image_bytes=root['image_bytes'],
+        root_report_sha256=digest(a.report),sparse_path=str(a.artifact_dir/sparse.name),
+        sparse_bytes=sparse.stat().st_size,sparse_sha256=sparse_sha,validation=verified,
+        archived_files=archived,archive_copies_verified=True,
+        libsparse_packages={f.name:digest(f) for f in (TOOLS/'packages').glob('*.deb')},
+        device_operations=False,qemu_used=False)
+    out=(a.artifact_dir/'root-transfer.json') if a.fixture else ROOT/'reports/ios14-root-transfer.json'
+    out.write_text(json.dumps(record,indent=2)+'\n')
+    print(json.dumps(record),flush=True)
+
+if __name__=='__main__':main()

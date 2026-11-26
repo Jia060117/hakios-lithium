@@ -1,0 +1,30 @@
+--- a/bsd/kern/kern_shutdown.c
++++ b/bsd/kern/kern_shutdown.c
+@@ -755,3 +755,7 @@
+ 	proc_rele(initproc);
+ 	printf("continuing\n");
+ }
++
++#if defined(LITHIUM_ARMV8_0)
++#include "../../../../devices/lithium/return-fastboot/ufs-shutdown.inc"
++#endif
+--- a/osfmk/arm64/loader_return.c
++++ b/osfmk/arm64/loader_return.c
+@@ -598,9 +598,14 @@
+ 		extern void lithium_cpu_thermal_stop(void);
++		extern void lithium_ui_cycle_stop(void);
++		lithium_ui_cycle_stop();
+ 		lithium_cpu_thermal_stop();
+ 		hakios_lithium_touch_stop();
+-		lithium_lsdb_finalize();
+-#endif
+-		hakios_var_save_on_return();   /* the data volume kept, while the system is still whole */
++		bool ufs_terminal=lithium_fastboot_ufs_finalize();
++		if (!ufs_terminal) lithium_lsdb_finalize();
++#else
++		bool ufs_terminal=false;
++#endif
++		if (!ufs_terminal) hakios_var_save_on_return();   /* the data volume kept, while the system is still whole */
+ 		hakios_adreno_stop();          /* a GPU kept for the system is given back while there is a thread to wait in */
+ 		hakios_wifi_stop();            /* and the Wi-Fi DSP, if it runs, shut down */
+ 		hakios_adsp_stop();            /* and the audio DSP */

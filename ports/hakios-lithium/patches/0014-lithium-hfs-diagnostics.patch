@@ -1,0 +1,1276 @@
+--- a/drivers/storage/hakios.ufs.c
++++ b/drivers/storage/hakios.ufs.c
+@@ -186,9 +186,17 @@
+ static uint64_t ufs_native_fallbacks, ufs_mailbox_refused;
+ 
+ static LCK_GRP_DECLARE(ufs_lck_grp, "hakios-ufs");
++#if defined(LITHIUM_ARMV8_0)
++static uint32_t lf_ufs_sleeps;
++#endif
+ static LCK_MTX_DECLARE(ufs_lock, &ufs_lck_grp);
+ /* One writer at a time; never held while the mailbox is, nor while user memory is touched. */
+ static LCK_MTX_DECLARE(ufs_write_mtx, &ufs_lck_grp);
++
++#if defined(LITHIUM_ARMV8_0)
++#include <sys/hakios.fsdiag.h>
++static uint64_t lf_now(void) {uint64_t ns;absolutetime_to_nanoseconds(mach_absolute_time(),&ns);return ns;}
++#endif
+ 
+ /*
+  * Saving the data volume without being asked (userland/src/var_store.c).
+@@ -287,7 +295,15 @@
+ 	if (error != 0 || req->newptr == 0) {
+ 		return error;
+ 	}
+-	lck_mtx_lock(&ufs_write_mtx);
++	{
++#if defined(LITHIUM_ARMV8_0)
++uint64_t token=lithium_fsdiag_stage_begin("ufs_write_mtx",(uintptr_t)&ufs_write_mtx,0);
++#endif
++lck_mtx_lock(&ufs_write_mtx);
++#if defined(LITHIUM_ARMV8_0)
++lithium_fsdiag_stage_end(token,0);
++#endif
++}
+ 	if (value == 1 && ufs_data_used) {
+ 		error = EBUSY;          /* the data volume is mounted from darwin this run: no packed store into it */
+ 	} else if (value == 1) {
+@@ -323,8 +339,28 @@
+  * Native blocks [lba, lba + count) of partition part, one request of at most the buffer's size:
+  * read into dst, or, with src, written from there. Called with ufs_lock held.
+  */
++
++static int ufs_request_r13_impl(uint32_t op, uint32_t part, uint64_t lba, uint64_t count, uint8_t *dst, const uint8_t *src);
+ static int
+ ufs_request(uint32_t op, uint32_t part, uint64_t lba, uint64_t count, uint8_t *dst, const uint8_t *src)
++{
++#if defined(LITHIUM_ARMV8_0)
++    uint64_t request_stage=lithium_fsdiag_stage_begin("ufs.request",(uintptr_t)ufs_page,0);
++    uint64_t began=lf_now(),firmware_before=ufs_page->answer.ticks;
++    uint32_t sleeps_before=lf_ufs_sleeps;
++#endif
++    int value=ufs_request_r13_impl(op,part,lba,count,dst,src);
++#if defined(LITHIUM_ARMV8_0)
++    uint64_t firmware_ticks=ufs_page->answer.ticks-firmware_before;
++    uint64_t freq=__builtin_arm_rsr64("CNTFRQ_EL0");
++    uint64_t firmware_ns=freq?(firmware_ticks/freq)*1000000000ULL+(firmware_ticks%freq)*1000000000ULL/freq:0;
++    lithium_fsdiag_ufs(op,lf_now()-began,firmware_ns,lf_ufs_sleeps-sleeps_before,value);
++    lithium_fsdiag_stage_end(request_stage,value);
++#endif
++    return value;
++}
++static int
++ufs_request_r13_impl(uint32_t op, uint32_t part, uint64_t lba, uint64_t count, uint8_t *dst, const uint8_t *src)
+ {
+ 	uint64_t bytes = count * ufs_page->part[part].block_size, started, waited_ms = 0;
+ 	uint32_t seq = ++ufs_seq;
+@@ -368,6 +404,9 @@
+ 			__builtin_arm_yield();
+ 			continue;
+ 		}
++#if defined(LITHIUM_ARMV8_0)
++		lf_ufs_sleeps++;
++#endif
+ 		IOSleep(1);
+ 		if (++waited_ms > UFS_TIMEOUT_MS) {
+ 			/* no answer: the loader is gone or stuck; nothing more is asked of it */
+@@ -480,7 +519,15 @@
+ 	static uint8_t *bounce;
+ 	int error = 0;
+ 
+-	lck_mtx_lock(&ufs_lock);
++	{
++#if defined(LITHIUM_ARMV8_0)
++uint64_t token=lithium_fsdiag_stage_begin("ufs_lock",(uintptr_t)&ufs_lock,0);
++#endif
++lck_mtx_lock(&ufs_lock);
++#if defined(LITHIUM_ARMV8_0)
++lithium_fsdiag_stage_end(token,0);
++#endif
++}
+ 	/*
+ 	 * Allocated under the lock: two first readers at once would both allocate (one 4 MB leak),
+ 	 * and one could copy out of a buffer the other has just replaced and never filled.
+@@ -544,7 +591,15 @@
+ {
+ 	int error;
+ 
+-	lck_mtx_lock(&ufs_lock);
++	{
++#if defined(LITHIUM_ARMV8_0)
++uint64_t token=lithium_fsdiag_stage_begin("ufs_lock",(uintptr_t)&ufs_lock,0);
++#endif
++lck_mtx_lock(&ufs_lock);
++#if defined(LITHIUM_ARMV8_0)
++lithium_fsdiag_stage_end(token,0);
++#endif
++}
+ 	/* (a loader that did not answer may still be inside UEFI's driver) */
+ 	error = ufs_dead ? EIO : ufshc_switch_in(prove);
+ 	lck_mtx_unlock(&ufs_lock);
+@@ -556,7 +611,15 @@
+ {
+ 	int error;
+ 
+-	lck_mtx_lock(&ufs_lock);
++	{
++#if defined(LITHIUM_ARMV8_0)
++uint64_t token=lithium_fsdiag_stage_begin("ufs_lock",(uintptr_t)&ufs_lock,0);
++#endif
++lck_mtx_lock(&ufs_lock);
++#if defined(LITHIUM_ARMV8_0)
++lithium_fsdiag_stage_end(token,0);
++#endif
++}
+ 	error = ufshc_switch_out(why);
+ 	lck_mtx_unlock(&ufs_lock);
+ 	return error;
+@@ -632,7 +695,15 @@
+ 		return EROFS;
+ 	}
+ #endif
+-	lck_mtx_lock(&ufs_write_mtx);
++	{
++#if defined(LITHIUM_ARMV8_0)
++uint64_t token=lithium_fsdiag_stage_begin("ufs_write_mtx",(uintptr_t)&ufs_write_mtx,0);
++#endif
++lck_mtx_lock(&ufs_write_mtx);
++#if defined(LITHIUM_ARMV8_0)
++lithium_fsdiag_stage_end(token,0);
++#endif
++}
+ 	/*
+ 	 * The list goes out once, at the first write, and comes back when the device is closed: a
+ 	 * whole data volume is written a bufferful at a time, and switching the controller's list
+@@ -656,7 +727,15 @@
+ 		if (count > per) {
+ 			count = per;
+ 		}
+-		lck_mtx_lock(&ufs_lock);
++		{
++#if defined(LITHIUM_ARMV8_0)
++uint64_t token=lithium_fsdiag_stage_begin("ufs_lock",(uintptr_t)&ufs_lock,0);
++#endif
++lck_mtx_lock(&ufs_lock);
++#if defined(LITHIUM_ARMV8_0)
++lithium_fsdiag_stage_end(token,0);
++#endif
++}
+ 		if (ufshc_list_in()) {
+ 			/* it did not go out after all: UEFI's driver must not be asked to ring */
+ 			error = EIO;
+@@ -679,7 +758,15 @@
+ static void
+ ufs_write_restore(void)
+ {
+-	lck_mtx_lock(&ufs_write_mtx);
++	{
++#if defined(LITHIUM_ARMV8_0)
++uint64_t token=lithium_fsdiag_stage_begin("ufs_write_mtx",(uintptr_t)&ufs_write_mtx,0);
++#endif
++lck_mtx_lock(&ufs_write_mtx);
++#if defined(LITHIUM_ARMV8_0)
++lithium_fsdiag_stage_end(token,0);
++#endif
++}
+ 	if (ufs_write_out) {
+ 		if (ufs_write_was_native && ufs_native_in(false) == 0) {
+ 			ufs_native_on = true;
+@@ -719,16 +806,46 @@
+ 	return (ufs_page->write_caps & BLOCK_CAN_FAST) ? BLOCK_OP_WRITE_FAST : BLOCK_OP_WRITE;
+ }
+ 
++
++static int ufs_data_flush_r13_impl(void);
+ static int
+ ufs_data_flush(void)
++{
++#if defined(LITHIUM_ARMV8_0)
++    uint64_t stamp=lithium_fsdiag_bridge_begin();
++#endif
++    int value=ufs_data_flush_r13_impl();
++#if defined(LITHIUM_ARMV8_0)
++    lithium_fsdiag_bridge_end(stamp);
++#endif
++    return value;
++}
++static int
++ufs_data_flush_r13_impl(void)
+ {
+ 	int error;
+ 
+ 	if (ufs_data_op() != BLOCK_OP_WRITE_FAST) {
+ 		return 0;               /* every write was flushed already */
+ 	}
+-	lck_mtx_lock(&ufs_write_mtx);
+-	lck_mtx_lock(&ufs_lock);
++	{
++#if defined(LITHIUM_ARMV8_0)
++uint64_t token=lithium_fsdiag_stage_begin("ufs_write_mtx",(uintptr_t)&ufs_write_mtx,0);
++#endif
++lck_mtx_lock(&ufs_write_mtx);
++#if defined(LITHIUM_ARMV8_0)
++lithium_fsdiag_stage_end(token,0);
++#endif
++}
++	{
++#if defined(LITHIUM_ARMV8_0)
++uint64_t token=lithium_fsdiag_stage_begin("ufs_lock",(uintptr_t)&ufs_lock,0);
++#endif
++lck_mtx_lock(&ufs_lock);
++#if defined(LITHIUM_ARMV8_0)
++lithium_fsdiag_stage_end(token,0);
++#endif
++}
+ 	/* one block in bounds, for the loader's checks; nothing of it is touched */
+ 	error = ufshc_list_in() ? EIO : ufs_request(BLOCK_OP_FLUSH, (uint32_t)ufs_write_part, UFS_WRITE_FIRST, 1, NULL, NULL);
+ 	lck_mtx_unlock(&ufs_lock);
+@@ -741,8 +858,22 @@
+  * of 4096 (the device may be counted in 512-byte ones) is made whole here: the blocks around it read, patched,
+  * written.
+  */
++
++static int ufs_data_io_r13_impl(bool write, uint64_t offset, uint8_t *p, uint64_t len);
+ static int
+ ufs_data_io(bool write, uint64_t offset, uint8_t *p, uint64_t len)
++{
++#if defined(LITHIUM_ARMV8_0)
++    uint64_t stamp=lithium_fsdiag_bridge_begin();
++#endif
++    int value=ufs_data_io_r13_impl(write,offset,p,len);
++#if defined(LITHIUM_ARMV8_0)
++    lithium_fsdiag_bridge_end(stamp);
++#endif
++    return value;
++}
++static int
++ufs_data_io_r13_impl(bool write, uint64_t offset, uint8_t *p, uint64_t len)
+ {
+ 	uint64_t base = UFS_WRITE_FIRST * 4096, size = ufs_data_bytes();
+ 	uint8_t *bounce;
+@@ -858,7 +989,15 @@
+ {
+ 	if (ufs_is_data(dev)) {
+ 		if (flags & FWRITE) {
+-			lck_mtx_lock(&ufs_write_mtx);
++			{
++#if defined(LITHIUM_ARMV8_0)
++uint64_t token=lithium_fsdiag_stage_begin("ufs_write_mtx",(uintptr_t)&ufs_write_mtx,0);
++#endif
++lck_mtx_lock(&ufs_write_mtx);
++#if defined(LITHIUM_ARMV8_0)
++lithium_fsdiag_stage_end(token,0);
++#endif
++}
+ 			if (ufs_var_busy_pid != 0) {
+ 				lck_mtx_unlock(&ufs_write_mtx);
+ 				return EBUSY;   /* a saver is writing the packed store into darwin */
+@@ -1660,7 +1799,15 @@
+ 	if (buf != NULL) {
+ 		kfree_data(buf, nb->size);
+ 	}
+-	lck_mtx_lock(&ufs_lock);
++	{
++#if defined(LITHIUM_ARMV8_0)
++uint64_t token=lithium_fsdiag_stage_begin("ufs_lock",(uintptr_t)&ufs_lock,0);
++#endif
++lck_mtx_lock(&ufs_lock);
++#if defined(LITHIUM_ARMV8_0)
++lithium_fsdiag_stage_end(token,0);
++#endif
++}
+ 	nb->left--;
+ 	wakeup(nb);
+ 	lck_mtx_unlock(&ufs_lock);
+@@ -1692,12 +1839,28 @@
+ 				if (kernel_thread_start(ufs_nb_thread, &nb, &th) == KERN_SUCCESS) {
+ 					thread_deallocate(th);
+ 				} else {
+-					lck_mtx_lock(&ufs_lock);
++					{
++#if defined(LITHIUM_ARMV8_0)
++uint64_t token=lithium_fsdiag_stage_begin("ufs_lock",(uintptr_t)&ufs_lock,0);
++#endif
++lck_mtx_lock(&ufs_lock);
++#if defined(LITHIUM_ARMV8_0)
++lithium_fsdiag_stage_end(token,0);
++#endif
++}
+ 					nb.left--;
+ 					lck_mtx_unlock(&ufs_lock);
+ 				}
+ 			}
+-			lck_mtx_lock(&ufs_lock);
++			{
++#if defined(LITHIUM_ARMV8_0)
++uint64_t token=lithium_fsdiag_stage_begin("ufs_lock",(uintptr_t)&ufs_lock,0);
++#endif
++lck_mtx_lock(&ufs_lock);
++#if defined(LITHIUM_ARMV8_0)
++lithium_fsdiag_stage_end(token,0);
++#endif
++}
+ 			while (nb.left > 0) {
+ 				msleep(&nb, &ufs_lock, PRIBIO, "ufsbench", NULL);
+ 			}
+--- a/xnu/hakios.patch
++++ b/xnu/hakios.patch
+@@ -334,50 +334,6 @@
+  void
+  mdevremoveall(void)
+  {
+-diff --git a/bsd/kern/bsd_init.c b/bsd/kern/bsd_init.c
+-index 4df41ba1f61b..b5a79a02a3f5 100644
+---- a/bsd/kern/bsd_init.c
+-+++ b/bsd/kern/bsd_init.c
+-@@ -147,6 +147,14 @@
+- #include <net/if_ether.h>               /* for ether_family_init() */
+- #include <net/if_gif.h>                 /* for gif_init() */
+- #include <miscfs/devfs/devfsdefs.h>     /* for devfs_kernel_mount() */
+-+#include <sys/hakios.input.h>
+-+#include <sys/hakios.audio.h>
+-+#include <sys/hakios.virtio_blk.h>
+-+#include <sys/hakios.sparse.h>
+-+#include <sys/hakios.version.h>
+-+#if APFS
+-+#include <sys/hakios.apfs_check.h>
+-+#endif
+- #include <vm/vm_kern.h>                 /* for kmem_suballoc() */
+- #include <sys/proc_uuid_policy.h>       /* proc_uuid_policy_init() */
+- #include <netinet/flow_divert.h>        /* flow_divert_init() */
+-@@ -490,7 +498,7 @@ bsd_init(void)
+- 	platform_stall_panic_or_spin(PLATFORM_STALL_XNU_LOCATION_BSD_INIT);
+- #endif
+- 
+--#define DEBUG_BSDINIT 0
+-+#define DEBUG_BSDINIT 1 /* bring-up: trace bsd_init steps (only visible with -enable_kprintf_spam) */
+- 
+- #if DEBUG_BSDINIT
+- #define bsd_init_kprintf(x, ...) kprintf("bsd_init: " x, ## __VA_ARGS__)
+-@@ -976,6 +984,15 @@ bsd_init(void)
+- 
+- 		bsd_init_kprintf("calling devfs_kernel_mount\n");
+- 		devfs_kernel_mount(mounthere);
+-+		hakios_version_init();         /* kern.hakios.version, and the version in the boot log */
+-+		hakios_input_init();           /* /dev/hakios-touch */
+-+		hakios_audio_init();           /* /dev/hakios-audio */
+-+		hakios_virtio_blk_init();      /* /dev/rvblk0, a disk image of the host (QEMU) */
+-+		hakios_sparse_init();          /* /dev/rsp0, part of an image too big to hold */
+-+#if APFS
+-+		/* mounts and walks /dev/rvblk0 once userland has /private/var up */
+-+		hakios_apfs_check_init();
+-+#endif
+- 	}
+- #endif /* DEVFS */
+- 
+ diff --git a/bsd/kern/decmpfs.c b/bsd/kern/decmpfs.c
+ index 95192dd62449..b00da803b5b4 100644
+ --- a/bsd/kern/decmpfs.c
+@@ -3008,105 +2964,6 @@
+  		/*
+  		 * This is a secondary SMT processor.  If the primary is running
+  		 * a realtime thread, only allow realtime threads on the secondary.
+-diff --git a/osfmk/kern/sched_prim.c b/osfmk/kern/sched_prim.c
+-index 8e29586464de..0a7de6fc4be7 100644
+---- a/osfmk/kern/sched_prim.c
+-+++ b/osfmk/kern/sched_prim.c
+-@@ -2042,6 +2042,7 @@ sched_vm_group_maintenance(void)
+- #endif
+- 
+- int sched_allow_rt_smt = 1;
+-+bool sched_slow_secondaries = false;
+- int sched_avoid_cpu0 = SCHED_AVOID_CPU0;
+- int sched_allow_rt_steal = 1;
+- int sched_backup_cpu_timeout_count = 5; /* The maximum number of 10us delays to wait before using a backup cpu */
+-@@ -2097,6 +2098,7 @@ void
+- sched_SMT_balance(processor_t cprocessor, processor_set_t cpset)
+- {
+- 	processor_t ast_processor = NULL;
+-+	sched_ipi_type_t ipi_type = SCHED_IPI_NONE;
+- 
+- #if (DEVELOPMENT || DEBUG)
+- 	if (__improbable(sched_smt_balance == 0)) {
+-@@ -2105,7 +2107,39 @@ sched_SMT_balance(processor_t cprocessor, processor_set_t cpset)
+- #endif
+- 
+- 	assert(cprocessor == current_processor());
+--	if (cprocessor->is_SMT == FALSE) {
+-+	if (cprocessor->is_SMT == FALSE && !sched_slow_secondaries) {
+-+		goto smt_balance_exit;
+-+	}
+-+
+-+	if (sched_slow_secondaries) {
+-+		/*
+-+		 * A faster core is going idle: the thread of highest priority that runs on a slower one
+-+		 * (not a real-time one: those stay where they are) is sent here. Its core is made to
+-+		 * reschedule; a thread on a secondary goes back to the run queue then, and an idle
+-+		 * primary is where it is put.
+-+		 */
+-+		integer_t highest = -1;
+-+
+-+		if (cprocessor->processor_primary != cprocessor) {
+-+			goto smt_balance_exit;
+-+		}
+-+		uint64_t running_secondaries = (cpset->cpu_state_map[PROCESSOR_RUNNING] & ~cpset->primary_map &
+-+		    ~cpset->pending_AST_URGENT_cpu_mask);
+-+		for (int cpuid = lsb_first(running_secondaries); cpuid >= 0; cpuid = lsb_next(running_secondaries, cpuid)) {
+-+			processor_t sprocessor = processor_array[cpuid];
+-+
+-+			if (sprocessor->current_pri < BASEPRI_RTQUEUES && sprocessor->current_pri > highest &&
+-+			    sprocessor->current_pri > MINPRI) {
+-+				highest = sprocessor->current_pri;
+-+				ast_processor = sprocessor;
+-+			}
+-+		}
+-+		if (ast_processor != PROCESSOR_NULL) {
+-+			ipi_type = sched_ipi_action(ast_processor, NULL, SCHED_IPI_EVENT_SMT_REBAL);
+-+			if (ipi_type == SCHED_IPI_NONE) {
+-+				ast_processor = PROCESSOR_NULL;
+-+			}
+-+		}
+- 		goto smt_balance_exit;
+- 	}
+- 
+-@@ -2120,7 +2154,6 @@ sched_SMT_balance(processor_t cprocessor, processor_set_t cpset)
+- 
+- 	processor_t sprocessor;
+- 
+--	sched_ipi_type_t ipi_type = SCHED_IPI_NONE;
+- 	uint64_t running_secondary_map = (cpset->cpu_state_map[PROCESSOR_RUNNING] &
+- 	    ~cpset->primary_map);
+- 	for (int cpuid = lsb_first(running_secondary_map); cpuid >= 0; cpuid = lsb_next(running_secondary_map, cpuid)) {
+-@@ -2581,6 +2614,10 @@ restart:
+- 		bool is_yielding         = (*reason & AST_YIELD) == AST_YIELD;
+- 
+- 		bool needs_smt_rebalance = !is_yielding && thread->sched_pri < BASEPRI_RTQUEUES && processor->processor_primary != processor;
+-+		if (needs_smt_rebalance && sched_slow_secondaries) {
+-+			/* (a slower core of its own: worth leaving only for a faster one that is idle) */
+-+			needs_smt_rebalance = (pset->recommended_bitmask & pset->primary_map & pset->cpu_state_map[PROCESSOR_IDLE]) != 0;
+-+		}
+- 
+- 		bool affinity_mismatch   = thread->affinity_set != AFFINITY_SET_NULL && thread->affinity_set->aset_pset != pset;
+- 
+-@@ -2705,7 +2742,7 @@ pick_new_rt_thread:
+- 
+- 				clear_pending_AST_bits(pset, processor, 3);
+- 
+--				if (processor->processor_secondary != NULL) {
+-+				if (processor->processor_secondary != NULL && !sched_slow_secondaries) {
+- 					processor_t sprocessor = processor->processor_secondary;
+- 					if ((sprocessor->state == PROCESSOR_RUNNING) || (sprocessor->state == PROCESSOR_DISPATCHING)) {
+- 						ipi_type = sched_ipi_action(sprocessor, NULL, SCHED_IPI_EVENT_SMT_REBAL);
+-@@ -2774,7 +2811,8 @@ send_followup_ipi_before_idle:
+- 				goto restart;
+- 			}
+- 
+--			if ((processor->processor_primary != processor) && (processor->processor_primary->current_pri >= BASEPRI_RTQUEUES)) {
+-+			if ((processor->processor_primary != processor) && (processor->processor_primary->current_pri >= BASEPRI_RTQUEUES) &&
+-+			    !sched_slow_secondaries) {
+- 				/* secondary can only run realtime thread */
+- 				if (idle_reason == 0) {
+- 					idle_reason = 4;
+ diff --git a/osfmk/kern/startup.c b/osfmk/kern/startup.c
+ index bec97fbf7243..203e1f48783f 100644
+ --- a/osfmk/kern/startup.c
+@@ -3810,3 +3667,308 @@
+  	arm_prepare_syscall_return(callp, regs, uthread, error);
+  
+  	uthread->uu_flag &= ~UT_NOTCANCELPT;
++diff --git a/bsd/kern/bsd_init.c b/bsd/kern/bsd_init.c
++--- a/bsd/kern/bsd_init.c
+++++ b/bsd/kern/bsd_init.c
++@@ -1,3 +1,6 @@
+++#if defined(LITHIUM_ARMV8_0)
+++#include "../../bsd/sys/hakios.fsdiag.h"
+++#endif
++ /*
++  * Copyright (c) 2000-2021 Apple Inc. All rights reserved.
++  *
++@@ -147,6 +150,14 @@
++ #include <net/if_ether.h>               /* for ether_family_init() */
++ #include <net/if_gif.h>                 /* for gif_init() */
++ #include <miscfs/devfs/devfsdefs.h>     /* for devfs_kernel_mount() */
+++#include <sys/hakios.input.h>
+++#include <sys/hakios.audio.h>
+++#include <sys/hakios.virtio_blk.h>
+++#include <sys/hakios.sparse.h>
+++#include <sys/hakios.version.h>
+++#if APFS
+++#include <sys/hakios.apfs_check.h>
+++#endif
++ #include <vm/vm_kern.h>                 /* for kmem_suballoc() */
++ #include <sys/proc_uuid_policy.h>       /* proc_uuid_policy_init() */
++ #include <netinet/flow_divert.h>        /* flow_divert_init() */
++@@ -490,7 +501,7 @@
++ 	platform_stall_panic_or_spin(PLATFORM_STALL_XNU_LOCATION_BSD_INIT);
++ #endif
++ 
++-#define DEBUG_BSDINIT 0
+++#define DEBUG_BSDINIT 1 /* bring-up: trace bsd_init steps (only visible with -enable_kprintf_spam) */
++ 
++ #if DEBUG_BSDINIT
++ #define bsd_init_kprintf(x, ...) kprintf("bsd_init: " x, ## __VA_ARGS__)
++@@ -976,6 +987,15 @@
++ 
++ 		bsd_init_kprintf("calling devfs_kernel_mount\n");
++ 		devfs_kernel_mount(mounthere);
+++		hakios_version_init();         /* kern.hakios.version, and the version in the boot log */
+++		hakios_input_init();           /* /dev/hakios-touch */
+++		hakios_audio_init();           /* /dev/hakios-audio */
+++		hakios_virtio_blk_init();      /* /dev/rvblk0, a disk image of the host (QEMU) */
+++		hakios_sparse_init();          /* /dev/rsp0, part of an image too big to hold */
+++#if APFS
+++		/* mounts and walks /dev/rvblk0 once userland has /private/var up */
+++		hakios_apfs_check_init();
+++#endif
++ 	}
++ #endif /* DEVFS */
++ 
++@@ -1075,6 +1095,10 @@
++ 
++ 	bsd_init_kprintf("bsd_do_post - done");
++ 
+++#if defined(LITHIUM_ARMV8_0)
+++	lithium_cpu_sanity();
+++	lithium_fsdiag_init();
+++#endif
++ 	load_init_program(p);
++ 	lock_trace = 1;
++ }
++diff --git a/bsd/kern/kern_synch.c b/bsd/kern/kern_synch.c
++--- a/bsd/kern/kern_synch.c
+++++ b/bsd/kern/kern_synch.c
++@@ -1,3 +1,6 @@
+++#if defined(LITHIUM_ARMV8_0)
+++#include "../../bsd/sys/hakios.fsdiag.h"
+++#endif
++ /*
++  * Copyright (c) 2000-2020 Apple Inc. All rights reserved.
++  *
++@@ -161,6 +164,10 @@
++ 	int             (*continuation)(int),
++ 	lck_mtx_t       *mtx)
++ {
+++#if defined(LITHIUM_ARMV8_0)
+++	lithium_fsdiag_wait((uintptr_t)chan,abstime,wmsg);
+++#endif
+++
++ 	struct proc *p;
++ 	thread_t self = current_thread();
++ 	struct uthread * ut;
++diff --git a/osfmk/kern/sched_prim.c b/osfmk/kern/sched_prim.c
++--- a/osfmk/kern/sched_prim.c
+++++ b/osfmk/kern/sched_prim.c
++@@ -1,3 +1,6 @@
+++#if defined(LITHIUM_ARMV8_0)
+++#include "../../bsd/sys/hakios.fsdiag.h"
+++#endif
++ /*
++  * Copyright (c) 2000-2016 Apple Inc. All rights reserved.
++  *
++@@ -840,6 +843,10 @@
++ 	thread_t                thread,
++ 	wait_result_t   wresult)
++ {
+++#if defined(LITHIUM_ARMV8_0)
+++	lithium_fsdiag_wake(thread,wresult);
+++#endif
+++
++ 	boolean_t               ready_for_runq = FALSE;
++ 	thread_t                cthread = current_thread();
++ 	uint32_t                new_run_count;
++@@ -1177,6 +1184,10 @@
++ 	event_t                         event,
++ 	wait_interrupt_t        interruptible)
++ {
+++#if defined(LITHIUM_ARMV8_0)
+++	lithium_fsdiag_wait((uintptr_t)event,0,NULL);
+++#endif
+++
++ 	if (__improbable(event == NO_EVENT)) {
++ 		panic("%s() called with NO_EVENT", __func__);
++ 	}
++@@ -1225,6 +1236,9 @@
++ 	waitq_lock(waitq);
++ 
++ 	clock_interval_to_deadline(interval, scale_factor, &deadline);
+++#if defined(LITHIUM_ARMV8_0)
+++	lithium_fsdiag_wait((uintptr_t)event,deadline,"assert_wait_timeout");
+++#endif
++ 
++ 	KERNEL_DEBUG_CONSTANT_IST(KDEBUG_TRACE,
++ 	    MACHDBG_CODE(DBG_MACH_SCHED, MACH_WAIT) | DBG_FUNC_NONE,
++@@ -1272,6 +1286,9 @@
++ 	waitq = global_eventq(event);
++ 
++ 	s = splsched();
+++#if defined(LITHIUM_ARMV8_0)
+++	lithium_fsdiag_wait((uintptr_t)event,deadline,"assert_wait_timeout_with_leeway");
+++#endif
++ 	waitq_lock(waitq);
++ 
++ 	KERNEL_DEBUG_CONSTANT_IST(KDEBUG_TRACE,
++@@ -1306,6 +1323,9 @@
++ 	waitq = global_eventq(event);
++ 
++ 	s = splsched();
+++#if defined(LITHIUM_ARMV8_0)
+++	lithium_fsdiag_wait((uintptr_t)event,deadline,"assert_wait_deadline");
+++#endif
++ 	waitq_lock(waitq);
++ 
++ 	KERNEL_DEBUG_CONSTANT_IST(KDEBUG_TRACE,
++@@ -1341,6 +1361,9 @@
++ 	waitq = global_eventq(event);
++ 
++ 	s = splsched();
+++#if defined(LITHIUM_ARMV8_0)
+++	lithium_fsdiag_wait((uintptr_t)event,deadline,"assert_wait_deadline_with_leeway");
+++#endif
++ 	waitq_lock(waitq);
++ 
++ 	KERNEL_DEBUG_CONSTANT_IST(KDEBUG_TRACE,
++@@ -2042,6 +2065,7 @@
++ #endif
++ 
++ int sched_allow_rt_smt = 1;
+++bool sched_slow_secondaries = false;
++ int sched_avoid_cpu0 = SCHED_AVOID_CPU0;
++ int sched_allow_rt_steal = 1;
++ int sched_backup_cpu_timeout_count = 5; /* The maximum number of 10us delays to wait before using a backup cpu */
++@@ -2097,6 +2121,7 @@
++ sched_SMT_balance(processor_t cprocessor, processor_set_t cpset)
++ {
++ 	processor_t ast_processor = NULL;
+++	sched_ipi_type_t ipi_type = SCHED_IPI_NONE;
++ 
++ #if (DEVELOPMENT || DEBUG)
++ 	if (__improbable(sched_smt_balance == 0)) {
++@@ -2105,7 +2130,39 @@
++ #endif
++ 
++ 	assert(cprocessor == current_processor());
++-	if (cprocessor->is_SMT == FALSE) {
+++	if (cprocessor->is_SMT == FALSE && !sched_slow_secondaries) {
+++		goto smt_balance_exit;
+++	}
+++
+++	if (sched_slow_secondaries) {
+++		/*
+++		 * A faster core is going idle: the thread of highest priority that runs on a slower one
+++		 * (not a real-time one: those stay where they are) is sent here. Its core is made to
+++		 * reschedule; a thread on a secondary goes back to the run queue then, and an idle
+++		 * primary is where it is put.
+++		 */
+++		integer_t highest = -1;
+++
+++		if (cprocessor->processor_primary != cprocessor) {
+++			goto smt_balance_exit;
+++		}
+++		uint64_t running_secondaries = (cpset->cpu_state_map[PROCESSOR_RUNNING] & ~cpset->primary_map &
+++		    ~cpset->pending_AST_URGENT_cpu_mask);
+++		for (int cpuid = lsb_first(running_secondaries); cpuid >= 0; cpuid = lsb_next(running_secondaries, cpuid)) {
+++			processor_t sprocessor = processor_array[cpuid];
+++
+++			if (sprocessor->current_pri < BASEPRI_RTQUEUES && sprocessor->current_pri > highest &&
+++			    sprocessor->current_pri > MINPRI) {
+++				highest = sprocessor->current_pri;
+++				ast_processor = sprocessor;
+++			}
+++		}
+++		if (ast_processor != PROCESSOR_NULL) {
+++			ipi_type = sched_ipi_action(ast_processor, NULL, SCHED_IPI_EVENT_SMT_REBAL);
+++			if (ipi_type == SCHED_IPI_NONE) {
+++				ast_processor = PROCESSOR_NULL;
+++			}
+++		}
++ 		goto smt_balance_exit;
++ 	}
++ 
++@@ -2120,7 +2177,6 @@
++ 
++ 	processor_t sprocessor;
++ 
++-	sched_ipi_type_t ipi_type = SCHED_IPI_NONE;
++ 	uint64_t running_secondary_map = (cpset->cpu_state_map[PROCESSOR_RUNNING] &
++ 	    ~cpset->primary_map);
++ 	for (int cpuid = lsb_first(running_secondary_map); cpuid >= 0; cpuid = lsb_next(running_secondary_map, cpuid)) {
++@@ -2581,6 +2637,10 @@
++ 		bool is_yielding         = (*reason & AST_YIELD) == AST_YIELD;
++ 
++ 		bool needs_smt_rebalance = !is_yielding && thread->sched_pri < BASEPRI_RTQUEUES && processor->processor_primary != processor;
+++		if (needs_smt_rebalance && sched_slow_secondaries) {
+++			/* (a slower core of its own: worth leaving only for a faster one that is idle) */
+++			needs_smt_rebalance = (pset->recommended_bitmask & pset->primary_map & pset->cpu_state_map[PROCESSOR_IDLE]) != 0;
+++		}
++ 
++ 		bool affinity_mismatch   = thread->affinity_set != AFFINITY_SET_NULL && thread->affinity_set->aset_pset != pset;
++ 
++@@ -2705,7 +2765,7 @@
++ 
++ 				clear_pending_AST_bits(pset, processor, 3);
++ 
++-				if (processor->processor_secondary != NULL) {
+++				if (processor->processor_secondary != NULL && !sched_slow_secondaries) {
++ 					processor_t sprocessor = processor->processor_secondary;
++ 					if ((sprocessor->state == PROCESSOR_RUNNING) || (sprocessor->state == PROCESSOR_DISPATCHING)) {
++ 						ipi_type = sched_ipi_action(sprocessor, NULL, SCHED_IPI_EVENT_SMT_REBAL);
++@@ -2774,7 +2834,8 @@
++ 				goto restart;
++ 			}
++ 
++-			if ((processor->processor_primary != processor) && (processor->processor_primary->current_pri >= BASEPRI_RTQUEUES)) {
+++			if ((processor->processor_primary != processor) && (processor->processor_primary->current_pri >= BASEPRI_RTQUEUES) &&
+++			    !sched_slow_secondaries) {
++ 				/* secondary can only run realtime thread */
++ 				if (idle_reason == 0) {
++ 					idle_reason = 4;
++diff --git a/bsd/vfs/vfs_bio.c b/bsd/vfs/vfs_bio.c
++--- a/bsd/vfs/vfs_bio.c
+++++ b/bsd/vfs/vfs_bio.c
++@@ -1,3 +1,6 @@
+++#if defined(LITHIUM_ARMV8_0)
+++#include "../../bsd/sys/hakios.fsdiag.h"
+++#endif
++ /*
++  * Copyright (c) 2000-2020 Apple Inc. All rights reserved.
++  *
++@@ -1857,8 +1860,22 @@
++ 	return 0;
++ }
++ 
+++
+++static void buf_flushdirtyblks_r13_impl(vnode_t vp, int wait, int flags, const char *msg);
++ void
++ buf_flushdirtyblks(vnode_t vp, int wait, int flags, const char *msg)
+++{
+++#if defined(LITHIUM_ARMV8_0)
+++    uint64_t token=lithium_fsdiag_stage_begin("buf.flushdirty",(uintptr_t)(vp),(uintptr_t)(0));
+++#endif
+++    buf_flushdirtyblks_r13_impl(vp,wait,flags,msg);
+++#if defined(LITHIUM_ARMV8_0)
+++    lithium_fsdiag_stage_end(token,0);
+++#endif
+++    
+++}
+++static void
+++buf_flushdirtyblks_r13_impl(vnode_t vp, int wait, int flags, const char *msg)
++ {
++ 	(void) buf_flushdirtyblks_skipinfo(vp, wait, flags, msg);
++ 	return;
++@@ -4111,8 +4128,22 @@
++  * Wait for operations on the buffer to complete.
++  * When they do, extract and return the I/O's error value.
++  */
+++
+++static errno_t buf_biowait_r13_impl(buf_t bp);
++ errno_t
++ buf_biowait(buf_t bp)
+++{
+++#if defined(LITHIUM_ARMV8_0)
+++    uint64_t token=lithium_fsdiag_stage_begin("buf.biowait",(uintptr_t)(bp),(uintptr_t)(0));
+++#endif
+++    errno_t value=buf_biowait_r13_impl(bp);
+++#if defined(LITHIUM_ARMV8_0)
+++    lithium_fsdiag_stage_end(token,value);
+++#endif
+++    return value;
+++}
+++static errno_t
+++buf_biowait_r13_impl(buf_t bp)
++ {
++ 	while (!ISSET(bp->b_flags, B_DONE)) {
++ 		lck_mtx_lock_spin(&buf_mtx);
+--- a/xnu/hfs/hfs.patch
++++ b/xnu/hfs/hfs.patch
+@@ -107,3 +107,440 @@
+ +#undef CONFIG_PROTECT
+ +#define CONFIG_PROTECT 0
+  #endif /* defined(_hfs_config_) */
++diff --git a/bsd/hfs/hfs_vnops.c b/bsd/hfs/hfs_vnops.c
++--- a/bsd/hfs/hfs_vnops.c
+++++ b/bsd/hfs/hfs_vnops.c
++@@ -1,3 +1,6 @@
+++#if defined(LITHIUM_ARMV8_0)
+++#include "../../bsd/sys/hakios.fsdiag.h"
+++#endif
++ /*
++  * Copyright (c) 2000-2017 Apple Inc. All rights reserved.
++  *
++@@ -646,8 +649,23 @@
++ /*
++  * Close a file/directory.
++  */
+++
+++static int hfs_vnop_close_r13_impl(struct vnop_close_args *ap);
++ int
++ hfs_vnop_close(struct vnop_close_args *ap)
+++{
+++#if defined(LITHIUM_ARMV8_0)
+++    const char *mountname=vfs_statfs(vnode_mount(ap->a_vp))->f_mntfromname;
+++    uint64_t id=strnstr(mountname,"ufs_darwin_data",MNAMELEN)?lithium_fsdiag_begin(LF_CLOSE,ap->a_vp,NULL,NULL):0;
+++#endif
+++    int value=hfs_vnop_close_r13_impl(ap);
+++#if defined(LITHIUM_ARMV8_0)
+++    lithium_fsdiag_end(id,value);
+++#endif
+++    return value;
+++}
+++static int
+++hfs_vnop_close_r13_impl(struct vnop_close_args *ap)
++ {
++ 	register struct vnode *vp = ap->a_vp;
++  	register struct cnode *cp;
++@@ -4498,8 +4516,23 @@
++  * been locked.  By taking the rsrc fork vnodes up front we ensure that they 
++  * cannot be recycled, and that the situation mentioned above cannot happen.
++  */
+++
+++static int hfs_vnop_renamex_r13_impl(struct vnop_renamex_args *ap);
++ int
++ hfs_vnop_renamex(struct vnop_renamex_args *ap)
+++{
+++#if defined(LITHIUM_ARMV8_0)
+++    const char *mountname=vfs_statfs(vnode_mount(ap->a_fvp))->f_mntfromname;
+++    uint64_t id=strnstr(mountname,"ufs_darwin_data",MNAMELEN)?lithium_fsdiag_begin(LF_RENAME,ap->a_fvp,ap->a_fcnp->cn_nameptr,ap->a_tcnp->cn_nameptr):0;
+++#endif
+++    int value=hfs_vnop_renamex_r13_impl(ap);
+++#if defined(LITHIUM_ARMV8_0)
+++    lithium_fsdiag_end(id,value);
+++#endif
+++    return value;
+++}
+++static int
+++hfs_vnop_renamex_r13_impl(struct vnop_renamex_args *ap)
++ {
++ 	struct vnode *tvp = ap->a_tvp;
++ 	struct vnode *tdvp = ap->a_tdvp;
++@@ -7327,8 +7360,23 @@
++ /*
++  * Synchronize a file's in-core state with that on disk.
++  */
+++
+++static int hfs_vnop_fsync_r13_impl(struct vnop_fsync_args *ap);
++ int
++ hfs_vnop_fsync(struct vnop_fsync_args *ap)
+++{
+++#if defined(LITHIUM_ARMV8_0)
+++    const char *mountname=vfs_statfs(vnode_mount(ap->a_vp))->f_mntfromname;
+++    uint64_t id=strnstr(mountname,"ufs_darwin_data",MNAMELEN)?lithium_fsdiag_begin(LF_FSYNC,ap->a_vp,NULL,NULL):0;
+++#endif
+++    int value=hfs_vnop_fsync_r13_impl(ap);
+++#if defined(LITHIUM_ARMV8_0)
+++    lithium_fsdiag_end(id,value);
+++#endif
+++    return value;
+++}
+++static int
+++hfs_vnop_fsync_r13_impl(struct vnop_fsync_args *ap)
++ {
++ 	struct vnode* vp = ap->a_vp;
++ 	int error;
++diff --git a/bsd/hfs/hfs_readwrite.c b/bsd/hfs/hfs_readwrite.c
++--- a/bsd/hfs/hfs_readwrite.c
+++++ b/bsd/hfs/hfs_readwrite.c
++@@ -1,3 +1,6 @@
+++#if defined(LITHIUM_ARMV8_0)
+++#include "../../bsd/sys/hakios.fsdiag.h"
+++#endif
++ /*
++  * Copyright (c) 2000-2020 Apple Inc. All rights reserved.
++  *
++@@ -332,8 +335,23 @@
++ /*
++  * Write data to a file.
++  */
+++
+++static int hfs_vnop_write_r13_impl(struct vnop_write_args *ap);
++ int
++ hfs_vnop_write(struct vnop_write_args *ap)
+++{
+++#if defined(LITHIUM_ARMV8_0)
+++    const char *mountname=vfs_statfs(vnode_mount(ap->a_vp))->f_mntfromname;
+++    uint64_t id=strnstr(mountname,"ufs_darwin_data",MNAMELEN)?lithium_fsdiag_begin(LF_WRITE,ap->a_vp,NULL,NULL):0;
+++#endif
+++    int value=hfs_vnop_write_r13_impl(ap);
+++#if defined(LITHIUM_ARMV8_0)
+++    lithium_fsdiag_end(id,value);
+++#endif
+++    return value;
+++}
+++static int
+++hfs_vnop_write_r13_impl(struct vnop_write_args *ap)
++ {
++ 	uio_t uio = ap->a_uio;
++ 	struct vnode *vp = ap->a_vp;
++diff --git a/bsd/hfs/hfs_vfsutils.c b/bsd/hfs/hfs_vfsutils.c
++--- a/bsd/hfs/hfs_vfsutils.c
+++++ b/bsd/hfs/hfs_vfsutils.c
++@@ -1,3 +1,6 @@
+++#if defined(LITHIUM_ARMV8_0)
+++#include "../../bsd/sys/hakios.fsdiag.h"
+++#endif
++ /*
++  * Copyright (c) 2000-2015 Apple Inc. All rights reserved.
++  *
++@@ -1174,8 +1177,22 @@
++ /*
++  * Lock the HFS global journal lock 
++  */
++-int 
++-hfs_lock_global (struct hfsmount *hfsmp, enum hfs_locktype locktype) 
+++
+++static int hfs_lock_global_r13_impl(struct hfsmount *hfsmp, enum hfs_locktype locktype);
+++int
+++hfs_lock_global(struct hfsmount *hfsmp, enum hfs_locktype locktype)
+++{
+++#if defined(LITHIUM_ARMV8_0)
+++    uint64_t token=lithium_fsdiag_stage_begin("hfs.global_lock",(uintptr_t)(&hfsmp->hfs_global_lock),(uintptr_t)(hfsmp->hfs_global_lockowner));
+++#endif
+++    int value=hfs_lock_global_r13_impl(hfsmp,locktype);
+++#if defined(LITHIUM_ARMV8_0)
+++    lithium_fsdiag_stage_end(token,value);
+++#endif
+++    return value;
+++}
+++static int 
+++hfs_lock_global_r13_impl(struct hfsmount *hfsmp, enum hfs_locktype locktype) 
++ {
++ 	thread_t thread = current_thread();
++ 
++@@ -1292,8 +1309,22 @@
++  * taken, including locks that are not possible to ask for via the
++  * @flags parameter.
++  */
+++
+++static int hfs_systemfile_lock_r13_impl(struct hfsmount *hfsmp, int flags, enum hfs_locktype locktype);
++ int
++ hfs_systemfile_lock(struct hfsmount *hfsmp, int flags, enum hfs_locktype locktype)
+++{
+++#if defined(LITHIUM_ARMV8_0)
+++    uint64_t token=lithium_fsdiag_stage_begin("hfs.systemfile_lock",(uintptr_t)(hfsmp),(uintptr_t)(0));
+++#endif
+++    int value=hfs_systemfile_lock_r13_impl(hfsmp,flags,locktype);
+++#if defined(LITHIUM_ARMV8_0)
+++    lithium_fsdiag_stage_end(token,value);
+++#endif
+++    return value;
+++}
+++static int
+++hfs_systemfile_lock_r13_impl(struct hfsmount *hfsmp, int flags, enum hfs_locktype locktype)
++ {
++ 	/*
++ 	 * Locking order is Catalog file, Attributes file, Startup file, Bitmap file, Extents file
++@@ -3270,8 +3301,22 @@
++ 	thread_deallocate(hfsmp->hfs_syncer_thread);
++ }
++ 
+++
+++static int hfs_start_transaction_r13_impl(struct hfsmount *hfsmp);
++ int
++ hfs_start_transaction(struct hfsmount *hfsmp)
+++{
+++#if defined(LITHIUM_ARMV8_0)
+++    uint64_t token=lithium_fsdiag_stage_begin("hfs_start_transaction",(uintptr_t)(hfsmp),(uintptr_t)(0));
+++#endif
+++    int value=hfs_start_transaction_r13_impl(hfsmp);
+++#if defined(LITHIUM_ARMV8_0)
+++    lithium_fsdiag_stage_end(token,value);
+++#endif
+++    return value;
+++}
+++static int
+++hfs_start_transaction_r13_impl(struct hfsmount *hfsmp)
++ {
++ 	int ret = 0, unlock_on_err = 0;
++ 	thread_t thread = current_thread();
++@@ -3364,8 +3409,22 @@
++     return ret;
++ }
++ 
+++
+++static int hfs_end_transaction_r13_impl(struct hfsmount *hfsmp);
++ int
++ hfs_end_transaction(struct hfsmount *hfsmp)
+++{
+++#if defined(LITHIUM_ARMV8_0)
+++    uint64_t token=lithium_fsdiag_stage_begin("hfs_end_transaction",(uintptr_t)(hfsmp),(uintptr_t)(0));
+++#endif
+++    int value=hfs_end_transaction_r13_impl(hfsmp);
+++#if defined(LITHIUM_ARMV8_0)
+++    lithium_fsdiag_stage_end(token,value);
+++#endif
+++    return value;
+++}
+++static int
+++hfs_end_transaction_r13_impl(struct hfsmount *hfsmp)
++ {
++     int ret;
++ 
++diff --git a/bsd/hfs/hfs_cnode.c b/bsd/hfs/hfs_cnode.c
++--- a/bsd/hfs/hfs_cnode.c
+++++ b/bsd/hfs/hfs_cnode.c
++@@ -1,3 +1,6 @@
+++#if defined(LITHIUM_ARMV8_0)
+++#include "../../bsd/sys/hakios.fsdiag.h"
+++#endif
++ /*
++  * Copyright (c) 2002-2015 Apple Inc. All rights reserved.
++  *
++@@ -2019,8 +2022,22 @@
++  * Lock a cnode.
++  * N.B. If you add any failure cases, *make* sure hfs_lock_always works
++  */
+++
+++static int hfs_lock_r13_impl(struct cnode *cp, enum hfs_locktype locktype, enum hfs_lockflags flags);
++ int
++ hfs_lock(struct cnode *cp, enum hfs_locktype locktype, enum hfs_lockflags flags)
+++{
+++#if defined(LITHIUM_ARMV8_0)
+++    uint64_t token=lithium_fsdiag_stage_begin("hfs.cnode_lock",(uintptr_t)(cp),(uintptr_t)(cp->c_lockowner));
+++#endif
+++    int value=hfs_lock_r13_impl(cp,locktype,flags);
+++#if defined(LITHIUM_ARMV8_0)
+++    lithium_fsdiag_stage_end(token,value);
+++#endif
+++    return value;
+++}
+++static int
+++hfs_lock_r13_impl(struct cnode *cp, enum hfs_locktype locktype, enum hfs_lockflags flags)
++ {
++ 	thread_t thread = current_thread();
++ 
++@@ -2379,8 +2396,22 @@
++  * shared.  The locktype argument is the same as supplied to
++  * hfs_lock.
++  */
+++
+++static void hfs_lock_truncate_r13_impl(struct cnode *cp, enum hfs_locktype locktype, enum hfs_lockflags flags);
++ void
++ hfs_lock_truncate(struct cnode *cp, enum hfs_locktype locktype, enum hfs_lockflags flags)
+++{
+++#if defined(LITHIUM_ARMV8_0)
+++    uint64_t token=lithium_fsdiag_stage_begin("hfs.truncate_lock",(uintptr_t)(cp),(uintptr_t)(cp->c_truncatelockowner));
+++#endif
+++    hfs_lock_truncate_r13_impl(cp,locktype,flags);
+++#if defined(LITHIUM_ARMV8_0)
+++    lithium_fsdiag_stage_end(token,0);
+++#endif
+++    
+++}
+++static void
+++hfs_lock_truncate_r13_impl(struct cnode *cp, enum hfs_locktype locktype, enum hfs_lockflags flags)
++ {
++ 	thread_t thread = current_thread();
++ 
++diff --git a/bsd/hfs/hfs_catalog.c b/bsd/hfs/hfs_catalog.c
++--- a/bsd/hfs/hfs_catalog.c
+++++ b/bsd/hfs/hfs_catalog.c
++@@ -1,3 +1,6 @@
+++#if defined(LITHIUM_ARMV8_0)
+++#include "../../bsd/sys/hakios.fsdiag.h"
+++#endif
++ /*
++  * Copyright (c) 2000-2015 Apple Inc. All rights reserved.
++  *
++@@ -1109,8 +1112,22 @@
++  * Note: The caller is responsible for releasing the output
++  * catalog descriptor (when supplied out_cdp is non-null).
++  */
++-int 
++-cat_rename (
+++
+++static int cat_rename_r13_impl(struct hfsmount *hfsmp, struct cat_desc *from_cdp, struct cat_desc *todir_cdp, struct cat_desc *to_cdp, struct cat_desc *out_cdp);
+++int
+++cat_rename(struct hfsmount *hfsmp, struct cat_desc *from_cdp, struct cat_desc *todir_cdp, struct cat_desc *to_cdp, struct cat_desc *out_cdp)
+++{
+++#if defined(LITHIUM_ARMV8_0)
+++    uint64_t token=lithium_fsdiag_stage_begin("hfs.cat_rename",(uintptr_t)(hfsmp),(uintptr_t)(0));
+++#endif
+++    int value=cat_rename_r13_impl(hfsmp,from_cdp,todir_cdp,to_cdp,out_cdp);
+++#if defined(LITHIUM_ARMV8_0)
+++    lithium_fsdiag_stage_end(token,value);
+++#endif
+++    return value;
+++}
+++static int 
+++cat_rename_r13_impl(
++ 	struct hfsmount * hfsmp,
++ 	struct cat_desc * from_cdp,
++ 	struct cat_desc * todir_cdp,
++diff --git a/bsd/hfs/hfs_journal.c b/bsd/hfs/hfs_journal.c
++--- a/bsd/hfs/hfs_journal.c
+++++ b/bsd/hfs/hfs_journal.c
++@@ -1,3 +1,6 @@
+++#if defined(LITHIUM_ARMV8_0)
+++#include "../../bsd/sys/hakios.fsdiag.h"
+++#endif
++ /*
++  * Copyright (c) 2002-2015 Apple Inc. All rights reserved.
++  *
++@@ -253,8 +256,22 @@
++ 	jnl_mutex_group  = lck_grp_alloc_init("jnl-mutex", jnl_group_attr);
++ }
++ 
++-__inline__ void
+++
+++static void journal_lock_r13_impl(journal *jnl);
+++void
++ journal_lock(journal *jnl)
+++{
+++#if defined(LITHIUM_ARMV8_0)
+++    uint64_t token=lithium_fsdiag_stage_begin("journal.mutex",(uintptr_t)(jnl),(uintptr_t)(jnl->owner));
+++#endif
+++    journal_lock_r13_impl(jnl);
+++#if defined(LITHIUM_ARMV8_0)
+++    lithium_fsdiag_stage_end(token,0);
+++#endif
+++    
+++}
+++static __inline__ void
+++journal_lock_r13_impl(journal *jnl)
++ {
++ 	lck_mtx_lock(&jnl->jlock);
++ 	if (jnl->owner) {
++@@ -309,8 +326,22 @@
++ // outside the journal boundaries and it will wrap the i/o back
++ // to the beginning if necessary (skipping over the journal header)
++ // 
+++
+++static size_t do_journal_io_r13_impl(journal *jnl, off_t *offset, void *data, size_t len, int direction);
++ static size_t
++ do_journal_io(journal *jnl, off_t *offset, void *data, size_t len, int direction)
+++{
+++#if defined(LITHIUM_ARMV8_0)
+++    uint64_t token=lithium_fsdiag_stage_begin("journal.io",(uintptr_t)(jnl),(uintptr_t)(0));
+++#endif
+++    size_t value=do_journal_io_r13_impl(jnl,offset,data,len,direction);
+++#if defined(LITHIUM_ARMV8_0)
+++    lithium_fsdiag_stage_end(token,0);
+++#endif
+++    return value;
+++}
+++static size_t
+++do_journal_io_r13_impl(journal *jnl, off_t *offset, void *data, size_t len, int direction)
++ {
++ 	int	err;
++ 	off_t	curlen = len;
++@@ -2555,8 +2586,22 @@
++ 	return 0;
++ }
++ 
+++
+++static int journal_start_transaction_r13_impl(journal *jnl);
++ int
++ journal_start_transaction(journal *jnl)
+++{
+++#if defined(LITHIUM_ARMV8_0)
+++    uint64_t token=lithium_fsdiag_stage_begin("journal_start_transaction",(uintptr_t)(jnl),(uintptr_t)(jnl->owner));
+++#endif
+++    int value=journal_start_transaction_r13_impl(jnl);
+++#if defined(LITHIUM_ARMV8_0)
+++    lithium_fsdiag_stage_end(token,value);
+++#endif
+++    return value;
+++}
+++static int
+++journal_start_transaction_r13_impl(journal *jnl)
++ {
++ 	int ret;
++ 
++@@ -4575,8 +4620,22 @@
++ }
++ 
++ 
+++
+++static int journal_end_transaction_r13_impl(journal *jnl);
++ int
++ journal_end_transaction(journal *jnl)
+++{
+++#if defined(LITHIUM_ARMV8_0)
+++    uint64_t token=lithium_fsdiag_stage_begin("journal_end_transaction",(uintptr_t)(jnl),(uintptr_t)(jnl->owner));
+++#endif
+++    int value=journal_end_transaction_r13_impl(jnl);
+++#if defined(LITHIUM_ARMV8_0)
+++    lithium_fsdiag_stage_end(token,value);
+++#endif
+++    return value;
+++}
+++static int
+++journal_end_transaction_r13_impl(journal *jnl)
++ {
++ 	int ret;
++ 	transaction *tr;
++@@ -4670,8 +4729,22 @@
++  *  	sufficient for file system data integrity as it 
++  *  	guarantees consistent journal content on the disk.
++  */
+++
+++static int journal_flush_r13_impl(journal *jnl, journal_flush_options_t options);
++ int
++ journal_flush(journal *jnl, journal_flush_options_t options)
+++{
+++#if defined(LITHIUM_ARMV8_0)
+++    uint64_t token=lithium_fsdiag_stage_begin("journal.flush",(uintptr_t)(jnl),(uintptr_t)(jnl->owner));
+++#endif
+++    int value=journal_flush_r13_impl(jnl,options);
+++#if defined(LITHIUM_ARMV8_0)
+++    lithium_fsdiag_stage_end(token,value);
+++#endif
+++    return value;
+++}
+++static int
+++journal_flush_r13_impl(journal *jnl, journal_flush_options_t options)
++ {
++ 	boolean_t drop_lock = FALSE;
++ 	errno_t error = 0;
+--- /dev/null
++++ b/xnu/files/bsd/sys/hakios.fsdiag.h
+@@ -0,0 +1,17 @@
++/* R13: bounded observations only; no filesystem policy or completion changes. */
++#ifndef LITHIUM_FSDIAG_H
++#define LITHIUM_FSDIAG_H
++#include <stdint.h>
++enum { LF_RENAME=1, LF_WRITE, LF_FSYNC, LF_CLOSE };
++void lithium_fsdiag_init(void);
++uint64_t lithium_fsdiag_begin(unsigned op, void *vp, const char *from, const char *to);
++void lithium_fsdiag_end(uint64_t id, int error);
++uint64_t lithium_fsdiag_stage_begin(const char *name, uintptr_t object, uintptr_t owner);
++void lithium_fsdiag_stage_end(uint64_t token, int error);
++void lithium_fsdiag_ufs(unsigned op, uint64_t wall_ns, uint64_t firmware_ns, unsigned sleeps, int error);
++void lithium_fsdiag_wait(uintptr_t event, uint64_t deadline, const char *message);
++void lithium_fsdiag_wake(void *thread, int result);
++uint64_t lithium_fsdiag_bridge_begin(void);
++void lithium_fsdiag_bridge_end(uint64_t start);
++void lithium_cpu_sanity(void);
++#endif
+--- a/xnu/files/osfmk/arm64/user_exception_trace.c
++++ b/xnu/files/osfmk/arm64/user_exception_trace.c
+@@ -512,3 +512,8 @@
+ 	thread_call_enter_delayed(ustacks_call, deadline);
+ }
+ STARTUP(EARLY_BOOT, STARTUP_RANK_LAST, ustacks_init);
++
++#if defined(LITHIUM_ARMV8_0)
++#include "../../../../devices/lithium/diagnostics/fsdiag.inc"
++#include "../../../../devices/lithium/diagnostics/cpu-sanity.inc"
++#endif
+--- a/userland/src/init.c
++++ b/userland/src/init.c
+@@ -1512,6 +1512,8 @@
+ 	}
+ }
+ 
++#include "../../devices/lithium/diagnostics/hfs-bench.inc"
++
+ int
+ main(int argc, char **argv, char **envp)
+ {
+@@ -1559,6 +1561,7 @@
+ 	printf("\n=== %d checks, %d failed ===\n", checks, failures);
+ 	/* daemons that do not run as root get the console as their standard error too */
+ 	chmod("/dev/console", 0666);
++	lithium_hfs_bench();
+ 	configure_inject();
+ 	configure_vnodes();
+ 	run_rc(in_image("/etc/rc"));

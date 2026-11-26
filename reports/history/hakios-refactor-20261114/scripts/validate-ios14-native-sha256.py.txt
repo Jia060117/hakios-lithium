@@ -1,0 +1,233 @@
+#!/usr/bin/env python3
+"""Validate the real SHA-256 KPI, XNU provider, and address-hash caller."""
+import argparse
+import ctypes
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import re
+import struct
+import subprocess
+
+ROOT = Path(__file__).resolve().parents[1]
+WORK = Path.home() / 'ios-mix1-build/xnu7195-lithium'
+
+
+def sha(p):
+    return hashlib.sha256(p.read_bytes()).hexdigest()
+
+
+def disasm(kernel, name):
+    return subprocess.check_output(['llvm-objdump', '--macho', '--disassemble',
+        '--no-show-raw-insn', '--section=__TEXT_EXEC,__text', '--dis-symname', '_' + name, kernel], text=True)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('kernel', type=Path)
+    args = parser.parse_args()
+    tree = WORK / 'src'
+    out = WORK / 'sha256-validation'
+    include = out / 'include'
+    for name, text in {
+        'libkern/libkern.h': '#include <stdint.h>\n#include <string.h>\n',
+        'kern/debug.h': '#include <stdlib.h>\n#define panic(...) abort()\n',
+    }.items():
+        p = include / name
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(text)
+    caller = tree / 'osfmk/vm/vm_kern.c'
+    source = caller.read_text()
+    start = source.index('static void\nvm_kernel_addrhash_internal(')
+    function = source[start:source.index('\n}', start) + 3]
+    harness = out / 'caller.c'
+    harness.write_text('''#include <stdint.h>
+#include <stddef.h>
+#include <assert.h>
+#include <libkern/crypto/sha2.h>
+#include <libkern/crypto/crypto_internal.h>
+crypto_functions_t g_crypto_funcs = NULL;
+typedef uint64_t vm_offset_t;
+static uint64_t region_start=0xfffffff007004000ULL,region_end=0xfffffff008000000ULL,slide=0x4000;
+#define VM_KERNEL_IS_SLID(a) ((a)>=region_start && (a)<region_end)
+#define VM_KERNEL_UNSLIDE(a) ((a)-slide)
+''' + function + '''
+uint64_t check_address_hash(uint64_t address,uint64_t salt) {
+    uint64_t result=0;
+    vm_kernel_addrhash_internal(address,&result,salt);
+    return result;
+}
+size_t context_size(void) { return sizeof(SHA256_CTX); }
+size_t context_alignment(void) { return _Alignof(SHA256_CTX); }
+size_t provider_size(void) { return ccdigest_di_size(&ccsha256_ltc_di); }
+size_t sha256_provider_offset(void) { return offsetof(struct crypto_functions,ccsha256_di); }
+uint64_t context_bits(SHA256_CTX *ctx) { return ccdigest_nbits(&ccsha256_ltc_di,ctx->ctx); }
+unsigned context_pending(SHA256_CTX *ctx) { return ccdigest_num(&ccsha256_ltc_di,ctx->ctx); }
+void set_context_bits(SHA256_CTX *ctx,uint64_t n) { ccdigest_nbits(&ccsha256_ltc_di,ctx->ctx)=n; }
+''')
+    core = tree / 'osfmk/corecrypto'
+    names = ('ccdigest_init', 'ccdigest_update', 'ccdigest_final_64be', 'ccsha256_ltc_di',
+        'ccsha256_ltc_compress', 'ccsha256_initial_state', 'ccsha256_K', 'cc_clear')
+    sources = [tree / 'libkern/crypto/corecrypto_sha2.c', *[core / (n + '.c') for n in names], harness]
+    library = out / 'sha256.so'
+    command = ['clang', '-shared', '-fPIC', '-O2', '-Wall', '-Wextra', '-Werror',
+        '-DCRYPTO_SHA2=1', '-DARM64_BOARD_CONFIG_LITHIUM=1', '-DCC_USE_ASM=0',
+        '-I' + str(include), '-I' + str(tree / 'libkern'), '-I' + str(tree / 'EXTERNAL_HEADERS'),
+        *map(str, sources), '-Wl,-z,defs', '-o', str(library)]
+    compile_result = subprocess.run(command, capture_output=True, text=True)
+    (out / 'compile.log').write_text(compile_result.stdout + compile_result.stderr)
+    assert compile_result.returncode == 0, compile_result.stderr[-5500:]
+    lib = ctypes.CDLL(str(library))
+    for name in ('context_size','context_alignment','provider_size','sha256_provider_offset'):
+        getattr(lib, name).restype = ctypes.c_size_t
+    size = lib.context_size()
+    assert size == 112 and lib.context_alignment() == 8 and lib.provider_size() == 108
+    assert lib.sha256_provider_offset() == 0x30
+    lib.SHA256_Init.argtypes = [ctypes.c_void_p]
+    lib.SHA256_Update.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_size_t]
+    lib.SHA256_Final.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    lib.context_bits.argtypes = [ctypes.c_void_p]
+    lib.context_bits.restype = ctypes.c_uint64
+    lib.context_pending.argtypes = [ctypes.c_void_p]
+    lib.context_pending.restype = ctypes.c_uint
+    lib.set_context_bits.argtypes = [ctypes.c_void_p, ctypes.c_uint64]
+    lib.check_address_hash.argtypes = [ctypes.c_uint64, ctypes.c_uint64]
+    lib.check_address_hash.restype = ctypes.c_uint64
+    cases = []
+
+    def run(data, expected, label, widths=(1, 7, 64, 257)):
+        for width in widths:
+            # Real ABI alignment with canaries on both sides; copied state
+            # must remain usable after arbitrary update boundaries.
+            storage = (ctypes.c_uint64 * (size // 8 + 2))()
+            ctypes.memset(ctypes.addressof(storage), 0xa5, ctypes.sizeof(storage))
+            ctx = ctypes.addressof(storage) + 8
+            lib.SHA256_Init(ctx)
+            lib.SHA256_Update(ctx, None, 0)
+            assert lib.context_bits(ctx) == 0 and lib.context_pending(ctx) == 0
+            for offset in range(0, len(data), width):
+                chunk = data[offset:offset + width]
+                # Intentionally unaligned input, as permitted by the API.
+                buf = ctypes.create_string_buffer(b'!' + chunk)
+                lib.SHA256_Update(ctx, ctypes.addressof(buf) + 1, len(chunk))
+                total = offset + len(chunk)
+                assert lib.context_bits(ctx) // 8 + lib.context_pending(ctx) == total
+                storage = type(storage).from_buffer_copy(storage)
+                ctx = ctypes.addressof(storage) + 8
+            result = ctypes.create_string_buffer(32)
+            lib.SHA256_Final(result, ctx)
+            assert result.raw == expected, (label, width, result.raw.hex())
+            assert storage[0] == storage[-1] == 0xa5a5a5a5a5a5a5a5
+        cases.append(label)
+
+    vectors = [
+        (b'', 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'),
+        (b'abc', 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'),
+        (b'abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq',
+         '248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1'),
+    ]
+    for i, (data, expected) in enumerate(vectors):
+        run(data, bytes.fromhex(expected), f'known-answer-{i}')
+    run(b'a' * 1000000, bytes.fromhex('cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0'),
+        'million-a', (8192, 65536))
+    for length in (55,56,63,64,65,119,120,127,128,129,4096,4097,16384):
+        data = bytes((i * 29 + 7) % 256 for i in range(length))
+        run(data, hashlib.sha256(data).digest(), f'padding-streaming-{length}')
+    ctx = (ctypes.c_uint64 * (size // 8))()
+    lib.SHA256_Init(ctx)
+    lib.set_context_bits(ctx, (1 << 32) - 512)
+    lib.SHA256_Update(ctx, ctypes.create_string_buffer(bytes(64)), 64)
+    assert lib.context_bits(ctx) == 1 << 32 and lib.context_pending(ctx) == 0
+    cases.append('64bit-bit-count-carry')
+    for address in (0, 1, 0xfffffff005dbb610, 0xfffffff007004123, 0xfffffff008000000, 0xffffffffffffffff):
+        for salt in (1, 0xb08f5c39c800786a, 0xffffffffffffffff):
+            if address == 0:
+                expected = 0
+            elif 0xfffffff007004000 <= address < 0xfffffff008000000:
+                expected = address - 0x4000
+            else:
+                expected = int.from_bytes(hashlib.sha256(struct.pack('<QQ', salt, address)).digest()[:8], 'little')
+            assert lib.check_address_hash(address, salt) == expected
+        cases.append(f'actual-vm-addrhash-{address:016x}')
+    # Exercise the original non-LITHIUM provider dispatch using a real table.
+    controls = out / 'provider.c'
+    controls.write_text('''#include <libkern/crypto/crypto_internal.h>
+#include <corecrypto/ccsha2.h>
+static struct crypto_functions provider = {
+    .ccsha256_di=&ccsha256_ltc_di,
+    .ccdigest_init_fn=ccdigest_init,
+    .ccdigest_update_fn=ccdigest_update
+};
+void register_fixture_provider(void) { g_crypto_funcs=&provider; }
+''')
+    control_lib = out / 'sha256-control.so'
+    control_command = [v for v in command if v != '-DARM64_BOARD_CONFIG_LITHIUM=1']
+    control_command[-1] = str(control_lib)
+    control_command.insert(control_command.index('-Wl,-z,defs'), str(controls))
+    r = subprocess.run(control_command, capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr[-4000:]
+    control = ctypes.CDLL(str(control_lib))
+    control.register_fixture_provider()
+    control.SHA256_Init.argtypes = [ctypes.c_void_p]
+    control.SHA256_Update.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_size_t]
+    control.SHA256_Final.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    result = ctypes.create_string_buffer(32)
+    control.SHA256_Init(ctx); control.SHA256_Update(ctx, b'abc', 3); control.SHA256_Final(result, ctx)
+    assert result.raw == hashlib.sha256(b'abc').digest()
+    cases.append('non-lithium-provider-dispatch')
+    emitted = {name: disasm(args.kernel, name) for name in ('SHA256_Init','SHA256_Update','SHA256_Final')}
+    for api, backend in (('SHA256_Init','ccdigest_init'), ('SHA256_Update','ccdigest_update')):
+        assert re.search(r'\bb(?:l)?\s+_' + backend + r'\b', emitted[api]), emitted[api]
+    # Final remains an indirect call through the immutable digest descriptor.
+    # Resolve that descriptor in the linked Mach-O instead of assuming the
+    # optimizer emits a direct branch to its known final function.
+    symbols = {parts[-1]: int(parts[0], 16) for line in
+        subprocess.check_output(['llvm-nm','-n',args.kernel], text=True).splitlines()
+        if len(parts := line.split()) >= 3 and len(parts[0]) == 16}
+    spec = importlib.util.spec_from_file_location('inspect_kernel', ROOT / 'scripts/inspect-native-xnu.py')
+    inspector = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(inspector)
+    info = inspector.inspect(args.kernel)
+    data = args.kernel.read_bytes()
+    di_address = symbols['_ccsha256_ltc_di']
+    seg = next(s for s in info['segments'] if int(s['vmaddr'],16) <= di_address and
+        di_address + 64 <= int(s['vmaddr'],16) + s['filesize'])
+    di = struct.unpack_from('<8Q', data, seg['fileoff'] + di_address - int(seg['vmaddr'],16))
+    assert di[:3] == (32,32,64)
+    assert di[6] == symbols['_ccsha256_ltc_compress']
+    assert di[7] == symbols['_ccdigest_final_64be']
+    for api, text in emitted.items():
+        reg = 'x8' if api == 'SHA256_Update' else 'x0'
+        page = re.search(r'adrp\s+' + reg + r',.*?; (0x[0-9a-f]+)', text)
+        offset = re.search(r'add\s+' + reg + ', ' + reg + r', #(0x[0-9a-f]+)', text)
+        assert page and offset and int(page[1],16) + int(offset[1],16) == di_address, api
+        if reg != 'x0':
+            assert re.search(r'mov\s+x0, ' + reg, text)
+    assert re.search(r'ldr\s+x3, \[x0, #0x38\]', emitted['SHA256_Final'])
+    assert re.search(r'\bbr\s+x3\b', emitted['SHA256_Final'])
+    old = ROOT / 'reports/local/20261114-152016-948715-native-xnu/inputs/mach.development.lithium.unstripped'
+    assert sha(old) == 'c4b03899cba1fe486e7e27770ffcd302a40c4ebe2c5e09797ff571439c54f8c1'
+    old_dis = disasm(old, 'SHA256_Init')
+    assert re.search(r'fffffff007732818:\s+ldr\s+x0,\s*\[x8, #0x30\]', old_dis)
+    assert '_ccdigest_init' not in old_dis
+    headers = list((tree / 'EXTERNAL_HEADERS/corecrypto').glob('*.h'))
+    inputs = sources[:-1] + headers + [caller, Path(__file__), ROOT / 'scripts/inspect-native-xnu.py',
+        core / 'ccdigest_internal.h', core / 'ccsha2_internal.h',
+        tree / 'libkern/libkern/crypto/crypto_internal.h',
+        tree / 'libkern/libkern/crypto/sha2.h', tree / 'libkern/libkern/crypto/register_crypto.h',
+        ROOT / 'ports/lithium/patches/xnu-7195/0023-lithium-native-sha256.patch']
+    record = dict(all_passed=True, cases=cases, context_bytes=size, context_alignment=8,
+        provider_context_bytes=108, null_provider_fixture=True, actual_caller_checked=True,
+        native_provider_calls_verified=True, old_null_provider_path_rejected=True,
+        linked_descriptor=dict(address=hex(di_address),compress=hex(di[6]),final=hex(di[7])),
+        kernel_sha256=sha(args.kernel), input_sha256={str(p): sha(p) for p in inputs},
+        disassembly=emitted, command=command, device_operations=False, qemu_used=False,
+        scope='Real XNU SHA256 wrapper, digest/compressor sources and extracted vm_kernel_addrhash_internal; native calls inspected',
+        vector_source='NIST SHA-256 worked examples and hashlib cross-checks')
+    (ROOT / 'reports/ios14-native-sha256-validation.json').write_text(json.dumps(record, indent=2) + '\n')
+    print(json.dumps(dict(all_passed=True, cases=len(cases), kernel_sha256=record['kernel_sha256'], context_bytes=size)))
+
+
+if __name__ == '__main__':
+    main()

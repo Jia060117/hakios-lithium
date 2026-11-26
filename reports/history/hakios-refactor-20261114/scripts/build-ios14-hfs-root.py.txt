@@ -1,0 +1,115 @@
+#!/usr/bin/env python3
+"""Create/verify an offline HFSX image from the genuine read-only iOS14 root.
+
+Uses hfsprogs and a pinned libdmg wrapper, without a guest or phone operation.
+"""
+import argparse
+from collections import Counter
+from datetime import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import plistlib
+import stat
+import struct
+import subprocess
+import unicodedata
+
+ROOT=Path(__file__).resolve().parents[1]
+TOOLS=Path('/home/jia/ios-mix1-build')
+EPOCH=2082844800
+
+def hfs_name(name):
+    # TN1150: Unicode 3.2 canonical decomposition, excluding Apple's ranges.
+    out=''.join(c if 0x2000<=ord(c)<=0x2fff or 0xf900<=ord(c)<=0xfaff or 0x2f800<=ord(c)<=0x2faff
+                else unicodedata.ucd_3_2_0.normalize('NFD',c) for c in name)
+    assert len(out.encode('utf-16le'))<=510,(name,'HFS component too long')
+    # Keep POSIX ':' here. The component encoder maps it to HFS's on-disk
+    # '/', matching hfs_catalog.c / utf8_decodestr(..., ':', ...).
+    return out
+
+def main():
+    p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--source',type=Path,default=TOOLS/'ios14-root-ro/root')
+    p.add_argument('--output',type=Path,default=Path('/mnt/e/IOS-MIX1-artifacts/ios14-d20ap/ios14-root-hfs.img'))
+    p.add_argument('--size-mib',type=int,default=12288)
+    p.add_argument('--fixture',action='store_true')
+    p.add_argument('--resume',action='store_true',help='Require a structurally valid partial image and verify every existing entry before continuing')
+    p.add_argument('--resume-manifest',type=Path,help='Continue a manifest suffix after an interrupted file; the final verification always covers the full source')
+    args=p.parse_args();source=args.source.resolve();out=args.output.resolve();v=None
+    assert not args.resume_manifest or args.resume
+    assert out.exists() if args.resume else not out.exists(),'image existence does not match requested mode'
+    if not args.fixture:
+        v=plistlib.loads((source/'System/Library/CoreServices/SystemVersion.plist').read_bytes())
+        assert v['ProductVersion']=='14.8' and v['ProductBuildVersion']=='18H17'
+        assert subprocess.run(['mountpoint','-q',source.parent]).returncode==0
+    out.parent.mkdir(parents=True,exist_ok=True)
+    manifest=out.with_suffix('.manifest.bin');summary=out.with_suffix('.build.json')
+    counts=Counter();total=0;normalized=0;paths=set();hardlinks=0
+    with manifest.open('wb') as dst:
+        dst.write(b'MIXHFS01')
+        def entry(path):
+            nonlocal total,normalized,hardlinks
+            s=path.lstat();rel=path.relative_to(source)
+            target='/'+'/'.join(hfs_name(n) for n in rel.parts)
+            normalized+=str(rel)!='.' and '/'+rel.as_posix()!=target
+            assert target not in paths,('normalization collision',target)
+            paths.add(target)
+            typ=stat.S_IFMT(s.st_mode);counts[oct(typ)]+=1
+            assert typ in (stat.S_IFDIR,stat.S_IFREG,stat.S_IFLNK),(path,'unsupported inode type')
+            if stat.S_ISREG(s.st_mode):
+                hardlinks+=s.st_nlink>1
+                assert s.st_nlink==1,(path,'hardlink import required')
+                total+=s.st_size
+            target=target.encode('utf-8');src=str(path).encode('utf-8')
+            link=os.readlink(path).encode('utf-8') if stat.S_ISLNK(s.st_mode) else b''
+            mtime=int(s.st_mtime)+EPOCH;atime=int(s.st_atime)+EPOCH
+            assert 0<=mtime<=0xffffffff and 0<=atime<=0xffffffff
+            dst.write(struct.pack('<8IQ',len(target),len(src),len(link),s.st_mode,s.st_uid,s.st_gid,mtime,atime,s.st_size))
+            dst.write(target+src+link)
+            if sum(counts.values())%10000==0:
+                print('manifest entries='+str(sum(counts.values())),flush=True)
+        entry(source)
+        for d,dirs,files in os.walk(source,followlinks=False):
+            dirs.sort();files.sort()
+            for name in dirs+files:entry(Path(d)/name)
+    print(json.dumps(dict(manifest_entries=sum(counts.values()),types=counts,file_bytes=total,normalized_names=normalized)),flush=True)
+    assert total+sum(counts.values())*8192 < args.size_mib*1048576,'insufficient image capacity with metadata margin'
+    if args.resume:assert out.stat().st_size==args.size_mib*1048576
+    else:
+        with out.open('xb') as f:f.truncate(args.size_mib*1048576)
+    logs=[]
+    def run(label,command):
+        log=out.with_suffix('.'+label+'.log');logs.append(str(log))
+        print(label+': '+str(log),flush=True)
+        with log.open('w') as stream:
+            r=subprocess.run(list(map(str,command)),stdout=stream,stderr=subprocess.STDOUT)
+        if r.returncode:
+            print('\n'.join(log.read_text(errors='replace').splitlines()[-30:]),flush=True)
+            raise RuntimeError(f'{label} failed: {r.returncode}; partial image retained')
+    if args.resume:run('pre-resume-fsck',[TOOLS/'hfsprogs/sbin/fsck.hfsplus','-f','-n',out])
+    else:run('mkfs',[TOOLS/'hfsprogs/sbin/mkfs.hfsplus','-s','-J','-v','iOS14Root',out])
+    copy=TOOLS/'hfs-host/build/hfs-root-copy'
+    importer_sha256=hashlib.sha256(copy.read_bytes()).hexdigest()
+    run('resume' if args.resume else 'import',[copy,out,args.resume_manifest or manifest,'resume' if args.resume else 'import'])
+    assert hashlib.sha256(copy.read_bytes()).hexdigest()==importer_sha256
+    run('verify',[copy,out,manifest,'verify'])
+    run('fsck',[TOOLS/'hfsprogs/sbin/fsck.hfsplus','-f','-n',out])
+    h=hashlib.sha256()
+    with out.open('rb') as f:
+        while chunk:=f.read(8*1048576):h.update(chunk)
+    record=dict(built_at=datetime.now().astimezone().isoformat(),source=str(source),image=str(out),
+        image_bytes=out.stat().st_size,sha256=h.hexdigest(),manifest=str(manifest),
+        manifest_sha256=hashlib.sha256(manifest.read_bytes()).hexdigest(),
+        entry_types=counts,file_bytes=total,normalized_names=normalized,hardlinks_in_source=hardlinks,
+        contents_and_metadata_verified=True,fsck_passed=True,fixture=args.fixture,
+        logs=logs,device_operations=False,qemu_used=False,filesystem='case-sensitive journaled HFS+ (HFSX)',
+        version=v,importer_sha256=importer_sha256,
+        builder_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        source_xattrs_copied=False,compression='source bytes decompressed by APFS-FUSE; HFS files uncompressed')
+    summary.write_text(json.dumps(record,indent=2)+'\n')
+    if not args.fixture:(ROOT/'reports/ios14-hfs-root.json').write_text(json.dumps(record,indent=2)+'\n')
+    print(json.dumps(record),flush=True)
+
+if __name__=='__main__':main()

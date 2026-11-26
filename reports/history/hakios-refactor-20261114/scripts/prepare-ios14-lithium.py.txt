@@ -1,0 +1,422 @@
+#!/usr/bin/env python3
+"""Prepare pinned sailfish platform code for Apple's XNU7195 and lithium.
+
+Only local patches and reports are written. Upstream trees and the phone are
+never modified. The complete platform series is checked in a temporary index.
+"""
+import difflib
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import tempfile
+
+ROOT = Path(__file__).resolve().parents[1]
+APPLE = ROOT / "upstream/research/xnu-7195.141.2"
+PIN = "776661b72c2db9861865df68d309f6f35faccff4"
+SAILFISH = "6f27e41ff249f2680540ebe8ee5ab982c5e641c9"
+
+
+def replace(text, before, after, count=1):
+    if text.count(before) != count:
+        raise ValueError(f"source anchor count differs: {before[:100]!r}")
+    return text.replace(before, after)
+
+
+def main():
+    if subprocess.check_output(["git", "-C", APPLE, "rev-parse", "HEAD"], text=True).strip() != PIN:
+        raise SystemExit("Apple source pin mismatch")
+    edits = {}
+
+    def read(path):
+        return subprocess.check_output(["git", "-C", APPLE, "show", f"HEAD:{path}"]).decode()
+
+    path = "makedefs/MakeInc.def"
+    text = read(path)
+    line = next(x for x in text.splitlines() if x.startswith("SUPPORTED_ARM64_MACHINE_CONFIGS = T7000"))
+    text = replace(text, line, line + " LITHIUM")
+    anchor = "MACHINE_FLAGS_ARM64_BCM2837 = -DARM64_BOARD_CONFIG_BCM2837\n"
+    edits[path] = replace(text, anchor, anchor + "MACHINE_FLAGS_ARM64_LITHIUM = -DARM64_BOARD_CONFIG_LITHIUM -mcpu=kryo\n")
+
+    path = "pexpert/pexpert/arm64/board_config.h"
+    edits[path] = replace(read(path), "#ifdef ARM64_BOARD_CONFIG_BCM2837\n", """#ifdef ARM64_BOARD_CONFIG_LITHIUM
+#include <pexpert/arm64/LITHIUM.h>
+#define MAX_L2_CLINE                   6
+#define MAX_CPUS                       4
+#define MAX_CPU_CLUSTERS               1
+#define CORE_NCTRS                     8 /* KPC is not enabled on this board. */
+#endif
+
+#ifdef ARM64_BOARD_CONFIG_BCM2837
+""")
+
+    # Retain the reference's GIC register definitions and generic ARM board
+    # choices. No Apple CPU family, PAN, LSE or pointer authentication is used.
+    ref = ROOT / "upstream/research/ios-sailfish/xnu/patches/0004-sweet-machine-config.patch"
+    reference = ref.read_text(encoding="utf-8")
+    section = reference.split("+++ b/pexpert/pexpert/arm64/SWEET.h\n", 1)[1].split("diff --git", 1)[0]
+    header = "".join(line[1:] + "\n" for line in section.splitlines() if line.startswith("+") and not line.startswith("+++"))
+    header = header[header.index("#ifndef"):]
+    header = header.replace("SWEET", "LITHIUM")
+    header = replace(header, "#define __ARM_PAN_AVAILABLE__     1\n", "")
+    header = replace(header, "#define LITHIUM_VTIMER_INTID        19", "#define LITHIUM_VTIMER_INTID        27")
+    begin = header.index("/*\n * Qualcomm numbers")
+    end = header.index("#define LITHIUM_VTIMER_INTID", begin)
+    header = header[:begin] + "/* MIX stock DT: virtual timer PPI 11 + 16 = raw INTID 27. */\n" + header[end:]
+    provenance = f"/*\n * Xiaomi Mi MIX lithium / MSM8996pro, ARMv8.0 Kryo, 16K pages.\n * Adapted from joranv1/ios-sailfish {SAILFISH},\n * xnu/patches/0004 and 0080. GICR stride is supplied by the lithium ADT.\n * Bring-up starts with one CPU; this configuration alone is not a port.\n */\n\n"
+    edits["pexpert/pexpert/arm64/LITHIUM.h"] = provenance + header
+    path = "pexpert/pexpert/arm64/Makefile"
+    edits[path] = replace(read(path), "\tBCM2837.h \\\n", "\tBCM2837.h \\\n\tLITHIUM.h \\\n", count=2)
+
+    path = "pexpert/arm/pe_fiq.c"
+    text = read(path)
+    text = replace(text, "\t// Configure timers and legacy FIQ to be group 0\n", """#if defined(LITHIUM)
+\t/* Reference sailfish Group 1 NS routing; Group 0 belongs to TrustZone. */
+\tgicr_write32(GICR_IGROUPR0, 0xFFFFFFFF);
+\tfor (unsigned int i = 0; i < 32; i += 4) {
+\t\tgicr_write32(GICR_IPRIORITYR0 + i, 0xA0A0A0A0);
+\t}
+\tgicr_write32(GICR_ISENABLER0, (1U << LITHIUM_VTIMER_INTID) | (1U << LITHIUM_IPI_SGI));
+#else
+\t// Configure timers and legacy FIQ to be group 0
+""")
+    text = replace(text, "\tgicr_write32(GICR_ISENABLER0, (1 << 27));\n", "\tgicr_write32(GICR_ISENABLER0, (1 << 27));\n#endif\n")
+    text = replace(text, "\t__builtin_arm_wsr64(\"ICC_BPR0_EL1\", 0);", "#if defined(LITHIUM)\n\t__builtin_arm_wsr64(\"ICC_BPR1_EL1\", 0);\n#else\n\t__builtin_arm_wsr64(\"ICC_BPR0_EL1\", 0);\n#endif")
+    anchor = "\t// Enable the forwarding of the vtimer interrupt\n"
+    text = replace(text, anchor, """#if defined(LITHIUM)
+\tuint32_t gicd_ctlr = gicd_read32(GICD_CTLR);
+\tgicd_ctlr |= GICD_CTLR_ARE_NS | GICD_CTLR_ENABLEGRP1A | GICD_CTLR_ENABLEGRP1;
+\tgicd_write32(GICD_CTLR, gicd_ctlr);
+\tuint64_t deadline;
+\tnanoseconds_to_deadline(GICR_WAKE_TIMEOUT_NS, &deadline);
+\twhile (gicd_read32(GICD_CTLR) & GICD_CTLR_RWP) {
+\t\tif (mach_absolute_time() > deadline) {
+\t\t\tpanic("lithium: GIC distributor RWP timeout");
+\t\t}
+\t}
+\t__builtin_arm_wsr64("ICC_IGRPEN1_EL1", 1);
+\t__builtin_arm_isb(ISB_SY);
+#else
+""" + anchor)
+    edits[path] = replace(text, "\t__builtin_arm_wsr64(\"ICC_IGRPEN0_EL1\", 1);\n\t__builtin_arm_isb(ISB_SY);\n", "\t__builtin_arm_wsr64(\"ICC_IGRPEN0_EL1\", 1);\n\t__builtin_arm_isb(ISB_SY);\n#endif\n")
+
+    path = "osfmk/arm64/sleh.c"
+    text = read(path)
+    start = text.index("\tsleh_interrupt_handler_prologue(state, DBG_INTR_TYPE_OTHER);", text.index("\nsleh_irq("))
+    end = text.index("\n\tentropy_collect();", start)
+    ordinary = text[start:end]
+    edits[path] = text[:start] + """#if defined(LITHIUM)
+\t/* Adapt sailfish's non-secure GICv3 dispatch to the 7195 handler API. */
+\tuint64_t iar = __builtin_arm_rsr64("ICC_IAR1_EL1");
+\tuint32_t intid = (uint32_t)(iar & 0xFFFFFF);
+\tif (intid >= 1020 && intid <= 1023) {
+\t\treturn;
+\t}
+\tif (intid == LITHIUM_VTIMER_INTID) {
+\t\tsleh_interrupt_handler_prologue(state, DBG_INTR_TYPE_TIMER);
+\t\tcdp->cpu_decrementer = -1;
+\t\tINTERRUPT_MASKED_DEBUG_START(rtclock_intr, DBG_INTR_TYPE_TIMER);
+\t\trtclock_intr(TRUE);
+\t\tINTERRUPT_MASKED_DEBUG_END();
+\t\t__builtin_arm_wsr64("ICC_EOIR1_EL1", iar);
+\t} else if (intid < 16) {
+\t\tsleh_interrupt_handler_prologue(state, DBG_INTR_TYPE_IPI);
+\t\t__builtin_arm_wsr64("ICC_EOIR1_EL1", iar);
+\t\t__builtin_arm_isb(ISB_SY);
+\t\tcpu_signal_handler();
+\t} else {
+\t\tsleh_interrupt_handler_prologue(state, DBG_INTR_TYPE_OTHER);
+\t\tif (cdp->interrupt_handler) {
+\t\t\tcdp->interrupt_handler(cdp->interrupt_target, cdp->interrupt_refCon,
+\t\t\t    cdp->interrupt_nub, intid);
+\t\t} else {
+\t\t\tpanic("lithium: unhandled IRQ %u", intid);
+\t\t}
+\t\t__builtin_arm_wsr64("ICC_EOIR1_EL1", iar);
+\t}
+\t__builtin_arm_isb(ISB_SY);
+#else
+""" + ordinary + "\n#endif\n" + text[end:]
+
+    patch = ROOT / "ports/lithium/patches/xnu-7195/0002-lithium-armv8-gic-timer.patch"
+    diff = ""
+    for path, updated in edits.items():
+        original = "" if path.endswith("/LITHIUM.h") else read(path)
+        diff += "".join(difflib.unified_diff(original.splitlines(keepends=True), updated.splitlines(keepends=True),
+                                          fromfile="a/" + path if original else "/dev/null", tofile="b/" + path))
+    patch.write_bytes((f"From: ios14-lithium\nSubject: arm64: adapt sailfish platform routing for XNU7195 lithium\n\n"
+                       f"Source: joranv1/ios-sailfish {SAILFISH}, patches 0004/0080.\n"
+                       "Board timer/stride data come from the matching MIX stock DTS.\n"
+                       "No hardware execution is claimed by this patch.\n\n" + diff).encode())
+    path = "osfmk/arm/proc_reg.h"
+    original = read(path)
+    updated = replace(original,
+                      "#if defined (ARMA7) || defined (APPLE_ARM64_ARCH_FAMILY) || defined (BCM2837)",
+                      "#if defined (ARMA7) || defined (APPLE_ARM64_ARCH_FAMILY) || defined (BCM2837) || defined (LITHIUM)")
+    updated = replace(updated, "#elif defined (BCM2837) /* Raspberry Pi 3 */", """#elif defined (LITHIUM) /* ARMv8.0 Kryo; 64-byte minimum cache lines. */
+#define MMU_I_CLINE 6
+#define MMU_CLINE   6
+
+#elif defined (BCM2837) /* Raspberry Pi 3 */""")
+    cpu_patch = patch.parent / "0003-lithium-generic-arm-definitions.patch"
+    cpu_patch.write_bytes(("Subject: arm: include lithium in generic ARM definitions\n\n" + "".join(
+        difflib.unified_diff(original.splitlines(keepends=True), updated.splitlines(keepends=True),
+                             fromfile="a/" + path, tofile="b/" + path))).encode())
+    path = "osfmk/arm64/sleh.c"
+    original = read(path)
+    updated = replace(original, "#include <arm/rtclock.h>\n", "#include <arm/rtclock.h>\n#include <arm/machine_cpu.h>\n")
+    (patch.parent / "0004-lithium-irq-cpu-interface.patch").write_bytes((
+        "Subject: arm64: include the CPU signal interface for Group 1 IRQs\n\n" + "".join(
+            difflib.unified_diff(original.splitlines(keepends=True), updated.splitlines(keepends=True),
+                                 fromfile="a/" + path, tofile="b/" + path))).encode())
+    expert_source = ROOT / "upstream/research/ios-sailfish/xnu/patches/0016-sweet-device-tree-platform-expert.patch"
+    expert = expert_source.read_text(encoding="utf-8").replace("Sweet", "Lithium").replace("SWEET", "LITHIUM")
+    expert = expert.replace("xiaomi,sweet", "xiaomi,lithium").replace("Redmi Note 10 Pro (sweet)", "Xiaomi Mi MIX (lithium)")
+    expert = expert.replace('strlcpy(name, "sweet",', 'strlcpy(name, "lithium",')
+    (patch.parent / "0005-lithium-device-tree-platform-expert.patch").write_bytes((
+        f"Subject: iokit: reuse sailfish device-tree platform expert for lithium\n\nSource: {SAILFISH}, patch 0016.\n\n" + expert).encode())
+    master = read("config/MASTER.arm64.bcm2837")
+    (patch.parent / "0006-lithium-public-arm-master.patch").write_bytes((
+        "Subject: config: select public ARM pmap and assembly for lithium\n\n"
+        "Reuse Apple's BCM2837 master configuration; lithium hardware choices\n"
+        "remain in LITHIUM.h. The default iPhoneOS master excludes these sources.\n\n" + "".join(
+            difflib.unified_diff([], master.splitlines(keepends=True),
+                                 fromfile="/dev/null", tofile="b/config/MASTER.arm64.lithium"))).encode())
+    path = "pexpert/pexpert/arm64/LITHIUM.h"
+    original = edits[path]
+    updated = replace(original, "#define __ARM_VMSA__              8\n", """#define __ARM_VMSA__              8
+/* XNU7195 bootstrap constructs L1 roots, requiring 39-bit VA at 16K. */
+#define __ARM64_PMAP_SUBPAGE_L1__  1
+""")
+    (patch.parent / "0007-lithium-bootstrap-address-space.patch").write_bytes((
+        "Subject: arm64: match 7195 L1 bootstrap tables to the TCR address size\n\n" + "".join(
+            difflib.unified_diff(original.splitlines(keepends=True), updated.splitlines(keepends=True),
+                                 fromfile="a/" + path, tofile="b/" + path))).encode())
+    path = "osfmk/arm64/corecrypto/sha256_compress_arm64.s"
+    original = read(path)
+    updated = replace(original, "K256:\n", "    .data_region\nK256:\n")
+    updated = replace(updated, "    .long   0xc67178f2\n", "    .long   0xc67178f2\n    .end_data_region\n")
+    (patch.parent / "0008-sha256-constant-data-region.patch").write_bytes((
+        "Subject: crypto: describe the SHA256 constant table as Mach-O data\n\n"
+        "The bytes stay identical. This makes instruction scans distinguish\n"
+        "the 64 round constants from code in the executable hibernation section.\n\n" + "".join(
+            difflib.unified_diff(original.splitlines(keepends=True), updated.splitlines(keepends=True),
+                                 fromfile="a/" + path, tofile="b/" + path))).encode())
+    # Reuse the reference's portable SHA1 implementation and legacy context
+    # conversion. Keep the 7195 physical-address and hardware-hook exports.
+    sha1_ref = ROOT / "upstream/research/ios-sailfish/xnu/patches/0032-sweet-bearssl-sha1.patch"
+    reference = sha1_ref.read_text(encoding="utf-8")
+    section = reference.split("+++ b/libkern/crypto/corecrypto_sha1.c\n", 1)[1].split("--- /dev/null", 1)[0]
+    added = "".join(line[1:] + "\n" for line in section.splitlines()
+                    if line.startswith("+") and not line.startswith("+++"))
+    wrapper = added[:added.index("#endif /* !ARM64_BOARD_CONFIG_SWEET */")]
+    wrapper = wrapper.replace("SWEET", "LITHIUM").replace("sweet", "lithium")
+    sha1_edits = {}
+    path = "libkern/crypto/corecrypto_sha1.c"
+    original = read(path)
+    updated = replace(original, "/* Copy a ccdigest ctx into a legacy SHA1 context */\n",
+                      wrapper + "/* Copy a ccdigest ctx into a legacy SHA1 context */\n")
+    updated = replace(updated, "#ifdef XNU_KERNEL_PRIVATE\n",
+                      "#endif /* !ARM64_BOARD_CONFIG_LITHIUM */\n\n#ifdef XNU_KERNEL_PRIVATE\n")
+    sha1_edits[path] = (original, updated)
+    path = "libkern/conf/files"
+    original = read(path)
+    anchor = next(line for line in original.splitlines(keepends=True)
+                  if line.startswith("libkern/crypto/corecrypto_sha1.c"))
+    sha1_edits[path] = (original, replace(original, anchor, anchor + "".join(
+        f"libkern/crypto/lithium_{name}.c\toptional crypto\n" for name in ("sha1", "dec32be", "enc32be"))))
+    path = "libkern/conf/Makefile.template"
+    original = read(path)
+    flags = "\n# Pinned BearSSL; prevent SIMD use in the kernel SHA1 path.\nifeq ($(CURRENT_MACHINE_CONFIG),LITHIUM)\n"
+    for name in ("sha1", "dec32be", "enc32be"):
+        # 7195 appends the source path directly to C_RULE_1A. Keep the final
+        # space so that it is not swallowed into the last -I argument.
+        flags += f"lithium_{name}.o_INCFLAGS = -I$(SOURCE_DIR)/libkern/crypto/lithium_bearssl/inc -I$(SOURCE_DIR)/libkern/crypto/lithium_bearssl/src $(LITHIUM_EMPTY)\n"
+        flags += f"lithium_{name}.o_CFLAGS_ADD += -mgeneral-regs-only\n"
+    flags += "corecrypto_sha1.o_CFLAGS_ADD += -mgeneral-regs-only\nendif\n\n"
+    sha1_edits[path] = (original, replace(original, "# Runtime support functions don't interact well with LTO", flags + "# Runtime support functions don't interact well with LTO"))
+    for name, source in (("sha1", "hash/sha1.c"), ("dec32be", "codec/dec32be.c"), ("enc32be", "codec/enc32be.c")):
+        sha1_edits[f"libkern/crypto/lithium_{name}.c"] = ("", "/* BearSSL 7bea48e5e850ab4cafbe68d3765cdaba13a86d6f; MIT license staged alongside. */\n"
+            f"#if defined(ARM64_BOARD_CONFIG_LITHIUM)\n#include \"lithium_bearssl/src/{source}\"\n#endif\n")
+    diff = "".join("".join(difflib.unified_diff(old.splitlines(keepends=True), new.splitlines(keepends=True),
+                   fromfile="a/" + path if old else "/dev/null", tofile="b/" + path))
+                   for path, (old, new) in sha1_edits.items())
+    (patch.parent / "0009-lithium-bearssl-sha1.patch").write_bytes((
+        f"Subject: crypto: backport sailfish portable SHA1 to the 7195 legacy API\n\nSource: {SAILFISH}, patch 0032.\n"
+        "BearSSL is staged at its pinned commit by the isolated build script.\n\n" + diff).encode())
+    prng_ref = ROOT / "upstream/research/ios-sailfish/xnu/patches/0014-sweet-kernel-hmac-prng.patch"
+    reference = prng_ref.read_text(encoding="utf-8")
+    section = reference.split("+++ b/osfmk/prng/prng_random.c\n", 1)[1].split("diff --git", 1)[0]
+    added = "".join(line[1:] + "\n" for line in section.splitlines()
+                    if line.startswith("+") and not line.startswith("+++"))
+    provider = added[:added.index("#endif /* SWEET */") + len("#endif /* SWEET */") + 1]
+    provider = provider.replace("SWEET", "LITHIUM").replace("sweet", "lithium")
+    # 7195's cckprng_ctx is a Fortuna context without embedded DRBG storage;
+    # own the state explicitly instead of imposing the 8796 context layout.
+    provider = replace(provider, "static struct cckprng_ctx lithium_prng_ctx;\n",
+                       "static struct cckprng_ctx lithium_prng_ctx;\n"
+                       "static uint8_t lithium_drbg_state[EARLY_RANDOM_STATE_STATIC_SIZE];\n"
+                       "static struct ccdrbg_info lithium_drbg_info;\n")
+    provider = provider.replace("ctx->drbg_state", "lithium_drbg_state").replace("ctx->drbg_info", "lithium_drbg_info")
+    provider = provider.replace("CCKPRNG_ENTROPY_SIZE", "SHA256_DIGEST_LENGTH")
+    provider = replace(provider, "lithium_prng_init(struct cckprng_ctx *ctx, size_t seed_nbytes, const void *seed,\n"
+        "    size_t nonce_nbytes, const void *nonce, cckprng_getentropy getentropy,\n    void *getentropy_arg)",
+        "lithium_prng_init(struct cckprng_ctx *ctx, unsigned max_ngens,\n"
+        "    __unused size_t entropybuf_nbytes, __unused const void *entropybuf,\n"
+        "    __unused const uint32_t *entropybuf_nsamples, size_t seed_nbytes,\n"
+        "    const void *seed, size_t nonce_nbytes, const void *nonce)")
+    provider = replace(provider, "lithium_prng_init_with_getentropy(ctx, MAX_CPUS, seed_nbytes, seed,\n"
+        "\t    nonce_nbytes, nonce, getentropy, getentropy_arg);",
+        "lithium_prng_init_with_getentropy(ctx, max_ngens, seed_nbytes, seed,\n"
+        "\t    nonce_nbytes, nonce, entropy_provide, NULL);")
+    prng_edits = {}
+    path = "osfmk/prng/prng_random.c"
+    original = read(path)
+    updated = replace(original, "static void read_erandom(void * buf, size_t nbytes);\n",
+                      provider + "\nstatic void read_erandom(void * buf, size_t nbytes);\n")
+    start = updated.index("\tSHA256_CTX ctx;", updated.index("\nwrite_random("))
+    end = updated.index("\n\tprng_funcs.reseed", start)
+    ordinary = updated[start:end]
+    updated = updated[:start] + """#if defined(LITHIUM)
+\tconst struct ccdigest_info *di = &ccsha256_ltc_di;
+\tccdigest_di_decl(di, ctx);
+\tccdigest_init(di, ctx);
+\tccdigest_update(di, ctx, numbytes, buffer);
+\tccdigest_final(di, ctx, seed);
+\tccdigest_di_clear(di, ctx);
+#else
+""" + ordinary + "\n#endif\n" + updated[end:]
+    prng_edits[path] = (original, updated)
+    path = "osfmk/prng/entropy.c"
+    original = read(path)
+    updated = replace(original, "#include <sys/cdefs.h>\n", "#include <sys/cdefs.h>\n"
+        "#if defined(LITHIUM)\n#include <corecrypto/ccdigest.h>\n#include <corecrypto/ccsha2.h>\n#endif\n")
+    updated = replace(updated, "\tSHA256_CTX sha256_ctx;\n", "#if defined(LITHIUM)\n"
+        "\tccdigest_ctx_decl(CCSHA256_STATE_SIZE, CCSHA256_BLOCK_SIZE, sha256_ctx);\n"
+        "#else\n\tSHA256_CTX sha256_ctx;\n#endif\n")
+    section = reference.split("+++ b/osfmk/prng/entropy.c\n", 1)[1]
+    added = "".join(line[1:] + "\n" for line in section.splitlines()
+                    if line.startswith("+") and not line.startswith("+++"))
+    begin = added.index("/* SWEET uses the same built-in digest")
+    end = added.index("// Apple platforms need", begin)
+    helpers = added[begin:end].replace("SWEET", "LITHIUM")
+    updated = replace(updated, "int32_t\nentropy_provide(", helpers + "int32_t\nentropy_provide(")
+    updated = replace(updated, "\tif (__improbable(!g_crypto_funcs)) {\n\t\treturn sample_count;\n\t}\n",
+        "#if !defined(LITHIUM)\n\tif (__improbable(!g_crypto_funcs)) {\n\t\treturn sample_count;\n\t}\n#endif\n")
+    updated = replace(updated, "\t\tSHA256_Init(&entropy_data.sha256_ctx);", "\t\tentropy_hash_init();")
+    updated = replace(updated, "SHA256_Update(&entropy_data.sha256_ctx, e->samples, cpu_sample_count * sizeof(e->samples[0]))",
+                      "entropy_hash_update(e->samples, cpu_sample_count * sizeof(e->samples[0]))")
+    updated = replace(updated, "\tSHA256_Final(entropy, &entropy_data.sha256_ctx);\n\tSHA256_Init(&entropy_data.sha256_ctx);",
+                      "\tentropy_hash_final(entropy);\n\tentropy_hash_init();")
+    prng_edits[path] = (original, updated)
+    diff = "".join("".join(difflib.unified_diff(old.splitlines(keepends=True), new.splitlines(keepends=True),
+                   fromfile="a/" + path, tofile="b/" + path)) for path, (old, new) in prng_edits.items())
+    (patch.parent / "0010-lithium-kernel-hmac-prng.patch").write_bytes((
+        f"Subject: prng: adapt sailfish HMAC-SHA256 provider to XNU7195\n\nSource: {SAILFISH}, patch 0014.\n"
+        "7195 owns DRBG state separately and uses the older init callback signature.\n"
+        "Entropy collection preserves existing health tests; no dummy crypto table.\n\n" + diff).encode())
+    cpu_ref = ROOT / "upstream/research/ios-sailfish/xnu/patches/0018-sweet-boot-cpu-driver.patch"
+    reference = cpu_ref.read_text(encoding="utf-8")
+    section = reference.split("+++ b/iokit/Kernel/arm/SweetCPU.cpp\n", 1)[1].split("diff --git", 1)[0]
+    source = "".join(line[1:] + "\n" for line in section.splitlines()
+                     if line.startswith("+") and not line.startswith("+++"))
+    source = source.replace("Sweet", "Lithium").replace("SWEET", "LITHIUM").replace("sweet", "lithium")
+    source = source.replace("Kryo 470", "Kryo (MSM8996pro)")
+    source = replace(source, "#include <machine/atomic.h>\n",
+                     "#include <machine/atomic.h>\n#include <machine/machine_routines.h>\n")
+    cpu_edits = {"iokit/Kernel/arm/LithiumCPU.cpp": ("", source)}
+    # These two files already carry 0005's platform-expert additions.
+    path = "iokit/KernelConfigTables.cpp"
+    original = replace(read(path), '    "("\n', '''    "("
+#if defined(ARM64_BOARD_CONFIG_LITHIUM)
+    "   {"
+    "     'IOClass'         = LithiumPlatformExpert;"
+    "     'IOProviderClass' = IOPlatformExpertDevice;"
+    "     'IONameMatch'     = 'xiaomi,lithium';"
+    "     'IOProbeScore'    = 10000:32;"
+    "   },"
+#endif
+''')
+    updated = replace(original, "#endif\n", '''    "   {"
+    "     'IOClass'         = LithiumCPU;"
+    "     'IOProviderClass' = IOPlatformDevice;"
+    "     'IONameMatch'     = 'qcom,kryo';"
+    "     'IOProbeScore'    = 10000:32;"
+    "   },"
+#endif
+''')
+    cpu_edits[path] = (original, updated)
+    path = "iokit/conf/files.arm64"
+    original = read(path) + "\n# LITHIUM device-tree platform (empty translation unit on other boards)\n" \
+        "iokit/Kernel/arm/LithiumPlatformExpert.cpp                         optional iokitcpp\n"
+    updated = original + "\niokit/Kernel/arm/LithiumCPU.cpp                                    optional iokitcpp\n"
+    cpu_edits[path] = (original, updated)
+    diff = "".join("".join(difflib.unified_diff(old.splitlines(keepends=True), new.splitlines(keepends=True),
+                   fromfile="a/" + path if old else "/dev/null", tofile="b/" + path))
+                   for path, (old, new) in cpu_edits.items())
+    (patch.parent / "0011-lithium-boot-cpu-driver.patch").write_bytes((
+        f"Subject: iokit: reuse sailfish single-CPU registration and real SGI1 test\n\nSource: {SAILFISH}, patch 0018.\n"
+        "Uses 7195 IOCPU and topology APIs; matches the real lithium Kryo compatible.\n"
+        "Secondary CPUs, suspend and resume remain explicitly unsupported.\n\n" + diff).encode())
+    # Adapt the reference's built-in integration scheme, using the official
+    # 7195-era libpthread release instead of its 8796-era implementation.
+    pthread_ref = ROOT / "upstream/research/ios-sailfish/xnu/patches/0019-sweet-builtin-pthread.patch"
+    reference = pthread_ref.read_text(encoding="utf-8")
+    pthread_edits = {}
+    for name in ("compat.h", "init.c", "support.c", "synch.c"):
+        section = reference.split(f"+++ b/bsd/pthread/sweet_pthread_{name}\n", 1)[1].split("diff --git", 1)[0]
+        source = "".join(line[1:] + "\n" for line in section.splitlines()
+                         if line.startswith("+") and not line.startswith("+++"))
+        source = source.replace("SWEET", "LITHIUM").replace("sweet", "lithium")
+        source = source.replace("libpthread-514.100.2", "libpthread-454.120.2").replace("xnu-8796.141.3", "xnu-7195.141.2")
+        if name == "compat.h":
+            source = replace(source, "#undef XNU_KERNEL_PRIVATE\n", "#undef XNU_KERNEL_PRIVATE\n"
+                "/* Public pmap.h exposes this pointer even in its kext view. */\n"
+                "typedef struct arm_saved_state arm_saved_state_t;\n")
+        pthread_edits[f"bsd/pthread/lithium_pthread_{name}"] = ("", source)
+    path = "bsd/sys/pthread_internal.h"
+    original = read(path)
+    updated = replace(original, "\tchar opaque[48];", "#if defined(ARM64_BOARD_CONFIG_LITHIUM)\n"
+        "\t/* libpthread-454.120.2 includes kwe_uth; validated in the provider. */\n"
+        "\tchar opaque[56];\n#else\n\tchar opaque[48];\n#endif")
+    pthread_edits[path] = (original, updated)
+    path = "bsd/conf/files"
+    original = read(path)
+    anchor = next(line for line in original.splitlines(keepends=True) if line.startswith("bsd/pthread/pthread_shims.c"))
+    updated = replace(original, anchor, anchor + "".join(f"bsd/pthread/lithium_pthread_{name}.c\tstandard\n"
+                                                        for name in ("init", "support", "synch")))
+    pthread_edits[path] = (original, updated)
+    path = "bsd/conf/Makefile.template"
+    original = read(path)
+    flags = "\n# 7195-era libpthread provider, staged with its existing license headers.\n"
+    flags += "ifeq ($(CURRENT_MACHINE_CONFIG),LITHIUM)\nLITHIUM_PTHREAD_ROOT = $(SOURCE_DIR)/bsd/pthread/lithium_libpthread\n"
+    flags += "LITHIUM_PTHREAD_INC = -I$(LITHIUM_PTHREAD_ROOT) -I$(LITHIUM_PTHREAD_ROOT)/private -I$(LITHIUM_PTHREAD_ROOT)/include $(LITHIUM_EMPTY)\n"
+    for name in ("init", "support", "synch"):
+        flags += f"lithium_pthread_{name}.o_INCFLAGS = $(LITHIUM_PTHREAD_INC)\n"
+    flags += "endif\n"
+    updated = replace(original, "SFLAGS+= -include meta_features.h\n", "SFLAGS+= -include meta_features.h\n" + flags)
+    pthread_edits[path] = (original, updated)
+    diff = "".join("".join(difflib.unified_diff(old.splitlines(keepends=True), new.splitlines(keepends=True),
+                   fromfile="a/" + path if old else "/dev/null", tofile="b/" + path))
+                   for path, (old, new) in pthread_edits.items())
+    (patch.parent / "0012-lithium-builtin-pthread.patch").write_bytes((
+        f"Subject: pthread: integrate the published 7195-era libpthread kernel provider\n\nReference integration: {SAILFISH}, patch 0019.\n"
+        "Implementation: Apple libpthread-454.120.2 / 1cc19984213f4e21d435daa3679722aa1854f71b.\n"
+        "Preserve the full synchronization implementation and assert its storage layout.\n\n" + diff).encode())
+    series = sorted(patch.parent.glob("*.patch"))
+    with tempfile.TemporaryDirectory(prefix="lithium-apply-") as temp:
+        env = dict(os.environ, GIT_INDEX_FILE=str(Path(temp) / "index"))
+        subprocess.run(["git", "-C", APPLE, "read-tree", "HEAD"], env=env, check=True)
+        for p in series:
+            subprocess.run(["git", "-C", APPLE, "apply", "--cached", p], env=env, check=True)
+    report = dict(apple_commit=PIN, sailfish_commit=SAILFISH, series=[p.relative_to(ROOT).as_posix() for p in series],
+                  patch_sha256=hashlib.sha256(patch.read_bytes()).hexdigest(), series_apply_verified=True,
+                  page_size=16384, timer_intid=27, cpu="kryo; no LSE/PAN/PAC", hardware_verified=False,
+                  stock_dts_sha256=hashlib.sha256((ROOT / "artifacts/stock/V9.5.2.0.NAHCNFA/lithium-stock.dts").read_bytes()).hexdigest())
+    (ROOT / "reports/ios14-lithium-platform.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps(report, indent=2))
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,391 @@
+{
+  "schema": "lithium-gpu-access-runtime-v1",
+  "analyzed_at": "2026-11-23T10:25:31.287253+00:00",
+  "passed": true,
+  "capture_passed": true,
+  "automatic_fastboot_observed": true,
+  "accepted_at": "2026-11-23T18:19:49.515262+08:00",
+  "image_sha256": "402375d3e5762753d022735bd8d70a57371a6ef8087a9316f03cb4fbbf05e794",
+  "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_sanity=1 cpu_perf_fixed=1 cpu_perf_hz=614400000 cpu_thermal_diag=1 cpu_inherited_supply_r39=1 gpu_stage=0 gpu_probe=1 gpu_wd=1 lithium_log_retry=1 gpu_access_diag=1",
+  "summary": {
+    "error": "0",
+    "reads": "26",
+    "valid0": "0x1fff",
+    "valid1": "0x1fff",
+    "stable": "0x1fff",
+    "gfx_write_ee": "0",
+    "mx_owner": "4",
+    "eligible": "1",
+    "rpm_bus_verified": "0",
+    "gpu_power_writes": "0"
+  },
+  "captures": [
+    {
+      "line": 134,
+      "pass": "0",
+      "field": "0",
+      "physical": "0x400f000",
+      "raw": "0x20010000",
+      "valid": "1"
+    },
+    {
+      "line": 135,
+      "pass": "0",
+      "field": "1",
+      "physical": "0x400f8d0",
+      "raw": "0x00031700",
+      "valid": "1"
+    },
+    {
+      "line": 136,
+      "pass": "0",
+      "field": "2",
+      "physical": "0x400f9fc",
+      "raw": "0x00011700",
+      "valid": "1"
+    },
+    {
+      "line": 137,
+      "pass": "0",
+      "field": "3",
+      "physical": "0x400a7d0",
+      "raw": "0x00000000",
+      "valid": "1"
+    },
+    {
+      "line": 138,
+      "pass": "0",
+      "field": "4",
+      "physical": "0x400a8fc",
+      "raw": "0x00000004",
+      "valid": "1"
+    },
+    {
+      "line": 139,
+      "pass": "0",
+      "field": "5",
+      "physical": "0x45a0004",
+      "raw": "0x00000000",
+      "valid": "1"
+    },
+    {
+      "line": 140,
+      "pass": "0",
+      "field": "6",
+      "physical": "0x45a0008",
+      "raw": "0x00000001",
+      "valid": "1"
+    },
+    {
+      "line": 141,
+      "pass": "0",
+      "field": "7",
+      "physical": "0x8c4034",
+      "raw": "0x00222001",
+      "valid": "1"
+    },
+    {
+      "line": 142,
+      "pass": "0",
+      "field": "8",
+      "physical": "0x8c4024",
+      "raw": "0x00222001",
+      "valid": "1"
+    },
+    {
+      "line": 143,
+      "pass": "0",
+      "field": "9",
+      "physical": "0x8c403c",
+      "raw": "0x80008000",
+      "valid": "1"
+    },
+    {
+      "line": 144,
+      "pass": "0",
+      "field": "10",
+      "physical": "0x8c4044",
+      "raw": "0x80000000",
+      "valid": "1"
+    },
+    {
+      "line": 145,
+      "pass": "0",
+      "field": "11",
+      "physical": "0x8c4028",
+      "raw": "0x80000220",
+      "valid": "1"
+    },
+    {
+      "line": 146,
+      "pass": "0",
+      "field": "12",
+      "physical": "0x8c40b0",
+      "raw": "0x80000000",
+      "valid": "1"
+    },
+    {
+      "line": 147,
+      "pass": "1",
+      "field": "0",
+      "physical": "0x400f000",
+      "raw": "0x20010000",
+      "valid": "1"
+    },
+    {
+      "line": 148,
+      "pass": "1",
+      "field": "1",
+      "physical": "0x400f8d0",
+      "raw": "0x00031700",
+      "valid": "1"
+    },
+    {
+      "line": 149,
+      "pass": "1",
+      "field": "2",
+      "physical": "0x400f9fc",
+      "raw": "0x00011700",
+      "valid": "1"
+    },
+    {
+      "line": 150,
+      "pass": "1",
+      "field": "3",
+      "physical": "0x400a7d0",
+      "raw": "0x00000000",
+      "valid": "1"
+    },
+    {
+      "line": 151,
+      "pass": "1",
+      "field": "4",
+      "physical": "0x400a8fc",
+      "raw": "0x00000004",
+      "valid": "1"
+    },
+    {
+      "line": 152,
+      "pass": "1",
+      "field": "5",
+      "physical": "0x45a0004",
+      "raw": "0x00000000",
+      "valid": "1"
+    },
+    {
+      "line": 153,
+      "pass": "1",
+      "field": "6",
+      "physical": "0x45a0008",
+      "raw": "0x00000001",
+      "valid": "1"
+    },
+    {
+      "line": 154,
+      "pass": "1",
+      "field": "7",
+      "physical": "0x8c4034",
+      "raw": "0x00222001",
+      "valid": "1"
+    },
+    {
+      "line": 155,
+      "pass": "1",
+      "field": "8",
+      "physical": "0x8c4024",
+      "raw": "0x00222001",
+      "valid": "1"
+    },
+    {
+      "line": 156,
+      "pass": "1",
+      "field": "9",
+      "physical": "0x8c403c",
+      "raw": "0x80008000",
+      "valid": "1"
+    },
+    {
+      "line": 157,
+      "pass": "1",
+      "field": "10",
+      "physical": "0x8c4044",
+      "raw": "0x80000000",
+      "valid": "1"
+    },
+    {
+      "line": 158,
+      "pass": "1",
+      "field": "11",
+      "physical": "0x8c4028",
+      "raw": "0x80000220",
+      "valid": "1"
+    },
+    {
+      "line": 159,
+      "pass": "1",
+      "field": "12",
+      "physical": "0x8c40b0",
+      "raw": "0x80000000",
+      "valid": "1"
+    }
+  ],
+  "cpu_peak_native_mC": {
+    "0x0": 48000,
+    "0x1": 48600,
+    "0x100": 44500,
+    "0x101": 45800
+  },
+  "cpu_temperature_is_not_gpu_temperature": true,
+  "source_log_drops_zero": true,
+  "stop_temperature_records": [
+    {
+      "phase": "stop",
+      "affinity": "0x0",
+      "sensor": "TSENS0",
+      "id": "4",
+      "raw": "0x002041ca",
+      "enabled": "1",
+      "valid": "1",
+      "native_mC": "45800",
+      "reason": "native_hardware_units",
+      "trdy_read": "1",
+      "trdy": "0",
+      "status_reads": "1",
+      "reads": "4",
+      "at_abs": "16293307703",
+      "calibration_verified": "0",
+      "freshness_verified": "0"
+    },
+    {
+      "phase": "stop",
+      "affinity": "0x1",
+      "sensor": "TSENS0",
+      "id": "6",
+      "raw": "0x002061ad",
+      "enabled": "1",
+      "valid": "1",
+      "native_mC": "42900",
+      "reason": "native_hardware_units",
+      "trdy_read": "1",
+      "trdy": "0",
+      "status_reads": "1",
+      "reads": "4",
+      "at_abs": "16293307703",
+      "calibration_verified": "0",
+      "freshness_verified": "0"
+    },
+    {
+      "phase": "stop",
+      "affinity": "0x100",
+      "sensor": "TSENS0",
+      "id": "9",
+      "raw": "0x002091a3",
+      "enabled": "1",
+      "valid": "1",
+      "native_mC": "41900",
+      "reason": "native_hardware_units",
+      "trdy_read": "1",
+      "trdy": "0",
+      "status_reads": "1",
+      "reads": "4",
+      "at_abs": "16293307703",
+      "calibration_verified": "0",
+      "freshness_verified": "0"
+    },
+    {
+      "phase": "stop",
+      "affinity": "0x101",
+      "sensor": "TSENS0",
+      "id": "11",
+      "raw": "0x0020b1a6",
+      "enabled": "1",
+      "valid": "1",
+      "native_mC": "42200",
+      "reason": "native_hardware_units",
+      "trdy_read": "1",
+      "trdy": "0",
+      "status_reads": "1",
+      "reads": "4",
+      "at_abs": "16293307703",
+      "calibration_verified": "0",
+      "freshness_verified": "0"
+    }
+  ],
+  "usb": {
+    "raw_bytes": 67949,
+    "console_bytes": 60141,
+    "frames": 244,
+    "raw_sha256": "e39e3dc26c82e5cc0da577505b67d3cb1864647a15a60514f7c2d9e6e2e015b8",
+    "console_sha256": "350ec0a819a4486a2cb3059dcbb69cf9fe5a09071de292a901b4a95b1e7c1859",
+    "first_offset": 0,
+    "final_offset": 60141,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "incomplete_frame_bytes": 0,
+    "device_lost_max": 0,
+    "frames_reporting_device_loss": 0,
+    "independent_parser_agrees_with_frozen_receiver": true,
+    "frozen_redecode_equals_complete_console": true,
+    "transport_verified": true,
+    "kernel_banner_offset": 0,
+    "timer_offset": 58672,
+    "normal_return_offset": 60025,
+    "drain_success": true,
+    "drain_records": [
+      {
+        "offset": 60092,
+        "drained": 1,
+        "target": 60092
+      }
+    ],
+    "emitted_kernel_stream_through_timer_verified": true,
+    "all_firmware_daemon_and_original_printf_logs_complete": false,
+    "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
+  },
+  "receiver_status": {
+    "started_at": "2026-11-23T18:19:48.263194+08:00",
+    "enumerated": true,
+    "frames": 244,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "status": "capture_failed",
+    "output": "F:\\IOS-MIX1\\evidence\\gpu-metal-20261123\\package\\runs\\gpu-g1-access-01\\console.log",
+    "device_commands_sent": false,
+    "candidate_seen": true,
+    "identity_verified": true,
+    "descriptor_errors": 0,
+    "descriptor_error_samples": [],
+    "configuration_verified": true,
+    "console_bytes": 60141,
+    "failure_stage": "capturing",
+    "failure": "[Errno 32] Pipe error",
+    "finished_at": "2026-11-23T18:23:22.246378+08:00"
+  },
+  "return_verification": {
+    "started_at": "2026-11-23T18:25:20.412035+08:00",
+    "elapsed_seconds": 330.896773,
+    "devices_query_count": 1,
+    "product_query_count": 1,
+    "device_rows": [
+      [
+        "54223ce9",
+        "fastboot"
+      ]
+    ],
+    "same_serial_fastboot": true,
+    "observed_product": "MSM8996_A8",
+    "product_verified": true,
+    "passed": true,
+    "retry": false,
+    "attempt_id": "gpu-g1-access-01",
+    "phase": "g1-access",
+    "capture_stop_requested": true,
+    "finished_at": "2026-11-23T18:25:20.895393+08:00"
+  },
+  "gpu_power_on_passed": false,
+  "chip_id_read": false,
+  "pmic_commands": 0,
+  "gpu_power_writes": 0,
+  "firmware_loaded": false,
+  "metal_acceleration_verified": false
+}

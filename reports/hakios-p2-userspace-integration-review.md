@@ -1,0 +1,13 @@
+# P2下一步：复用完整HakiOS用户空间启动集成
+
+当前R17临时boot已经接受，存储结果仍待同次屏幕证据；本审查不改变P2验收状态，也没有构建或启动新包。
+
+已按固定提交核对完整上游init、stage0、libmini和userland/build.sh。实际冻结内核已链接HFS挂载、根切换、dyld加载和shared-region接口，具体符号与源文件SHA256见[JSON](hakios-p2-userspace-integration-review.json)。kern.hakios_switch_root要求PID1/root、只能成功调用一次，复用vfs_switch_root；它没有限定incoming必须为APFS。
+
+上游init的flash_root目前明确以APFS只读挂载，并使用APFS synthetic目录与iOS16 Cryptex布局。本机18H17已安装为HFSX，所以不能直接把root_apfs指向userdata或照搬Cryptex布置。存储通过后应先核对HFSX现有挂载点和Data目录，沿完整init的接口适配这项布局差异，保留上游根切换、bindfs及公共服务。
+
+共享缓存还有一项具体ABI差异：实际8796的syscall 438为nosys，536仍由完整实现处理。原始18H17 dyld（SHA256已核验）不仅包含两种包装函数，loadDyldCache还有直接调用：PC 0x23520调用536，PC 0x2395c调用438。原始cache头的mappingCount=3；preflight在sp+0xd8读取cache头，将其+0x14计数复制到CacheInfo+0x180，调用者再比较这个计数是否为3，正常共享映射因此选择438。反汇编和512字节原始cache头已归档。这是明确的静态ABI集成缺口，尚未作为真机运行错误观测；后续应只转换旧调用参数并复用8796现有shared-region核心，不移植7195整套实现。
+
+原始版本差异台账中的USER_PAGE_SHIFT_32/64、KERNEL_PAGE_SHIFT、DEV_FIRM宏别名并非单凭文本可认定的缺口：实际8796 commpage初始化同时写入这四个LEGACY地址。该证据仅说明已有旧布局填充，不证明18H17进程或全部私有ABI兼容，不能据此宣告兼容或增加未经定位的替代服务。
+
+接下来的运行验证应覆盖原始18H17 dyld、共享缓存和动态程序，再进入launchd任务；文件match或静态符号不是运行通过。P3图形与触摸仍未验证，旧7195保持只读，未执行QEMU。

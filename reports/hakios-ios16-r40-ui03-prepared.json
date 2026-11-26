@@ -1,0 +1,31 @@
+{
+  "revision": "R40-ui03/ufs02",
+  "prepared": true,
+  "hardware_verified": false,
+  "frequency_raised": false,
+  "target_hz": 614400000,
+  "image": {
+    "path": "lithium-hakios-ios16-r40-ui-614400000-02.img",
+    "bytes": 16367616,
+    "sha256": "0927c9d86fb1093fc394cb0c6666a38f281f7c62582458117a34242bda941dd1"
+  },
+  "prior_subjective_feedback": "614.4 MHz significantly smoother; user manually returned Fastboot",
+  "fixes": [
+    "Authoritative storage driver retains seal through sync-drivers instead of expanded-only patch",
+    "Loader-injected canonical ufs_shared_pa accepted by exact parser, other ufs_* still rejected",
+    "Real backboard mode0 normal dispatch admitted; readiness flags/ages visible"
+  ],
+  "kernel": "252e58da2f63fb38da5e0b0fe5bc9c681c838f8f3311a9685f59ec64c1963afb",
+  "loader": "b1cef0247ec6791be53db98d54c19dfb5836658b5e18506ac287f04647b29992",
+  "fd": "0b0a65d8e2a5e35f504ea6d5178e16a4259cac0f188bb903de8f78b646f5aa19",
+  "readback": {
+    "android": true,
+    "FAT": true,
+    "APFS_root_and_Boot": true,
+    "XNUP": true,
+    "final_FD_physical_UFS": true
+  },
+  "cmdline": "bootcpu=1 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=600 lithium_sb_watch=1 epoch=1794940756 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1 touch_smp=1 cpu_perf_fixed=1 cpu_perf_ufs=1 cpu_perf_hz=614400000 cpu_thermal_diag=1 cpu_inherited_supply_r39=1 ufs_return=1 return_fastboot=1 return_fastboot_delay=10 lithium_log_retry=1 ui_cycle=1 ui_cycle_ready=1",
+  "voltage_writes": 0,
+  "partitions_flashed": 0
+}

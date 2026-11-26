@@ -1,0 +1,410 @@
+diff --git a/ports/hakios-lithium/patches/0021-lithium-r20-touch-geometry.patch b/ports/hakios-lithium/patches/0021-lithium-r20-touch-geometry.patch
+new file mode 100644
+index 0000000..06fed39
+--- /dev/null
++++ b/ports/hakios-lithium/patches/0021-lithium-r20-touch-geometry.patch
+@@ -0,0 +1,13 @@
++diff --git a/userland/src/inject.c b/userland/src/inject.c
++--- a/userland/src/inject.c
+++++ b/userland/src/inject.c
++@@ -645,3 +645,6 @@
++-#define EDGE_SIDE       (16.0 / 375)
++-#define EDGE_TOP        (16.0 / 812)
++-#define EDGE_BOTTOM     (34.0 / 812)    /* the strip below the applications' content, where the home bar is */
+++/* R20-display uses 360x680 points for the 1080x2040 panel at scale 3. */
+++#define R20_DISPLAY_WIDTH_POINTS  360.0
+++#define R20_DISPLAY_HEIGHT_POINTS 680.0
+++#define EDGE_SIDE       (16.0 / R20_DISPLAY_WIDTH_POINTS)
+++#define EDGE_TOP        (16.0 / R20_DISPLAY_HEIGHT_POINTS)
+++#define EDGE_BOTTOM     (34.0 / R20_DISPLAY_HEIGHT_POINTS) /* the strip below the applications' content, where the home bar is */
+
+diff --git a/scripts/test-hakios-ios16-touch-r23.py b/scripts/test-hakios-ios16-touch-r23.py
+new file mode 100644
+index 0000000..e066d6f
+--- /dev/null
++++ b/scripts/test-hakios-ios16-touch-r23.py
+@@ -0,0 +1,75 @@
++#!/usr/bin/env python3
++"""Check the R20 touch-geometry patch against frozen host artifacts."""
++
++import hashlib
++import json
++from pathlib import Path
++import re
++import subprocess
++
++ROOT = Path(__file__).resolve().parents[1]
++UPSTREAM = ROOT / "upstream/hakios-xnu-kernel"
++PATCH = ROOT / "ports/hakios-lithium/patches/0021-lithium-r20-touch-geometry.patch"
++R20 = ROOT / "artifacts/hakios/lithium-ios16/phase4-r20-display/lithium-hakios-ios16-r20-display.img"
++R20_SHA256 = "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82"
++R20_REPORT = ROOT / "reports/hakios-ios16-device-r20-display.json"
++R15 = ROOT / "artifacts/hakios/lithium-ios16/baseline-desktop-r15.img"
++R15_SHA256 = "ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55"
++UPSTREAM_COMMIT = "63fc2b4633bac3af8e57dadab9f5a8d4cb940438"
++
++
++def digest(path):
++    return hashlib.sha256(path.read_bytes()).hexdigest()
++
++
++def run(*args):
++    return subprocess.check_output(args, cwd=ROOT, text=True).strip()
++
++
++def main():
++    if run("git", "-C", str(UPSTREAM), "rev-parse", "HEAD") != UPSTREAM_COMMIT:
++        raise SystemExit("FAIL: HakiOS upstream checkout is not at the pinned commit")
++    if run("git", "-C", str(UPSTREAM), "status", "--porcelain"):
++        raise SystemExit("FAIL: HakiOS upstream checkout is not clean")
++
++    patch_text = PATCH.read_text(encoding="utf-8")
++    files = re.findall(r"^diff --git a/(.+) b/(.+)$", patch_text, re.MULTILINE)
++    if files != [("userland/src/inject.c", "userland/src/inject.c")]:
++        raise SystemExit("FAIL: patch must change only userland/src/inject.c")
++    additions = "\n".join(line[1:] for line in patch_text.splitlines()
++                           if line.startswith("+") and not line.startswith("+++"))
++    expected = (
++        "#define R20_DISPLAY_WIDTH_POINTS  360.0",
++        "#define R20_DISPLAY_HEIGHT_POINTS 680.0",
++        "#define EDGE_SIDE       (16.0 / R20_DISPLAY_WIDTH_POINTS)",
++        "#define EDGE_TOP        (16.0 / R20_DISPLAY_HEIGHT_POINTS)",
++        "#define EDGE_BOTTOM     (34.0 / R20_DISPLAY_HEIGHT_POINTS)",
++    )
++    if not all(line in additions for line in expected):
++        raise SystemExit("FAIL: patch additions do not match R20 geometry")
++    if "375" in additions or "812" in additions:
++        raise SystemExit("FAIL: obsolete display dimensions remain in patch additions")
++    if any(token in patch_text for token in ("Transport=SPI", "Manufacturer=redwood")):
++        raise SystemExit("FAIL: patch must not alter unverified device metadata")
++
++    subprocess.run(["git", "-C", str(UPSTREAM), "apply", "--check", "--unidiff-zero", str(PATCH)],
++                   cwd=ROOT, check=True)
++    if digest(R20) != R20_SHA256 or digest(R15) != R15_SHA256:
++        raise SystemExit("FAIL: frozen R20/R15 image hash changed")
++    report = json.loads(R20_REPORT.read_text(encoding="utf-8"))
++    if (report.get("revision") != "R20-display" or
++            report.get("image_sha256") != R20_SHA256 or
++            report.get("display_acceptance", {}).get("passed") is not True or
++            report.get("temporary_boot") is not True or
++            report.get("partition_write_issued") is not False or
++            report.get("userdata_changed") is not False):
++        raise SystemExit("FAIL: R20 acceptance evidence is inconsistent")
++
++    print("PASS: patch applies cleanly to pinned, clean HakiOS source")
++    print("PASS: EdgeTip geometry is 16/16/34 points on R20 360x680")
++    print("PASS: device metadata is untouched; R20/R15 frozen images unchanged")
++    print("LIMIT: host check only; no producer build or physical touch verification")
++
++
++if __name__ == "__main__":
++    main()
+
+diff --git a/reports/hakios-ios16-touch-r23-host.md b/reports/hakios-ios16-touch-r23-host.md
+new file mode 100644
+index 0000000..9bb9b56
+--- /dev/null
++++ b/reports/hakios-ios16-touch-r23-host.md
+@@ -0,0 +1,48 @@
++# HakiOS iOS 16 Touch R23 Host Stage
++
++Date: 2026-11-19 (Asia/Shanghai)
++
++## Result
++
++R20-display is the sole accepted display baseline. The user confirmed that R19 was tested but had the wrong resolution; R19 remains archived and is excluded from touch geometry and acceptance.
++
++Added a lithium-scoped HakiOS patch that scales the existing EdgeTip gesture margins to R20's 360x680 point space: 16 points on the left, right, and top, and 34 points at the bottom. The physical panel remains 1080x2040 BGR24 at scale 3. The patch changes only userland/src/inject.c and leaves unverified controller metadata untouched.
++
++This is a host-side userland geometry correction. It does not add or enable an FT5x46/QUP6 producer, does not integrate the peripheral candidate into the active kernel, and is not a physical touch package.
++
++## Changed Files
++
++- ports/hakios-lithium/patches/0021-lithium-r20-touch-geometry.patch: R20 point-space EdgeTip thresholds for the lithium build.
++- scripts/test-hakios-ios16-touch-r23.py: verifies the pinned clean HakiOS source, one-file patch scope, exact geometry, R20 display evidence, and R20/R15 frozen image hashes.
++- reports/touch-r23-host-20261119-r1/passed.json: full host regression evidence.
++- reports/hakios-ios16-touch-r23-host.patch: selective patch export for this phase's new source, test, and report files.
++
++## Verification
++
++Passed:
++
++- R23 patch check against HakiOS commit 63fc2b4633bac3af8e57dadab9f5a8d4cb940438, with the upstream checkout clean.
++- Static contract check: one target file, exact 360x680 point geometry, no obsolete dimensions in additions, and no controller transport/manufacturer metadata edits.
++- Full Clang ASan/UBSan host regression: 14 existing peripheral suites and 5 next-stage suites passed.
++- Frozen image checks before and after: R20-display SHA256 3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82; R15 desktop SHA256 ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55.
++- git diff --check for the new patch and test script.
++
++Commands:
++
++    wsl.exe -d Ubuntu --exec python3 -B /mnt/f/IOS-MIX1/scripts/test-hakios-ios16-touch-r23.py
++    wsl.exe -d Ubuntu --exec python3 -B /mnt/f/IOS-MIX1/scripts/test-hakios-lithium-peripherals-next.py --compiler clang --build-dir /mnt/f/IOS-MIX1/reports/touch-r23-host-20261119-r1
++
++No full HakiOS production build or image package was made. No phone query, boot, ADB/Fastboot device command, partition or userdata operation, or QEMU run was performed.
++
++## Parallel Execution Record
++
++- Ramanujan: repaired the FT5x46 host contact-state model and tests in peripherals-next/ft5x46-frame.h and peripherals-next/ft5x46-frame-test.c. The host parser/state test passed with Clang ASan/UBSan. The main agent reviewed the changed state transitions and reran the full 19-suite host regression. The agent's elapsed time was not recorded; no conflict or rework was needed.
++- Beauvoir: aligned the host digitizer EdgeTip margins to the R20 360x680 viewport and added boundary tests in peripherals/touch-digitizer.h and peripherals/touch-digitizer-test.c. Its focused test passed with Clang ASan/UBSan. The main agent reviewed the point-space calculation and reran the full 19-suite host regression. The agent's elapsed time was not recorded; no conflict or rework was needed.
++- Main agent: added the isolated HakiOS userland patch and patch-contract test, verified both agents' edits, reran the complete host regression, checked the pinned upstream checkout and frozen image hashes, and exported the phase patch. No overlapping writes or merge conflicts occurred.
++
++## Unverified and Next Work
++
++- Physical FT5x46 identity and firmware revision, QUP6 ownership/handoff, bus clocks and pinmux, regulator state, GPIO IRQ selection, and actual touch reports remain unverified.
++- GPIO105 versus GPIO125 remains an unresolved IRQ conflict. No IRQ choice is promoted by this geometry patch.
++- No production touch producer, IOKit event delivery, SpringBoard response, or complete HakiOS production build has been verified.
++- Continue with the default-off QUP6/FT5x46 producer only after establishing safe resource ownership and the runtime controller identity from available device/Android evidence. Keep the existing fail-closed path until that evidence exists. A phone test remains gated on a complete production build, package checks, and frozen touch image.
+
+diff --git a/reports/touch-r23-host-20261119-r1/passed.json b/reports/touch-r23-host-20261119-r1/passed.json
+new file mode 100644
+index 0000000..fb2a479
+--- /dev/null
++++ b/reports/touch-r23-host-20261119-r1/passed.json
+@@ -0,0 +1,247 @@
++{
++  "scope": "isolated host-only QUP, touch delivery, IRQ affinity policy, and A5xx packet models; no hardware",
++  "passed": true,
++  "full_existing_regression": true,
++  "new_suites": [
++    "qup-combined",
++    "touch-delivery",
++    "irq-affinity-audit",
++    "a5xx-fence-packet",
++    "ft5x46-frame"
++  ],
++  "checks": [
++    {
++      "argv": [
++        "/usr/bin/python3",
++        "-B",
++        "/mnt/f/IOS-MIX1/scripts/test-hakios-lithium-peripherals.py",
++        "--compiler",
++        "clang",
++        "--build-dir",
++        "/mnt/f/IOS-MIX1/reports/touch-r23-host-20261119-r1/previous"
++      ],
++      "exit_code": 0,
++      "stdout": "BUILD boot-options-test.c\nPASS boot options: defaults, probe/phase 0, touch dependencies and malformed overrides\nBUILD gpu-firmware-test.c\nPASS A530 firmware views: PM4/PFP metadata, FW2 spans and BO bounds\nBUILD gpu-iova-test.c\ngpu-iova: 3 test groups passed\nBUILD gpu-probe-test.c\nPASS GPU probe model: gates, exact ID, partial acquisition, deadlines and cleanup\nBUILD gpu-submit-test.c\nB4 A530 v5 GPU mock: 6 test groups passed\nBUILD irq-route-test.c\nirq-route: all 988 standard SPI offsets and failure cases passed\nBUILD kernel-admission-test.c\nPASS production kernel admission: default-off, malformed, CPU contract, allocation, unavailable stages\nBUILD qup-i2c-test.c\nqup-i2c: 65792 encoding plans; all 32 prerequisite combinations, NULLs, bounds, state matrix and error atomicity passed (host tag model only)\nBUILD qup-transfer-test.c\nPASS injected fault at all 42 MMIO calls (write)\nPASS injected fault at all 37 MMIO calls (read)\nPASS qup-transfer: packing, 64 transfers, gates, every MMIO fault, bounded errors/cleanup\nBUILD touch-digitizer-test.c\nPASS lithium digitizer coordinates, HakiOS event values and atomic validation\nBUILD touch-frame-test.c\nPASS lithium touch frame decoding, multitouch lifecycle and atomic rejection\nBUILD touch-i2c-test.c\nPASS touch I2C: safe release, NACK, entry failure, timeout, cleanup uncertainty, quarantine and idempotent isolation\nBUILD touch-irq-test.c\ntouch-irq: 16 deterministic host-policy groups passed (read races, storm recovery, transactional deadlines, poll ownership)\nBUILD touch-queue-test.c\nPASS touch queue adapter: geometry, rotations, 10 slots, ID reuse, loss, atomic reject\nPASS 14 peripheral test suites (ASan and UBSan)\n",
++      "stderr": "",
++      "elapsed_seconds": 50.10655122
++    },
++    {
++      "argv": [
++        "clang",
++        "-std=c11",
++        "-pedantic",
++        "-Wall",
++        "-Wextra",
++        "-Werror",
++        "-g",
++        "-O1",
++        "-fno-omit-frame-pointer",
++        "-fsanitize=address,undefined",
++        "/mnt/f/IOS-MIX1/maintenance/hakios-lithium/peripherals-next/qup-combined-test.c",
++        "-o",
++        "/mnt/f/IOS-MIX1/reports/touch-r23-host-20261119-r1/qup-combined-test"
++      ],
++      "exit_code": 0,
++      "stdout": "",
++      "stderr": "",
++      "elapsed_seconds": 3.777223794000008
++    },
++    {
++      "argv": [
++        "/mnt/f/IOS-MIX1/reports/touch-r23-host-20261119-r1/qup-combined-test"
++      ],
++      "exit_code": 0,
++      "stdout": "MMIO failure sweep: 1792 cases (all lengths 1..32)\nError-path MMIO sweep: 117 cases; deadline poison/stale RX count PASS\nNo-reset probe: 54 MMIO and 54 hard-deadline injection points; clean entry, quarantine and split poll PASS\nR21 admission: absent/static/stages, malformed args, CPU/8 resource gates, no reset/retry PASS\nPASS: combined FIFO lengths/tags/gates/capacity/faults/cleanup/32+31 adapter\n",
++      "stderr": "",
++      "elapsed_seconds": 0.020427634000000694,
++      "suite": "qup-combined",
++      "binary_sha256": "af24ba1e336832098357e41193bed01479988a2715c4d27f7552c2b25de038e6"
++    },
++    {
++      "argv": [
++        "clang",
++        "-std=c11",
++        "-pedantic",
++        "-Wall",
++        "-Wextra",
++        "-Werror",
++        "-g",
++        "-O1",
++        "-fno-omit-frame-pointer",
++        "-fsanitize=address,undefined",
++        "/mnt/f/IOS-MIX1/maintenance/hakios-lithium/peripherals-next/touch-delivery-test.c",
++        "-o",
++        "/mnt/f/IOS-MIX1/reports/touch-r23-host-20261119-r1/touch-delivery-test"
++      ],
++      "exit_code": 0,
++      "stdout": "",
++      "stderr": "",
++      "elapsed_seconds": 3.3336342970000032
++    },
++    {
++      "argv": [
++        "/mnt/f/IOS-MIX1/reports/touch-r23-host-20261119-r1/touch-delivery-test"
++      ],
++      "exit_code": 0,
++      "stdout": "PASS down/move/up, private state, timestamps, identity reuse prevention\nPASS 10 contacts/20 events, saturation, exact retry, no partial prefix\nPASS explicit loss, rejected release retry, repeated loss, missing-ID release\nPASS duplicate/decreasing sequence/time, empty/stationary, no wrap\nPASS malformed length/null/loss/IDs/events/coordinates, no mutation\nPASS immutable geometry: four rotations, midpoint, viewport\nPASS callback recursion, absent atomic adapter, invalid API inputs\nPASS partial/unknown poison, no replay, failed/successful recovery fence\nPASS 8 synthetic touch delivery groups; no physical queue or IOHID connected\n",
++      "stderr": "",
++      "elapsed_seconds": 0.01707212499999855,
++      "suite": "touch-delivery",
++      "binary_sha256": "fe96a72a5eaf2c9cd4b00894fcee7f98b55eed48e5155d3809b26c618a73bd1b"
++    },
++    {
++      "argv": [
++        "clang",
++        "-std=c11",
++        "-pedantic",
++        "-Wall",
++        "-Wextra",
++        "-Werror",
++        "-g",
++        "-O1",
++        "-fno-omit-frame-pointer",
++        "-fsanitize=address,undefined",
++        "/mnt/f/IOS-MIX1/maintenance/hakios-lithium/peripherals-next/irq-affinity-audit-test.c",
++        "-o",
++        "/mnt/f/IOS-MIX1/reports/touch-r23-host-20261119-r1/irq-affinity-audit-test"
++      ],
++      "exit_code": 0,
++      "stdout": "",
++      "stderr": "",
++      "elapsed_seconds": 3.207659238000005
++    },
++    {
++      "argv": [
++        "/mnt/f/IOS-MIX1/reports/touch-r23-host-20261119-r1/irq-affinity-audit-test"
++      ],
++      "exit_code": 0,
++      "stdout": "irq-affinity-audit: 988 SPI mappings, fixed affinity, reserved-bit, offline, and TYPER boundaries passed\n",
++      "stderr": "",
++      "elapsed_seconds": 0.015888079000006883,
++      "suite": "irq-affinity-audit",
++      "binary_sha256": "74eaf58165f8ff286e68561f01caedda9da4d31d3a1375dfaf861131bd797e12"
++    },
++    {
++      "argv": [
++        "clang",
++        "-std=c11",
++        "-pedantic",
++        "-Wall",
++        "-Wextra",
++        "-Werror",
++        "-g",
++        "-O1",
++        "-fno-omit-frame-pointer",
++        "-fsanitize=address,undefined",
++        "/mnt/f/IOS-MIX1/maintenance/hakios-lithium/peripherals-next/a5xx-fence-packet-test.c",
++        "-o",
++        "/mnt/f/IOS-MIX1/reports/touch-r23-host-20261119-r1/a5xx-fence-packet-test"
++      ],
++      "exit_code": 0,
++      "stdout": "",
++      "stderr": "",
++      "elapsed_seconds": 3.098622136000003
++    },
++    {
++      "argv": [
++        "/mnt/f/IOS-MIX1/reports/touch-r23-host-20261119-r1/a5xx-fence-packet-test"
++      ],
++      "exit_code": 0,
++      "stdout": "PASS: A5xx CP_EVENT_WRITE fence packet golden/boundary/transaction tests\n",
++      "stderr": "",
++      "elapsed_seconds": 0.015314619999998058,
++      "suite": "a5xx-fence-packet",
++      "binary_sha256": "718b8001b7030157a0c14da48fdf184aa35813ff8ec58a63f7fd3d6607f6bdf7"
++    },
++    {
++      "argv": [
++        "clang",
++        "-std=c11",
++        "-pedantic",
++        "-Wall",
++        "-Wextra",
++        "-Werror",
++        "-g",
++        "-O1",
++        "-fno-omit-frame-pointer",
++        "-fsanitize=address,undefined",
++        "/mnt/f/IOS-MIX1/maintenance/hakios-lithium/peripherals-next/ft5x46-frame-test.c",
++        "-o",
++        "/mnt/f/IOS-MIX1/reports/touch-r23-host-20261119-r1/ft5x46-frame-test"
++      ],
++      "exit_code": 0,
++      "stdout": "",
++      "stderr": "",
++      "elapsed_seconds": 3.3417623969999966
++    },
++    {
++      "argv": [
++        "/mnt/f/IOS-MIX1/reports/touch-r23-host-20261119-r1/ft5x46-frame-test"
++      ],
++      "exit_code": 0,
++      "stdout": "FT5x46 host parser/state tests: PASS (6 groups)\n",
++      "stderr": "",
++      "elapsed_seconds": 0.015797943000009695,
++      "suite": "ft5x46-frame",
++      "binary_sha256": "c454787776418434a90a9e113919a3fc262787e8ecbaf7701de433ecdf3764a9"
++    }
++  ],
++  "source_sha256": {
++    "maintenance/hakios-lithium/peripherals-next/qup-combined.h": "a6ab106c0f4ebbae72fe7c052f9718dec6941390ed1d6e1d505b5812868b0934",
++    "maintenance/hakios-lithium/peripherals-next/qup-combined-test.c": "16e6d82a06e6fd9ea911a6c283d4ad40f68f4c59fa0352d4bc272e123b9e9fc0",
++    "maintenance/hakios-lithium/peripherals-next/touch-delivery.h": "50d2f058e65746ebea5f747fa7c01d043ca7c460f18bd5c71d390d2899448fdd",
++    "maintenance/hakios-lithium/peripherals-next/touch-delivery-test.c": "98aeb5ef7f8beacee05a69c2a23781fb7f243c6f8c2b1587705a6f2f27a66146",
++    "maintenance/hakios-lithium/peripherals-next/irq-affinity-audit.h": "6c795c961da8a5a1c74599747be83a302ef84facf74bdfd0dcb3ce20592285be",
++    "maintenance/hakios-lithium/peripherals-next/irq-affinity-audit-test.c": "cf348cae799b2ccfa6432c00a9bc8af38f7c2fa8aeb30eb1ba7dc4af8a55f61b",
++    "maintenance/hakios-lithium/peripherals-next/a5xx-fence-packet.h": "ad01ffcac5399b809514706690cde509f91ad400828765c5bdeeef1f0d01fdec",
++    "maintenance/hakios-lithium/peripherals-next/a5xx-fence-packet-test.c": "6cae3c5ece00e9044000341656b171d4516daebc6bc9d28631dc538f7e265b5d",
++    "maintenance/hakios-lithium/peripherals-next/ft5x46-frame.h": "a6d10a9d1dc165a50696e1723e398246e61dc21e5325b7dc5ab8694aac69c5a1",
++    "maintenance/hakios-lithium/peripherals-next/ft5x46-frame-test.c": "f36604159a989536fdb6996569d4e156263d87620d57763a6075f0477040e7fb",
++    "maintenance/hakios-lithium/peripherals/boot-options-test.c": "e39fca4a286c1fdd2007d7e340dde93a223bd58d78bf9062dbc7179c6078537e",
++    "maintenance/hakios-lithium/peripherals/boot-options.h": "ac90cb237620e9ecd2572aacb8491a486bb2857d3872272f84e8a0ce36443e7e",
++    "maintenance/hakios-lithium/peripherals/gpu-firmware-test.c": "e69a1310d230b26c7444c49aff29b7073bffd57d28cb1dd005d1ab4b4ce420f9",
++    "maintenance/hakios-lithium/peripherals/gpu-firmware.h": "f6990423236b27f9866906551a0550be155526bd23070da6a0d915603142f367",
++    "maintenance/hakios-lithium/peripherals/gpu-iova-test.c": "0a53908cff3afa4a97bd2c96bc2921abb21bf99b3563361cf956d1465621e95e",
++    "maintenance/hakios-lithium/peripherals/gpu-iova.h": "8b4a6007aa9115179c2c178f9078e67db68560e4e322ef5f23adb13b64ab15be",
++    "maintenance/hakios-lithium/peripherals/gpu-probe-test.c": "af45668f42ab2851d153a46ae62cb16517ec3c43a292e6b7e40848efb09c24a7",
++    "maintenance/hakios-lithium/peripherals/gpu-probe.h": "7a840211d610c11ef76abe915d6d43b633aafd6e778f2e19102c5f694f9750aa",
++    "maintenance/hakios-lithium/peripherals/gpu-submit-test.c": "52e08f76e66a2b35b1adabdec426a8c16290345ba50a9e0eadfa4f674430633a",
++    "maintenance/hakios-lithium/peripherals/gpu-submit.h": "6c7818d5786976e4b4e9963d97c4f71a4ac5b34a51530a416e272fd49ea07610",
++    "maintenance/hakios-lithium/peripherals/irq-route-test.c": "ead7f5943d5c8fb226a6f529ffe5b7ba9db9011ddbd745ca51983cd6ed856251",
++    "maintenance/hakios-lithium/peripherals/irq-route.h": "91fccc6d0f6b8a1b89df6300c37ab2ac830de168ecd495891897db7ac0f9cba4",
++    "maintenance/hakios-lithium/peripherals/kernel-admission-test.c": "d2404f18991f586be4c1c17e4f02704ae057794e43a94d8cde7b5714020c9ffa",
++    "maintenance/hakios-lithium/peripherals/qup-i2c-test.c": "83efe3035f3ee391f8f6e644f131b1b0d17c3a2c5db4fe9e35c19cb513c818c9",
++    "maintenance/hakios-lithium/peripherals/qup-i2c.h": "4d0b735e45cd65e9a9037b168ab8e554e413e036ff52f2fc758217f835b4cb3e",
++    "maintenance/hakios-lithium/peripherals/qup-transfer-test.c": "c4e23a0e4f4d49a10902f3bed79c42b8ba4581c1b6eef7d2929be408e15556ae",
++    "maintenance/hakios-lithium/peripherals/qup-transfer.h": "0ccffd2a7b55d8522d8afe99674f440f7c3b0596bef858627579bd713c828680",
++    "maintenance/hakios-lithium/peripherals/touch-digitizer-test.c": "5b75e5d948e840b1e81f774b613f238ec6dac1594b1750fe72324fb4ece55063",
++    "maintenance/hakios-lithium/peripherals/touch-digitizer.h": "658dd9dfb4bb97391090d817bb360f2ed837c1cd0d2cf6ee68ac27354a7167f0",
++    "maintenance/hakios-lithium/peripherals/touch-frame-test.c": "35cdbaf840ab08d3aa1008304eb63836efa03a97ff93907db660ae70c297fb9c",
++    "maintenance/hakios-lithium/peripherals/touch-frame.h": "2c336fb8e5283432ec2e7d043b1a9fd6c328ea3a3b8e2ce45fa43c7f0ce85a93",
++    "maintenance/hakios-lithium/peripherals/touch-i2c-test.c": "c9524eb09f211bb86824b3bd10cf8934b972422d69a78bdce950183aa51ab390",
++    "maintenance/hakios-lithium/peripherals/touch-i2c.h": "b5e302f3136829e9855dfb704a1e61a9fbab62118d8b1f30721bde79f3e33683",
++    "maintenance/hakios-lithium/peripherals/touch-irq-test.c": "dafe9ce37f6fdfb12576c2d82c9b5e1f7aa4e103d5fe1c3abaf0e53bad7ee3e9",
++    "maintenance/hakios-lithium/peripherals/touch-irq.h": "84c1b2f8272d5a1e1f9b945653d7747c1aaa96fe65ff2fc46ed1f8fa75800ff2",
++    "maintenance/hakios-lithium/peripherals/touch-queue-test.c": "4c5d28acfb24590952080293a56355d1a66477d61c49c686f455417196a8839a",
++    "maintenance/hakios-lithium/peripherals/touch-queue.h": "343c3392067c58d4997849f416b1626b36dd4b5fee9343d15460d0c84bb6fd5b",
++    "ports/hakios-lithium/peripherals/kernel.inc": "b7ca2079f6f76cbeb288e54adf123f86ba57a5cdfeb8198ce716aa8df74e0ac9",
++    "ports/hakios-lithium/peripherals/boot-options.h": "ac90cb237620e9ecd2572aacb8491a486bb2857d3872272f84e8a0ce36443e7e",
++    "scripts/test-hakios-lithium-peripherals-next.py": "bea3e9b18564f9065826623e15722afc07e593653ed5dc05f89c8bdcd2535c8b"
++  },
++  "frozen_before": {
++    "r20_image_sha256": "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82",
++    "r20_display_acceptance": true,
++    "r15_image_sha256": "ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55",
++    "frozen_baselines_unchanged": true
++  },
++  "frozen_after": {
++    "r20_image_sha256": "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82",
++    "r20_display_acceptance": true,
++    "r15_image_sha256": "ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55",
++    "frozen_baselines_unchanged": true
++  },
++  "production_kernel_integration": false,
++  "device_operations": false,
++  "physical_touch_verified": false,
++  "gpu_hardware_verified": false
++}

@@ -1,0 +1,79 @@
+{
+  "schema": 1,
+  "target": "iOS 14.8 / 18H17; preparatory firmware",
+  "journal_build_tag": "0xe830ee0a34515efa",
+  "hardware_image_sha256": "8cce613a8cfc6657ba5a87aca25395db61d6dd3e2958287225ef0ce8bf7646ea",
+  "hardware_fd_sha256": "188cf0155818bcf0b1c8205bc767efb2a69a6245a849bedf494cab9c3fc9a292",
+  "qemu_image_sha256": "bb71d7ccbbd58261d35020e55765ad18fa9857270490c3bf36ce8d68f90f0354",
+  "qemu_fd_sha256": "50f1cdb698bded360380e664484c5d39f93332e4d827665ad0efa2e61c09f95e",
+  "stock_hook_instruction_checks_passed": true,
+  "hardware_linux_early_execution_verified": true,
+  "hardware_status": "Ninth run: reached pre-MMU checkpoint 8 visually, Android return failed; explicit manual recovery completed",
+  "all_five_qemu_cases_passed": true,
+  "qemu_linux_early_checkpoint": 8,
+  "qemu_trap_elr": "0x40081010",
+  "qemu_exception_pixels_verified": true,
+  "reports": [
+    "reports/local/20261112-221620-668581-uefi/inputs/reports/uefi-qemu.json",
+    "reports/local/20261112-221620-668581-uefi/inputs/reports/uefi-qemu-strict-align.json",
+    "reports/local/20261112-221620-668581-uefi/inputs/reports/uefi-qemu-payload-reject.json",
+    "reports/local/20261112-221620-668581-uefi/inputs/reports/uefi-qemu-linux-early.json",
+    "reports/local/20261112-221620-668581-uefi/inputs/reports/uefi-qemu-linux-early-trap.json"
+  ],
+  "hook_sites": [
+    {
+      "offset": "0x1000",
+      "original_instruction": "f50300aa",
+      "stub_symbol": "linux_hook_entry",
+      "checkpoint": 1
+    },
+    {
+      "offset": "0x1008",
+      "original_instruction": "09fe0594",
+      "stub_symbol": "linux_hook_el_setup",
+      "checkpoint": 2
+    },
+    {
+      "offset": "0x100c",
+      "original_instruction": "c5fd0594",
+      "stub_symbol": "linux_hook_phys_offset",
+      "checkpoint": 3
+    },
+    {
+      "offset": "0x1010",
+      "original_instruction": "160038d5",
+      "stub_symbol": "linux_hook_boot_mode",
+      "checkpoint": 4
+    },
+    {
+      "offset": "0x101c",
+      "original_instruction": "f70300aa",
+      "stub_symbol": "linux_hook_cpu_lookup",
+      "checkpoint": 5
+    },
+    {
+      "offset": "0x1030",
+      "original_instruction": "5b0e0058",
+      "stub_symbol": "linux_hook_page_tables",
+      "checkpoint": 6
+    },
+    {
+      "offset": "0x180800",
+      "original_instruction": "c5060058",
+      "stub_symbol": "linux_hook_cpu_setup",
+      "checkpoint": 7
+    },
+    {
+      "offset": "0x180820",
+      "original_instruction": "001018d5",
+      "stub_symbol": "linux_hook_mmu_enable",
+      "checkpoint": 8
+    }
+  ],
+  "xnu_started": false,
+  "ios_userspace_started": false,
+  "hardware_attempt_report": "reports/uefi-device-attempt-09.json",
+  "hardware_verification_scope": "Visual eight yellow blocks reported by user; no recovered binary journal",
+  "hardware_visual_linux_early_checkpoint": 8,
+  "post_mmu_execution_verified": false
+}

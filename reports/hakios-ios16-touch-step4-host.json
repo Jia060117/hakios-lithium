@@ -1,0 +1,48 @@
+{
+  "date": "2026-11-19",
+  "scope": "touch host gate; R20-display baseline",
+  "r19_used_as_gate": false,
+  "r19_display_acceptance": "excluded at user direction; tested but incorrect resolution",
+  "r20_baseline": {
+    "image": "artifacts/hakios/lithium-ios16/phase4-r20-display/lithium-hakios-ios16-r20-display.img",
+    "sha256": "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82",
+    "display_acceptance": true,
+    "geometry": "1080x2040 BGR24; 360x680 points at scale 3"
+  },
+  "r15_baseline_sha256": "ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55",
+  "changes": [
+    "scripts/test-hakios-lithium-peripherals-next.py now verifies R20-display and R15 baselines rather than requiring current R19 live evidence to match historical snapshots"
+  ],
+  "host_tests": {
+    "existing_peripheral_suites": {"count": 14, "result": "pass", "sanitizers": ["ASan", "UBSan"]},
+    "next_stage_suites": {"count": 5, "result": "pass", "sanitizers": ["ASan", "UBSan"]},
+    "exact_patch_0020_host_harness": "pass",
+    "python_syntax": "pass",
+    "elapsed_seconds": {"full_regression": 19.5, "exact_queue_harness": 10.9}
+  },
+  "hardware": {
+    "phone_queried": false,
+    "phone_booted": false,
+    "partition_or_userdata_written": false,
+    "qemu_used": false,
+    "physical_touch_verified": false,
+    "production_touch_backend_integrated": false,
+    "touch_package_built_or_frozen": false
+  },
+  "unverified": [
+    "QUP6 ownership, clock and pad state",
+    "FT5x46 runtime identity and firmware",
+    "GPIO105 versus GPIO125 IRQ selection and delivery",
+    "reset GPIO89 and shared L14/LAB/IBB power ownership",
+    "split 32+31-byte report consistency",
+    "physical event delivery through HakiOS queue, backboardd and SpringBoard"
+  ],
+  "parallel_execution": {
+    "agents_started": 4,
+    "agents_returned_deliverable": 0,
+    "agents_closed_after_bounded_wait": 4,
+    "initial_spawn_attempts_blocked_by_thread_limit": 2,
+    "agent_changes_merged": 0
+  },
+  "next_gate": "complete default-off production QUP6/FT5x46 integration, full HakiOS build/check/freeze, then controlled temporary-boot diagnostics"
+}

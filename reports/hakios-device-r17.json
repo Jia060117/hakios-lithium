@@ -1,0 +1,183 @@
+{
+  "schema": 1,
+  "attempt": "HakiOS lithium R17",
+  "started_at": "2026-11-15T21:04:19.377941+08:00",
+  "recorded_at": "2026-11-15T21:04:20.831547+08:00",
+  "baseline": {
+    "project": "HakiOS",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2"
+  },
+  "package": {
+    "image_sha256": "95524201bb79ccae4e6864f9dc27fe48bd3186972a19020ab6dfecf67b64bde6",
+    "image_bytes": 15728640,
+    "kernel_sha256": "3556a5e8543aae8ab8cfabc41fda08fabc457305f8d99e1c8a852d289ad0dd78",
+    "loader_sha256": "8beed6d50fa879f8012210d82624e8d3dea701205512cb0fa23a63ebebeb6ef6",
+    "fd_sha256": "0d4eceb2287519810d6e27dc3248f02783234001c7dd3e458ce752358db6b7eb",
+    "payload_sha256": "401d9ec184906e23fd48f5a7b53f6ce497ab9e7ec7385db7913f18934b9d27e0",
+    "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=2 lithium_storage_test=1 systrace=1 loader_return_after=120",
+    "stock_dtb_table_sha256": "ab929abf55ad4822ae83489a58d6b550b7b24ea8398ce8ead1de7b1d2caed6aa",
+    "test_profile": "p2-storage-readonly",
+    "ramdisk_sha256": "09539ae55a692db3318d1c7016be62d74ef28bf189ba5f362a95b922eff6af80",
+    "storage_probe_sha256": "55a26bbd2ee44f152c05fa66feab0caaeb3bdd5c2462120889e939425c174b23"
+  },
+  "frozen_artifacts_path": "artifacts/hakios/p2-storage-ready-block-mount",
+  "frozen_boot_image": "reports/local/20261115-210419-356443-hakios-preflight/lithium-hakios-test.img",
+  "local_log_path": "reports/local/20261115-210419-356443-hakios-preflight",
+  "test_contract_path": "reports/local/20261115-210419-356443-hakios-preflight/test-contract.json",
+  "identity_verified": true,
+  "bootloader_unlocked": true,
+  "userdata_bytes": 250710192128,
+  "temporary_boot_issued": true,
+  "fastboot_returncode": 0,
+  "command_accepted": true,
+  "fastboot_boot_output": "Sending 'boot.img' (15360 KB)                      OKAY [  0.376s]\nBooting                                            OKAY [  0.787s]\nFinished. Total time: 1.169s\n",
+  "latest_usb": {
+    "checked_at": "2026-11-15T21:04:20.831547+08:00",
+    "authorized_device_in_fastboot": false,
+    "adb_present": false,
+    "local_log_path": "reports/local/20261115-210419-356443-hakios-preflight/post-boot-usb.json"
+  },
+  "battery_preflight": {
+    "battery_soc_ok": "yes",
+    "local_log_path": "reports/local/20261115-210419-356443-hakios-preflight/battery-query.json"
+  },
+  "user_screen_observation": {
+    "source": "user_photo",
+    "observation_pending": false,
+    "current_screen": "Retained header match, HFS mount EINVAL, FAIL stage 2 and orderly return summary",
+    "automatic_reboot_observed": false
+  },
+  "verified_stages": {
+    "fastboot_command": true,
+    "uefi": true,
+    "mmu_hobs": false,
+    "bds": true,
+    "gop": true,
+    "efi_file_hash": false,
+    "loader": true,
+    "kernel": true,
+    "hello": false,
+    "storage_probe": true,
+    "hfs_mount": false,
+    "warm_ufs_ready": true,
+    "loader_userdata_hfsx_header": true,
+    "storage_probe_entry": true,
+    "kernel_userdata_header": true
+  },
+  "outcome": "kernel_userdata_header_matched_HFS_mount_EINVAL",
+  "exact_failure_stage": "storage_probe_mount_syscall_failed_internal_VFS_HFS_branch_unknown",
+  "runtime_acceptance": {
+    "storage_test_passed": false,
+    "final_summary_pending": false,
+    "kernel_started": true,
+    "diagnostic_startup_verified": true,
+    "kernel_userdata_header_verified": true,
+    "hfs_mount_verified": false,
+    "ios14_file_reads_verified": false,
+    "unmount_verified": false,
+    "ios14_processes_executed": false,
+    "orderly_return_observed": true,
+    "panic_return_observed": false,
+    "final_summary_retained": true,
+    "start_and_result_separator_fix_hardware_verified": true
+  },
+  "hardware_verified": false,
+  "ios14_compatibility_verified": false,
+  "partition_writes_performed": false,
+  "qemu_used": false,
+  "observation_recorded_at": "2026-11-15T21:30:31.839171+08:00",
+  "screen_evidence": {
+    "photos": [
+      {
+        "path": "reports/local/20261115-210419-356443-hakios-preflight/r17-header-match-mount-einval.jpg",
+        "sha256": "1e8b9b5c65526ea749cab04fcfac5924347ff7a0839b128176bc199035fd2e4b"
+      }
+    ],
+    "transcription_path": "reports/local/20261115-210419-356443-hakios-preflight/r17-screen-transcription.txt",
+    "transcription_sha256": "45f1fbd6ac741f877e650f4ae26381768258b590b3ea0cb6697ba79f94add57f",
+    "transcription_scope": "Visible text and screen wrapping; punctuation not drawn by firmware font",
+    "normalization_note": "Photo visibly shows MOUNT RC followed by 22, without a minus glyph. The frozen syscall wrapper returns negative errno on carry; FAIL stage 2 is emitted only when mount returns a negative value. The frozen LithiumGlyph draws only digits and letters, so punctuation (including minus and equals) is blank on screen. mount_rc=-22 is normalized from this code contract; it is not a literal visible minus or a captured raw RAM log. The S after 110177 starts the wrapped word SAMPLES.",
+    "raw_kernel_log_captured": false
+  },
+  "failure": {
+    "mount_rc": -22,
+    "errno": 22,
+    "errno_name": "EINVAL",
+    "mount_rc_visible_magnitude": 22,
+    "minus_sign_directly_visible": false,
+    "mount_rc_normalized_from_frozen_contract": true,
+    "fspec": "/dev/ufs_userdata",
+    "raw_header_node": "/dev/rufs_userdata",
+    "internal_kernel_failure_branch_identified": false,
+    "contract_evidence": {
+      "probe": {
+        "path": "artifacts/hakios/p2-storage-ready-block-mount/sources/port/tests/storage_probe.c",
+        "sha256": "ebac49e359f14b3a5d0a4ba0abe452eb87a67accb652bc495da1e92627b563b8"
+      },
+      "loader": {
+        "path": "artifacts/hakios/p2-storage-ready-block-mount/sources/loader.c",
+        "sha256": "d4ba7733ae38836c7aa41884cb65a1c5393e2c2a236fe371ed0fb7b80cbcdd5a"
+      },
+      "glyph": {
+        "path": "artifacts/hakios/p2-storage-ready-block-mount/sources/port/firmware/lithiumPkg/Include/Lithium.h",
+        "sha256": "960b5694e0231b5ff748b92fabeec2ae53c1e52e3124a2aa689c8e15359eb1df"
+      },
+      "serial": {
+        "path": "artifacts/hakios/p2-storage-ready-block-mount/sources/port/firmware/lithiumPkg/Library/SerialPortLib/SerialPort.c",
+        "sha256": "967ea8f9326df0d24ca305c47d861ee99a4bfb9a7c38250b4133f97f63adfa25"
+      },
+      "errno": {
+        "source": "/home/jia/ios-mix1-build/hakios-lithium/xnu-src/xnu-8796.121.2/bsd/sys/errno.h",
+        "path": "reports/local/20261115-202431-718288-hakios-preflight/mount-contract-errno.txt",
+        "sha256": "c8a527ee020cee45bf69cd150b0c5743c148863d54bfa29e1193caa6af274f36",
+        "reused_from": "reports/hakios-device-r16.json",
+        "scope": "Same HakiOS kernel binary; errno definitions only"
+      }
+    },
+    "normalization_note": "Photo visibly shows MOUNT RC followed by 22, without a minus glyph. The frozen syscall wrapper returns negative errno on carry; FAIL stage 2 is emitted only when mount returns a negative value. The frozen LithiumGlyph draws only digits and letters, so punctuation (including minus and equals) is blank on screen. mount_rc=-22 is normalized from this code contract; it is not a literal visible minus or a captured raw RAM log. The S after 110177 starts the wrapped word SAMPLES.",
+    "return_rc_to_probe_stage": 2,
+    "result_line_observed": true,
+    "start_line_observed": true,
+    "start_and_result_separator_fix_hardware_verified": true,
+    "previous_ENOTBLK_no_longer_observed": true
+  },
+  "measurements": {
+    "loader_return_log_bytes": 15519,
+    "ufs_stage": 6,
+    "ufs_cap": "0x107001f",
+    "ufs_hce": 1,
+    "ufs_hcs": "0x10f",
+    "ufs_ver": "0x10100",
+    "ufs_doorbell": 0,
+    "ufs_rc_ocs_st": 0,
+    "header_read_bytes": 8192,
+    "header_match": true,
+    "mount_rc": -22,
+    "result": "FAIL",
+    "result_stage": 2,
+    "clock_ticks_start": 2251518933,
+    "clock_ticks_end": 4558927426,
+    "frequency_hz": 19200000,
+    "hardware_elapsed_ms": 120177,
+    "clock_valid": true,
+    "ppi27_start": 0,
+    "ppi27_end": 7433,
+    "irq_delta": 7433,
+    "samples": 2,
+    "stalled": 0,
+    "min_step": 3359,
+    "last_timer_ppi27": 6844,
+    "last_timer_heartbeat": 12,
+    "last_timer_elapsed_ms": 110177
+  },
+  "observation_archival": {
+    "frozen_evidence_hashes_checked": 119,
+    "device_queries_performed": false,
+    "temporary_boot_issued": false,
+    "partition_writes_performed": false,
+    "new_kernel_compiled": false,
+    "automatic_progression_status": "paused_by_user"
+  },
+  "kernel_execution_verified": true
+}

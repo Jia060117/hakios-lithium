@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+"""Adapt the pinned sailfish built-in HFS registration to 7195/hfs-556."""
+import difflib
+import importlib.util
+from pathlib import Path
+
+ROOT=Path(__file__).resolve().parents[1]
+PATCH=ROOT/'ports/lithium/patches/xnu-7195/0020-lithium-native-hfs.patch'
+REF=ROOT/'upstream/research/ios-sailfish/xnu/patches/0026-sweet-builtin-hfs.patch'
+
+def main():
+    spec=importlib.util.spec_from_file_location('native_alias',ROOT/'scripts/prepare-ios14-native-alias-probe.py')
+    helper=importlib.util.module_from_spec(spec);spec.loader.exec_module(helper)
+    edits={};ref=REF.read_text()
+    def read(path):return helper.baseline(path,PATCH)
+    def added(path):
+        section=ref.split('+++ b/'+path+'\n',1)[1].split('diff --git',1)[0]
+        return ''.join(s[1:]+'\n' for s in section.splitlines() if s.startswith('+'))
+    path='config/MASTER';old=read(path)
+    anchor='#\t4.4 filesystems\n#\n'
+    assert old.count(anchor)==1
+    edits[path]=(old,old.replace(anchor,anchor+'options LITHIUM_HFS # Built-in Apple HFS # <lithium_hfs>\n'))
+    path='config/MASTER.arm64.lithium';old=read(path)
+    anchor='#  FILESYS_BASE =   [ devfs '
+    assert old.count(anchor)==1
+    edits[path]=(old,old.replace(anchor,anchor+'lithium_hfs '))
+    path='bsd/conf/files';old=read(path)
+    names=[]
+    for line in ref.splitlines():
+        if line.startswith('+bsd/sweet_hfs/') and 'optional sweet_hfs' in line:
+            names.append(line[1:].split()[0].replace('sweet','lithium'))
+    assert len(names)==40
+    # 556's converter registry implements classic HFS, disabled on iOS.
+    # HFS+ uses UTF-16 catalog names and the separate encoding-hint helper.
+    names=[n for n in names if not n.endswith('/hfs_encodings.c')]
+    edits[path]=(old,old+'\n# Apple hfs-556.100.11 staged by build-ios14-xnu.py\n'+''.join(n+'\toptional lithium_hfs\n' for n in names))
+    path='bsd/conf/Makefile.template';old=read(path)
+    flags='\nifeq ($(CURRENT_MACHINE_CONFIG),LITHIUM)\nLITHIUM_HFS_ROOT = $(SOURCE_DIR)/bsd/lithium_hfs\n'
+    flags+='LITHIUM_HFS_OBJS = '+' '.join(Path(n).stem+'.o' for n in names)+'\n'
+    flags+='$(foreach o,$(LITHIUM_HFS_OBJS),$(eval $(o)_CFLAGS_ADD += -include $(LITHIUM_HFS_ROOT)/lithium_hfs_compat.h -I$(LITHIUM_HFS_ROOT) -I$(LITHIUM_HFS_ROOT)/core -mgeneral-regs-only))\n'
+    flags+='hfs_encodings.o_CFLAGS_ADD += -Dhfs_allocated=hfs_encodings_allocated\nhfs_encodinghint.o_CFLAGS_ADD += -Dhfs_allocated=hfs_encodings_allocated\nendif\n'
+    edits[path]=(old,old+flags)
+    path='bsd/kern/bsd_init.c';old=read(path);anchor='\tvfsinit();\n'
+    assert old.count(anchor)==1
+    edits[path]=(old,old.replace(anchor,anchor+'''#if LITHIUM_HFS
+    extern void lithium_hfs_register(void);
+    lithium_hfs_register();
+#endif
+'''))
+    for base in ('compat.h','iokit.c'):
+        name='sweet_hfs_'+base
+        content=added('bsd/sweet_hfs/'+name).replace('sweet','lithium').replace('SWEET','LITHIUM').replace('hfs-627.100.6','hfs-556.100.11')
+        if base=='compat.h':
+            content=content.replace('#undef XNU_KERNEL_PRIVATE', '#undef XNU_KERNEL_PRIVATE\n#undef CONFIG_PGTRACE')
+            content=content.replace('#include "core/kext-config.h"', '''#include "core/kext-config.h"
+/* We build an unencrypted HFS root from plaintext firmware files. The iOS
+ * kext defaults require AppleKeyStore; no wrapped-key volume is supported. */
+#undef CONFIG_PROTECT
+#define CONFIG_PROTECT 0
+''')
+        else:
+            content=content.replace('\thfs_converterinit();','\t/* Classic HFS converters are not built in this iOS HFS+ configuration. */')
+        edits['bsd/lithium_hfs/lithium_hfs_'+base]=('',content)
+    patch='Subject: lithium: built-in hfs-556.100.11 filesystem for XNU7195\n\n'
+    patch+='Reuse ios-sailfish 6f27e41ff249f2680540ebe8ee5ab982c5e641c9 registration from 0026.\n'
+    patch+='Only registers HFS; no device write or root selection in this patch.\n\n'
+    for path,(old,new) in edits.items():
+        patch+=f'diff --git a/{path} b/{path}\n'
+        if not old:patch+='new file mode 100644\n'
+        patch+=''.join(difflib.unified_diff(old.splitlines(True),new.splitlines(True),fromfile='a/'+path if old else '/dev/null',tofile='b/'+path))
+    PATCH.write_text(patch);print(PATCH)
+
+if __name__=='__main__':main()

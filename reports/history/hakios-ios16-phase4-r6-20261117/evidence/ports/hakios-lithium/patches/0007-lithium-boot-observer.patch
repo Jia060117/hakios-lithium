@@ -1,0 +1,196 @@
+--- a/userland/src/inject_sb.c
++++ b/userland/src/inject_sb.c
+@@ -117,7 +117,7 @@
+  * "tl: t MS frame frame ...": an image's name and offset, its symbol if it exports one. mach_msg at the top is a wait for a service.
+  */
+ static void
+-stall_say(thread_t thread, uint64_t ms)
++stall_say_bounds(thread_t thread, uint64_t ms, uintptr_t bottom, uintptr_t top, bool raw)
+ {
+ 	arm_thread_state64_t state;
+ 	mach_msg_type_number_t count = ARM_THREAD_STATE64_COUNT;
+@@ -126,13 +126,15 @@
+ 	char line[1024];
+ 	int at;
+ 
+-	if (thread_suspend(thread) != KERN_SUCCESS) {
++	kern_return_t suspended = thread_suspend(thread);
++	if (suspended != KERN_SUCCESS) {
++		if (raw) say("LITHIUM SB RAW suspend_error=%d\n", suspended);
+ 		return;
+ 	}
+ 	if (thread_get_state(thread, ARM_THREAD_STATE64, (thread_state_t)&state, &count) == KERN_SUCCESS) {
+ 		uintptr_t pc = (uintptr_t)arm_thread_state64_get_pc(state), fp = (uintptr_t)arm_thread_state64_get_fp(state);
+ 		pcs[depth++] = pc;
+-		while (depth < sizeof(pcs) / sizeof(pcs[0]) && fp >= main_stack_bottom && fp + 16 <= main_stack_top && (fp & 15) == 0) {
++		while (depth < sizeof(pcs) / sizeof(pcs[0]) && top >= 16 && fp >= bottom && fp <= top - 16 && (fp & 15) == 0) {
+ 			uintptr_t next = ((uintptr_t *)fp)[0], lr = ((uintptr_t *)fp)[1];
+ 
+ 			if (lr == 0) {
+@@ -145,7 +147,14 @@
+ 			fp = next;
+ 		}
+ 	}
+-	thread_resume(thread);
++	kern_return_t resumed = thread_resume(thread);
++	if (raw) {
++		at = snprintf(line, sizeof(line), "LITHIUM SB RAW elapsed_ms=%llu resume=%d depth=%u", ms, resumed, depth);
++		for (unsigned i = 0; i < depth && at < (int)sizeof(line) - 32; i++) {
++			at += snprintf(line + at, sizeof(line) - at, " %#lx", pcs[i]);
++		}
++		say("%s\n", line);
++	}
+ 	at = snprintf(line, sizeof(line), "tl: t %llu", ms);
+ 	for (unsigned i = 0; i < depth && at < (int)sizeof(line) - 96; i++) {
+ 		Dl_info info;
+@@ -162,6 +171,14 @@
+ 	}
+ 	say("%s\n", line);
+ }
++
++static void
++stall_say(thread_t thread, uint64_t ms)
++{
++	stall_say_bounds(thread, ms, main_stack_bottom, main_stack_top, false);
++}
++
++#include "../../devices/lithium/diagnostics/springboard-observer.inc"
+ 
+ static void *
+ stall_watch(void *argument)
+@@ -2141,6 +2158,7 @@
+ 		});
+ 		return;
+ 	}
++	lithium_sb_watch_begin();
+ 	caenv();
+ 	display_link_rates();
+ 	accessibility_settings();
+@@ -2229,6 +2247,7 @@
+ 		    sysctl_int("kern.hakios.cellular_dbm"), sysctl_int("kern.hakios.cellular_radio"));
+ 	}
+ 	cellular_hook();
++	lithium_sb_mark("hooks_ready");
+ 	say("hakios: battery UI: shows%% %s, set-shows%% %s, bolt %s, chargePercent %s, setChargePercent %s, lockscreen ring %s\n",
+ 	    original_battery_view_shows_percentage ? "ok" : "NO",
+ 	    original_battery_view_set_shows_percentage ? "ok" : "NO",
+@@ -2243,7 +2262,9 @@
+ 
+ 		if (sysctlbyname("kern.bootargs", args, &size, NULL, 0) == 0 && (delay = strstr(args, "sb_delay=")) != NULL &&
+ 		    (delay == args || delay[-1] == ' ')) {
++			lithium_sb_mark("sb_delay_begin");
+ 			usleep((useconds_t)(atof(delay + 9) * 1e6));
++			lithium_sb_mark("sb_delay_end");
+ 		}
+ 	}
+ 	/*
+@@ -2252,14 +2273,17 @@
+ 	 * we are past UIApplication startup).
+ 	 */
+ 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
++		lithium_sb_mark("main_queue_enter");
+ 		Class uidev = objc_getClass("UIDevice");
+ 		SEL current = sel_registerName("currentDevice");
+ 		SEL monitoring = sel_registerName("setBatteryMonitoringEnabled:");
+ 		id device = uidev ? ((id (*)(Class, SEL))objc_msgSend)(uidev, current) : nil;
++		lithium_sb_mark("UIDevice_current_return");
+ 
+ 		if (device && class_getInstanceMethod(object_getClass(device), monitoring)) {
+ 			((void (*)(id, SEL, BOOL))objc_msgSend)(device, monitoring, YES);
+ 		}
++		lithium_sb_mark("battery_monitoring_return");
+ 		watch_main_loop();
+ 		{
+ 			char arguments[1024] = "";
+@@ -2273,7 +2297,9 @@
+ 		    sysctl_int("kern.hakios.battery_soc"), sysctl_int("kern.hakios.battery_present"),
+ 		    sysctl_int("kern.hakios.battery_charger_present"), sysctl_int("kern.hakios.battery_charging"));
+ 		battery_post_notifications();
++		lithium_sb_mark("main_queue_callback_done");
+ 	});
++	lithium_sb_mark("main_queue_callback_scheduled");
+ 	notify_register_dispatch("com.hakios.unlock", &token, dispatch_get_main_queue(), ^(__unused int t) {
+ 		unlock();
+ 	});
+@@ -2283,6 +2309,9 @@
+ 	notify_register_dispatch("com.hakios.switcher", &token, dispatch_get_main_queue(), ^(__unused int t) {
+ 		switcher();
+ 	});
++	lithium_sb_mark("notify_registration_return");
++	lithium_sb_loop_install();
++	lithium_sb_mark("constructor_ready");
+ 	/*
+ 	 * Belt-and-suspenders unlock. The user can always swipe up to open the home screen -- that
+ 	 * works fine when the touch driver is doing its job. But if touch is still probing, has
+--- a/xnu/files/iokit/Kernel/MiniIOMobileFramebuffer.cpp
++++ b/xnu/files/iokit/Kernel/MiniIOMobileFramebuffer.cpp
+@@ -1113,6 +1113,9 @@
+ 	int32_t px0, py0, px1, py1, cx0, cx1;
+ 	bool filter = gFilter == 1 || (gFilter == 2 && (fSettling || fFilterFrame));
+ 	RowJob job;
++#if defined(LITHIUM_ARMV8_0)
++	uint64_t lithium_setup_began = mach_absolute_time();
++#endif
+ 
+ 	if (sw <= 0 || sh <= 0) {
+ 		sx = sy = 0;
+@@ -1219,7 +1222,19 @@
+ 	job.unscaled = px1 - px0 == sw && py1 - py0 == sh && px0 >= 0 && (uint32_t) px1 <= fPanelWidth;
+ 	job.scan = fSettling ? 0 : fBeamScan;
+ 	if (fThreads <= 1 || fDiff || fHelpersStarted + 1 < fThreads) {
++#if defined(LITHIUM_ARMV8_0)
++		uint64_t lithium_rows_began = mach_absolute_time();
++#endif
+ 		drawRows(&job, job.ry0, job.ry1, fBlendRow);
++#if defined(LITHIUM_ARMV8_0)
++		if (fSwapID <= 8) {
++			uint64_t setup_ns, rows_ns;
++			absolutetime_to_nanoseconds(lithium_rows_began - lithium_setup_began, &setup_ns);
++			absolutetime_to_nanoseconds(mach_absolute_time() - lithium_rows_began, &rows_ns);
++			IOLog("LITHIUM DISPLAY SPLIT swap=%u setup_us=%llu rows_us=%llu rows=%d cols=%d filter=%d unscaled=%d; includes scheduling\n",
++			    fSwapID, setup_ns / 1000, rows_ns / 1000, job.ry1 - job.ry0, cx1 - cx0, filter, job.unscaled);
++		}
++#endif
+ 		return;
+ 	}
+ 	/* shared out: the helpers take their rows, this thread the first share, then waits for them */
+--- a/xnu/files/osfmk/arm64/loader_return.c
++++ b/xnu/files/osfmk/arm64/loader_return.c
+@@ -184,6 +184,22 @@
+     os_atomic_store(&loader_log_lock,0,release);
+     __builtin_arm_wsr64("DAIF",daif);
+     return n;
++}
++
++/* Snapshot the streaming boundary without waiting for a writer. Zero means retry/unavailable. */
++static uint64_t
++lithium_log_position(void)
++{
++	uint64_t daif = __builtin_arm_rsr64("DAIF");
++	__builtin_arm_wsr("DAIFSet", DAIFSC_IRQF | DAIFSC_FIQF);
++	if (!os_atomic_cmpxchg(&loader_log_lock, 0, 1, acquire)) {
++		__builtin_arm_wsr64("DAIF", daif);
++		return 0;
++	}
++	uint64_t total = lithium_log_total;
++	os_atomic_store(&loader_log_lock, 0, release);
++	__builtin_arm_wsr64("DAIF", daif);
++	return total;
+ }
+ 
+ /* Oldest first: the head, a note about what was dropped, then the ring from its oldest character. */
+@@ -529,6 +545,14 @@
+ 		hakios_wifi_stop();            /* and the Wi-Fi DSP, if it runs, shut down */
+ 		hakios_adsp_stop();            /* and the audio DSP */
+ 		hakios_mpss_stop();            /* and the modem */
++#if HAKIOS_LITHIUM_USB_LOG
++		extern bool lithium_usb_log_drain(uint64_t, unsigned);
++		printf("LITHIUM USB: normal timer return boundary; draining before quiesce\n");
++		uint64_t target = lithium_log_position();
++		bool drained = lithium_usb_log_drain(target, 5000);
++		printf("LITHIUM USB: timer boundary drain=%u target=%llu\n", drained, target);
++		(void)lithium_usb_log_drain(lithium_log_position(), 250);
++#endif
+ 	}
+ 	if (PE_parse_boot_argn("return_cpu", &cpu, sizeof(cpu)) && cpu <= (uint32_t)ml_get_max_cpu_number() &&
+ 	    cpu_xcall((int)cpu, loader_return_test, (void *)(uintptr_t)(as_panic ? 2 : 1)) == KERN_SUCCESS) {

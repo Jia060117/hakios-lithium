@@ -1,0 +1,38 @@
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -2992,6 +2992,7 @@
+ 
+ #if defined(HAKIOS_LITHIUM_G2_RECEIPT) && defined(HAKIOS_LITHIUM)
+ #include "../devices/lithium/gpu/g2-live/loader-producer.inc"
++#include "../devices/lithium/gpu/g2-live/loader-meta-producer.inc"
+ #endif
+ 
+ static int
+@@ -3502,6 +3503,7 @@
+ 
+ #if defined(HAKIOS_LITHIUM_G2_RECEIPT) && defined(HAKIOS_LITHIUM)
+ 	const int lg2l_receipt_ok = lg2l_loader_capture(1u);
++	const int lg2m_receipt_ok = lg2l_receipt_ok && lg2m_loader_capture(1u);
+ #endif
+ 
+ 	/* --- device tree ---------------------------------------------------- */
+@@ -3537,6 +3539,8 @@
+ #if defined(HAKIOS_LITHIUM_G2_RECEIPT) && defined(HAKIOS_LITHIUM)
+ 	if (lg2l_receipt_ok)
+ 		dt_prop(&w, LG2L_RECEIPT_PROPERTY, &lg2l_loader_receipt, sizeof(lg2l_loader_receipt));
++	if (lg2m_receipt_ok)
++		dt_prop(&w, LG2M_PROPERTY, &lg2m_loader_receipt, sizeof(lg2m_loader_receipt));
+ #endif
+ 	dt_prop(&w, "random-seed", seed, sizeof(seed));
+ 	dt_prop_u64(&w, "dram-base", phys_base);
+@@ -3600,6 +3604,10 @@
+ 		uint64_t zap[2] = { LG2L_CODE_PA, LG2L_CODE_BYTES };
+ 		dt_prop(&w, "GPU-ZAP", zap, sizeof(zap));
+ 	}
++	if (lg2m_receipt_ok) {
++		uint64_t metadata[2] = { LG2M_META_PA, LG2M_META_BYTES };
++		dt_prop(&w, "GPU-ZAP-Metadata", metadata, sizeof(metadata));
++	}
+ #endif
+ 	/*
+ 	 * "RAMDisk" becomes /dev/md0, the root (the kernel and launchd treat

@@ -1,0 +1,114 @@
+#!/usr/bin/env python3
+"""Check the staged 7195 SHA1 wrapper against independent hashlib results.
+
+The actual patched wrapper and pinned BearSSL sources are compiled on the
+host. Only kernel-only headers/hardware-hook code are excluded from this
+host harness. QEMU separately tests the complete linked ARM64 kernel.
+"""
+import argparse
+import ctypes
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--workspace", type=Path, default=Path.home() / "ios-mix1-build/xnu7195-lithium")
+    args = parser.parse_args()
+    tree = args.workspace / "src"
+    crypto = tree / "libkern/crypto"
+    bearssl = crypto / "lithium_bearssl"
+    out = args.workspace / "sha1-validation"
+    out.mkdir(exist_ok=True)
+    shim = out / "include"
+    headers = {
+        "libkern/crypto/crypto_internal.h": "#include <sys/types.h>\n#include <stdint.h>\n#include <string.h>\n",
+        "kern/debug.h": "",
+        "corecrypto/ccdigest.h": "",
+    }
+    for name, text in headers.items():
+        dest = shim / name
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(text)
+    public = shim / "libkern/crypto/sha1.h"
+    public.write_bytes((tree / "libkern/libkern/crypto/sha1.h").read_bytes())
+    wrapper = (crypto / "corecrypto_sha1.c").read_text()
+    # Hardware hooks are outside the legacy digest API being validated.
+    wrapper = wrapper[:wrapper.index("/*\n * This function is called by the SHA1 hardware kext")]
+    wrapper += "\nsize_t sha1_context_bytes(void) { return sizeof(SHA1_CTX); }\n"
+    harness = out / "wrapper.c"
+    harness.write_text(wrapper)
+    library = out / "liblithium-sha1.so"
+    command = ["clang", "-shared", "-fPIC", "-O2", "-Wall", "-Wextra", "-Werror",
+               "-DARM64_BOARD_CONFIG_LITHIUM", "-DXNU_KERNEL_PRIVATE", f"-I{shim}",
+               f"-I{crypto}", f"-I{bearssl / 'inc'}", f"-I{bearssl / 'src'}", str(harness),
+               *(str(crypto / f"lithium_{name}.c") for name in ("sha1", "dec32be", "enc32be")),
+               "-o", str(library)]
+    subprocess.run(command, check=True)
+    lib = ctypes.CDLL(str(library))
+    lib.sha1_context_bytes.restype = ctypes.c_size_t
+    size = lib.sha1_context_bytes()
+    lib.SHA1Init.argtypes = [ctypes.c_void_p]
+    lib.SHA1Update.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_size_t]
+    lib.SHA1UpdateUsePhysicalAddress.argtypes = lib.SHA1Update.argtypes
+    lib.SHA1Final.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    lib.SHA1Final_r.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    cases = []
+    messages = [("empty", b""), ("abc", b"abc"), ("million-a", b"a" * 1000000)]
+    messages += [(f"boundary-{n}", bytes((i * 37 + 11) % 256 for i in range(n)))
+                 for n in (1, 55, 56, 63, 64, 65, 119, 120, 127, 128, 129, 1024)]
+    for label, data in messages:
+        for chunk in (1, 7, 63, 64, 65, len(data) or 1):
+            # Million single-byte calls add little coverage over the boundary
+            # cases, so use bulk and block-sized updates for that long vector.
+            if len(data) > 10000 and chunk < 63:
+                continue
+            ctx = ctypes.create_string_buffer(size)
+            lib.SHA1Init(ctx)
+            lib.SHA1Update(ctx, None, 0)
+            offset = 0
+            while offset < len(data):
+                part = data[offset:offset + chunk]
+                incoming = ctypes.create_string_buffer(part)
+                lib.SHA1Update(ctx, incoming, len(part))
+                offset += len(part)
+            digest = ctypes.create_string_buffer(20)
+            lib.SHA1Final(digest, ctx)
+            expected = hashlib.sha1(data).hexdigest()
+            actual = digest.raw.hex()
+            if actual != expected:
+                raise AssertionError((label, chunk, actual, expected))
+            repeat = ctypes.create_string_buffer(20)
+            lib.SHA1Final_r(ctx, repeat)
+            assert repeat.raw == digest.raw
+            cases.append(dict(name=label, bytes=len(data), chunk=chunk, sha1=actual, passed=True))
+    # Snapshot a partially filled block, then continue both copies differently.
+    ctx = ctypes.create_string_buffer(size)
+    lib.SHA1Init(ctx)
+    prefix = ctypes.create_string_buffer(b"partial state")
+    lib.SHA1Update(ctx, prefix, 13)
+    clone = ctypes.create_string_buffer(ctx.raw, size)
+    for target, suffix in ((ctx, b"-first"), (clone, b"-second")):
+        incoming = ctypes.create_string_buffer(suffix)
+        lib.SHA1UpdateUsePhysicalAddress(target, incoming, len(suffix))
+        digest = ctypes.create_string_buffer(20)
+        lib.SHA1Final(digest, target)
+        assert digest.raw == hashlib.sha1(b"partial state" + suffix).digest()
+    inputs = [crypto / "corecrypto_sha1.c", public, *(crypto / f"lithium_{n}.c" for n in ("sha1", "dec32be", "enc32be"))]
+    inputs += list(bearssl.rglob("*.c")) + list(bearssl.rglob("*.h"))
+    record = dict(all_passed=True, cases=cases, context_bytes=size,
+                  context_snapshot_and_physical_alias_passed=True, repeated_final_passed=True,
+                  command=command, input_sha256={str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in inputs},
+                  scope="host legacy SHA1 API and portable implementation; ARM64 kernel verified separately",
+                  hardware_verified=False)
+    report = ROOT / "reports/ios14-lithium-sha1-validation.json"
+    report.write_text(json.dumps(record, indent=2) + "\n")
+    print(json.dumps(dict(all_passed=True, digest_cases=len(cases), context_bytes=size, report=str(report))))
+
+
+if __name__ == "__main__":
+    main()

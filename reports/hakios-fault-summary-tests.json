@@ -1,0 +1,29 @@
+{
+  "passed": true,
+  "checks": [
+    "PASS R14 panic is retained without inventing absent fault fields",
+    "PASS pagein and exception registers survive later stack and panic lines",
+    "PASS successful storage result and timed return remain visible",
+    "PASS nonterminated partial log respects bounds, line starts and text sanitization",
+    "PASS loader-only failure handles absent kernel log",
+    "PASS original dynamic child results and ABI outcome survive the retained summary",
+    "PASS parent cleanup and both committed kernel exit reasons survive the retained summary",
+    "PASS both budgets and last three completed DF traces retain order and exact bounds",
+    "PASS launchd before-exec, real job and missing-service result remain distinct",
+    "PASS boot descriptors, original abort stack and last three launchd calls survive panic",
+    "PASS last original error line is bounded, sanitized and independent of log prefix",
+    "PASS missing abort and job logs remain absent while original direct-run error is retained",
+    "PASS every descriptor step and exact exec failure survive later results",
+    "PASS observer start, latest attempt and original PS diagnostics survive a completed retry",
+    "PASS a PS still in progress cannot fabricate a completed snapshot or service result",
+    "PASS PS timeout, capture/restore failure and failed result remain separately visible",
+    "PASS compact observer summary preserves bounds, exact line prefixes and phase order"
+  ],
+  "test_source_sha256": "1ca0320dd8498f6ecf263dd029d6311a3eb3127ffe90dee5a2430b5154c93c73",
+  "loader_sha256": "57cfcfd6ebded2736ead9e7f8e85559511423c12bcef1d3fb661e6fed78042eb",
+  "actual_return_screen_functions_exercised": true,
+  "sanitizer": "address,undefined",
+  "synthetic_fault_addresses": true,
+  "hardware_verified": false,
+  "qemu_used": false
+}

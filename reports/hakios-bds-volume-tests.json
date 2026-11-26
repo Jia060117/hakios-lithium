@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "checks": [
+    "new FAT child discovered after connection; unrelated UFS FAT never opened",
+    "direct RAM filesystem remains supported",
+    "missing RAM filesystem fails without opening another disk",
+    "RAM OpenVolume failure propagated; enumeration buffers freed"
+  ],
+  "bds_source_sha256": "895ac85895dabb68d2adacc777b2d190e71a03c315bef8a6c510857d340f7b55",
+  "test_source_sha256": "a96f6e6d6de204e5bc4e5b8cdf457046682ac4b088ef25b441a71781a45c0be7",
+  "actual_volume_discovery_function_exercised": true,
+  "host_protocol_simulation": true,
+  "address_and_undefined_sanitizers": true,
+  "hardware_verified": false,
+  "qemu_used": false
+}

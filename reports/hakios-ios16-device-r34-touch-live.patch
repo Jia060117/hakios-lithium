@@ -1,0 +1,897 @@
+diff --git a/AGENTS.md b/AGENTS.md
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -1,3 +1,5 @@
++2026-11-20 R34真实触摸RAM短测结案：17:05:15.400713+08:00单次临时boot获接受，actual affinity1/bootcpu1/cpus1；GPIO89低10ms/高300ms后，0x38/A3实读ID0xe7、error0，63字节报告至少7200份，真实点击/滑动/松手产生DOWN/MOVE/UP且197条成功进入hakios_touch_post_batch实际队列。未见read_error/report_error；PID1为隔离RAM hold，SpringBoard/HID消费及界面响应、多指、坐标边界、IRQ及长稳未验证。正常180秒timer/drain1，105帧/15484console字节独立重放一致，gap/dup/残帧/lost/源争用丢0；随后Pipeerror原样保留。17:10:56唯一一次只读devices/product核验同序列号54223ce9、MSM8996_A8回到Fastboot；未捕获UEFI内部prepare/commit，本轮未另获硬件键事后确认，不借用R33确认。本次无分区/刷写/ADB/Android/Recovery/QEMU/重试，计数59/28；R20/R32/R33/R34冻结及原索引保持。下一步直接验收已备R34 UFS桌面候选，正常Data写入需对应范围确认，UFS自动返回仍不支持；不自动新启动。见reports/hakios-ios16-device-r34-touch-live.md/json。
++
+ 2026-11-20 R34触摸完整路径主机候选已完成：按用户“减少审查、门禁、测试，今天做出成果”改为直接实现与针对性验证，不重复历史总回归。touch=1默认关闭；新增GPIO89低10ms/高300ms复位、QUP6/0x38组合读取、63字节报告轮询、多点到真实hakios_touch_post_batch及结束停止。内核799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c实际链接；实际init/APFS486项读回clean；91个QUP与4组事件专项通过。RAM最终包d1bbc6bf94defeacacf3ffbbae32bd3e227b70ef74bb1ceda2fb5539f8ad0d3b（phase4-r34-touch-live-ram-final，180秒+自动Fastboot）；UFS最终包47740664f56fcf021096493444cc96934223f49ce0dfc099920bfb73cfc426ed（phase4-r34-touch-live-ufs-final，R20原参数+touch）。同名无-final目录为停止等待修正前候选，不启动。R34未操作手机，真实ID/触点/HID响应未验证，供电继承、无固件写入；R20/R32/R33冻结和原索引不变。下一步说明GPIO89复位+QUP持续读取范围并获对应确认后，仅一次RAM短测；若成功，可直接用已备UFS候选验收界面，不再拆成多个仅初始化轮次。无分区刷写，不自动启动。见reports/hakios-ios16-touch-r34-prepared.md/json。
+ 
+ 2026-11-20 R33自动返回复核更新：用户确认“没有”按电源/音量键；结合同序列号54223ce9及产品MSM8996_A8在单次测试后被Fastboot枚举，R33独立RAM诊断配置自动返回Fastboot记为真机验证通过。UEFI prepare/commit内部串流字段仍未捕获；该缺口不改变物理终点证据。仅RAM profile通过，不代表UFS配置支持。随后只推进R32触摸错误的主机侧来源/板级审计，不自动启动手机。见reports/hakios-ios16-device-r33-return-fastboot-attempt2.md及对应local目录。
+diff --git a/project.json b/project.json
+--- a/project.json
++++ b/project.json
+@@ -42,21 +42,22 @@
+     "hardware_started": true,
+     "ios14_compatibility_verified": false,
+     "springboard_verified": true,
+-    "status": "R32 initializer/FIFO request observed, controller NACK coerrors; R20 accepted desktop retained",
++    "status": "R34 live touch RAM path observed; R20 remains accepted desktop/display baseline",
+     "configuration_scaffold_created": true,
+     "upstream_config_checks_passed": true,
+     "platform_uefi_verified": true,
+     "loader_started": true,
+     "hello_started": true,
+     "hardware_evidence_report": "reports\\hakios-ios16-device-r20-display.json",
+-    "latest_kernel_binary_hardware_verified": false,
+-    "kernel_sha256": "d88137b422c89892222279c87d1cb4798c7c40e6b4810955afd7909bada3a1a9",
+-    "latest_kernel_binary_verification_scope": "R32 RAM one-shot controller request/error/timer scope; no ID, IRQ/HID, physical touch or desktop validation",
++    "latest_kernel_binary_hardware_verified": true,
++    "kernel_sha256": "799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c",
++    "latest_kernel_binary_verification_scope": "R34 isolated RAM: affinity1, ID0xe7, 63-byte reads, physical single-finger DOWN/MOVE/UP queue acceptance, timer/drain. Desktop/HID consumer not verified.",
+     "springboard_display_verified": true,
+-    "last_hardware_verified_kernel_sha256": "8e9209c1ff077ba6ad16cbd467c6cceb3cb6b16c0357667e513b913190fd9b4b"
++    "last_hardware_verified_kernel_sha256": "8e9209c1ff077ba6ad16cbd467c6cceb3cb6b16c0357667e513b913190fd9b4b",
++    "latest_kernel_binary_hardware_report": "reports/hakios-ios16-device-r34-touch-live.json"
+   },
+   "schema": 2,
+-  "stage": "iOS16 phase4: R32 minimal FIFO request hit controller NACK/FAIL/INVALID_READ_ADDR; no ID",
++  "stage": "iOS16 phase4: R34 real touch ID/report/DOWN-MOVE-UP queue verified in RAM; desktop response next",
+   "project_instructions_path": "AGENTS.md",
+   "plan_path": "PLAN.md",
+   "operations_path": "OPERATIONS.md",
+@@ -66,7 +67,7 @@
+   "active_workspace": "/home/jia/ios-mix1-build/hakios-lithium-ios16",
+   "source_lock_path": "upstreams.lock.json",
+   "source_audit_report": "reports/hakios-p0-audit.md",
+-  "current_device_status": "R32 normal180s timer/drain captured; physical end screen unverified",
++  "current_device_status": "R34 ended; same-device Fastboot endpoint observed once at 17:10:56+08:00",
+   "device_state": {
+     "last_observation_baseline": "ios16_r20_display_hakios",
+     "live_state_requeried": true,
+@@ -75,19 +76,19 @@
+     "root_install_report": "reports/hakios-ios16-install.json",
+     "root_integrity_report": "reports/hakios-ios16-install.json",
+     "live_usb_requeried": true,
+-    "latest_usb_query_report": "reports/hakios-ios16-device-r32-touch-qup-transfer.json",
+-    "latest_device_test_report": "reports/hakios-ios16-device-r32-touch-qup-transfer.json",
++    "latest_usb_query_report": "reports/hakios-ios16-device-r34-touch-live.json",
++    "latest_device_test_report": "reports/hakios-ios16-device-r34-touch-live.json",
+     "last_screen_observation_source": "R26 same-run user photograph, original archived with SHA256",
+     "last_screen_observation": "UEFI TIMER DEADLINE REACHED; NO PANIC TEXT IN RETAINED LOG; drain1",
+-    "current_physical_state_source": "Same-run normal kernel timer/drain; not screen observation",
+-    "current_physical_state": "R32 normal180s timer/drain captured; physical end screen unverified",
++    "current_physical_state_source": "One readonly post-return Fastboot devices/product check",
++    "current_physical_state": "R34 ended; same-device Fastboot endpoint observed once at 17:10:56+08:00",
+     "current_state_host_queried": true,
+     "userdata_journal_initialized": false,
+     "userdata_journal_repair_report": null,
+     "userdata_hfs_mount_verified": true,
+     "userdata_contains_ios16_ufs_layout": true,
+     "root_integrity_scope": "32KiB component headers and unchanged 24KiB primary GPT sample; not full partition readback",
+-    "latest_device_operation_report": "reports/hakios-ios16-device-r32-touch-qup-transfer.json",
++    "latest_device_operation_report": "reports/hakios-ios16-device-r34-touch-live.json",
+     "ios16_data_image_fsck_passed": true,
+     "ios16_data_runtime_read_write_verified": true
+   },
+@@ -143,10 +144,14 @@
+     "springboard_screen_ownership_verified": false,
+     "usb_kernel_stream_through_timer_boundary_verified": true,
+     "usb_normal_timer_boundary_drain_hardware_verified": true,
+-    "usb_full_log_capture_scope": "R12 raw-diagnostic kernel stream 12054 bytes/54 frames through timer and successful drain verified; zero transport gaps/loss. Receiver Pipe error followed successful drain. No launchd or firmware-wide log scope in this prelaunch run.",
++    "usb_full_log_capture_scope": "R34 RAM kernel stream15484bytes/105frames through normal timer/firstdrain; independent replay exact, zero framed loss/gap. Not full original printf/firmware/daemon logs.",
+     "usb_framed_transport_complete": true,
+     "three_xnu_cpu_startup_verified": true,
+-    "long_term_smp_stability_verified": false
++    "long_term_smp_stability_verified": false,
++    "physical_touch_sensor_reports_verified": true,
++    "touch_input_queue_verified": true,
++    "physical_touch_ui_response_verified": false,
++    "physical_touch_multitouch_verified": false
+   },
+   "execution_limits": {
+     "qemu_allowed": false,
+@@ -162,20 +167,20 @@
+     "large_tasks_sequential": true
+   },
+   "work_status": {
+-    "status": "ios16_r32_closed_controller_nack_coerrors_no_id",
++    "status": "ios16_r34_ram_touch_queue_pass_fastboot_endpoint_observed",
+     "phase2_approved": true,
+     "device_operations_performed": true,
+     "device_boots_performed": true,
+     "partition_writes_performed": true,
+-    "hakios_temporary_boot_count": 56,
++    "hakios_temporary_boot_count": 59,
+     "backup_branch": "archive/ios14-r31-20261116",
+-    "next_step": "Next host revision: analyze co-reported NACK/FAIL/INVALID_READ_ADDR without clearing evidence; compare the exact tagged FIFO stream, counts/mode and state order with pinned vendor code and controller error semantics, then establish touch power/reset/electrical/handoff prerequisites from lithium evidence. Preserve R20/R31/R32. Do not infer wrong address, missing power or a chip model from these flags; no address scan, reset/rail change or new device boot is authorized by this result.",
++    "next_step": "UFS desktop response/coordinates/multitouch; normal Data writes require corresponding authorization. No automatic new boot.",
+     "phase3_approved": true,
+     "auxiliary_stock_reader_boots_accepted": 4,
+-    "ios16_boots_performed": 25,
++    "ios16_boots_performed": 28,
+     "auxiliary_stock_reader_adb_runtime_observations": 3,
+-    "latest_evidence_recorded_at": "2026-11-20T02:52:54.905476+08:00",
+-    "latest_host_report": "reports/hakios-ios16-touch-r31-prepared.md",
++    "latest_evidence_recorded_at": "2026-11-20T17:14:33.216619+08:00",
++    "latest_host_report": "reports/hakios-ios16-touch-r34-prepared.md",
+     "r5_backup_branch": "archive/ios16-r5-20261117",
+     "r6_backup_branch": "archive/ios16-r6-20261117",
+     "r7_backup_branch": "archive/ios16-r7-20261117",
+@@ -185,7 +190,7 @@
+     "r10_backup_branch": "archive/ios16-r10-before-r11-20261117",
+     "current_run_shutdown_authorized": false,
+     "host_shutdown_request_scope": "Historical R8 only; no R15 shutdown requested",
+-    "latest_device_report": "reports/hakios-ios16-device-r32-touch-qup-transfer.md",
++    "latest_device_report": "reports/hakios-ios16-device-r34-touch-live.md",
+     "current_turn_new_kernel_builds": false,
+     "current_turn_device_queries": true,
+     "current_turn_device_boots": true,
+@@ -196,7 +201,7 @@
+   "refactor_report": "reports/hakios-project-refactor.md",
+   "test_package_report": "reports/hakios-test-package.json",
+   "p0_closure_report": "reports/hakios-p0-closure.json",
+-  "current_report": "reports\\hakios-ios16-touch-stage0-host.json",
++  "current_report": "reports/hakios-ios16-device-r34-touch-live.json",
+   "latest_diagnosis_report": "reports/hakios-ios16-r11-final-diagnosis.json",
+   "repeat_ready_report": null,
+   "platform_observation_workflow": {
+@@ -232,7 +237,7 @@
+   "resource_configuration": "config/hakios-resources.json",
+   "version_alignment_audit_report": null,
+   "next_device_boot_entry": "scripts/boot-hakios-ios16.py",
+-  "actual_test_readiness_report": "reports/hakios-ios16-boot-ready.json",
++  "actual_test_readiness_report": "reports/hakios-ios16-touch-r34-prepared.json",
+   "p2_launchd_process_closure_report": "reports/hakios-p2-launchd-process-closure.json",
+   "integrated_boot_configuration": null,
+   "integrated_boot_preparation_report": null,
+@@ -924,49 +929,44 @@
+   },
+   "touch_test_boundary": {
+     "recorded_on": "2026-11-20",
+-    "mode": "r32_runtime_closed_attempt_consumed",
++    "mode": "r34_ram_runtime_closed_attempt_consumed",
+     "phone_queries_allowed": false,
+     "phone_boot_allowed": false,
+     "partition_operations_allowed": false,
+     "qemu_allowed": false,
+     "user_explicit_resumption_required": true,
+-    "device_state": "R32 normal180s timer/drain captured; physical end screen unverified",
+-    "resumption_scope": "Next host revision investigates coerrors and board prerequisites; no new device query/boot implied",
+-    "revision": "R31-touch-qup-phase",
++    "device_state": "R34 ended; same-device Fastboot endpoint observed once at 17:10:56+08:00",
++    "resumption_scope": "UFS desktop response/coordinates/multitouch; normal Data writes require corresponding authorization. No automatic new boot.",
++    "revision": "R34-touch-live-ram",
+     "display_baseline_revision": "R20-display",
+-    "host_candidate": "artifacts/hakios/lithium-ios16/phase4-r31-touch-qup-phase/lithium-hakios-ios16-r31-touch-qup-phase.img",
+-    "latest_host_gate_report": "reports/hakios-ios16-touch-r31-prepared.json",
+-    "host_candidate_image_sha256": "a6bd21ef428e620f4cf9fe9f5d954c23c00c12d3d19efe523a70b67b2e2d0f53",
++    "host_candidate": "artifacts\\hakios\\lithium-ios16\\phase4-r34-touch-live-ufs-final\\lithium-hakios-ios16-r34-touch-live-ufs.img",
++    "latest_host_gate_report": "reports/hakios-ios16-touch-r34-prepared.json",
++    "host_candidate_image_sha256": "47740664f56fcf021096493444cc96934223f49ce0dfc099920bfb73cfc426ed",
+     "host_package_ready": true,
+-    "touch_package_ready": false,
+-    "current_candidate_device_test_ready": false,
++    "touch_package_ready": true,
++    "current_candidate_device_test_ready": true,
+     "port_stage0_source_integrated": true,
+     "production_kernel_build_verified": true,
+-    "physical_touch_backend_present": false,
+-    "host_test_suites_passed": 49,
+-    "host_test_evidence": "evidence/touch-r31-20261120/main/all-peripheral-tests/passed.json",
++    "physical_touch_backend_present": true,
++    "host_test_evidence": "evidence/touch-live-20261120/main/package-final-check.json",
+     "latest_host_regression": {
+-      "passed": true,
+-      "base_suites": 29,
+-      "followup_suites": 17,
+-      "total_suites": 46,
+-      "core_enabled_scenarios": 9766,
+-      "adapter_scenarios": 34104,
+-      "diagnostic_init_scenarios": 376,
+-      "source_hash_count": 106,
++      "report": "reports/hakios-ios16-touch-r34-prepared.json",
++      "qup_focused_cases": 91,
++      "event_focused_groups": 4,
+       "sanitizers": [
+         "ASan",
+         "UBSan"
+-      ]
++      ],
++      "historical_full_regression_repeated": false
+     },
+     "active_build_workspace_sync_verified": true,
+     "latest_kernel_contains_touch_stage_verified": true,
+-    "production_kernel_sha256": "ce7b0b0e81830f27d5e0133460cad8378b8c66c11b5527abba1d9bccb1a7a1c3",
+-    "host_build_report": "reports/hakios-ios16-touch-r31-prepared.md",
+-    "conditional_device_authorization": "R32 one-shot authorization consumed and closed; no automatic retry",
+-    "hardware_verified": false,
+-    "report": "reports/hakios-ios16-touch-r31-prepared.md",
+-    "package_report": "artifacts/hakios/lithium-ios16/phase4-r31-touch-qup-phase/contract.json",
++    "production_kernel_sha256": "799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c",
++    "host_build_report": "reports/hakios-ios16-touch-r34-prepared.md",
++    "conditional_device_authorization": "R34 RAM single boot/return check consumed; UFS scope not yet authorized",
++    "hardware_verified": true,
++    "report": "reports/hakios-ios16-device-r34-touch-live.md",
++    "package_report": "artifacts/hakios/lithium-ios16/phase4-r34-touch-live-ufs-final/contract.json",
+     "runtime_glue_host_tested": true,
+     "physical_mmio_provider_integrated": true,
+     "software_owner_audit": {
+@@ -977,11 +977,11 @@
+     },
+     "runtime_glue_report": "reports/hakios-ios16-touch-runtime-host-20261119.md",
+     "per_device_operation_confirmation_required": true,
+-    "host_candidate_image_path": "artifacts/hakios/lithium-ios16/phase4-r31-touch-qup-phase/lithium-hakios-ios16-r31-touch-qup-phase.img",
+-    "last_device_report": "reports/hakios-ios16-device-r32-touch-qup-transfer.json",
++    "host_candidate_image_path": "artifacts\\hakios\\lithium-ios16\\phase4-r34-touch-live-ufs-final\\lithium-hakios-ios16-r34-touch-live-ufs.img",
++    "last_device_report": "reports/hakios-ios16-device-r34-touch-live.json",
+     "stage1_runtime_observed": true,
+     "stage1_snapshot_completed": true,
+-    "physical_touch_verified": false,
++    "physical_touch_verified": true,
+     "full_runtime_log_verified": false,
+     "candidate_runtime_observed": true,
+     "branch_clock_snapshot_verified": true,
+@@ -990,16 +990,19 @@
+     "diagnostic_hold_verified": true,
+     "emitted_kernel_stream_through_timer_verified": true,
+     "physical_screen_verified": false,
+-    "latest_device_report": "reports/hakios-ios16-device-r32-touch-qup-transfer.json",
+-    "runtime_i2c_transaction_verified": false,
+-    "inherited_runtime_evidence_scope": "Stage1/clock/pin/QUP/hold booleans describe unchanged modules observed in R29; no R30 candidate runtime observed",
++    "latest_device_report": "reports/hakios-ios16-device-r34-touch-live.json",
++    "runtime_i2c_transaction_verified": true,
++    "inherited_runtime_evidence_scope": "Older diagnostic fields retain historical R29-R32 evidence; R34 runtime details are in live_touch/runtime report",
+     "qup_checked_run_clock_pause_observed": true,
+     "qup_phase_poll_validity_observed": true,
+     "qup_software_fifo_request_observed": true,
+     "qup_controller_nack_observed": true,
+     "qup_controller_error_word": "0x0d1300c8",
+-    "chip_id_read": false,
+-    "stop_observed": false
++    "chip_id_read": true,
++    "stop_observed": false,
++    "hardware_verification_scope": "R34 RAM report producer and actual input queue only",
++    "physical_touch_verification_scope": "Single-finger ID/reports/DOWN-MOVE-UP input queue; no GUI acceptance",
++    "chip_id": "0xe7"
+   },
+   "touch_r27_host_prepared": {
+     "image_path": "artifacts/hakios/lithium-ios16/phase4-r27-touch-id/lithium-hakios-ios16-r27-touch-id.img",
+@@ -1277,15 +1280,23 @@
+       "ios16": 27
+     },
+     "no_keys_user_confirmed": true,
+-    "user_confirmation": "没有，这次结果支持自动返回 Fastboot"
++    "user_confirmation": "没有，这次结果支持自动返回 Fastboot",
++    "latest_endpoint_observation": {
++      "report": "reports/hakios-ios16-device-r34-touch-live.md",
++      "ram_only": true,
++      "fastboot_observed": true,
++      "hardware_keys_post_run_confirmation_collected": false,
++      "uefi_prepare_commit_fields_captured": false,
++      "automatic_causality_not_independently_reconfirmed_this_run": true
++    }
+   },
+   "live_touch": {
+-    "status": "R34_complete_live_driver_built_pending_first_hardware_run",
+-    "report": "reports/hakios-ios16-touch-r34-prepared.json",
++    "status": "R34_ram_real_touch_queue_verified_desktop_next",
++    "report": "reports/hakios-ios16-device-r34-touch-live.json",
+     "default_off": true,
+     "enable": "touch=1",
+-    "hardware_verified": false,
+-    "id_read_verified": false,
++    "hardware_verified": true,
++    "id_read_verified": true,
+     "display_baseline": "R20-display",
+     "physical_irq": false,
+     "poll_interval_ms": 16,
+@@ -1313,7 +1324,185 @@
+         "unique_fastboot_return_record": true
+       }
+     },
+-    "device_operations_this_phase": 0,
+-    "next": "one separately authorized RAM short run; then prepared UFS desktop candidate if reads succeed"
++    "device_operations_this_phase": 8,
++    "next": "UFS desktop response/coordinates/multitouch; normal Data writes require corresponding authorization. No automatic new boot.",
++    "host_preparation_report": "reports/hakios-ios16-touch-r34-prepared.json",
++    "hardware_verification_scope": "ID0xe7, at least7200 reports,197 queue-accepted events from physical taps/swipes",
++    "id": "0xe7",
++    "runtime": {
++      "schema": 1,
++      "revision": "R34-touch-live-ram",
++      "recorded_at": "2026-11-20T17:14:33.216619+08:00",
++      "report": "reports/hakios-ios16-device-r34-touch-live.md",
++      "authorization": "User: 可以测试 R34",
++      "scope": "One RAM boot, GPIO89 reset low10ms/high300ms, QUP6 0x38 ID/report reads, touch input queue, USB capture, 180s timer and automatic Fastboot, bounded readonly return check",
++      "outcome": "ram_physical_touch_and_queue_verified_fastboot_endpoint_observed",
++      "accepted_at": "2026-11-20T17:05:15.400713+08:00",
++      "image": {
++        "path": "artifacts\\hakios\\lithium-ios16\\phase4-r34-touch-live-ram-final\\lithium-hakios-ios16-r34-touch-live-ram.img",
++        "image_sha256": "d1bbc6bf94defeacacf3ffbbae32bd3e227b70ef74bb1ceda2fb5539f8ad0d3b",
++        "image_bytes": 16318464,
++        "kernel_sha256": "799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c",
++        "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 touch=1 touch_log=1 touch_poll=1 touch_diag=1 return_fastboot=1 return_fastboot_delay=10",
++        "components_rehashed": 10,
++        "unique_fastboot_return_record": true
++      },
++      "actual_cpu": {
++        "logical": 0,
++        "mpidr": "0x80000001",
++        "affinity": "0x1",
++        "bootcpu": 1,
++        "cpus": 1,
++        "match": true
++      },
++      "touch": {
++        "id_register": "0xa3",
++        "address": "0x38",
++        "id": "0xe7",
++        "id_read_error": 0,
++        "report_bytes": 63,
++        "successful_report_count_lower_bound": 7200,
++        "queue_posted_events": 197,
++        "down_move_up_observed": true,
++        "observed_finger_ids": [
++          0
++        ],
++        "final_visible_points": 0,
++        "polling": true,
++        "configured_poll_delay_ms": 16,
++        "gic_irq_attached": false,
++        "read_error_lines": 0,
++        "report_error_lines": 0,
++        "physical_multitouch_verified": false,
++        "queue_sink": "hakios_touch_post_batch",
++        "queue_acceptance_verified": true,
++        "backboardd_digitizer_delivery_verified": false,
++        "visible_ui_response_verified": false,
++        "screen_edge_coordinate_accuracy_verified": false,
++        "long_term_stability_verified": false,
++        "reset_gpio": 89,
++        "reset_low_ms": 10,
++        "reset_high_settle_ms": 300,
++        "supply_mode": "inherited",
++        "firmware_writes": false,
++        "regulator_writes": false,
++        "reset_alone_proven_as_r32_root_cause": false,
++        "first_raw_points_15_meaning": "unassigned; raw observation retained"
++      },
++      "timer_seconds": 180,
++      "normal_timer_observed": true,
++      "usb": {
++        "raw_bytes": 18844,
++        "console_bytes": 15484,
++        "frames": 105,
++        "raw_sha256": "f3a96f4887624e75778ca6999c5c1701226d79c62697f8213115d38c50507af1",
++        "console_sha256": "376978cb808fd4b364aa88b76223fe94ddf2e9203705a84249a8b5bd6959621c",
++        "first_offset": 0,
++        "final_offset": 15484,
++        "missing_bytes": 0,
++        "duplicate_bytes": 0,
++        "incomplete_frame_bytes": 0,
++        "device_lost_max": 0,
++        "frames_reporting_device_loss": 0,
++        "independent_parser_agrees_with_frozen_receiver": true,
++        "frozen_redecode_equals_complete_console": true,
++        "transport_verified": true,
++        "kernel_banner_offset": 0,
++        "timer_offset": 15065,
++        "normal_return_offset": 15368,
++        "drain_success": true,
++        "drain_records": [
++          {
++            "offset": 15435,
++            "drained": 1,
++            "target": 15435
++          }
++        ],
++        "emitted_kernel_stream_through_timer_verified": true,
++        "all_firmware_daemon_and_original_printf_logs_complete": false,
++        "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
++      },
++      "receiver_terminal_status": {
++        "started_at": "2026-11-20T17:05:14.079850+08:00",
++        "enumerated": true,
++        "frames": 105,
++        "missing_bytes": 0,
++        "duplicate_bytes": 0,
++        "status": "capture_failed",
++        "output": "F:\\IOS-MIX1\\reports\\local\\20261120-r34-touch-live-approved\\console.log",
++        "device_commands_sent": false,
++        "candidate_seen": true,
++        "identity_verified": true,
++        "descriptor_errors": 0,
++        "descriptor_error_samples": [],
++        "configuration_verified": true,
++        "console_bytes": 15484,
++        "failure_stage": "capturing",
++        "failure": "[Errno 32] Pipe error",
++        "finished_at": "2026-11-20T17:08:47.256267+08:00"
++      },
++      "return_verification": {
++        "started_at": "2026-11-20T17:10:56.500439+08:00",
++        "elapsed_s": 341.099726,
++        "fastboot_observed": true,
++        "devices": [
++          [
++            "54223ce9",
++            "fastboot"
++          ]
++        ],
++        "product_verified": true,
++        "outcome": "same_device_fastboot_after_run",
++        "finished_at": "2026-11-20T17:10:56.546671+08:00"
++      },
++      "uefi_prepare_commit_usb_fields_captured": false,
++      "hardware_keys_post_run_confirmation_collected": false,
++      "automatic_fastboot_causality_scope": "Same-device endpoint observed after configured timed return; no new post-run hardware-key confirmation. Prior R33 no-key confirmation is not inherited.",
++      "ram_only": true,
++      "ufs_profile_booted": false,
++      "ufs_auto_return_supported": false,
++      "commands": {
++        "readonly_preflight": 5,
++        "temporary_boot": 1,
++        "readonly_post_return": 2,
++        "total_fastboot": 8,
++        "partition_operations": 0,
++        "flash_erase": 0,
++        "adb": 0,
++        "qemu": false,
++        "firmware_downloads": 0,
++        "automatic_retry": false
++      },
++      "boot_totals": {
++        "hakios": 59,
++        "ios16": 28
++      },
++      "local_evidence": "reports/local/20261120-r34-touch-live-approved",
++      "subagent_review": {
++        "agent": "Descartes",
++        "path": "evidence/touch-live-20261120/qup/r34-runtime-note.txt",
++        "scope": "Saved transport/queue observations through reports5400; no device operations",
++        "main_review": "Read actual source sink/counter and final console independently; report lower bound7200, posted197; completed independent USB replay and endpoint check"
++      },
++      "next_candidate": {
++        "path": "artifacts\\hakios\\lithium-ios16\\phase4-r34-touch-live-ufs-final\\lithium-hakios-ios16-r34-touch-live-ufs.img",
++        "image_sha256": "47740664f56fcf021096493444cc96934223f49ce0dfc099920bfb73cfc426ed",
++        "image_bytes": 16318464,
++        "kernel_sha256": "799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c",
++        "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1",
++        "components_rehashed": 10,
++        "unique_fastboot_return_record": true
++      },
++      "next_scope": "UFS desktop response/coordinates/multitouch; normal Data writes require corresponding authorization. No automatic new boot.",
++      "unresolved": [
++        "SpringBoard/backboardd visible response",
++        "physical multitouch",
++        "screen-edge coordinate accuracy",
++        "true GPIO IRQ delivery",
++        "long-term stability",
++        "R32 single-cause isolation",
++        "UEFI internal prepare/commit stream fields"
++      ]
++    }
+   }
+ }
+diff --git a/reports/hakios-ios16-device-r34-touch-live.md b/reports/hakios-ios16-device-r34-touch-live.md
+--- /dev/null
++++ b/reports/hakios-ios16-device-r34-touch-live.md
+@@ -0,0 +1,75 @@
++# R34：真实触摸读取及输入队列真机结果
++
++日期：2026-11-20，Asia/Shanghai。用户明确授权“可以测试 R34”；本次执行一次隔离 RAM 临时启动，已结束。**真实触摸的 ID、报告读取和按下/移动/抬起入队已通过；SpringBoard 界面响应尚未验收。**
++
++## 实测结果
++
++| 项目 | 本轮观察 |
++| --- | --- |
++| 临时启动接受时间 | 17:05:15.400713+08:00 |
++| 实际运行核 | logical 0，MPIDR `0x80000001`，affinity `0x1`，`bootcpu=1 cpus=1`，match=1 |
++| 板级初始化 | GPIO89 低10ms、高后等待300ms；供电继承，无触摸固件或 regulator 写入 |
++| ID 寄存器读取 | 0x38 / 0xA3，`error=0 byte=0xe7` |
++| 持续报告读取 | 63字节；最后可见 `number=7200`，因此成功读取至少7200份 |
++| 实际手指输入 | 用户点击/滑动产生 DOWN、MOVE、UP；累计成功入队197条 |
++| 最后触点状态 | `points=0 posted=197 irq=1` |
++| 触摸错误 | 保存流未出现 `LITHIUM TOUCH read_error`、`report_error` 或错误停止 |
++| 正常结束 | `loader_return_after expired`，首次 `drain=1 target=15435` |
++| 启动后 Fastboot 核验 | 17:10:56.500+08:00，约341.1秒；同序列号54223ce9，product MSM8996_A8 |
++
++关键原始行：
++
++```text
++LITHIUM TOUCH live reset low_ms=10 high_settle_ms=300 cfg=0x00000200 io=0x00000003 supplies=inherited firmware_write=0
++LITHIUM TOUCH live id error=0 byte=0xe7 status=0x0c110000 op=0x00000c40 core=0x00000000 polls=31
++LITHIUM TOUCH live ready id=0xe7 report_bytes=63 sink=hakios_touch_post coordinates=normalized65535 polling=1
++LITHIUM TOUCH event type=1 finger=0 x=34891 y=49954 total=139
++LITHIUM TOUCH event type=2 finger=0 x=34649 y=49216 total=140
++LITHIUM TOUCH event type=3 finger=0 x=33920 y=54516 total=197
++LITHIUM TOUCH report number=7200 mode=0x00 points=0 posted=197 irq=1
++LITHIUM USB: timer boundary drain=1 target=15435
++```
++
++主代理核对实际源码：`ports/hakios-lithium/peripherals/touch-live.inc:78` 的 `lt_live_emit` 在 sink 成功之后才递增 posted；实际 sink 在 `touch-live-events.h:245` 调用 `hakios_touch_post_batch`。因此197是已被真实输入队列接受的事件累计值，不能按采样打印的 MOVE 行数重新计数。
++
++早期报告的原始 `points=15` 保留，不擅自解释为空闲状态或协议错误；随后实触期间见points=1，松手后见points=0。本轮可见事件均为finger=0，多指实体测试未验证。
++
++R32 的 NACK/FAIL/INVALID_READ_ADDR 停点在本轮已越过。但R34同时修改板级复位和传输流程，不能据此宣布GPIO89就是此前错误的唯一原因。
++
++## 启动配置
++
++镜像：`artifacts/hakios/lithium-ios16/phase4-r34-touch-live-ram-final/lithium-hakios-ios16-r34-touch-live-ram.img`
++
++SHA-256：`d1bbc6bf94defeacacf3ffbbae32bd3e227b70ef74bb1ceda2fb5539f8ad0d3b`
++
++内核SHA-256：`799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c`
++
++```text
++bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 touch=1 touch_log=1 touch_poll=1 touch_diag=1 return_fastboot=1 return_fastboot_delay=10
++```
++
++隔离Mu没有物理UFS provider，PID1停在RAM诊断hold。`LITHIUM DATA SYNC end error=2 phase=lookup` 是隔离RAM布局中查找路径失败，不是UFS故障。
++
++## 日志及终态
++
++USB保存105帧、18844原始帧字节、15484控制台字节。主代理使用独立帧解析器和冻结接收器重新解码，两者及保存console逐字节一致；偏移0至15484，缺口、重复、残帧、设备声明丢失均为0，源端writer contention丢弃为0。正常timer和首次成功drain均在保存流中。
++
++接收器在17:08:47.256267+08:00以 `capture_failed / [Errno 32] Pipe error` 结束，该状态原样保留。它不推翻已保存的连续数据，也不是Fastboot返回的证明；Fastboot终点由随后唯一一次只读枚举和product核验建立。没有重试。
++
++本轮已核实“同一设备在临时启动后回到Fastboot”。用户被要求仅触摸屏幕并保持连接，但本次没有另行收集未按硬件键的事后确认；不借用R33的用户确认填补本轮因果记录。USB亦未保存UEFI prepare/commit的内部字段。R33的RAM自动返回已验证结论保留，UFS自动返回仍不支持。
++
++## 分工及复核
++
++Descartes读取本轮已保存日志，交付 `evidence/touch-live-20261120/qup/r34-runtime-note.txt`，确认ID、63字节报告、真实触点和队列投递；该短记录截至5400份报告。主代理独立核对实际源码与最终console，更新最终下限为7200份，完成USB独立重放和Fastboot终点核验。未因结案重复构建或运行历史总回归。
++
++启动前5项只读预检、一次临时boot、启动后一次只读devices及一次product，共8条Fastboot命令。没有分区读写/刷写/擦除、ADB、Android/Recovery、QEMU、固件下载或自动重试。临时启动累计HakiOS59次、iOS16为28次。
++
++原始记录：`reports/local/20261120-r34-touch-live-approved/`，包括commands、console、frames、usb-status、usb-audit、result及return-verification。R20/R32/R33和两份R34最终包保持冻结；原Git索引保持。结案补丁见本报告同名 `.patch`。
++
++## 下一步
++
++直接使用已构建的 `phase4-r34-touch-live-ufs-final` 桌面候选，验收图标点击、横向滑动、四角坐标、按住/松开及多指。无需再拆成仅初始化的测试轮次。
++
++该候选SHA-256为 `47740664f56fcf021096493444cc96934223f49ce0dfc099920bfb73cfc426ed`，沿用R20显示和UFS参数，正常系统运行可能写入现有Data/userdata；不需要刷写分区，未启用UFS自动Fastboot。本轮授权和设备操作止于RAM短测及其终点核验，尚未启动该桌面候选。
++
++尚未验证：backboardd/digitizer消费与可见界面响应、实体多指、屏幕边界坐标准确性、长时稳定性、真正GPIO中断方式。当前 `irq=1/0` 是GPIO读取值，不是已接入GIC的证据。
+diff --git a/reports/hakios-ios16-device-r34-touch-live.json b/reports/hakios-ios16-device-r34-touch-live.json
+--- /dev/null
++++ b/reports/hakios-ios16-device-r34-touch-live.json
+@@ -0,0 +1,175 @@
++{
++  "schema": 1,
++  "revision": "R34-touch-live-ram",
++  "recorded_at": "2026-11-20T17:14:33.216619+08:00",
++  "report": "reports/hakios-ios16-device-r34-touch-live.md",
++  "authorization": "User: 可以测试 R34",
++  "scope": "One RAM boot, GPIO89 reset low10ms/high300ms, QUP6 0x38 ID/report reads, touch input queue, USB capture, 180s timer and automatic Fastboot, bounded readonly return check",
++  "outcome": "ram_physical_touch_and_queue_verified_fastboot_endpoint_observed",
++  "accepted_at": "2026-11-20T17:05:15.400713+08:00",
++  "image": {
++    "path": "artifacts\\hakios\\lithium-ios16\\phase4-r34-touch-live-ram-final\\lithium-hakios-ios16-r34-touch-live-ram.img",
++    "image_sha256": "d1bbc6bf94defeacacf3ffbbae32bd3e227b70ef74bb1ceda2fb5539f8ad0d3b",
++    "image_bytes": 16318464,
++    "kernel_sha256": "799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c",
++    "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 touch=1 touch_log=1 touch_poll=1 touch_diag=1 return_fastboot=1 return_fastboot_delay=10",
++    "components_rehashed": 10,
++    "unique_fastboot_return_record": true
++  },
++  "actual_cpu": {
++    "logical": 0,
++    "mpidr": "0x80000001",
++    "affinity": "0x1",
++    "bootcpu": 1,
++    "cpus": 1,
++    "match": true
++  },
++  "touch": {
++    "id_register": "0xa3",
++    "address": "0x38",
++    "id": "0xe7",
++    "id_read_error": 0,
++    "report_bytes": 63,
++    "successful_report_count_lower_bound": 7200,
++    "queue_posted_events": 197,
++    "down_move_up_observed": true,
++    "observed_finger_ids": [
++      0
++    ],
++    "final_visible_points": 0,
++    "polling": true,
++    "configured_poll_delay_ms": 16,
++    "gic_irq_attached": false,
++    "read_error_lines": 0,
++    "report_error_lines": 0,
++    "physical_multitouch_verified": false,
++    "queue_sink": "hakios_touch_post_batch",
++    "queue_acceptance_verified": true,
++    "backboardd_digitizer_delivery_verified": false,
++    "visible_ui_response_verified": false,
++    "screen_edge_coordinate_accuracy_verified": false,
++    "long_term_stability_verified": false,
++    "reset_gpio": 89,
++    "reset_low_ms": 10,
++    "reset_high_settle_ms": 300,
++    "supply_mode": "inherited",
++    "firmware_writes": false,
++    "regulator_writes": false,
++    "reset_alone_proven_as_r32_root_cause": false,
++    "first_raw_points_15_meaning": "unassigned; raw observation retained"
++  },
++  "timer_seconds": 180,
++  "normal_timer_observed": true,
++  "usb": {
++    "raw_bytes": 18844,
++    "console_bytes": 15484,
++    "frames": 105,
++    "raw_sha256": "f3a96f4887624e75778ca6999c5c1701226d79c62697f8213115d38c50507af1",
++    "console_sha256": "376978cb808fd4b364aa88b76223fe94ddf2e9203705a84249a8b5bd6959621c",
++    "first_offset": 0,
++    "final_offset": 15484,
++    "missing_bytes": 0,
++    "duplicate_bytes": 0,
++    "incomplete_frame_bytes": 0,
++    "device_lost_max": 0,
++    "frames_reporting_device_loss": 0,
++    "independent_parser_agrees_with_frozen_receiver": true,
++    "frozen_redecode_equals_complete_console": true,
++    "transport_verified": true,
++    "kernel_banner_offset": 0,
++    "timer_offset": 15065,
++    "normal_return_offset": 15368,
++    "drain_success": true,
++    "drain_records": [
++      {
++        "offset": 15435,
++        "drained": 1,
++        "target": 15435
++      }
++    ],
++    "emitted_kernel_stream_through_timer_verified": true,
++    "all_firmware_daemon_and_original_printf_logs_complete": false,
++    "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
++  },
++  "receiver_terminal_status": {
++    "started_at": "2026-11-20T17:05:14.079850+08:00",
++    "enumerated": true,
++    "frames": 105,
++    "missing_bytes": 0,
++    "duplicate_bytes": 0,
++    "status": "capture_failed",
++    "output": "F:\\IOS-MIX1\\reports\\local\\20261120-r34-touch-live-approved\\console.log",
++    "device_commands_sent": false,
++    "candidate_seen": true,
++    "identity_verified": true,
++    "descriptor_errors": 0,
++    "descriptor_error_samples": [],
++    "configuration_verified": true,
++    "console_bytes": 15484,
++    "failure_stage": "capturing",
++    "failure": "[Errno 32] Pipe error",
++    "finished_at": "2026-11-20T17:08:47.256267+08:00"
++  },
++  "return_verification": {
++    "started_at": "2026-11-20T17:10:56.500439+08:00",
++    "elapsed_s": 341.099726,
++    "fastboot_observed": true,
++    "devices": [
++      [
++        "54223ce9",
++        "fastboot"
++      ]
++    ],
++    "product_verified": true,
++    "outcome": "same_device_fastboot_after_run",
++    "finished_at": "2026-11-20T17:10:56.546671+08:00"
++  },
++  "uefi_prepare_commit_usb_fields_captured": false,
++  "hardware_keys_post_run_confirmation_collected": false,
++  "automatic_fastboot_causality_scope": "Same-device endpoint observed after configured timed return; no new post-run hardware-key confirmation. Prior R33 no-key confirmation is not inherited.",
++  "ram_only": true,
++  "ufs_profile_booted": false,
++  "ufs_auto_return_supported": false,
++  "commands": {
++    "readonly_preflight": 5,
++    "temporary_boot": 1,
++    "readonly_post_return": 2,
++    "total_fastboot": 8,
++    "partition_operations": 0,
++    "flash_erase": 0,
++    "adb": 0,
++    "qemu": false,
++    "firmware_downloads": 0,
++    "automatic_retry": false
++  },
++  "boot_totals": {
++    "hakios": 59,
++    "ios16": 28
++  },
++  "local_evidence": "reports/local/20261120-r34-touch-live-approved",
++  "subagent_review": {
++    "agent": "Descartes",
++    "path": "evidence/touch-live-20261120/qup/r34-runtime-note.txt",
++    "scope": "Saved transport/queue observations through reports5400; no device operations",
++    "main_review": "Read actual source sink/counter and final console independently; report lower bound7200, posted197; completed independent USB replay and endpoint check"
++  },
++  "next_candidate": {
++    "path": "artifacts\\hakios\\lithium-ios16\\phase4-r34-touch-live-ufs-final\\lithium-hakios-ios16-r34-touch-live-ufs.img",
++    "image_sha256": "47740664f56fcf021096493444cc96934223f49ce0dfc099920bfb73cfc426ed",
++    "image_bytes": 16318464,
++    "kernel_sha256": "799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c",
++    "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1",
++    "components_rehashed": 10,
++    "unique_fastboot_return_record": true
++  },
++  "next_scope": "UFS desktop response/coordinates/multitouch; normal Data writes require corresponding authorization. No automatic new boot.",
++  "unresolved": [
++    "SpringBoard/backboardd visible response",
++    "physical multitouch",
++    "screen-edge coordinate accuracy",
++    "true GPIO IRQ delivery",
++    "long-term stability",
++    "R32 single-cause isolation",
++    "UEFI internal prepare/commit stream fields"
++  ]
++}
+diff --git a/reports/local/run-ios16-r34-touch-live.py b/reports/local/run-ios16-r34-touch-live.py
+--- /dev/null
++++ b/reports/local/run-ios16-r34-touch-live.py
+@@ -0,0 +1,160 @@
++"""One authorized R34 RAM boot and a separate bounded read-only return check."""
++import argparse
++from datetime import datetime
++import hashlib
++import json
++from pathlib import Path
++import re
++import shutil
++import subprocess
++import time
++
++ROOT = Path('F:/IOS-MIX1')
++LOCAL = ROOT/'reports/local/20261120-r34-touch-live-approved'
++PACKAGE = ROOT/'artifacts/hakios/lithium-ios16/phase4-r34-touch-live-ram-final'
++GUARD = ROOT/'reports/local/ios16-r34-touch-live-boot-intent.json'
++FASTBOOT = Path('C:/platform-tools/fastboot.exe')
++USB_PYTHON = Path('E:/IOS-MIX1-artifacts/host-usb-venv/Scripts/python.exe')
++IMAGE_SHA = 'd1bbc6bf94defeacacf3ffbbae32bd3e227b70ef74bb1ceda2fb5539f8ad0d3b'
++CAPTURE_SHA = 'd5a9aecdd3c5ac728b233628d9ae810a598a35ba05d9068d0db3ed70fde3791c'
++now = lambda: datetime.now().astimezone().isoformat()
++sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
++read = lambda p: json.loads(p.read_text(encoding='utf-8'))
++
++
++def save(path, data):
++    path.write_text(json.dumps(data, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
++
++
++def require(ok, message):
++    if not ok:
++        raise RuntimeError(message)
++
++
++def command(argv, timeout=20):
++    path = LOCAL/'commands.json'
++    rows = read(path) if path.exists() else []
++    row = dict(started_at=now(), argv=list(map(str, argv)))
++    rows.append(row)
++    save(path, rows)
++    try:
++        proc = subprocess.run(row['argv'], capture_output=True, text=True,
++            encoding='utf-8', errors='replace', timeout=timeout)
++        row.update(finished_at=now(), returncode=proc.returncode,
++                   stdout=proc.stdout, stderr=proc.stderr)
++    except Exception as exc:
++        row.update(finished_at=now(), exception=str(exc))
++        save(path, rows)
++        raise
++    save(path, rows)
++    require(proc.returncode==0, 'Device command failed; no retry')
++    return proc.stdout+proc.stderr
++
++
++def boot():
++    require(not GUARD.exists() and not LOCAL.exists(), 'R34 attempt already exists; stop')
++    c = read(PACKAGE/'contract.json')
++    prepared = read(ROOT/'reports/hakios-ios16-touch-r34-prepared.json')
++    require(c['passed'] and c['profile']=='ram' and
++        c['image']['sha256']==IMAGE_SHA and not c['normal_boot_may_write_userdata'],
++        'Wrong R34 profile')
++    image = PACKAGE/c['image']['path']
++    require(sha(image)==IMAGE_SHA and image.stat().st_size==c['image']['bytes'], 'Image differs')
++    for name, item in c['components'].items():
++        require(sha(PACKAGE/name)==item['sha256'], 'Frozen component differs: '+name)
++    for name, digest in prepared['source_sha256'].items():
++        require(sha(ROOT/name)==digest, 'Prepared source differs: '+name)
++    require(c['cmdline']==prepared['profiles']['ram']['cmdline'], 'Boot arguments differ')
++    require(sha(ROOT/'scripts/capture-hakios-usb.py')==CAPTURE_SHA, 'Receiver differs')
++    require(FASTBOOT.is_file() and USB_PYTHON.is_file(), 'Host tools missing')
++    LOCAL.mkdir()
++    state = dict(schema=1, revision='R34-touch-live-ram', authorization='User: 可以测试 R34',
++        scope='One RAM boot, GPIO89 reset low10ms/high300ms, QUP6 0x38 ID/report reads, '
++              'touch input queue, USB capture, 180s timer and automatic Fastboot, bounded readonly return check',
++        image_sha256=IMAGE_SHA, payload_boot_args=c['cmdline'],
++        temporary_boot_issued=False, partition_commands=0, firmware_downloads=0,
++        adb_commands=0, qemu=False, automatic_retry=False, started_at=now())
++    save(LOCAL/'authorization.json', state)
++    save(LOCAL/'result.json', state)
++    target = read(ROOT/'reports/local/hakios-device-target.json')
++    try:
++        lines = command([FASTBOOT,'devices']).strip().splitlines()
++        require([s.split() for s in lines]==[[target['serial'],'fastboot']], 'Target absent/mismatched; stop')
++        def query(key):
++            text = command([FASTBOOT,'-s',target['serial'],'getvar',key])
++            match = re.search(re.escape(key)+r':\s*([^\r\n]+)', text)
++            require(match is not None, 'Missing field '+key)
++            return match[1].strip()
++        require(query('product')==target['product'], 'Product mismatch')
++        text = command([FASTBOOT,'-s',target['serial'],'oem','device-info'])
++        require(re.search(r'Device unlocked:\s*true',text,re.I), 'Locked bootloader')
++        require(query('battery-soc-ok').lower()=='yes', 'Battery not ready')
++        require(int(query('max-download-size'),16)>=image.stat().st_size, 'Download window too small')
++        state.update(preflight_passed=True, preflight_finished_at=now())
++        private = LOCAL/image.name
++        shutil.copyfile(image, private)
++        require(sha(private)==IMAGE_SHA, 'Private image differs')
++        capture = LOCAL/'capture-host.py'
++        shutil.copyfile(ROOT/'scripts/capture-hakios-usb.py', capture)
++        intent = dict(started_at=now(),image_sha256=IMAGE_SHA,accepted=False,no_retry=True)
++        with GUARD.open('x',encoding='utf-8') as stream:
++            json.dump(intent,stream,indent=2)
++        with (LOCAL/'usb-host.txt').open('x',encoding='utf-8') as log:
++            receiver = subprocess.Popen([str(USB_PYTHON),'-B','-u',str(capture),
++                '--output',str(LOCAL/'console.log'),'--status',str(LOCAL/'usb-status.json'),
++                '--wait','180','--duration','480','--stop-file',str(LOCAL/'stop-usb')],
++                stdout=log,stderr=subprocess.STDOUT,creationflags=subprocess.CREATE_NO_WINDOW)
++        save(LOCAL/'usb-process.json',dict(pid=receiver.pid,started_at=now(),capture_sha256=sha(capture)))
++        for _ in range(30):
++            if (LOCAL/'usb-status.json').exists() or receiver.poll() is not None:
++                break
++            time.sleep(.1)
++        require(receiver.poll() is None and (LOCAL/'usb-status.json').exists(), 'Receiver failed; no boot')
++        state.update(temporary_boot_issued=True,outcome='boot_command_starting')
++        save(LOCAL/'result.json',state)
++        text = command([FASTBOOT,'-s',target['serial'],'boot',private],timeout=90)
++        require(re.search(r'Booting\s+OKAY',text), 'Boot outcome uncertain; no retry')
++        state.update(command_accepted=True,accepted_at=now(),outcome='boot_accepted_observation_pending',
++                     boot_totals=dict(hakios=59,ios16=28))
++        intent.update(accepted=True,accepted_at=state['accepted_at'])
++        save(GUARD,intent)
++        save(LOCAL/'result.json',state)
++        print('R34 final RAM image accepted ONCE; USB capture running.')
++    except Exception as exc:
++        state.update(outcome='stopped_no_retry',failure=str(exc),stopped_at=now())
++        save(LOCAL/'result.json',state)
++        if GUARD.exists():
++            (LOCAL/'stop-usb').touch()
++        raise
++
++
++def verify_return():
++    state = read(LOCAL/'result.json')
++    require(state.get('command_accepted'), 'Accepted R34 boot required')
++    delta = (datetime.now().astimezone()-datetime.fromisoformat(state['accepted_at'])).total_seconds()
++    require(240<=delta<=900,'Outside post-return window')
++    with (LOCAL/'return-verification-intent.json').open('x',encoding='utf-8') as stream:
++        json.dump(dict(started_at=now(),elapsed_s=delta,no_retry=True),stream)
++    target = read(ROOT/'reports/local/hakios-device-target.json')
++    result = dict(started_at=now(),elapsed_s=delta,fastboot_observed=False)
++    try:
++        lines = command([FASTBOOT,'devices']).strip().splitlines()
++        result['devices'] = [s.split() for s in lines]
++        require(result['devices']==[[target['serial'],'fastboot']], 'Target not in Fastboot; no retry')
++        text = command([FASTBOOT,'-s',target['serial'],'getvar','product'])
++        require(re.search(r'product:\s*'+re.escape(target['product'])+r'(?:\s|$)',text), 'Product mismatch')
++        result.update(fastboot_observed=True,product_verified=True,outcome='same_device_fastboot_after_run')
++    except Exception as exc:
++        result.update(outcome='return_not_verified',failure=str(exc))
++    result['finished_at'] = now()
++    save(LOCAL/'return-verification.json',result)
++    print(json.dumps(result,ensure_ascii=False))
++
++
++if __name__=='__main__':
++    parser = argparse.ArgumentParser(description=__doc__)
++    actions = parser.add_mutually_exclusive_group(required=True)
++    actions.add_argument('--boot',action='store_true')
++    actions.add_argument('--verify-return',action='store_true')
++    args = parser.parse_args()
++    boot() if args.boot else verify_return()

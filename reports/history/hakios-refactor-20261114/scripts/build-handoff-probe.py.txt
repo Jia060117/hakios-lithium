@@ -1,0 +1,131 @@
+"""Build a stock-chained load/relocated-initrd diagnostic, entirely offline.
+
+Run under WSL. No UEFI, MMU/GIC/timer setup, restore loop or device command.
+The entire enlarged ramdisk is checked before editing either FDT property.
+"""
+import gzip
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import struct
+import subprocess
+import sys
+import zlib
+
+ROOT=Path(__file__).resolve().parents[1]
+OUT=ROOT/'out/handoff-probe'
+BASE=0x40080000
+spec=importlib.util.spec_from_file_location('stock',ROOT/'scripts/extract-stock.py')
+stock=importlib.util.module_from_spec(spec); spec.loader.exec_module(stock)
+
+def sha(data): return hashlib.sha256(data).hexdigest()
+def fnv(data):
+    value=0xcbf29ce484222325
+    for byte in data: value=((value^byte)*0x100000001b3)&0xffffffffffffffff
+    return value
+def run(*args): subprocess.run(list(map(str,args)),check=True)
+
+def main():
+    assert sys.platform=='linux','Run with the WSL Python'
+    OUT.mkdir(parents=True,exist_ok=True)
+    original=(ROOT/'artifacts/stock/V9.5.2.0.NAHCNFA/boot/boot.img').read_bytes()
+    assert sha(original)=='2c070c67b07000a02de42fa05a6bcd93b7c32b3770d3fa9e495f321626278f44'
+    ks,ka,rs,ra,ss,sa,tags,page=struct.unpack_from('<8I',original,8)
+    assert page==4096 and ss==0 and rs==2264305
+    align=lambda n:(n+page-1)//page*page
+    initrd=original[page+align(ks):page+align(ks)+rs]
+    dec=zlib.decompressobj(31)
+    stock_image=dec.decompress(original[page:page+ks])+dec.flush()
+    assert dec.eof
+    collector=json.loads((ROOT/'reports/journal-probe-build.json').read_text())
+    validation=json.loads((ROOT/'reports/journal-probe-qemu.json').read_text())
+    assert validation['all_passed'] and validation['validated_cases']==10
+    assert validation['production_probe_sha256']==collector['probe_sha256']
+    backup=(ROOT/'out/journal-probe/Image.probe').read_bytes()
+    collector_offset=int(collector['probe_offset'],16)
+    assert sha(backup[collector_offset:])==collector['probe_sha256']
+    assert backup[:4]==stock_image[:4] and backup[8:len(stock_image)]==stock_image[8:]
+    assert len(backup)==0x1ff9000
+    slot=backup+bytes(0x2000000-len(backup))
+    blob=slot+initrd
+    slot_hash,initrd_hash=fnv(slot),fnv(initrd)
+    source_names=['diagnostics/handoff-probe.S','diagnostics/handoff-probe.c','scripts/build-handoff-probe.py']
+    sources={name:sha((ROOT/name).read_bytes()) for name in source_names}
+    tag=int(sha(json.dumps(dict(sources=sources,backup=sha(backup),blob=sha(blob)),sort_keys=True).encode())[:16],16)
+    config={'COLLECTOR_ENTRY':hex(BASE+collector_offset),'HANDOFF_BUILD_TAG':hex(tag),
+            'STOCK_INITRD_BYTES':rs,'SOURCE_SLOT_FNV':hex(slot_hash),'STOCK_INITRD_FNV':hex(initrd_hash)}
+    (OUT/'handoff-config.h').write_text(''.join(f'#define {k} {v}\n' for k,v in config.items()))
+    flags=['clang','--target=aarch64-none-elf','-march=armv8-a','-mgeneral-regs-only',
+        '-ffreestanding','-fno-builtin','-fno-stack-protector','-fno-pic','-fno-pie',
+        '-fno-unwind-tables','-fno-asynchronous-unwind-tables','-O2','-Wall','-Wextra','-Werror',
+        '-I',str(OUT),'-c']
+    for name in ('handoff-probe.S','handoff-probe.c'):
+        run(*flags,ROOT/'diagnostics'/name,'-o',OUT/(name+'.o'))
+    offset=align(len(backup))
+    (OUT/'handoff.ld').write_text('ENTRY(handoff_entry)\nSECTIONS {\n'+
+        f'. = {BASE+offset}; .text : {{ *(.text.entry) *(.text*) *(.rodata*) *(.data*) }}\n'+
+        '.bss : { *(.bss*) *(COMMON) }\nASSERT(SIZEOF(.bss)==0,"unexpected bss")\n'+
+        'ASSERT(.<=0x424b1000,"probe overlaps reserved stack")\n'+
+        '/DISCARD/ : { *(.comment) *(.note*) *(.eh_frame*) }\n}\n')
+    run('ld.lld','-T',OUT/'handoff.ld','-o',OUT/'handoff.elf',OUT/'handoff-probe.S.o',OUT/'handoff-probe.c.o')
+    run('llvm-objcopy','-O','binary',OUT/'handoff.elf',OUT/'handoff.bin')
+    (OUT/'handoff.disasm.txt').write_bytes(subprocess.check_output(['llvm-objdump','-d',str(OUT/'handoff.elf')]))
+    payload=(OUT/'handoff.bin').read_bytes()
+    image=bytearray(backup)+bytes(offset-len(backup))+payload
+    struct.pack_into('<I',image,4,0x14000000|((offset-4)//4))
+    assert image[8:len(backup)]==backup[8:]
+    declared=struct.unpack_from('<Q',image,16)[0]
+    assert declared==0x2433000 and BASE+len(image)<=0x424b1000
+    dtbs=[]; pos=0
+    for i in range(20):
+        n=struct.unpack_from('>I',dec.unused_data,pos+4)[0]
+        old=dec.unused_data[pos:pos+n]; pos+=n
+        changed=(ROOT/f'out/journal-probe/dtb-{i:02d}.dtb').read_bytes()
+        oldnodes,oldreserved=stock.parse_fdt(old)
+        nodes,reserved=stock.parse_fdt(changed)
+        record=nodes['/chosen'].pop(collector['property'])
+        assert nodes==oldnodes and reserved==oldreserved
+        assert len(record)==collector['record_bytes'] and record[:16]==collector['marker'].encode()
+        dtbs.append(changed)
+    assert pos==len(dec.unused_data)
+    kernel=gzip.compress(image,compresslevel=9,mtime=0)+b''.join(dtbs)
+    header=bytearray(original[:page]); struct.pack_into('<I',header,8,len(kernel)); struct.pack_into('<I',header,16,len(blob))
+    digest=hashlib.sha1()
+    for part in (kernel,blob,b''): digest.update(part); digest.update(struct.pack('<I',len(part)))
+    header[576:608]=digest.digest()+bytes(12)
+    boot=bytes(header)+kernel+bytes(align(len(kernel))-len(kernel))+blob+bytes(align(len(blob))-len(blob))
+    target=OUT/'lithium-handoff-load-probe.img'
+    target.write_bytes(boot); (OUT/'Image').write_bytes(image); (OUT/'handoff-ramdisk.bin').write_bytes(blob)
+    check,tail=stock.unpack_boot(target,OUT/'roundtrip',parse_ramdisk=False)
+    assert check['android_sha1_id_valid'] and tail==b''.join(dtbs)
+    assert (OUT/'roundtrip/Image').read_bytes()==image and (OUT/'roundtrip/ramdisk.bin').read_bytes()==blob
+    ranges=[('kernel reservation',BASE,BASE+declared),('FDT',0x42800000,0x42a00000),
+        ('expanded ramdisk',0x42a00000,0x44a00000+rs)]
+    memory=json.loads((ROOT/'reports/live-memory.json').read_text())
+    for i,(name,start,end) in enumerate(ranges):
+        assert any(int(r['start'],16)<=start<end<=int(r['end_exclusive'],16) for r in memory['ram_ranges'])
+        for other,s,e in ranges[:i]: assert end<=s or e<=start,(name,other)
+        for node in memory['reserved_memory']:
+            for r in node.get('fixed_ranges',[]): assert end<=int(r['start'],16) or int(r['end_exclusive'],16)<=start,(name,node['node'])
+    report=dict(schema=1,kind='stock-chained-expanded-ramdisk-load-probe',phone_boot_allowed=True,
+        image_path=target.relative_to(ROOT).as_posix(),image_sha256=sha(boot),image_bytes=len(boot),
+        kernel_image_sha256=sha(image),kernel_image_bytes=len(image),ramdisk_sha256=sha(blob),ramdisk_bytes=len(blob),
+        sources=sources,build_tag=hex(tag),probe_offset=hex(offset),probe_bytes=len(payload),probe_sha256=sha(payload),
+        collector_entry=hex(BASE+collector_offset),collector_probe_sha256=collector['probe_sha256'],
+        collector_image_sha256=sha(backup),slot_fnv64=hex(slot_hash),stock_initrd_fnv64=hex(initrd_hash),
+        slot_bytes=len(slot),stock_initrd_bytes=rs,stock_kernel_body_unchanged=True,
+        initrd_bytes_unchanged=True,initrd_after='0x44a00000',property=collector['property'],
+        record_marker=collector['marker'],record_bytes=collector['record_bytes'],journal_marker='MIX1HANDOFFPROB1',
+        android_sha1_roundtrip_valid=True,static_occupancy_check_passed=True,
+        uefi_entered=False,kernel_restore_performed=False,hardware_validation_status='not attempted',
+        limitations=['QEMU does not execute Qualcomm Linux or the phone bootloader.',
+          'No UEFI, MMU/GIC/timer initialization or kernel restoration is exercised.',
+          'FNV checks detect loading errors; boot image identity is independently bound by SHA-256.',
+          'The unchanged aboot manages its download/decompression scratch; the expanded load still needs hardware validation.',
+          'Early exceptions are not exported by this diagnostic.'])
+    (OUT/'package.json').write_text(json.dumps(report,indent=2)+'\n')
+    (ROOT/'reports/handoff-probe-build.json').write_text(json.dumps(report,indent=2)+'\n')
+    print(json.dumps({k:report[k] for k in ('image_path','image_bytes','image_sha256','probe_bytes','build_tag')},indent=2))
+
+if __name__=='__main__': main()

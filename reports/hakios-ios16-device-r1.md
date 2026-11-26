@@ -1,0 +1,1 @@
+R1 已返回 UEFI 结束摘要，未见桌面。原图 SHA256 6848b5be0c58382e9e695a29a495f1caf9ba01860a75bb520e904aa453383d17。可读 Stackshot Succeeded、5707 bytes / uncompressed 15680，周围二进制样式字符覆盖正文，具体 panic 原因无法从照片确认。USB 接收端读取 LANGID 失败退出，未取得控制台字节；不能记作枚举或传输通过。用户已确认返回 Fastboot。R1 不重试，修正日志显示与接收后准备新修订；未重复刷写 userdata。

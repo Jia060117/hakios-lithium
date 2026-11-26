@@ -1,0 +1,2746 @@
+{
+  "passed": true,
+  "inputs": {
+    "manifest_sha256": "b7d25ab8ab96d63cc3997f4a2c822d354bfbb2ea904aa3d16263ef90daec7399",
+    "baseline_commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "port_files": {
+      "README.md": "d4ca2f0c0849dbe81cb693ae6ab3d8be0568ebd9db3311e776f677b4d7a6256d",
+      "archive/ios14/compatibility/ios14-exit-observation.json": "65ed3f28da396af839f5edf097a356b88629576457237f77385262c51fddd483",
+      "archive/ios14/compatibility/ios14-exit-observation.patch": "dd99a2b1600c641349f4af13fca6defdf141e5d2dc058de81ecf7d8b2582738d",
+      "archive/ios14/compatibility/ios14-identity.json": "8b8aee60bd667aecba2d9df23ef262f68e4269407d910446ebf6a66fa85bf541",
+      "archive/ios14/compatibility/ios14-identity.patch": "22245261cde767e38855ee01f1e97e8631b2406e1c9dfb5a72ad28d2887e5dcb",
+      "archive/ios14/compatibility/ios14-mach-msg.json": "77421f31ab52974f5cedbf51d4b3f1848bded04a2f64f3a59708a418afe571c4",
+      "archive/ios14/compatibility/ios14-mach-msg.patch": "968af6abd8833f42f9995c0ac0cffda53e03bc816b8fbbeaaca6e5cd8b518617",
+      "archive/ios14/compatibility/ios14-shared-region.json": "16d2402e87421a2beba402eea2f449146f1f802aa2956d22a788108c707ec6c4",
+      "archive/ios14/compatibility/ios14-shared-region.patch": "084b24c90a018a802b74f0ce5c7f70a3d9352d3ea5b23d7af878c78650bd9cb0",
+      "archive/ios14/compatibility/ios14-system-proxy.c": "187038135d046cfe50e2a93cbc870b0d58c4ad35e71883be586c8419caab7f51",
+      "archive/ios14/compatibility/ios14-xml-entitlements.c": "7e91113550bff715ddbaf0d8858e77348d4b029d3e2eb6076138baa8b734dfa2",
+      "archive/ios14/compatibility/shared-region-438.c": "3b41216c6e60fb7461ce9aac23a654c24aa35b838be98c2574be8bfc8d11ee33",
+      "archive/ios14/patches/0001-msm8996-platform-loader.json": "30fb76f90e2edd59f8eef0548c006b50327adee0fe9514ec675cd2c911d9a3dd",
+      "archive/ios14/patches/0001-msm8996-platform-loader.patch": "4c9dddf9e46e0477455eded85c5dde11ee3f13cc67fcaadf2fa80957016076a1",
+      "archive/ios14/patches/0002-msm8996-platform-observation.json": "210db0f40a0bf9faf3f16a048fbea8d0b1b8bb6e2c82044666886a0ddeb3499a",
+      "archive/ios14/patches/0002-msm8996-platform-observation.patch": "367f25fedb32b8c35f7c49c74e790743fd91cf579b56b11705ff06002ceb631f",
+      "archive/ios14/patches/0003-msm8996-retained-result.json": "cbe0fd8f5eed18808bd98519ce01a86337a16bb7fba7c718c5c812eb124e2057",
+      "archive/ios14/patches/0003-msm8996-retained-result.patch": "e3af19156deab7db251fbbae52c07e1bd567b6787cfe68dd0a0aaabdb97eddd8",
+      "archive/ios14/patches/0004-msm8996-storage-test.json": "8f5fc9f6ecc15236d342ead46f7fa938693f441e834f1ae96f42f562e1352d85",
+      "archive/ios14/patches/0004-msm8996-storage-test.patch": "d21bd06b1acc56b6946478d99d6db9e4dc4a9efd07700865a54d89edced75785",
+      "archive/ios14/patches/0005-msm8996-pid1-fault-observation.json": "53cea613e0119b2d95728576abd3cec083031b9cc4378737fe7fd5706133ad99",
+      "archive/ios14/patches/0005-msm8996-pid1-fault-observation.patch": "0c31bff5a5002e097f0fe04044261f15385570f8364b845187df6c8cac002fe4",
+      "archive/ios14/patches/0006-msm8996-ufs-buffer-map.json": "566471800bacfc5044b739ebba84ab9a22e26a0f653871d12d47d4dd1c5777ce",
+      "archive/ios14/patches/0006-msm8996-ufs-buffer-map.patch": "02820d9df49a235c21831a47a3e62225963c7cb5e9026fc6919653cebce517cd",
+      "archive/ios14/patches/0007-lithium-ios14-dynamic.json": "633bbb9fddc29b275604cd4d0fac9aacd5b104d219ed86613e2279fa7e026e86",
+      "archive/ios14/patches/0007-lithium-ios14-dynamic.patch": "7d8a7f245228a7097237f639940d9157d7bcdfc0697d28875b2132ab0fff359c",
+      "archive/ios14/patches/0008-lithium-d20ap-identity.json": "147d845ec3b335a0c1709c1270461014ca73e5e35b081ec35358a4ad66f51f1c",
+      "archive/ios14/patches/0008-lithium-d20ap-identity.patch": "84dd117e0da6bef45c10a3aa0a00071b685778093fbaf0776e1a0fc3b83354e9",
+      "archive/ios14/patches/0009-lithium-exit-summary.json": "590cd23e9d944e3418acec66638c542ce18636742cc8f5fe3df3b4440f0e23a6",
+      "archive/ios14/patches/0009-lithium-exit-summary.patch": "0ce6a628802a005776c5cd34396b1576ea9c22812b8cbb755b9e9f433f034992",
+      "archive/ios14/patches/0010-lithium-mach14-summary.json": "c899ec9bbffa61f51c1c3f8f321889ef52fb78a097ad6db75fd18f20cfcf7bbd",
+      "archive/ios14/patches/0010-lithium-mach14-summary.patch": "6518c332aa9eaf89e5d710fd65aa39d89d51dbdd03a4855d81317974c374441c",
+      "archive/ios14/patches/0011-lithium-df-trace-summary.json": "b118c18fdf2c0d698c8178b6be86e0e7ab9b3d5afe391474197ed322e9db4fe9",
+      "archive/ios14/patches/0011-lithium-df-trace-summary.patch": "419c391e80deb22e4afa1083b0c09e651182f8005c3846f91c716e7a90905cee",
+      "archive/ios14/patches/0012-lithium-ios14-launchd.json": "adceefb5e6f93f222721ad8a99a2dfde9d21df1de8b80747cdac49c2d88a56b3",
+      "archive/ios14/patches/0012-lithium-ios14-launchd.patch": "e4b873b3e29dcf0c0c5b83e9ad7c7489a5ba9ab100e6bfb7465b1c1d3199d936",
+      "archive/ios14/patches/0013-lithium-launchd-stdio-summary.json": "24fb7d68b0c8c898c94853c8f56ed8af8b02bb85801648367adc06dca2f0927a",
+      "archive/ios14/patches/0013-lithium-launchd-stdio-summary.patch": "3e35be83990be91357919998f4fd38db624fdc17fb42976f6e4f405936cb49db",
+      "archive/ios14/patches/0014-lithium-launchd-handoff.json": "371e2c924e67cde328e5ebca8218b8098f902f3d03397e7976fef742ed8ac22d",
+      "archive/ios14/patches/0014-lithium-launchd-handoff.patch": "b4be07bb728f1a3682426b2717e7d75b52448bf3178b5e6396d80ec82031c533",
+      "archive/ios14/patches/0015-lithium-launchd-observer.json": "1114d697dacbddd46a871ec1319ba2fbf28e99b100cfcf2db4d66ba04fdcde2c",
+      "archive/ios14/patches/0015-lithium-launchd-observer.patch": "2bbb750df03f47a7cbc42ce766e520d51642db7b91b359e86635924333a5a3a9",
+      "archive/ios14/patches/0016-lithium-integrated-ui.patch": "87593a023f868f9cdaaefd1b1bc3ef16e9c34b589b198f3cc1f09f9845dc3442",
+      "archive/ios14/patches/0017-lithium-ios14-surface-abi.patch": "dd0d0ff308cf1f963458e17e06b12b271533032e288ef758fd39ca0f483b083d",
+      "archive/ios14/patches/0018-lithium-ios14-surface-methods.patch": "058fc3578aef08d6ca7e7283e07b220b16dd3ccb7cd5b17437e506f7087accbb",
+      "archive/ios14/patches/0019-lithium-ui-diagnostic-scope.patch": "c27dfbb4cf6f1287a4686836469fcb08d965de63a075f833dd9f2e66dd510fd2",
+      "archive/ios14/patches/0020-lithium-ios14-identity-summary.patch": "4d0228a3a31697e845b9bd7ee65355757f50e3f35f823065834881c10aa0180f",
+      "archive/ios14/tests/ios14_dynamic.h": "0bc4c7b8d80375c338ab1f1bf4be6425ec223f9df46301276256b7669675364c",
+      "archive/ios14/tests/ios14_launchd.h": "b3bc18b9397ca2ec906c933ce70f3cb1dc9c4e7cbbc8b5571c007496d799e596",
+      "archive/ios14/tests/shared-region-438-host.c": "6af60695801db5d340505e42e0300f29f0b3c76a9a9fe7b1a4c08fd6e51c5be0",
+      "archive/ios14/tests/storage_probe.c": "2cb581eb51967e48d497027998df23eb1c61e996c5627e0b679ac6e3d5b89cb9",
+      "config/rc.jobs.ios16": "9e7af5a668bc7c0ae508fffcac4c08be7b83a24db1bfd9e19c068683c7b61e8c",
+      "configs/lithium.config": "f30d7b7749b67917c0c1bf42a2c9f3834ba96e9751472647f3c92cca528dd81b",
+      "configs/lithium_defconfig": "62f5f403f1e20c7e4208db67746c0893004ce68d27754783685413e2a7abb4b4",
+      "device.conf": "7fe7a7c106842309ac5c2fcb7f8a6f80081c2036cf7edbcbbfed250efd847720",
+      "diagnostics/bgr24-pack.inc": "ff04a3fcfb55329416d022491bdd3943fd6c0e1e5414521273e327f3763f2a61",
+      "diagnostics/boot-observer.json": "313ef87a7e17c8688bddf23fe325d227f46fa986c57f67bcc5d7b9adb3538536",
+      "diagnostics/framebuffer-profile.inc": "d083139e3b694f4b354cb15d026b4470279059e70e409928663b202876e03b31",
+      "diagnostics/service-wait-observer.inc": "6e8dc85992d0763f82dd4857bedb4456b23bb0fec14779eea4caef11b9f332c5",
+      "diagnostics/service-wait-observer.json": "974c99f595abb1e8276a2c3b256acf60d321817b6dbe28a739f67e80cdc6d345",
+      "diagnostics/springboard-observer.inc": "6932f9035983fb1d13b026c2abb4a4f8bcb3fbd14641d99ec33510d3965376fe",
+      "diagnostics/thread-wait-observer.inc": "8aa04ff520ce32d65df99361127db3068810e8a09951aa6b67ef7ec901b5faa9",
+      "diagnostics/thread-wait-observer.json": "975fcf9f990d597b040471e0e5734d5a5e0ba9503f7a1245bc5c3e9fbef11ff8",
+      "drivers/usb/conf": "fcb24992a6baa873dd9fa64f8b105f39b1e80c902d7799ea1be7209ed97956cd",
+      "drivers/usb/hakios.lithium_usb.c": "d3a8f21ba0fa005b91aa7f2a338a310bdec8fb5fe6d750aba6c4564e39495c4e",
+      "drivers/usb/usb-provenance.json": "ac06d52d3d1d5ab229feeb67c38e917c87600fb0d6d261686ca78e424df73228",
+      "firmware/BootShim.S": "c0492017bc856e3af78ac451c82d5336cacd0538164b17e6bf423450cb7c725d",
+      "firmware/lithiumPkg/Drivers/LithiumBdsDxe/LithiumBdsDxe.c": "895ac85895dabb68d2adacc777b2d190e71a03c315bef8a6c510857d340f7b55",
+      "firmware/lithiumPkg/Drivers/LithiumBdsDxe/LithiumBdsDxe.inf": "7b17adb01009433db8d0db175aaedf396527c1754f2c100f9d447b984c06ce7b",
+      "firmware/lithiumPkg/Drivers/LithiumConsoleDxe/LithiumConsoleDxe.c": "b28ae43f47d0cad75d9d82fb1a298001adc0631e2054c8eb82cc99cfa5b9536f",
+      "firmware/lithiumPkg/Drivers/LithiumConsoleDxe/LithiumConsoleDxe.inf": "2a3c9ecd86a9faa535051763a3df823d2987a56a2cee321d3ee3ff8fe7de32db",
+      "firmware/lithiumPkg/Drivers/LithiumDisplayDxe/LithiumDisplayDxe.c": "a14ccb750dbc3540c8ee6ac6c4ecfa2e6a62a7b47167975137a8eecb898d6b0d",
+      "firmware/lithiumPkg/Drivers/LithiumDisplayDxe/LithiumDisplayDxe.inf": "fcbd74ef65e07eb0959dda2ae8afc6a290d1f10abb5edfc56aedcb5287ff209f",
+      "firmware/lithiumPkg/Drivers/LithiumRamDiskDxe/LithiumRamDiskDxe.c": "e9f44650ebdc5715267207434cfe59da2fbf85d01ddb387bc9712c0714bdd5d1",
+      "firmware/lithiumPkg/Drivers/LithiumRamDiskDxe/LithiumRamDiskDxe.inf": "e29c22e6249107d4ab7f5630a7db95d9f159118bf6be7a55da4d191a7376cf00",
+      "firmware/lithiumPkg/Drivers/LithiumUfsDxe/LithiumUfsDxe.c": "114b66926adb28b8ffbcea0cc5d78fc64d9c5ef4283eddff7d86161c60de08e1",
+      "firmware/lithiumPkg/Drivers/LithiumUfsDxe/LithiumUfsDxe.inf": "c66b9546faa058c48c2645d6cb2cda2d1aae9cc1297b0813a96b1948794d69cd",
+      "firmware/lithiumPkg/Drivers/LithiumUfsDxe/WarmUfs.inc": "40cc28fb6eebec3afbbf604a5f5c6060620caeaf4bae682c8ebae1190d56a2f9",
+      "firmware/lithiumPkg/Drivers/LithiumUfsDxe/storage-provenance.json": "28e35143b5b2db3efd23c591d696d63665fc79081bc8457cb58ab64557b45f7e",
+      "firmware/lithiumPkg/Include/Lithium.h": "960b5694e0231b5ff748b92fabeec2ae53c1e52e3124a2aa689c8e15359eb1df",
+      "firmware/lithiumPkg/Include/LithiumStorage.h": "4e78cb970dbe8d51238e865ba85d9afe4633d5ee23cf654b8e2bedc6ecb9638e",
+      "firmware/lithiumPkg/Include/Payload.h": "a866c2ffe52c5e87ce433958f109b52d2a9be606084fd58b93d1fe30f19e0569",
+      "firmware/lithiumPkg/Library/MemoryMapLib/MemoryMap.c": "53abf2caedf13aaa37162f5dc5f73520e5a2c0453245af1a7e31055eb054c908",
+      "firmware/lithiumPkg/Library/MemoryMapLib/MemoryMapLib.inf": "0f881749820ae85cef060cd6f06d091b25978322f95834adfea26d92bda072b0",
+      "firmware/lithiumPkg/Library/PlatformPeiLib/PlatformPei.c": "55d5f1832b99dead4a15986e4c1ab82a2a96e67878c0e40475d3e8efe519706e",
+      "firmware/lithiumPkg/Library/PlatformPeiLib/PlatformPeiLib.inf": "d2f98dba25535195880ff5168f7ccf3e14cfef0415471f88d2b9e770a66ffe2c",
+      "firmware/lithiumPkg/Library/PlatformSecLib/PlatformAssembly.S": "e2a289ceadffb7cdc2625ecadbc12ff33ce19a31342c227047a7d8047b14eeb8",
+      "firmware/lithiumPkg/Library/PlatformSecLib/PlatformSec.c": "a66dee9b47b00b75bd6c37c86edfcc64dbb38c7ab185886e939763370d0372de",
+      "firmware/lithiumPkg/Library/PlatformSecLib/PlatformSecLib.inf": "1cf5138c484bf3a0389d929132a5f0f6cab96979f9c9186accffda7d3a2d1bd6",
+      "firmware/lithiumPkg/Library/ResetSystemLib/ResetSystem.c": "53c6ee09a80e3a1c364cafcac9ab9a8da501aff5efd38ea5975c049403d8a08e",
+      "firmware/lithiumPkg/Library/ResetSystemLib/ResetSystemLib.inf": "2093985b7a97612cc7c8025da54d0fd30a6606fcd5454e99d2ab015edab8ff69",
+      "firmware/lithiumPkg/Library/SerialPortLib/SerialPort.c": "967ea8f9326df0d24ca305c47d861ee99a4bfb9a7c38250b4133f97f63adfa25",
+      "firmware/lithiumPkg/Library/SerialPortLib/SerialPortLib.inf": "f769922bd94c2c9f9e0dbd67dab9b93ea444acfe548f2094b71af6485acd7429",
+      "firmware/lithiumPkg/lithium.dsc": "0318dfa842b1a5d24a66fb749bb6230392d2ef2c3fafaf4e282b622cbd88916d",
+      "firmware/lithiumPkg/lithium.fdf": "5c41783fcbc813819d915d4ab35189047f6cd57e9d869a05e84c73094672eebb",
+      "firmware/lithiumPkg/lithiumPkg.dec": "bb17cadd803d8e49adfdf7236b872e56a60865df55fb22a50292cd8e22e54c86",
+      "patches/0001-lithium-ios16-device.patch": "0d207d892cbe7004456064c611b84421ab70b88dd0f9fd0493d104680d4fbd5d",
+      "patches/0002-lithium-usb-log.patch": "90b87e3ff8369821293af0e9d3043677dd40ee3b376490ca41725108b0896179",
+      "patches/0003-lithium-ios16-storage.patch": "ef00a0df78ce85a9fb4fea62592823c749982edee8b549a6bb77cf057272159a",
+      "patches/0003-lithium-panic-text-summary.patch": "6db62f611ba16c272f6e6a591c5b939a7823da0e3c6609e46f92e85b137309d7",
+      "patches/0004-lithium-static-userland-linker.patch": "aa41f2fa7069cd2eff393a05dcb19611ec2649ff15d48891211e360d416513e4",
+      "patches/0004-lithium-userland-linker.patch": "33a62fc2b81244f2f136cc4bf4a3186eda20c3c3196db70c9583d1b45ffc5104",
+      "patches/0005-lithium-console-capture.patch": "6d4dd193d90d169b4c7c45c71b5bf7688f529696bac44647ad98f849ad6d1987",
+      "patches/0006-lithium-ui-observation.patch": "21d5f3bc24b83af016433b7cabf8e7e2db1e071dfa657ddc8d88ba804d168a2a",
+      "patches/0007-lithium-boot-observer.patch": "d5cdd8ef34339b933897ebe9300089a019eb281226084c722b17182ce6c1d39b",
+      "patches/0008-lithium-thread-wait-profile.patch": "5bd36cd4de85295b5c2c8f39de936e8ee2b8d50e2014766d27a302d5fda97c12",
+      "patches/0009-lithium-service-wait-bgr24.patch": "b2c54423723ae6e2cfad2d79964f331b14c6b7d3502101eecb2b389487093efc",
+      "soc/configs/msm8996.config": "51c6e8236d3786659132f9bcfc0837c38f4d9d220c24ad4f41e28e6fbb00090a",
+      "soc/soc.conf": "8fff4048551a2f60e89a21387687c3b1616272242cc86f76ddfa673bae91c4e9"
+    }
+  },
+  "supplied_inputs_sha256": "dbe5b42db4c5fb4ab8d1d0a8fd01de36a385503412493200ed65792ec5393181",
+  "outputs": {
+    "userland/root.apfs": {
+      "bytes": 4194304,
+      "sha256": "ba2b79a49effe136daa031677a45fbc08603fc9d467a8a42583a6defad77196d"
+    },
+    "userland/flashboot.apfs": {
+      "bytes": 4194304,
+      "sha256": "b48dd157a3aa981fb40ee7ba2d24628dc268acb48756c89492454a03bbb8d625"
+    },
+    "userland/system.apfs": {
+      "bytes": 2476716032,
+      "sha256": "f9465f526753f9a0d3b9a2f9604650421bfd680a8c43f8e751966dfa7baab4fa"
+    },
+    "userland/root/etc/var.skel": {
+      "bytes": 6175,
+      "sha256": "4ade790e39ed6ce247ad184129fe4fd87efcaf78b7165a7563b70b9b564c44a9"
+    },
+    "userland/root/etc/inject.conf": {
+      "bytes": 262,
+      "sha256": "6cdb1bb0776624814acb1662fcfe7a74dd3cef5fc292dd4bfcf5b75ab4bccebb"
+    },
+    "userland/root/etc/rc": {
+      "bytes": 88,
+      "sha256": "7e8fcd0ff6ea4b1db356842d901ab75c3ef8364cb9669b7ee7d3d1f0f09ed435"
+    }
+  },
+  "jobs": {
+    "com.apple.ABDatabaseDoctor": {
+      "path": "com.apple.ABDatabaseDoctor.plist",
+      "sha256": "cca19d8ea6561bdb0b19fd717f374a1cc32eaa5f2e2bf5f0fdea450c8e84cd1b",
+      "program": "/System/Library/Frameworks/AddressBook.framework/Support/ABDatabaseDoctor",
+      "mode": "0644"
+    },
+    "com.apple.AccessibilityUIServer": {
+      "path": "com.apple.AccessibilityUIServer.plist",
+      "sha256": "ef2469447853996d19ed3cddd691f198f849d080581d8cb5893a4ed8b5d14221",
+      "program": "/System/Library/CoreServices/AccessibilityUIServer.app/AccessibilityUIServer",
+      "mode": "0644"
+    },
+    "com.apple.AdminLite": {
+      "path": "com.apple.AdminLite.plist",
+      "sha256": "1f7029193a463a2139de638fe1ee2d5dd548221ff5db29f749cd0af2af18f788",
+      "program": "/System/Library/PrivateFrameworks/AdminLite.framework/Resources/AdminLiteTool",
+      "mode": "0644"
+    },
+    "com.apple.AppSSODaemon": {
+      "path": "com.apple.AppSSODaemon.plist",
+      "sha256": "3d4ce9ddabcc4a273b62bba6a571bae54c93d541a726b0443acddb584b6c3157",
+      "program": "/System/Library/PrivateFrameworks/AppSSO.framework/Support/AppSSODaemon",
+      "mode": "0644"
+    },
+    "com.apple.AssetCacheLocatorService": {
+      "path": "com.apple.AssetCacheLocatorService.plist",
+      "sha256": "39b2fadae581751dacdf6f7983e474429ec0a4fd4df2381c77de1e58f8a58e41",
+      "program": "/System/Library/PrivateFrameworks/AssetCacheServices.framework/XPCServices/AssetCacheLocatorService.xpc/AssetCacheLocatorService",
+      "mode": "0644"
+    },
+    "com.apple.AuthenticationServicesCore.AuthenticationServicesAgent": {
+      "path": "com.apple.AuthenticationServicesCore.AuthenticationServicesAgent.plist",
+      "sha256": "ba2084a1c92479c56000b5490c9a0be3207e2676a648b4d11ce68e0186fd7371",
+      "program": "/System/Cryptexes/App/usr/libexec/AuthenticationServicesAgent",
+      "mode": "0644"
+    },
+    "com.apple.BarcodeSupport.BarcodeNotificationService": {
+      "path": "com.apple.BarcodeSupport.BarcodeNotificationService.plist",
+      "sha256": "a4de530eca26e893770a900118ac1e762552cbfeff5fd97fbdd593e8e08b7c4f",
+      "program": "/System/Library/PrivateFrameworks/BarcodeSupport.framework/com.apple.BarcodeSupport.BarcodeNotificationService",
+      "mode": "0644"
+    },
+    "com.apple.BlueTool": {
+      "path": "com.apple.BlueTool.plist",
+      "sha256": "2355996784fd49205f43fa1941a4a62df8334e089507b1f24965973235ea4bc5",
+      "program": "/usr/sbin/BlueTool",
+      "mode": "0644"
+    },
+    "com.apple.CallHistorySyncHelper": {
+      "path": "com.apple.CallHistorySyncHelper.plist",
+      "sha256": "0200de1aba46debde198459abbfca9177dda78abda06cbf0f264dff160ada567",
+      "program": "/System/Library/PrivateFrameworks/CallHistory.framework/Support/CallHistorySyncHelper",
+      "mode": "0644"
+    },
+    "com.apple.CarPlayApp": {
+      "path": "com.apple.CarPlayApp.plist",
+      "sha256": "5f8841c8b4ebd28958206fe708aefe1b66713dcebf1cf87d6cfdfcbabd66a40a",
+      "program": "/System/Library/CoreServices/CarPlay.app/CarPlay",
+      "mode": "0644"
+    },
+    "com.apple.ClarityBoard": {
+      "path": "com.apple.ClarityBoard.plist",
+      "sha256": "779a12dcc1a41d73eba02bff4defeffbdc8eab05086b0072e6e612878bb1961f",
+      "program": "/System/Library/CoreServices/ClarityBoard.app/ClarityBoard",
+      "mode": "0644"
+    },
+    "com.apple.ClipServices.clipserviced": {
+      "path": "com.apple.ClipServices.clipserviced.plist",
+      "sha256": "c11c8d59edba285b5fcb7ca2ec82f4aa19f4293ffd5a5856474d676f56b1334a",
+      "program": "/System/Library/PrivateFrameworks/ClipServices.framework/clipserviced",
+      "mode": "0644"
+    },
+    "com.apple.ClockAngel": {
+      "path": "com.apple.ClockAngel.plist",
+      "sha256": "0a3f2ed032bc3cdd2d0adbde3b5af393ac9d362a4d1c99663d2ea14479fd8774",
+      "program": "/Applications/ClockAngel.app/ClockAngel",
+      "mode": "0644"
+    },
+    "com.apple.CoreAuthentication.daemon": {
+      "path": "com.apple.CoreAuthentication.daemon.plist",
+      "sha256": "d190535f46bd70232d1f99ece05491b0b7cd4aba109ed4c0ff2badd1ae9144b8",
+      "program": "/System/Library/Frameworks/LocalAuthentication.framework/Support/coreauthd",
+      "mode": "0644"
+    },
+    "com.apple.DMHelper": {
+      "path": "com.apple.DMHelper.plist",
+      "sha256": "4525350cb877382fc829e50885c6e81e62ff27adc5eca9299b50e49c83423232",
+      "program": "/System/Library/Frameworks/CoreTelephony.framework/Support/DMHelper",
+      "mode": "0644"
+    },
+    "com.apple.DataDetectorsSourceAccess": {
+      "path": "com.apple.DataDetectorsSourceAccess.plist",
+      "sha256": "7d9fbc9a9cd32b4521c20f56b4ef2e57ec7fb41cba1f82687a8a9e51ade7f1d4",
+      "program": "/usr/libexec/DataDetectorsSourceAccess",
+      "mode": "0644"
+    },
+    "com.apple.DesktopServicesHelper": {
+      "path": "com.apple.DesktopServicesHelper.plist",
+      "sha256": "cbc8ef0bfd5b46fc69f3b994e11703d16b6716482113b7670d2c75542a22fa49",
+      "program": "/System/Library/PrivateFrameworks/DesktopServicesPriv.framework/DesktopServicesHelper",
+      "mode": "0644"
+    },
+    "com.apple.DragUI.druid": {
+      "path": "com.apple.DragUI.druid.plist",
+      "sha256": "bbaa6a742cfd40ac3b8e3cacf2d8b8613340cdd33654d0b908809b8cfbfc59ef",
+      "program": "/System/Library/PrivateFrameworks/DragUI.framework/Support/druid",
+      "mode": "0644"
+    },
+    "com.apple.FamilyControlsAgent": {
+      "path": "com.apple.FamilyControlsAgent.plist",
+      "sha256": "b5b18c55f4d7a9b8088c8d866be0688c3de4de785843e104deedf718de3a87df",
+      "program": "/System/Library/Frameworks/FamilyControls.framework/FamilyControlsAgent",
+      "mode": "0644"
+    },
+    "com.apple.FileCoordination": {
+      "path": "com.apple.FileCoordination.plist",
+      "sha256": "920c3f987136eb7b21d01b13817255eca3b11a8712fbde0acb214fb5e769d0cd",
+      "program": "/usr/sbin/filecoordinationd",
+      "mode": "0644"
+    },
+    "com.apple.FileProvider": {
+      "path": "com.apple.FileProvider.plist",
+      "sha256": "1ed55a1fe044b00911be17d891dbb43c70c0e1a454c1c91f6a7d408a381d3423",
+      "program": "/System/Library/Frameworks/FileProvider.framework/Support/fileproviderd",
+      "mode": "0644"
+    },
+    "com.apple.GSSCred": {
+      "path": "com.apple.GSSCred.plist",
+      "sha256": "71f029d636537f5360ad200d74a496afbc411e5a9a8fdad9810d61de7c159fea",
+      "program": "/System/Library/Frameworks/GSS.framework/Helpers/GSSCred",
+      "mode": "0644"
+    },
+    "com.apple.GameController.gamecontrollerd": {
+      "path": "com.apple.GameController.gamecontrollerd.plist",
+      "sha256": "8e9fe485bd5c9ee692bcd76e051fba95fbc2274a9dfebc72e660b1ba23c898b5",
+      "program": "/usr/libexec/gamecontrollerd",
+      "mode": "0644"
+    },
+    "com.apple.IOAccelMemoryInfoCollector": {
+      "path": "com.apple.IOAccelMemoryInfoCollector.plist",
+      "sha256": "4dc3336df2cf8cbb9cd6f8bd2d7b5c61b404d992bb1554efe2afb97b823e211b",
+      "program": "/usr/libexec/IOAccelMemoryInfoCollector",
+      "mode": "0644"
+    },
+    "com.apple.InputUI": {
+      "path": "com.apple.InputUI.plist",
+      "sha256": "8d01bd9452a3391f447363c1e7f79a04cd717279f3ef38ad08b817d93cc0ad32",
+      "program": "/Applications/InputUI.app/InputUI",
+      "mode": "0644"
+    },
+    "com.apple.MTLAssetUpgraderD": {
+      "path": "com.apple.MTLAssetUpgraderD.plist",
+      "sha256": "7059d6131682c7a071ac087ef3b339fea1c5a74def7390714ea2d234c868d2bd",
+      "program": "/usr/libexec/MTLAssetUpgraderD",
+      "mode": "0644"
+    },
+    "com.apple.ManagedSettingsAgent": {
+      "path": "com.apple.ManagedSettingsAgent.plist",
+      "sha256": "17b8f9df5fc4e2ac9250f95d6e7bb5946caae4c2d9630daa111888f14cdf8871",
+      "program": "/System/Library/Frameworks/ManagedSettings.framework/ManagedSettingsAgent",
+      "mode": "0644"
+    },
+    "com.apple.Maps.mapspushd": {
+      "path": "com.apple.Maps.pushdaemon.plist",
+      "sha256": "3b73183db81e6443223a23c240c23b74f87d4c7a1ec11100c7d935f97d4ebe68",
+      "program": "/System/Library/PrivateFrameworks/MapsSupport.framework/mapspushd",
+      "mode": "0644"
+    },
+    "com.apple.MediaRemoteUI": {
+      "path": "com.apple.MediaRemoteUI.plist",
+      "sha256": "380c1559dceaefbfa7c186b0213120de9ad64e57385160ab207d535e8630e8aa",
+      "program": "/Applications/MediaRemoteUI.app/MediaRemoteUI",
+      "mode": "0644"
+    },
+    "com.apple.MobileFileIntegrity": {
+      "path": "com.apple.MobileFileIntegrity.plist",
+      "sha256": "064dfc2a5722357f8cb866bfafa66d3053b5e3ac1bc8bbfa1eb86ec95b44e2d3",
+      "program": "/usr/libexec/amfid",
+      "mode": "0644"
+    },
+    "com.apple.MobileInternetSharing": {
+      "path": "com.apple.MobileInternetSharing.plist",
+      "sha256": "64b3d8a6d02683b2f99078ab7b199a7be62fd9ac60c7d7dc5cde6053fb11682b",
+      "program": "/usr/libexec/misd",
+      "mode": "0644"
+    },
+    "com.apple.nlcd": {
+      "path": "com.apple.NetworkLinkConditioner.plist",
+      "sha256": "4f1a1b820a0aa6fa2ba05d96a872bb22be1227f37ae3196ea2401caa7300122b",
+      "program": "/usr/libexec/nlcd",
+      "mode": "0644"
+    },
+    "com.apple.OTACrashCopier": {
+      "path": "com.apple.OTACrashCopier.plist",
+      "sha256": "31eaa27da941e16ce6038d67b07d235e6b92058a9e1a1206372f3a0006a707c3",
+      "program": "/System/Library/CoreServices/OTACrashCopier",
+      "mode": "0644"
+    },
+    "com.apple.OTATaskingAgent": {
+      "path": "com.apple.OTATaskingAgent.plist",
+      "sha256": "78fd5163b3a8c89ec20af8991c6ee0493895bb2a6046a8cef82297f7aa582b8b",
+      "program": "/usr/libexec/OTATaskingAgent",
+      "mode": "0644"
+    },
+    "com.apple.PaperBoard": {
+      "path": "com.apple.PaperBoard.plist",
+      "sha256": "b7a7067ee2b92baa61917aa3dd66bfe94f81b58c12e8bd48fb8179fa35e6e68d",
+      "program": "/Applications/PaperBoard.app/PaperBoard",
+      "mode": "0644"
+    },
+    "com.apple.PassbookUISceneService": {
+      "path": "com.apple.PassbookUISceneService.plist",
+      "sha256": "8dee826290c0ec21905b968bd9f006ea693747ae98dcfecfd100c2b05b5ae04b",
+      "program": "/Applications/PassbookUISceneService.app/PassbookUISceneService",
+      "mode": "0644"
+    },
+    "com.apple.PerfPowerServicesExtended": {
+      "path": "com.apple.PerfPowerServicesExtended.plist",
+      "sha256": "d9db19edbbabcc3a5548230a3cfc4b590ac8cbb100d7b9ef615556ce2370d6c7",
+      "program": "/usr/bin/PerfPowerServicesExtended",
+      "mode": "0644"
+    },
+    "com.apple.PointerUI.pointeruid": {
+      "path": "com.apple.PointerUI.pointeruid.plist",
+      "sha256": "8e2cda29f0981b6498e972f7ab537549cbba6dda23abb7c14ce3311d40bb6dd7",
+      "program": "/System/Library/PrivateFrameworks/PointerUIServices.framework/Support/pointeruid",
+      "mode": "0644"
+    },
+    "com.apple.PosterBoard": {
+      "path": "com.apple.PosterBoard.plist",
+      "sha256": "8978426054de2928472aa3fe97218b1d6d48e65e42746e3b87f7d9893c337ecd",
+      "program": "/Applications/PosterBoard.app/PosterBoard",
+      "mode": "0644"
+    },
+    "com.apple.PowerUIAgent": {
+      "path": "com.apple.PowerUIAgent.plist",
+      "sha256": "261563a3f362f7c92dc5cc886be8d500556e227ccfdbdcea86fcddb936f6a35a",
+      "program": "/usr/libexec/PowerUIAgent",
+      "mode": "0644"
+    },
+    "com.apple.ProxiedCrashCopier.ProxyingDevice": {
+      "path": "com.apple.ProxiedCrashCopier.ProxyingDevice.plist",
+      "sha256": "66cf07615604cd856615baa92b37851c889810aa7ed2ce02035e99abc4dc3ac4",
+      "program": "/usr/libexec/ProxiedCrashCopier",
+      "mode": "0644"
+    },
+    "com.apple.PurpleReverseProxy": {
+      "path": "com.apple.PurpleReverseProxy.plist",
+      "sha256": "09d85f6974d01c8dbb6fc6a4ef08931352daceacf23b9188180d6a178ac604fa",
+      "program": "/usr/libexec/PurpleReverseProxy",
+      "mode": "0644"
+    },
+    "com.apple.RemoteManagementAgent": {
+      "path": "com.apple.RemoteManagementAgent.plist",
+      "sha256": "a6a5ed1d96fdb5222c1f93e0225210e1a3d9d011dbcecc5e4ecf62856b8a6cdb",
+      "program": "/System/Library/PrivateFrameworks/RemoteManagement.framework/RemoteManagementAgent",
+      "mode": "0644"
+    },
+    "com.apple.ReportMemoryException": {
+      "path": "com.apple.ReportMemoryException.plist",
+      "sha256": "a9d72a2e946709592ed2d92834968b7b145a441da644a73cb2bcfe8410e1e2f6",
+      "program": "/usr/libexec/ReportMemoryException",
+      "mode": "0644"
+    },
+    "com.apple.SCHelper": {
+      "path": "com.apple.SCHelper.plist",
+      "sha256": "2deb3bb30cad83366f42e3c13bda042053e7325dec916935002cc652cf5755e0",
+      "program": "/System/Library/Frameworks/SystemConfiguration.framework/SCHelper",
+      "mode": "0644"
+    },
+    "com.apple.Safari.History": {
+      "path": "com.apple.Safari.History.plist",
+      "sha256": "d7381fea184dc60cc21f0a1cfdd2af45a73071a84cb5f62423d063842b1d58e8",
+      "program": "/System/Cryptexes/App/usr/libexec/com.apple.Safari.History",
+      "mode": "0644"
+    },
+    "com.apple.Safari.SafeBrowsing.Service": {
+      "path": "com.apple.Safari.SafeBrowsing.Service.plist",
+      "sha256": "4c3d871390cc0793fd5453557ba3d07fe93f5edf6d34858feefd434a57411927",
+      "program": "/System/Library/PrivateFrameworks/SafariSafeBrowsing.framework/com.apple.Safari.SafeBrowsing.Service",
+      "mode": "0644"
+    },
+    "com.apple.Safari.passwordbreachd": {
+      "path": "com.apple.Safari.passwordbreachd.plist",
+      "sha256": "62ced247760f6060fa79b1190e4d353279dc57cf97dc472b27f7b7c11376d6aa",
+      "program": "/System/Cryptexes/App/usr/libexec/passwordbreachd",
+      "mode": "0644"
+    },
+    "com.apple.SafariBookmarksSyncAgent": {
+      "path": "com.apple.SafariBookmarksSyncAgent.plist",
+      "sha256": "94998507345955f34919ec6bff5724eb568e3678b11071f0eca471106adaa2ac",
+      "program": "/System/Cryptexes/App/System/Library/CoreServices/SafariSupport.bundle/SafariBookmarksSyncAgent",
+      "mode": "0644"
+    },
+    "com.apple.ScreenTimeAgent": {
+      "path": "com.apple.ScreenTimeAgent.plist",
+      "sha256": "daf42d8f66a3f8959e9bdc7ffdd2daaa58b36b9179079fc45d5aaa8a85735860",
+      "program": "/System/Library/PrivateFrameworks/ScreenTimeCore.framework/ScreenTimeAgent",
+      "mode": "0644"
+    },
+    "com.apple.SecureBackupDaemon": {
+      "path": "com.apple.SecureBackupDaemon.plist",
+      "sha256": "f29dffeccc41018dc0c51397d45b622e90960647ba84ee87cb732e4f7f43d6e2",
+      "program": "/System/Library/PrivateFrameworks/CloudServices.framework/Helpers/com.apple.sbd",
+      "mode": "0644"
+    },
+    "com.apple.ShortcutsUI": {
+      "path": "com.apple.ShortcutsUI.plist",
+      "sha256": "b3301ab936b33137658075f2f4e6452edcf4874f811cad104384a06cc8b2ae92",
+      "program": "/Applications/ShortcutsUI.app/ShortcutsUI",
+      "mode": "0644"
+    },
+    "com.apple.SpringBoard": {
+      "path": "com.apple.SpringBoard.plist",
+      "sha256": "ee0b092ba399c1c629fe5642bf7b66a06795a7235b84db54a82f6e5690b717a1",
+      "program": "/System/Library/CoreServices/SpringBoard.app/SpringBoard",
+      "mode": "0644"
+    },
+    "com.apple.StatusKitAgent": {
+      "path": "com.apple.StatusKitAgent.plist",
+      "sha256": "c7d756b264ab852fcf2dce47e95b16515fb7779bb5370ede63c07b7b5a8f4a3f",
+      "program": "/System/Library/PrivateFrameworks/StatusKit.framework/StatusKitAgent",
+      "mode": "0644"
+    },
+    "com.apple.SyncAgent": {
+      "path": "com.apple.SyncAgent.plist",
+      "sha256": "a2602b15a83f856966d64331bf4ec4f848194e39af7727996e6584260e36e285",
+      "program": "/usr/libexec/SyncAgent",
+      "mode": "0644"
+    },
+    "com.apple.TextInput.kbd": {
+      "path": "com.apple.TextInput.kbd.plist",
+      "sha256": "7138ca1e59bd392f00bd21d7f1e0f779014e1941a7b7f1e333e681fd8c7c2f7e",
+      "program": "/System/Library/TextInput/kbd",
+      "mode": "0644"
+    },
+    "com.apple.ThreadCommissionerService": {
+      "path": "com.apple.ThreadCommissionerService.plist",
+      "sha256": "7431585741866afbb846d672d84f93223a693d83734b2d361fe423d6b342e09e",
+      "program": "/System/Library/PrivateFrameworks/CoreThreadCommissionerService.framework/CoreThreadCommissionerServiced",
+      "mode": "0644"
+    },
+    "com.apple.UIKit.OverlayUI": {
+      "path": "com.apple.UIKit.OverlayUI.plist",
+      "sha256": "f09e43b6326894ff1a4405a96f60edb6d760b71bcee8ddb8a7bc99e0fd6da372",
+      "program": "/System/Library/CoreServices/OverlayUI.app/OverlayUI",
+      "mode": "0644"
+    },
+    "com.apple.UsageTrackingAgent": {
+      "path": "com.apple.UsageTrackingAgent.plist",
+      "sha256": "a1c842a0a6dd5b6c1efca5efa48976d9681ecdd38b1088d58fae1ebf5c1fa2c9",
+      "program": "/System/Library/PrivateFrameworks/UsageTracking.framework/UsageTrackingAgent",
+      "mode": "0644"
+    },
+    "com.apple.UserEventAgent-System": {
+      "path": "com.apple.UserEventAgent-System.plist",
+      "sha256": "24315eddfdb6cc83ebdcf3a4d80f41ff5caac428f4eec37c1ff6618b2072306b",
+      "program": "/usr/libexec/UserEventAgent",
+      "mode": "0644"
+    },
+    "com.apple.VoiceOverTouch": {
+      "path": "com.apple.VoiceOverTouch.plist",
+      "sha256": "201afeb1f248c7755c36b9a91269458811a633c5232964d9da6dbf879fb81eb1",
+      "program": "/System/Library/CoreServices/VoiceOverTouch.app/vot",
+      "mode": "0644"
+    },
+    "com.apple.WebBookmarks.webbookmarksd": {
+      "path": "com.apple.WebBookmarks.webbookmarksd.plist",
+      "sha256": "616ca28ff7f13eb885015f6b16972d30b9b11da831f1f565681f8e78065ebfb7",
+      "program": "/System/Cryptexes/App/usr/libexec/webbookmarksd",
+      "mode": "0644"
+    },
+    "com.apple.WirelessRadioManager": {
+      "path": "com.apple.WirelessRadioManager.plist",
+      "sha256": "9e7341c9f134fe694a11ede904a5303d7ece8c8ca37b98b20ce1cd61e6010820",
+      "program": "/usr/sbin/WirelessRadioManagerd",
+      "mode": "0644"
+    },
+    "com.apple.abm-helper": {
+      "path": "com.apple.abm-helper.plist",
+      "sha256": "15e17936353410c295f5f11a9294d41a196273316efcf5e88ef9b7cc5169ed6d",
+      "program": "/System/Library/PrivateFrameworks/ABMHelper.framework/Support/abm-helper",
+      "mode": "0644"
+    },
+    "com.apple.absd": {
+      "path": "com.apple.absd.plist",
+      "sha256": "3fcb016551bcf8786f63d974e464792cbf9947ca2edef7d5d2dbe5a37b78693e",
+      "program": "/usr/sbin/absd",
+      "mode": "0644"
+    },
+    "com.apple.accessibility.axassetsd": {
+      "path": "com.apple.accessibility.axassetsd.plist",
+      "sha256": "3f4bfb17dea252caea902c209dec06b82ea863e0e53c9c4c3b865e2ad545b24a",
+      "program": "/System/Library/PrivateFrameworks/AXAssetLoader.framework/Support/axassetsd",
+      "mode": "0644"
+    },
+    "com.apple.accessibility.heard": {
+      "path": "com.apple.accessibility.heard.plist",
+      "sha256": "17b98743ff2a3d3cd6e2b401a409e296f7f2199c81704c833f34148b7db8632d",
+      "program": "/System/Library/PrivateFrameworks/HearingCore.framework/heard",
+      "mode": "0644"
+    },
+    "com.apple.accessibility.motiontrackingd": {
+      "path": "com.apple.accessibility.motiontrackingd.plist",
+      "sha256": "da4546009f842cde4e472b2d20321ecf3e23fa2c6d3012b561518dc9b7bb2b95",
+      "program": "/System/Library/PrivateFrameworks/AccessibilitySharedSupport.framework/Support/motiontrackingd",
+      "mode": "0644"
+    },
+    "com.apple.accessoryupdaterd": {
+      "path": "com.apple.accessoryupdaterd.plist",
+      "sha256": "671451f5b1b03f34422c4d2365bfcf38611a67cde097158b213fc734a163ac1e",
+      "program": "/System/Library/PrivateFrameworks/MobileAccessoryUpdater.framework/Support/accessoryupdaterd",
+      "mode": "0644"
+    },
+    "com.apple.accountsd": {
+      "path": "com.apple.accountsd.plist",
+      "sha256": "599f929cd8b91b4b4b7e82115b092ff13e24c8e758ca8453998568e7ec77ce53",
+      "program": "/System/Library/Frameworks/Accounts.framework/accountsd",
+      "mode": "0644"
+    },
+    "com.apple.activityawardsd": {
+      "path": "com.apple.activityawardsd.plist",
+      "sha256": "e7dba64559e4dd4711f2216ed771e16ca0c2ea16ff4e9a45e4bdb7a0d28550e0",
+      "program": "/System/Library/PrivateFrameworks/ActivityAwardsServices.framework/activityawardsd",
+      "mode": "0644"
+    },
+    "com.apple.adid": {
+      "path": "com.apple.adid.plist",
+      "sha256": "6ee9546bcccaf36a2a25457dca476f2101e91a8b9e408ccd1ebe54d073af977d",
+      "program": "/usr/libexec/adid",
+      "mode": "0644"
+    },
+    "com.apple.afcd": {
+      "path": "com.apple.afcd.plist",
+      "sha256": "610f928d567e432078302d0e992bf697a0e821baaaf6bf5013172ede7ced2083",
+      "program": "/usr/libexec/afcd",
+      "mode": "0644"
+    },
+    "com.apple.aggregated.addaily": {
+      "path": "com.apple.aggregated.addaily.plist",
+      "sha256": "174750e7893e7f8dade7020d321dac35b29b0a5c7dcd774cbcd98df70ed493d9",
+      "program": "/System/Library/PrivateFrameworks/AggregateDictionary.framework/Support/addaily",
+      "mode": "0644"
+    },
+    "com.apple.aggregated": {
+      "path": "com.apple.aggregated.plist",
+      "sha256": "a3f02384e0d1b90154cdd041d8396e3009b0ad2c7ab5b5e1b5c5ccb984119e29",
+      "program": "/System/Library/PrivateFrameworks/AggregateDictionary.framework/Support/aggregated",
+      "mode": "0644"
+    },
+    "com.apple.akd": {
+      "path": "com.apple.akd.plist",
+      "sha256": "fbe950514fd4bab1e0c816b16094ad364c9fc200173d0e0ca38824173211cd1c",
+      "program": "/System/Library/PrivateFrameworks/AuthKit.framework/akd",
+      "mode": "0644"
+    },
+    "com.apple.amsaccountsd": {
+      "path": "com.apple.amsaccountsd.plist",
+      "sha256": "11474be8b2d62a298343e8f7ea35afc08ff1b0cefcc668e0c553740e504cfee6",
+      "program": "/System/Library/PrivateFrameworks/AppleMediaServices.framework/amsaccountsd",
+      "mode": "0644"
+    },
+    "com.apple.amsengagementd": {
+      "path": "com.apple.amsengagementd.plist",
+      "sha256": "7d1292a2416388d9731f742d8ecfe9d29d6cc5e9616ed7c67b6ab159947d9157",
+      "program": "/System/Library/PrivateFrameworks/AppleMediaServicesUI.framework/amsengagementd",
+      "mode": "0644"
+    },
+    "com.apple.analyticsd": {
+      "path": "com.apple.analyticsd.plist",
+      "sha256": "6cf1b3f74cb14ab777986cb283956a8064fbd53b04cbe1cd002e2f60b2fbe0c6",
+      "program": "/System/Library/PrivateFrameworks/CoreAnalytics.framework/Support/analyticsd",
+      "mode": "0644"
+    },
+    "com.apple.and": {
+      "path": "com.apple.and.plist",
+      "sha256": "b8f92b74b275570b6a28f4499a035b43050702458f700dda90532f5ec427e078",
+      "program": "/System/Library/PrivateFrameworks/AccountNotification.framework/and",
+      "mode": "0644"
+    },
+    "com.apple.announced": {
+      "path": "com.apple.announced.plist",
+      "sha256": "7ca1431ee68120bad26db3046e918e9358ba7d061ca08f8370aef136ea302b2a",
+      "program": "/usr/libexec/announced",
+      "mode": "0644"
+    },
+    "com.apple.anomalydetectiond": {
+      "path": "com.apple.anomalydetectiond.plist",
+      "sha256": "7d125239e6276ef562b9981022088c7c3df8d2b45bd3a6a1e34ef013fea5525c",
+      "program": "/usr/libexec/anomalydetectiond",
+      "mode": "0644"
+    },
+    "com.apple.ap.adprivacyd": {
+      "path": "com.apple.ap.adprivacyd.plist",
+      "sha256": "039dda59623dea5b33d68539396b8f3333fa7494514b73d5f561cfdadcff6f31",
+      "program": "/usr/libexec/adprivacyd",
+      "mode": "0644"
+    },
+    "com.apple.ap.promotedcontentd": {
+      "path": "com.apple.ap.promotedcontentd.plist",
+      "sha256": "64e08e745d4306b08e96a237fe3f9c5c11c1cae9a1d4555462ee8d219f183862",
+      "program": "/usr/libexec/promotedcontentd",
+      "mode": "0644"
+    },
+    "com.apple.appleaccountd": {
+      "path": "com.apple.appleaccountd.plist",
+      "sha256": "685e3aa8039329652a45920a0298f09e9bfb64155f622879736846086ffcade7",
+      "program": "/usr/libexec/appleaccountd",
+      "mode": "0644"
+    },
+    "com.apple.appstorecomponentsd": {
+      "path": "com.apple.appstorecomponentsd.plist",
+      "sha256": "6376f739b625dfaacbf955a1e6bf8e0c098b205cc32d1ea8399fac032d54d38c",
+      "program": "/System/Library/PrivateFrameworks/AppStoreComponents.framework/Support/appstorecomponentsd",
+      "mode": "0644"
+    },
+    "com.apple.appstored": {
+      "path": "com.apple.appstored.plist",
+      "sha256": "e990d5d3aee99fc5c1687727974deea06198921225bff48c2f827419c717060b",
+      "program": "/System/Library/PrivateFrameworks/AppStoreDaemon.framework/Support/appstored",
+      "mode": "0644"
+    },
+    "com.apple.apsd": {
+      "path": "com.apple.apsd.plist",
+      "sha256": "e3cc3f842af98bcdd3b3812e9d73c25b84bdbf1d98ae351690b893d0a69ebad5",
+      "program": "/System/Library/PrivateFrameworks/ApplePushService.framework/apsd",
+      "mode": "0644"
+    },
+    "com.apple.arkitd": {
+      "path": "com.apple.arkitd.plist",
+      "sha256": "ad457b09c5ef4db8b1432fd06652746c6062a098d4226996946303501a1bb86d",
+      "program": "/usr/libexec/arkitd",
+      "mode": "0644"
+    },
+    "com.apple.asd": {
+      "path": "com.apple.asd.plist",
+      "sha256": "0788e632e2dcdcf90834d5ac97d77a40fea585dedbfc93845ebd4ae76db3f739",
+      "program": "/usr/libexec/asd",
+      "mode": "0644"
+    },
+    "com.apple.askpermissiond": {
+      "path": "com.apple.askpermissiond.plist",
+      "sha256": "e868710d4e855c4236c15458c44c13ce04d6f4e7614340e0c82d0db48ba8c70b",
+      "program": "/System/Library/PrivateFrameworks/AskPermission.framework/Support/askpermissiond",
+      "mode": "0644"
+    },
+    "com.apple.aslmanager": {
+      "path": "com.apple.aslmanager.plist",
+      "sha256": "12c8b74a2bcbc83404bc411a6e7a4a231e67595e67237a1e33eec3d4a8d60607",
+      "program": "/usr/sbin/aslmanager",
+      "mode": "0644"
+    },
+    "com.apple.assetsd.nebulad": {
+      "path": "com.apple.assetsd.nebulad.plist",
+      "sha256": "54ee876793496fd40e57adc6f81c6128ca65a8e490b4762335a1c618db844762",
+      "program": "/System/Library/PrivateFrameworks/CameraUI.framework/Support/nebulad",
+      "mode": "0644"
+    },
+    "com.apple.assetsd": {
+      "path": "com.apple.assetsd.plist",
+      "sha256": "4e2e9ebeb230c28f34e03d41c1f08bc5d89b22e40be6ce99a07ee24bc2d8de44",
+      "program": "/System/Library/Frameworks/AssetsLibrary.framework/Support/assetsd",
+      "mode": "0644"
+    },
+    "com.apple.assistant_cdmd": {
+      "path": "com.apple.assistant_cdmd.plist",
+      "sha256": "e20d76c20496239ecdc068658e57c2798d0f041d1d23e8547cce66b00e77bd78",
+      "program": "/System/Library/PrivateFrameworks/ContinuousDialogManagerService.framework/assistant_cdmd",
+      "mode": "0644"
+    },
+    "com.apple.assistant_service": {
+      "path": "com.apple.assistant_service.plist",
+      "sha256": "dee3774624b01c585a136b33836a9ac523c58c1bc9626686acdc0e736b8e338e",
+      "program": "/System/Library/PrivateFrameworks/AssistantServices.framework/assistant_service",
+      "mode": "0644"
+    },
+    "com.apple.assistantd": {
+      "path": "com.apple.assistantd.plist",
+      "sha256": "c137f9ab68fe55397939cff226a7eea9b4623d0c1a7844adf34d4424eb179676",
+      "program": "/System/Library/PrivateFrameworks/AssistantServices.framework/assistantd",
+      "mode": "0644"
+    },
+    "com.apple.assistivetouchd": {
+      "path": "com.apple.assistivetouchd.plist",
+      "sha256": "610a8acfd961d62901b2b3fbf01502d15c61ce53b806c44fd9aeb63da29c951b",
+      "program": "/System/Library/CoreServices/AssistiveTouch.app/assistivetouchd",
+      "mode": "0644"
+    },
+    "com.apple.atc": {
+      "path": "com.apple.atc.plist",
+      "sha256": "eb4d88d1f55c298ee3986d88035f289902b0de2057cb6b1ca53a4a09f68a014c",
+      "program": "/usr/libexec/atc",
+      "mode": "0644"
+    },
+    "com.apple.avatarsd": {
+      "path": "com.apple.avatarsd.plist",
+      "sha256": "8270895a317ac0d44d4009aacf3a1c91a21130bc6d3b95362edb1e28398d9125",
+      "program": "/System/Library/PrivateFrameworks/AvatarPersistence.framework/Support/avatarsd",
+      "mode": "0644"
+    },
+    "com.apple.awdd": {
+      "path": "com.apple.awdd.plist",
+      "sha256": "d4340995965b4dbb8f65c65bb338f1a2457182242c61b8a9b3d09114e86b513a",
+      "program": "/System/Library/PrivateFrameworks/WirelessDiagnostics.framework/Support/awdd",
+      "mode": "0644"
+    },
+    "com.apple.backboardd": {
+      "path": "com.apple.backboardd.plist",
+      "sha256": "d3195ae135ff0987d4dfa31fe0e55a5c5f7c71979b1ef7cb4d0115224b2f0c7a",
+      "program": "/usr/libexec/backboardd",
+      "mode": "0644"
+    },
+    "com.apple.backgroundassets.user": {
+      "path": "com.apple.backgroundassets.user.plist",
+      "sha256": "9f4d4740e112d6d2cb430a20400233a2fec523cf662ff283205a389deb1bfba3",
+      "program": "/usr/libexec/backgroundassets.user",
+      "mode": "0644"
+    },
+    "com.apple.betaenrollmentd": {
+      "path": "com.apple.betaenrollmentd.plist",
+      "sha256": "93f0c9e666afeb9448fb36e98792d71c89b094526df0602c52e6b4d5891aec90",
+      "program": "/usr/libexec/betaenrollmentd",
+      "mode": "0644"
+    },
+    "com.apple.biomed": {
+      "path": "com.apple.biomed.plist",
+      "sha256": "503fc2f52729573690543342be13b868a2fec118ef398f095513ce323811dd9e",
+      "program": "/System/Library/PrivateFrameworks/BiomeStreams.framework/Support/biomed",
+      "mode": "0644"
+    },
+    "com.apple.biomesyncd": {
+      "path": "com.apple.biomesyncd.plist",
+      "sha256": "ca17cf981654a09694502b581dbc88bcf069a83c56b194fcc59c235f5da94a6b",
+      "program": "/usr/libexec/biomesyncd",
+      "mode": "0644"
+    },
+    "com.apple.bookassetd": {
+      "path": "com.apple.bookassetd.plist",
+      "sha256": "4408e12513d54f7467644cd0a4ca703af8acd7f75dae4b6ceab5ba9f3d011b1c",
+      "program": "/System/Library/PrivateFrameworks/BookLibraryCore.framework/Support/bookassetd",
+      "mode": "0644"
+    },
+    "com.apple.bookdatastored": {
+      "path": "com.apple.bookdatastored.plist",
+      "sha256": "8cd48358003ae384dc6f18dd8ec0f4a7184ae455e99435870b81aa5aae8bcf2b",
+      "program": "/System/Library/PrivateFrameworks/BookDataStore.framework/Support/bookdatastored",
+      "mode": "0644"
+    },
+    "com.apple.businessservicesd": {
+      "path": "com.apple.businessservicesd.plist",
+      "sha256": "78cb56f23c1a6579bc15cb0b2f480699ebd91d81413190c0fe86de3d1cc242df",
+      "program": "/System/Library/PrivateFrameworks/BusinessChatService.framework/businessservicesd",
+      "mode": "0644"
+    },
+    "com.apple.cache_delete": {
+      "path": "com.apple.cache_delete.plist",
+      "sha256": "55aab46aa587e267979e87918f4d70797823bc9676619c2978d59b912c9cf159",
+      "program": "/System/Library/PrivateFrameworks/CacheDelete.framework/deleted",
+      "mode": "0644"
+    },
+    "com.apple.calaccessd": {
+      "path": "com.apple.calaccessd.plist",
+      "sha256": "ba7b17ea4d805d43ca59d480bc7d93fffd0aef13d3855754641cbfc3a9211dc4",
+      "program": "/System/Library/PrivateFrameworks/CalendarDaemon.framework/Support/calaccessd",
+      "mode": "0644"
+    },
+    "com.apple.captiveagent": {
+      "path": "com.apple.captiveagent.plist",
+      "sha256": "58c81c7bb480ea387edb5e785a97f3e408e7f2736a7cfd1da8ba7c45233ef32a",
+      "program": "/usr/libexec/captiveagent",
+      "mode": "0644"
+    },
+    "com.apple.carkitd": {
+      "path": "com.apple.carkitd.plist",
+      "sha256": "eb85fcc0dae084484f1c54a53489f22951bc8ab09a4e44b833018e3b78fb0a2d",
+      "program": "/System/Library/PrivateFrameworks/CarKit.framework/Support/carkitd",
+      "mode": "0644"
+    },
+    "com.apple.cdpd": {
+      "path": "com.apple.cdpd.plist",
+      "sha256": "4329deb4cc3a2a18d8f57c8e1d8693b062fdd9118898657a2f14052006ac9784",
+      "program": "/System/Library/PrivateFrameworks/CoreCDP.framework/cdpd",
+      "mode": "0644"
+    },
+    "com.apple.certui.relay": {
+      "path": "com.apple.certui.relay.plist",
+      "sha256": "cbcbe3ef05782d473d246a56cf399f5bb7a427f9872742e6761b9db02a658cc3",
+      "program": "/System/Library/PrivateFrameworks/CertUI.framework/certui_relay",
+      "mode": "0644"
+    },
+    "com.apple.cfnetwork.AuthBrokerAgent": {
+      "path": "com.apple.cfnetwork.AuthBrokerAgent.plist",
+      "sha256": "30876b5527f18cc22ce39236a0b041459fc3e1c6730a220b1c21514f64c4123f",
+      "program": "/System/Library/Frameworks/CFNetwork.framework/AuthBrokerAgent",
+      "mode": "0644"
+    },
+    "com.apple.cfnetwork.cfnetworkagent": {
+      "path": "com.apple.cfnetwork.cfnetworkagent.plist",
+      "sha256": "59cae6e6f7f8f79cc96336363a35ea576bc812298d9aeef0539fbd170ceb6ef9",
+      "program": "/System/Library/Frameworks/CFNetwork.framework/CFNetworkAgent",
+      "mode": "0644"
+    },
+    "com.apple.cfprefsd.xpc.daemon": {
+      "path": "com.apple.cfprefsd.xpc.daemon.plist",
+      "sha256": "da023f30421ff37bc38da8c2da91596a1d85e89e8c13b98653ba04b58c1dc7e0",
+      "program": "/usr/sbin/cfprefsd",
+      "mode": "0644"
+    },
+    "com.apple.cfprefsd.xpc.daemon.system": {
+      "path": "com.apple.cfprefsd.xpc.daemon.system.plist",
+      "sha256": "9473f6e969c3366049b39793d6b179110f8f49bc31b5dfc09b711849af8fadc6",
+      "program": "/usr/sbin/cfprefsd",
+      "mode": "0644"
+    },
+    "com.apple.checkerboard": {
+      "path": "com.apple.checkerboard.plist",
+      "sha256": "42bc1c4f89e2ec7798d276cf8c7ac678bd832702c1be146ec85c21c33ad8fea7",
+      "program": "/Applications/CheckerBoard.app/CheckerBoard",
+      "mode": "0644"
+    },
+    "com.apple.checkerboardd": {
+      "path": "com.apple.checkerboardd.plist",
+      "sha256": "10c5c234415d2f17b51a3bf2eb9ad1c009b0888db17c0e65c2e647ddaa08b5d0",
+      "program": "/usr/libexec/checkerboardd",
+      "mode": "0644"
+    },
+    "com.apple.chronod": {
+      "path": "com.apple.chronod.plist",
+      "sha256": "7ef422585e52c9a1a59e59dc498f12f9eb8ce3ff69b7b0e0d36835807f705ba7",
+      "program": "/System/Library/PrivateFrameworks/ChronoCore.framework/Support/chronod",
+      "mode": "0644"
+    },
+    "com.apple.ckdiscretionaryd": {
+      "path": "com.apple.ckdiscretionaryd.plist",
+      "sha256": "acfdc6aadc2d3bcafce9a90ab3343d5afb60f231959b6ab6787fc1c03eded1de",
+      "program": "/System/Library/PrivateFrameworks/CloudKitDaemon.framework/Support/ckdiscretionaryd",
+      "mode": "0644"
+    },
+    "com.apple.cloudd": {
+      "path": "com.apple.cloudd.plist",
+      "sha256": "38b627e8994ed8f252ba0f7771f8518c67bc31a3bc47d3a4b62d0df5918b6d39",
+      "program": "/System/Library/PrivateFrameworks/CloudKitDaemon.framework/Support/cloudd",
+      "mode": "0644"
+    },
+    "com.apple.cloudpaird": {
+      "path": "com.apple.cloudpaird.plist",
+      "sha256": "f1465a37b04f5703ce961d70ae5d609a4c28846cf9e7007d7d570d7c796f5117",
+      "program": "/usr/libexec/cloudpaird",
+      "mode": "0644"
+    },
+    "com.apple.cloudphotod": {
+      "path": "com.apple.cloudphotod.plist",
+      "sha256": "cb08cd539b0ef6c7e2507bc4502684f385daa5f1159551dee9cfd69dddeae7d5",
+      "program": "/System/Library/PrivateFrameworks/CloudPhotoLibrary.framework/Support/cloudphotod",
+      "mode": "0644"
+    },
+    "com.apple.cmfsyncagent": {
+      "path": "com.apple.cmfsyncagent.plist",
+      "sha256": "a44edc590598b536619454b9072560cb09d4a9705ad0afe09a609a522cd6c22f",
+      "program": "/System/Library/PrivateFrameworks/CommunicationsFilter.framework/CMFSyncAgent",
+      "mode": "0644"
+    },
+    "com.apple.commandandcontrol": {
+      "path": "com.apple.commandandcontrol.plist",
+      "sha256": "e94d18ef6106f997babfbcba20d488ff517adcd70fb61f72c3a429e3478af370",
+      "program": "/System/Library/CoreServices/CommandAndControl.app/CommandAndControl",
+      "mode": "0644"
+    },
+    "com.apple.companion_proxy": {
+      "path": "com.apple.companion_proxy.plist",
+      "sha256": "fb3cc0f21c63fd9e2f080d51531b0e0862babad1f93046d186bbccf0742a45af",
+      "program": "/usr/libexec/companion_proxy",
+      "mode": "0644"
+    },
+    "com.apple.companionauthd": {
+      "path": "com.apple.companionauthd.plist",
+      "sha256": "3bdf33a3b69459461b4d0b518038fc14ae18e4b4f9e16582016f160f1f29aa53",
+      "program": "/usr/libexec/companionauthd",
+      "mode": "0644"
+    },
+    "com.apple.configd": {
+      "path": "com.apple.configd.plist",
+      "sha256": "262df0aa192952df450aa6bea996a40313110a0e36f41cfce5b94e332fce4ee7",
+      "program": "/usr/libexec/configd",
+      "mode": "0644"
+    },
+    "com.apple.contacts.donation-agent": {
+      "path": "com.apple.contacts.donation-agent.plist",
+      "sha256": "dd8ff6dafd118431122cd2ca1c1589a7c973d1b241851c8dc23de8b250780eba",
+      "program": "/System/Library/PrivateFrameworks/ContactsDonation.framework/Versions/A/Support/contactsdonationagent",
+      "mode": "0644"
+    },
+    "com.apple.contactsd": {
+      "path": "com.apple.contactsd.plist",
+      "sha256": "5165b8f740155bafabaabccdf640415dcbcbc4b54d61e64640c91023edd0f05b",
+      "program": "/System/Library/Frameworks/Contacts.framework/Support/contactsd",
+      "mode": "0644"
+    },
+    "com.apple.containermanagerd": {
+      "path": "com.apple.containermanagerd.plist",
+      "sha256": "c8cd0d3b48da5b7f11e49e08aa4b576bca7f680973fa10728f4a6472c7cacabf",
+      "program": "/usr/libexec/containermanagerd",
+      "mode": "0644"
+    },
+    "com.apple.containermanagerd.system": {
+      "path": "com.apple.containermanagerd.system.plist",
+      "sha256": "8ebfcdaad93948ebc6e20441ca47ea275737c6cf44907798985912ab0c5f1cb9",
+      "program": "/usr/libexec/containermanagerd_system",
+      "mode": "0644"
+    },
+    "com.apple.contextstored": {
+      "path": "com.apple.contextstored.plist",
+      "sha256": "6bc5286d1456921c1a994d5e110109ace2ced4989ab223964fe7908f64d10661",
+      "program": "/System/Library/PrivateFrameworks/CoreDuetContext.framework/Resources/contextstored",
+      "mode": "0644"
+    },
+    "com.apple.coordinated": {
+      "path": "com.apple.coordinated.plist",
+      "sha256": "18e41b1a4447aab5e4040621fac84e264d4db30f9816c82c3fb1652e618fe343",
+      "program": "/usr/libexec/coordinated",
+      "mode": "0644"
+    },
+    "com.apple.corecaptured": {
+      "path": "com.apple.corecaptured.plist",
+      "sha256": "3018ba64e024a8b6b4d02319fa1f429ea74aea89a7e2ac28336ea988f56697e4",
+      "program": "/usr/libexec/corecaptured",
+      "mode": "0644"
+    },
+    "com.apple.coredatad": {
+      "path": "com.apple.coredatad.plist",
+      "sha256": "9498527bef2053a5299ca5e9c54a29992eb47e88a4d77a02f025124fb2955e9a",
+      "program": "/usr/libexec/coredatad",
+      "mode": "0644"
+    },
+    "com.apple.coreduetd": {
+      "path": "com.apple.coreduetd.plist",
+      "sha256": "b4c31d71899ce79c77f593029c946588d3f8c6b97c311dbc4b37175c2d20b5a9",
+      "program": "/usr/libexec/coreduetd",
+      "mode": "0644"
+    },
+    "com.apple.coreidvd": {
+      "path": "com.apple.coreidvd.plist",
+      "sha256": "431df7039c7336d9010d99c25d3a232bd3758bbfbb4f806b491ff4c8bfeacebb",
+      "program": "/usr/libexec/coreidvd",
+      "mode": "0644"
+    },
+    "com.apple.corerepaird": {
+      "path": "com.apple.corerepaird.plist",
+      "sha256": "0d16d3960184a2eb96239f5d3e70aeff240b8e55222cad32717965416ccf66e4",
+      "program": "/usr/libexec/corerepaird",
+      "mode": "0644"
+    },
+    "com.apple.coreservices.useractivityd": {
+      "path": "com.apple.coreservices.useractivityd.plist",
+      "sha256": "1174078c2f18cfe0feedff7fd9f7c6fb62e2489d5a4f4c57c5a8e5e5895ada39",
+      "program": "/System/Library/PrivateFrameworks/UserActivity.framework/Agents/useractivityd",
+      "mode": "0644"
+    },
+    "com.apple.corespeechd": {
+      "path": "com.apple.corespeechd.plist",
+      "sha256": "e484539e8b2873fd8bbc929915bad69a318161fe847c85e35435f8d9ca8ee79c",
+      "program": "/System/Library/PrivateFrameworks/CoreSpeech.framework/corespeechd",
+      "mode": "0644"
+    },
+    "com.apple.corespotlightservice": {
+      "path": "com.apple.corespotlightservice.plist",
+      "sha256": "7d6be14782ac274c954b0b8b24c95eea36da02e27eaec59552b1ab45114ad737",
+      "program": "/System/Library/Frameworks/CoreSpotlight.framework/CoreSpotlightService",
+      "mode": "0644"
+    },
+    "com.apple.coresymbolicationd": {
+      "path": "com.apple.coresymbolicationd.plist",
+      "sha256": "c1949ee1309c1dbeb9862da782c9dc23f4c0d49be861daf54e60b4b625d606c6",
+      "program": "/System/Library/PrivateFrameworks/CoreSymbolication.framework/coresymbolicationd",
+      "mode": "0644"
+    },
+    "com.apple.countryd": {
+      "path": "com.apple.countryd.plist",
+      "sha256": "bfc825d8949b2d4509ed5860629e9c0f7498d0a93b7e2dc25cba4c82d8f1d758",
+      "program": "/usr/libexec/countryd",
+      "mode": "0644"
+    },
+    "com.apple.crash_mover": {
+      "path": "com.apple.crash_mover.plist",
+      "sha256": "4d04f6657fbb778773c53865d13787e50af25734de741a45866938ee3ee8b4c9",
+      "program": "/usr/libexec/crash_mover",
+      "mode": "0644"
+    },
+    "com.apple.crashreportcopymobile": {
+      "path": "com.apple.crashreportcopymobile.plist",
+      "sha256": "aa696a0a401245844c15ebc4d402a45740b2ef8cdbe475a2c7dddf516bb6f908",
+      "program": "/usr/libexec/afcd",
+      "mode": "0644"
+    },
+    "com.apple.ctkd": {
+      "path": "com.apple.ctkd.plist",
+      "sha256": "a2c4edfa1fdd804b00421d11626652c3221cef7ec6d95207545318b182ecbf6f",
+      "program": "/System/Library/Frameworks/CryptoTokenKit.framework/ctkd",
+      "mode": "0644"
+    },
+    "com.apple.dasd": {
+      "path": "com.apple.dasd.plist",
+      "sha256": "ee99f0cb012e092fe00e5dc9a5fe239404ccbf8c513395d7ca2780757bd94679",
+      "program": "/usr/libexec/dasd",
+      "mode": "0644"
+    },
+    "com.apple.dataaccess.dataaccessd": {
+      "path": "com.apple.dataaccess.dataaccessd.plist",
+      "sha256": "0e9a641d3dfdb140b2e7fefd5faf8b11d323a6c714375bc4df9826e77363902a",
+      "program": "/System/Library/PrivateFrameworks/DataAccess.framework/Support/dataaccessd",
+      "mode": "0644"
+    },
+    "com.apple.datastored": {
+      "path": "com.apple.datastored.plist",
+      "sha256": "1da9198136bd6fa7a86e5ba31656078043da97885237b69cb02f19ff21a4f6db",
+      "program": "/usr/libexec/datastored",
+      "mode": "0644"
+    },
+    "com.apple.deferredmediad": {
+      "path": "com.apple.deferredmediad.plist",
+      "sha256": "9f958ce6dbd1cdf3c5e85d5d36bda610f39faee6dd0f0e284fb35c6e2d7744d4",
+      "program": "/usr/libexec/deferredmediad",
+      "mode": "0644"
+    },
+    "com.apple.deleted_helper": {
+      "path": "com.apple.deleted_helper.plist",
+      "sha256": "14b6b0a0da2f3061910d14ffc6704f8a56c4e68eed08a2dc3294012afd5e3a5c",
+      "program": "/System/Library/PrivateFrameworks/CacheDelete.framework/deleted_helper",
+      "mode": "0644"
+    },
+    "com.apple.deviceaccessd": {
+      "path": "com.apple.deviceaccessd.plist",
+      "sha256": "6c8fed96cc95af615f013dbc1f38c0e1f7a039d6e00f3199cae16b64b97ea861",
+      "program": "/usr/libexec/deviceaccessd",
+      "mode": "0644"
+    },
+    "com.apple.devicecheckd": {
+      "path": "com.apple.devicecheckd.plist",
+      "sha256": "d84a21671091619699deee5e0d82d4bd84a2d2fcd76c0d817cbb4cacb3bebcb2",
+      "program": "/System/Library/PrivateFrameworks/DeviceCheckInternal.framework/devicecheckd",
+      "mode": "0644"
+    },
+    "com.apple.devicedataresetd": {
+      "path": "com.apple.devicedataresetd.plist",
+      "sha256": "20db7d602abac9a63da8d2fd36f9fe46def96c98b277f5d2a7dbb3ed4895b1a0",
+      "program": "/System/Library/PrivateFrameworks/EmbeddedDataReset.framework/Support/devicedataresetd",
+      "mode": "0644"
+    },
+    "com.apple.devicemanagementclient.mdmd": {
+      "path": "com.apple.devicemanagementclient.mdmd.plist",
+      "sha256": "96c6addc48b471001b2ff0a1422685d1ffbddf85e13a41ceb254e36d9aed6c0a",
+      "program": "/usr/libexec/mdmd",
+      "mode": "0644"
+    },
+    "com.apple.devicemanagementclient.teslad": {
+      "path": "com.apple.devicemanagementclient.teslad.plist",
+      "sha256": "c7304c418c9c7f50e944e5ed8c0fd73f411618e910e84484d9cc06b1ee74f347",
+      "program": "/usr/libexec/teslad",
+      "mode": "0644"
+    },
+    "com.apple.diagnosticd": {
+      "path": "com.apple.diagnosticd.plist",
+      "sha256": "ff056cb22109181b90fb5d06c836f4315fea1c57c9f0d0570be3a6e16bf0ab7d",
+      "program": "/usr/libexec/diagnosticd",
+      "mode": "0644"
+    },
+    "com.apple.diagnosticextensionsd": {
+      "path": "com.apple.diagnosticextensionsd.plist",
+      "sha256": "e5069f1f9b1b7b146c0f2d625a948094db117f7affdf82ff8c065c30c72643db",
+      "program": "/usr/libexec/diagnosticextensionsd",
+      "mode": "0644"
+    },
+    "com.apple.diskarbitrationd": {
+      "path": "com.apple.diskarbitrationd.plist",
+      "sha256": "caa59f65e68529962682556d95d5abc22465b9c075e3087089755bc295ff1e6c",
+      "program": "/usr/libexec/diskarbitrationd",
+      "mode": "0644"
+    },
+    "com.apple.diskimagesiod": {
+      "path": "com.apple.diskimagesiod.plist",
+      "sha256": "10b31feec442031deffb5d6eb835807f1ff9e93538d6fead1259060dbcce2382",
+      "program": "/usr/libexec/diskimagesiod",
+      "mode": "0644"
+    },
+    "com.apple.diskimagesiod.ram": {
+      "path": "com.apple.diskimagesiod.ram.plist",
+      "sha256": "8145859bad6a4264f258af92738d29c66ceea0a1a636fcea5c472db79500925b",
+      "program": "/usr/libexec/diskimagesiod",
+      "mode": "0644"
+    },
+    "com.apple.distnoted.xpc.daemon": {
+      "path": "com.apple.distnoted.xpc.daemon.plist",
+      "sha256": "f563d3e624b587d6f8fb1b72f9c77895b0ce49d09b5ae987a464ec98e4cec303",
+      "program": "/usr/sbin/distnoted",
+      "mode": "0644"
+    },
+    "com.apple.donotdisturbd": {
+      "path": "com.apple.donotdisturbd.plist",
+      "sha256": "31f94a9c4636e5d3cd5d482b7cc9e926304b00a3f5ce36e09cca471cb1d0ccbf",
+      "program": "/System/Library/PrivateFrameworks/DoNotDisturbServer.framework/Support/donotdisturbd",
+      "mode": "0644"
+    },
+    "com.apple.dprivacyd": {
+      "path": "com.apple.dprivacyd.plist",
+      "sha256": "b754ab83e98f119de80387ae18ce6a5bfd659204dad5c6c18b9b0de03a365802",
+      "program": "/usr/libexec/dprivacyd",
+      "mode": "0644"
+    },
+    "com.apple.driverkitd": {
+      "path": "com.apple.driverkitd.plist",
+      "sha256": "7e6efeb8c91ccc2419acab894d9e5f1ee30dda53bdacbfbf9a24906e5e9a6559",
+      "program": "/usr/libexec/driverkitd",
+      "mode": "0644"
+    },
+    "com.apple.dt.automationmode-writer": {
+      "path": "com.apple.dt.automationmode-writer.plist",
+      "sha256": "63d947a073868f5ead0a9f6e928c403bf24af53c1c1b055889141b6564648c1a",
+      "program": "/System/Library/PrivateFrameworks/AutomationMode.framework/automationmode-writer",
+      "mode": "0644"
+    },
+    "com.apple.dt.previewsd": {
+      "path": "com.apple.dt.previewsd.plist",
+      "sha256": "d3add91bd0fef43c994873427330cff6a528cd1d50ec7e60a2293650a1b49e3f",
+      "program": "/System/Library/PrivateFrameworks/PreviewsOSSupport.framework/Support/previewsd",
+      "mode": "0644"
+    },
+    "com.apple.dt.remotepairingdeviced": {
+      "path": "com.apple.dt.remotepairingdeviced.plist",
+      "sha256": "b263d338a8df80322a144fd87286440702070ccde5cbabf0b80066a13248b5c9",
+      "program": "/usr/libexec/remotepairingdeviced",
+      "mode": "0644"
+    },
+    "com.apple.email.maild": {
+      "path": "com.apple.email.maild.plist",
+      "sha256": "e2f732ed31a83f9eedf09d9f23493d585b0851e1ed486b5f4b2a752bbbd9abd0",
+      "program": "/System/Library/PrivateFrameworks/EmailDaemon.framework/maild",
+      "mode": "0644"
+    },
+    "com.apple.exchangesyncd": {
+      "path": "com.apple.exchangesyncd.plist",
+      "sha256": "ad6a4a6ec50820ba9d8141dfc24e980eca1e3395d4e48731d0f1a5af5a32c679",
+      "program": "/System/Library/PrivateFrameworks/ExchangeSync.framework/Support/exchangesyncd",
+      "mode": "0644"
+    },
+    "com.apple.fairplayd.H2": {
+      "path": "com.apple.fairplayd.H2.plist",
+      "sha256": "66810f197356f38e04e313e3cb294381f8e4d9c9466974624d9ac3f203f5078d",
+      "program": "/usr/sbin/fairplayd.H2",
+      "mode": "0644"
+    },
+    "com.apple.fairplaydeviceidentityd": {
+      "path": "com.apple.fairplaydeviceidentityd.plist",
+      "sha256": "e93564ffcdfb3044801e92fbeb041781587bc9226090e7df13419364efe4e4bc",
+      "program": "/usr/libexec/fairplaydeviceidentityd",
+      "mode": "0644"
+    },
+    "com.apple.familycircled": {
+      "path": "com.apple.familycircled.plist",
+      "sha256": "f39db08a5e091c8befe520ee29d1a3ade451414a1ab3754d3b7a0747101b2d55",
+      "program": "/System/Library/PrivateFrameworks/FamilyCircle.framework/familycircled",
+      "mode": "0644"
+    },
+    "com.apple.familynotification": {
+      "path": "com.apple.familynotificationd.plist",
+      "sha256": "79478c72e49d1845863c13a8df52e7d984d8d844390a07dac294f94a535be913",
+      "program": "/System/Library/PrivateFrameworks/FamilyNotification.framework/familynotificationd",
+      "mode": "0644"
+    },
+    "com.apple.fdrhelper": {
+      "path": "com.apple.fdrhelper.plist",
+      "sha256": "9e570ef1854be07e3020a5626d500920c36ae5465298f95d9af501e4f0a43b2e",
+      "program": "/usr/libexec/fdrhelper",
+      "mode": "0644"
+    },
+    "com.apple.filesystems.livefileproviderd": {
+      "path": "com.apple.filesystems.livefileproviderd.plist",
+      "sha256": "c4470357a9742d485a24aca780d236040dbf12a2a75d9d7e07eb6c3555cdf068",
+      "program": "/System/Library/PrivateFrameworks/UserFS.framework/livefileproviderd",
+      "mode": "0644"
+    },
+    "com.apple.filesystems.smbclientd": {
+      "path": "com.apple.filesystems.smbclientd.plist",
+      "sha256": "b99cee0b0ab063f259dc811b79bdb40a94ee07821b86cf8ff6d83a26cd076f58",
+      "program": "/System/Library/PrivateFrameworks/SMBClientProvider.framework/smbclientd",
+      "mode": "0644"
+    },
+    "com.apple.filesystems.userfs_helper": {
+      "path": "com.apple.filesystems.userfs_helper.plist",
+      "sha256": "a5ac3d14d3be7c9d167e1cfbf016bc14b91de4d891fa60eba5e443da09189085",
+      "program": "/System/Library/PrivateFrameworks/UserFS.framework/userfs_helper",
+      "mode": "0644"
+    },
+    "com.apple.filesystems.userfsd": {
+      "path": "com.apple.filesystems.userfsd.plist",
+      "sha256": "d2ffdf2e031e5a51416722268e87b3e5f01543fc21bba63185231623221f2fe9",
+      "program": "/System/Library/PrivateFrameworks/UserFS.framework/userfsd",
+      "mode": "0644"
+    },
+    "com.apple.financed": {
+      "path": "com.apple.financed.plist",
+      "sha256": "cb79745c932b41e3b8d024c1d282eb366ff0704566d2f92e5d89870de93c67ec",
+      "program": "/System/Library/PrivateFrameworks/FinanceKit.framework/financed",
+      "mode": "0644"
+    },
+    "com.apple.fitcore": {
+      "path": "com.apple.fitcore.plist",
+      "sha256": "5f2bff9ddbfa4def1f7f8199990d4c545ed558f6e93f2a0fa724077dcc2461a4",
+      "program": "/System/Library/PrivateFrameworks/SeymourServices.framework/fitcored",
+      "mode": "0644"
+    },
+    "com.apple.fitcore.session": {
+      "path": "com.apple.fitcore.session.plist",
+      "sha256": "3d51391262ea02610a4a617b5f7e4aa609997f91679c6c4526c62857cab9061e",
+      "program": "/System/Library/PrivateFrameworks/SeymourServices.framework/fitcoresessiond",
+      "mode": "0644"
+    },
+    "com.apple.fitnesscoachingd": {
+      "path": "com.apple.fitnesscoachingd.plist",
+      "sha256": "d8310d6f24dac55834b689441191aae37cc63d677189cd248736cdb7bf1175d5",
+      "program": "/System/Library/PrivateFrameworks/FitnessCoachingServices.framework/fitnesscoachingd",
+      "mode": "0644"
+    },
+    "com.apple.followupd": {
+      "path": "com.apple.followupd.plist",
+      "sha256": "af0c3bd2eab021bbed6037bbbac71fb266a540823c6944e32a72561e3fd460dc",
+      "program": "/System/Library/PrivateFrameworks/CoreFollowUp.framework/followupd",
+      "mode": "0644"
+    },
+    "com.apple.fontservicesd": {
+      "path": "com.apple.fontservicesd.plist",
+      "sha256": "68e1265a38d32fca1e128d2039615db658e4819e07a0a4dfd66c0bd6ea2326ca",
+      "program": "/System/Library/PrivateFrameworks/FontServices.framework/Support/fontservicesd",
+      "mode": "0644"
+    },
+    "com.apple.fs_task_scheduler": {
+      "path": "com.apple.fs_task_scheduler.plist",
+      "sha256": "ee4870d5bfc947658497fb88dd77a8047d7a046bf8615dfd4b7dcf733429ae63",
+      "program": "/usr/libexec/FSTaskScheduler",
+      "mode": "0644"
+    },
+    "com.apple.fseventsd": {
+      "path": "com.apple.fseventsd.plist",
+      "sha256": "3d4ef3c1ba8d9dd893d0e274fdf301db19153e81d29071e1bdf18521e60f8c0a",
+      "program": "/usr/libexec/fseventsd",
+      "mode": "0644"
+    },
+    "com.apple.fullkeyboardaccess": {
+      "path": "com.apple.fullkeyboardaccess.plist",
+      "sha256": "077bdcff60de15fdefbcc1e9d662f60aad69d0e9062c75a33df1e0710a29044f",
+      "program": "/System/Library/CoreServices/FullKeyboardAccess.app/FullKeyboardAccess",
+      "mode": "0644"
+    },
+    "com.apple.fusiond": {
+      "path": "com.apple.fusiond.plist",
+      "sha256": "cb297142665e97cacf8cdce0cad721cc1dcd3232c2b6bf6e8919520636eec9de",
+      "program": "/usr/libexec/fusiond",
+      "mode": "0644"
+    },
+    "com.apple.gamed": {
+      "path": "com.apple.gamed.plist",
+      "sha256": "c3af052eb548054b1964628dcf2ecec30062b9dc132f8c391d9c0f738d55af06",
+      "program": "/usr/libexec/gamed",
+      "mode": "0644"
+    },
+    "com.apple.geod": {
+      "path": "com.apple.geod.plist",
+      "sha256": "c85de467860b0d6690b543096471efa98bec55b9f6afa0968fe409f48a1e829e",
+      "program": "/System/Library/PrivateFrameworks/GeoServices.framework/geod",
+      "mode": "0644"
+    },
+    "com.apple.gpsd": {
+      "path": "com.apple.gpsd.plist",
+      "sha256": "46727939135651daa77c92510d3e94f11961c8ab32e04862739f902c1678c88e",
+      "program": "/usr/libexec/gpsd",
+      "mode": "0644"
+    },
+    "com.apple.griddatad": {
+      "path": "com.apple.griddatad.plist",
+      "sha256": "0a6b77f48017ff9cbff7d487421e593310ed419bb8ebca60682ff222ea461046",
+      "program": "/usr/libexec/griddatad",
+      "mode": "0644"
+    },
+    "com.apple.handwritingd": {
+      "path": "com.apple.handwritingd.plist",
+      "sha256": "5d1e919c24197891fe9512f50948f5e472a1363ae9351dd1bac008a70f7ecccf",
+      "program": "/usr/libexec/handwritingd",
+      "mode": "0644"
+    },
+    "com.apple.hangreporter": {
+      "path": "com.apple.hangreporter.plist",
+      "sha256": "9b63afe484ae8858deaa4b4d2aeb15f20e3c5e8ceb485d97e407037529a0e016",
+      "program": "/usr/libexec/hangreporter",
+      "mode": "0644"
+    },
+    "com.apple.hangtracerd": {
+      "path": "com.apple.hangtracerd.plist",
+      "sha256": "5ed6cb5096897ad7bab30122154e9ad2596e3128600752f7482b2ed6f7c75350",
+      "program": "/usr/libexec/hangtracerd",
+      "mode": "0644"
+    },
+    "com.apple.healthappd": {
+      "path": "com.apple.healthappd.plist",
+      "sha256": "8bfb89f0f1914847241fb8605131414f1973ce7b6bfc1679529d33731f25f190",
+      "program": "/System/Library/PrivateFrameworks/HealthPluginHost.framework/healthappd",
+      "mode": "0644"
+    },
+    "com.apple.healthd": {
+      "path": "com.apple.healthd.plist",
+      "sha256": "140b1c01ce039d339ca6d93542aa3cf1633b31b41593dfdb06d1b9d762963f34",
+      "program": "/System/Library/Frameworks/HealthKit.framework/healthd",
+      "mode": "0644"
+    },
+    "com.apple.healthrecordsd": {
+      "path": "com.apple.healthrecordsd.plist",
+      "sha256": "e8d3f5b1b81add933fffb71d378d9251c095da3468f107308ccb1c2303b991b1",
+      "program": "/System/Library/PrivateFrameworks/HealthRecordServices.framework/healthrecordsd",
+      "mode": "0644"
+    },
+    "com.apple.iap2d": {
+      "path": "com.apple.iap2d.plist",
+      "sha256": "18e3bffdd1909d589b34df14b7f484ff58ebd2672550b9106f0542032094edb1",
+      "program": "/System/Library/PrivateFrameworks/IAP.framework/Support/iap2d",
+      "mode": "0644"
+    },
+    "com.apple.iapauthd": {
+      "path": "com.apple.iapauthd.plist",
+      "sha256": "eb1e4741798642c8d5ecb3017edc48acfe2c4fd3110fc7926e7cc98b224cfc35",
+      "program": "/System/Library/PrivateFrameworks/IAPAuthentication.framework/Support/iapauthd",
+      "mode": "0644"
+    },
+    "com.apple.iapd": {
+      "path": "com.apple.iapd.plist",
+      "sha256": "71bfe1b35ac54a99dd15452ef828d8cd89cef26b946bda1a666d1caaed56eb4a",
+      "program": "/System/Library/PrivateFrameworks/IAP.framework/Support/iapd",
+      "mode": "0644"
+    },
+    "com.apple.icloud.findmydeviced": {
+      "path": "com.apple.icloud.findmydeviced.plist",
+      "sha256": "961d5e94191a2a486bb629a790d8ce7e33347725657e6978a171ef5dd6a4ee35",
+      "program": "/usr/libexec/findmydeviced",
+      "mode": "0644"
+    },
+    "com.apple.icloud.fmfd": {
+      "path": "com.apple.icloud.fmfd.plist",
+      "sha256": "36fdef1771a175597c79fabf546dfa6b02dfe2f03675173e43847a76a66d8418",
+      "program": "/usr/libexec/fmfd",
+      "mode": "0644"
+    },
+    "com.apple.icloud.fmflocatord": {
+      "path": "com.apple.icloud.fmflocatord.plist",
+      "sha256": "5b8763a384b5349e52388cdfe404b6787386438b35dfeab1e32d20d84f0c177d",
+      "program": "/usr/libexec/fmflocatord",
+      "mode": "0644"
+    },
+    "com.apple.icloud.searchpartyd": {
+      "path": "com.apple.icloud.searchpartyd.plist",
+      "sha256": "8d549e404290375a8cb923e5541a89623dfeb2afe25d63afec9b0780f6139558",
+      "program": "/usr/libexec/searchpartyd",
+      "mode": "0644"
+    },
+    "com.apple.icloudsubscriptionoptimizerd": {
+      "path": "com.apple.icloudsubscriptionoptimizerd.plist",
+      "sha256": "d6ba83c6184c61c70707786a5d37274e5845768e104813601ed242169cfdbff8",
+      "program": "/System/Library/PrivateFrameworks/iCloudSubscriptionOptimizerDaemon.framework/icloudsubscriptionoptimizerd/icloudsubscriptionoptimizerd",
+      "mode": "0644"
+    },
+    "com.apple.iconservices.iconservicesagent": {
+      "path": "com.apple.iconservices.iconservicesagent.plist",
+      "sha256": "29f7a05be8730afafced2e1aef3faab2d26729cdd0924ddbc7ba741c88bdc986",
+      "program": "/System/Library/CoreServices/iconservicesagent",
+      "mode": "0644"
+    },
+    "com.apple.idamd": {
+      "path": "com.apple.idamd.plist",
+      "sha256": "7dbc108c3439b5bb7e15fc43be9fa3430a1f36df4e7536a2935261fc364816a3",
+      "program": "/usr/libexec/idamd",
+      "mode": "0644"
+    },
+    "com.apple.idcredd": {
+      "path": "com.apple.idcredd.plist",
+      "sha256": "60b81841f4c620db629c4d816a66b1070f4e2cd5ac53ad61fa6bb4ebe9c2be96",
+      "program": "/usr/libexec/idcredd",
+      "mode": "0644"
+    },
+    "com.apple.identityservicesd": {
+      "path": "com.apple.identityservicesd.plist",
+      "sha256": "8d22570b56bfce46dbf73bc35536703a2c0f8be776ea926e5dcfd2a7b54d5444",
+      "program": "/System/Library/PrivateFrameworks/IDS.framework/identityservicesd.app/identityservicesd",
+      "mode": "0644"
+    },
+    "com.apple.ids.IDSCredentialsAgent": {
+      "path": "com.apple.idscredentialsagent.plist",
+      "sha256": "7cf8de6e00d967fa3fafc5fda32aa8add7cf670db62cf0633d88559423c6e3ee",
+      "program": "/System/Library/PrivateFrameworks/IDSFoundation.framework/IDSCredentialsAgent.app/IDSCredentialsAgent",
+      "mode": "0644"
+    },
+    "com.apple.idsfoundation.IDSRemoteURLConnectionAgent": {
+      "path": "com.apple.idsremoteurlconnectionagent.plist",
+      "sha256": "4d2aeb2e4442ec2ac702add0d45a7fed4bb7ed7a46717927014dea7e41bb65bb",
+      "program": "/System/Library/PrivateFrameworks/IDSFoundation.framework/IDSRemoteURLConnectionAgent.app/IDSRemoteURLConnectionAgent",
+      "mode": "0644"
+    },
+    "com.apple.imagent": {
+      "path": "com.apple.imagent.plist",
+      "sha256": "33c7cae98c9f44ecdd8cb126218f6ec4495150461e5e6b487873ec03e4aaf611",
+      "program": "/System/Library/PrivateFrameworks/IMCore.framework/imagent.app/imagent",
+      "mode": "0644"
+    },
+    "com.apple.imcore.imtransferagent": {
+      "path": "com.apple.imtransferagent.plist",
+      "sha256": "66aac296731e2a6bf6aae92870c067d04f932f4aa9f9613c9eaec6266fa3caca",
+      "program": "/System/Library/PrivateFrameworks/IMTransferServices.framework/IMTransferAgent.app/IMTransferAgent",
+      "mode": "0644"
+    },
+    "com.apple.inboxupdaterd": {
+      "path": "com.apple.inboxupdaterd.plist",
+      "sha256": "73291c917dd50080b2f5a6485681f1c515da52ada4c98cef66480d08bc013a38",
+      "program": "/usr/libexec/inboxupdaterd",
+      "mode": "0644"
+    },
+    "com.apple.ind": {
+      "path": "com.apple.ind.plist",
+      "sha256": "9be134e7b7426fbaf95834c1dbc77c8b11cbc8898b507a077616423d7a201edd",
+      "program": "/System/Library/PrivateFrameworks/iCloudNotification.framework/ind",
+      "mode": "0644"
+    },
+    "com.apple.installcoordinationd": {
+      "path": "com.apple.installcoordinationd.plist",
+      "sha256": "3d037f2082a67e5dcbbb24baad26d649fc8ae04eeb940410be8a00adb9c76a5a",
+      "program": "/System/Library/PrivateFrameworks/InstallCoordination.framework/Support/installcoordinationd",
+      "mode": "0644"
+    },
+    "com.apple.intelligenceplatformd": {
+      "path": "com.apple.intelligenceplatformd.plist",
+      "sha256": "fa36893cc233207578b6880be3e81378ee616ea6cf08a4dbecba9ce4e7d4bf47",
+      "program": "/System/Library/PrivateFrameworks/IntelligencePlatformCore.framework/intelligenceplatformd",
+      "mode": "0644"
+    },
+    "com.apple.iosdiagnosticsd": {
+      "path": "com.apple.iosdiagnosticsd.plist",
+      "sha256": "4717f039813cfa3a35b2471551d79398c968a0f2090d50ebcf8c981868ba01b7",
+      "program": "/System/Library/PrivateFrameworks/iOSDiagnostics.framework/iosdiagnosticsd",
+      "mode": "0644"
+    },
+    "com.apple.itunescloudd": {
+      "path": "com.apple.itunescloudd.plist",
+      "sha256": "6f1daf8601693d3e996802059626b11036db86e4ea005961afedfa8d4f66e3ca",
+      "program": "/System/Library/PrivateFrameworks/iTunesCloud.framework/Support/itunescloudd",
+      "mode": "0644"
+    },
+    "com.apple.itunesstored": {
+      "path": "com.apple.itunesstored.plist",
+      "sha256": "17f7c1e866fee0175e21f046ff15bd5f5223c97c9e2f2638a0cd1e8fcb22b094",
+      "program": "/System/Library/PrivateFrameworks/iTunesStore.framework/Support/itunesstored",
+      "mode": "0644"
+    },
+    "com.apple.keychainsharingmessagingd": {
+      "path": "com.apple.keychainsharingmessagingd.plist",
+      "sha256": "54631efacbff9448f2e0f2e523b89ec8a5e1cd968d625a9e2a8a482a2f95df41",
+      "program": "/usr/libexec/keychainsharingmessagingd",
+      "mode": "0644"
+    },
+    "com.apple.knowledgeconstructiond": {
+      "path": "com.apple.knowledgeconstructiond.plist",
+      "sha256": "e69217c720e104e8dd482f9598d91cf0d511df0cf8e072cd4984f3e85c290d61",
+      "program": "/System/Library/PrivateFrameworks/IntelligencePlatformCore.framework/knowledgeconstructiond",
+      "mode": "0644"
+    },
+    "com.apple.languageassetd": {
+      "path": "com.apple.languageassetd.plist",
+      "sha256": "9eb8304eedff8707056a23af0ac298d2a026c5e5f402c75b1a7ed17e87b6e9a9",
+      "program": "/usr/libexec/languageassetd",
+      "mode": "0644"
+    },
+    "com.apple.linkd": {
+      "path": "com.apple.linkd.plist",
+      "sha256": "c74849fc7775b5b45d4b4e5afca1e3bd4e8ab0ffdcd0c9043235c6211142ddb2",
+      "program": "/usr/libexec/linkd",
+      "mode": "0644"
+    },
+    "com.apple.liveactivitiesd": {
+      "path": "com.apple.liveactivitiesd.plist",
+      "sha256": "af0596552555cf8f829dbbd8742b57d5478626fa895dda2304e6ac7483b0b2d3",
+      "program": "/System/Library/PrivateFrameworks/SessionCore.framework/Support/liveactivitiesd",
+      "mode": "0644"
+    },
+    "com.apple.localizationswitcherd": {
+      "path": "com.apple.localizationswitcherd.plist",
+      "sha256": "c91e6009e42be698187a560cb4daeb59ffeeb2066be6d7632090ec7af5a0ff38",
+      "program": "/System/Library/PrivateFrameworks/IntlPreferences.framework/Support/localizationswitcherd",
+      "mode": "0644"
+    },
+    "com.apple.locationpushd": {
+      "path": "com.apple.locationpushd.plist",
+      "sha256": "92fff32c6266d4fdf19e48b19035046684f5a025e1c33a849cc6970ec7551bb4",
+      "program": "/usr/libexec/locationpushd",
+      "mode": "0644"
+    },
+    "com.apple.logd": {
+      "path": "com.apple.logd.plist",
+      "sha256": "cbf3c050fbb20efe31b07f47f3c68c7361648bede51d4a6d9e17cc7fb37c1ebf",
+      "program": "/usr/libexec/logd",
+      "mode": "0644"
+    },
+    "com.apple.logd_helper": {
+      "path": "com.apple.logd_helper.plist",
+      "sha256": "ebe5d31d9f48d5f4374ef08b5e5111bf5d70063c5ac5d860f8cf712f1e7ff081",
+      "program": "/usr/libexec/logd_helper",
+      "mode": "0644"
+    },
+    "com.apple.lsd": {
+      "path": "com.apple.lsd.plist",
+      "sha256": "44607728a448af6e8509e4bf033f32dace57462e36c975885ce7b4ef7a7be5f8",
+      "program": "/usr/libexec/lsd",
+      "mode": "0644"
+    },
+    "com.apple.lsd.system": {
+      "path": "com.apple.lsd.system.plist",
+      "sha256": "df573120aa6aad2a65367682b704c2a22bfbc5e95b3b12922759387bbc9a4793",
+      "program": "/usr/libexec/lsd",
+      "mode": "0644"
+    },
+    "com.apple.lskdd": {
+      "path": "com.apple.lskdd.plist",
+      "sha256": "920b7d739f985701052d971c9511914e18120031a2931815e6397a317213fd23",
+      "program": "/usr/libexec/lskdd",
+      "mode": "0644"
+    },
+    "com.apple.mDNSResponder.reloaded": {
+      "path": "com.apple.mDNSResponder.plist",
+      "sha256": "01e0b95922fa87ae9e7b7322c10e95259423540008b951b88bf428423a928367",
+      "program": "/usr/sbin/mDNSResponder",
+      "mode": "0644"
+    },
+    "com.apple.mDNSResponderHelper.reloaded": {
+      "path": "com.apple.mDNSResponderHelper.plist",
+      "sha256": "03f0276a51d0a106bd1404c87a052221662319d343789d2e74b9854422198560",
+      "program": "/usr/sbin/mDNSResponderHelper",
+      "mode": "0644"
+    },
+    "com.apple.managedconfiguration.profiled": {
+      "path": "com.apple.managedconfiguration.profiled.plist",
+      "sha256": "0920663e1a9795e53e998c5cead601d12c06d23f0bff73f935511bd231ab195b",
+      "program": "/usr/libexec/profiled",
+      "mode": "0644"
+    },
+    "com.apple.maps.destinationd": {
+      "path": "com.apple.maps.destinationd.plist",
+      "sha256": "bc85b3a66cc4708c69cd4b0ae4c691bc138f3585bb3a89e2e3a10194aaa7268d",
+      "program": "/System/Library/PrivateFrameworks/MapsSuggestions.framework/destinationd",
+      "mode": "0644"
+    },
+    "com.apple.matd": {
+      "path": "com.apple.matd.plist",
+      "sha256": "9d32a75b93c5b32082e8d9bc6d8c40364459f30d99933e9e5b5d89e331fc9bb7",
+      "program": "/System/Library/PrivateFrameworks/WelcomeKit.framework/matd",
+      "mode": "0644"
+    },
+    "com.apple.mdt": {
+      "path": "com.apple.mdt.plist",
+      "sha256": "57ed23bd37dc7eaab4b92fd173ecb6319eff9c8def9e53de3c6bdcfe19914f93",
+      "program": "/usr/libexec/transitd",
+      "mode": "0644"
+    },
+    "com.apple.mediaanalysisd": {
+      "path": "com.apple.mediaanalysisd.plist",
+      "sha256": "0effb885f82da29c6121cb98a3543412b330a93e203b0939f37134f9b4307935",
+      "program": "/System/Library/PrivateFrameworks/MediaAnalysis.framework/mediaanalysisd",
+      "mode": "0644"
+    },
+    "com.apple.mediaanalysisd.service": {
+      "path": "com.apple.mediaanalysisd.service.plist",
+      "sha256": "eb7d616a3b69707473c7759dd372fc3f46facaee98182911d4d1a9f4e060dd77",
+      "program": "/System/Library/PrivateFrameworks/MediaAnalysis.framework/mediaanalysisd-service",
+      "mode": "0644"
+    },
+    "com.apple.mediaartworkd": {
+      "path": "com.apple.mediaartworkd.plist",
+      "sha256": "bb645d503c00ed84c20dc57ae4a5107cab185b6a9c5bc07475dd16d88dd8f052",
+      "program": "/System/Library/PrivateFrameworks/MediaServices.framework/Support/mediaartworkd",
+      "mode": "0644"
+    },
+    "com.apple.medialibraryd": {
+      "path": "com.apple.medialibraryd.plist",
+      "sha256": "3c6401c2395ec5dd25f3b021d14ccfa154951dc1b253906b2f01d23151bd6c0f",
+      "program": "/System/Library/PrivateFrameworks/MusicLibrary.framework/Support/medialibraryd",
+      "mode": "0644"
+    },
+    "com.apple.mediaparserd": {
+      "path": "com.apple.mediaparserd.plist",
+      "sha256": "cd9808a5f0e431e6d24672bb874217d45ae7eb21dd0393262a842e8b3d3085c9",
+      "program": "/usr/libexec/mediaparserd",
+      "mode": "0644"
+    },
+    "com.apple.mediaremoted": {
+      "path": "com.apple.mediaremoted.plist",
+      "sha256": "051013ed30592263d29a1701c4e8d0baaa4be77d86bdd2857606df79dd01b209",
+      "program": "/System/Library/PrivateFrameworks/MediaRemote.framework/Support/mediaremoted",
+      "mode": "0644"
+    },
+    "com.apple.mediaserverd": {
+      "path": "com.apple.mediaserverd.plist",
+      "sha256": "8900889a9de8370d5f3a7e7ae1d8d772d25be302cf4e2b6fcac7839003b9fbb3",
+      "program": "/usr/sbin/mediaserverd",
+      "mode": "0644"
+    },
+    "com.apple.mediasetupd": {
+      "path": "com.apple.mediasetupd.plist",
+      "sha256": "0712883cb01715fb14d65645f6fe6a7faf442d66c0777447c0ccfe4c96ceaf3d",
+      "program": "/usr/libexec/mediasetupd",
+      "mode": "0644"
+    },
+    "com.apple.mediastream.mstreamd": {
+      "path": "com.apple.mediastream.mstreamd.plist",
+      "sha256": "e6793afd2a0b4af6f77e41775b4738f9f2e5f2a0449ea36ebab1c1aeb25f54ee",
+      "program": "/System/Library/PrivateFrameworks/MediaStream.framework/Support/mstreamd",
+      "mode": "0644"
+    },
+    "com.apple.memory-maintenance": {
+      "path": "com.apple.memory-maintenance.plist",
+      "sha256": "4ae0d4641086e4a455c431ec63b8bdb337253d57dc42bc3717ee7fca1b41d72e",
+      "program": "/usr/libexec/mmaintenanced",
+      "mode": "0644"
+    },
+    "com.apple.merchantd": {
+      "path": "com.apple.merchantd.plist",
+      "sha256": "c34a84504041381a2258425a4ee2f79e585c104b9373d07393da5c4f2ed7a247",
+      "program": "/System/Library/Frameworks/ProximityReader.framework/merchantd",
+      "mode": "0644"
+    },
+    "com.apple.metrickitd": {
+      "path": "com.apple.metrickitd.plist",
+      "sha256": "b19f46d2e91ffc3e45b14b8139a73efb52dbd530f07fd4429d673886044712d3",
+      "program": "/usr/libexec/metrickitd",
+      "mode": "0644"
+    },
+    "com.apple.midiserver": {
+      "path": "com.apple.midiserver-ios.plist",
+      "sha256": "f250886384d6d1102a21a696766ad31e5cd10ac90e73be89f7783b332655d120",
+      "program": "/System/Library/Frameworks/CoreMIDI.framework/MIDIServer",
+      "mode": "0644"
+    },
+    "com.apple.misagent": {
+      "path": "com.apple.misagent.plist",
+      "sha256": "8a480643b37af09cb535fc5740f0f51a878df977feaebc20fd908917d09b63d7",
+      "program": "/usr/libexec/misagent",
+      "mode": "0644"
+    },
+    "com.apple.mlruntimed": {
+      "path": "com.apple.mlruntimed.plist",
+      "sha256": "7db43a3bdd6ceb682e415e44b157fb14b544ce8ab26d585bfc28cf270ba3abfc",
+      "program": "/usr/libexec/mlruntimed",
+      "mode": "0644"
+    },
+    "com.apple.mobile.MCInstall": {
+      "path": "com.apple.mobile.MCInstall.plist",
+      "sha256": "341eed178fdf629cdac19b71b3d430fd6ba133e5ec84dd4c3de012d6141d4192",
+      "program": "/usr/libexec/mc_mobile_tunnel",
+      "mode": "0644"
+    },
+    "com.apple.mobile.assertion_agent": {
+      "path": "com.apple.mobile.assertion_agent.plist",
+      "sha256": "7edb4211f8a3b49908402cb6da0795faba54a39142dba1645b700c9661fb9ed8",
+      "program": "/usr/libexec/mobile_assertion_agent",
+      "mode": "0644"
+    },
+    "com.apple.mobile.cache_delete_app_container_caches": {
+      "path": "com.apple.mobile.cache_delete_app_container_caches.plist",
+      "sha256": "44907d13e3de529bfd6e62e346510d26749bfde792ba3f8d91b44f597b630a73",
+      "program": "/System/Library/CoreServices/CacheDeleteAppContainerCaches",
+      "mode": "0644"
+    },
+    "com.apple.mobile.cache_delete_daily": {
+      "path": "com.apple.mobile.cache_delete_daily.plist",
+      "sha256": "38ed6119516eaa33ed50609aab3e83c4e1bba913e966cf87fc7648a380b4ce0f",
+      "program": "/System/Library/CoreServices/CacheDeleteDaily",
+      "mode": "0644"
+    },
+    "com.apple.mobile.cache_delete_mobile_backup": {
+      "path": "com.apple.mobile.cache_delete_mobile_backup.plist",
+      "sha256": "c7ba12f66940f81c016077bf6a2c6a4161cdcc66884d4a3861b160e7be5d8112",
+      "program": "/System/Library/PrivateFrameworks/MobileBackup.framework/MobileBackupCacheDeleteService",
+      "mode": "0644"
+    },
+    "com.apple.mobile.heartbeat": {
+      "path": "com.apple.mobile.heartbeat.plist",
+      "sha256": "29ebed9476596b926cf1718541450f7dd199a6c16e0c0c694aff776d3db711e4",
+      "program": "/usr/libexec/heartbeatd",
+      "mode": "0644"
+    },
+    "com.apple.mobile.house_arrest": {
+      "path": "com.apple.mobile.house_arrest.plist",
+      "sha256": "32f2995741cad0e93a4482e7223d42fd3e3ac206cb433f4aa4e8fce337e1e0f6",
+      "program": "/usr/libexec/mobile_house_arrest",
+      "mode": "0644"
+    },
+    "com.apple.mobile.insecure_notification_proxy": {
+      "path": "com.apple.mobile.insecure_notification_proxy.plist",
+      "sha256": "c6c2b5e0e1e88435540f2adf9febdf18d1657bc758ca0fa05e8da7e89b056a17",
+      "program": "/usr/libexec/notification_proxy",
+      "mode": "0644"
+    },
+    "com.apple.mobile.installd": {
+      "path": "com.apple.mobile.installd.plist",
+      "sha256": "86003d904a61d7720dfae207e528a6f810d2edea160848f53f815232eb2c9020",
+      "program": "/usr/libexec/installd",
+      "mode": "0644"
+    },
+    "com.apple.mobile.notification_proxy": {
+      "path": "com.apple.mobile.notification_proxy.plist",
+      "sha256": "e68f7de059dad08e04568d800a326b7f14001d5badc4d7146a2091a2ac661713",
+      "program": "/usr/libexec/notification_proxy",
+      "mode": "0644"
+    },
+    "com.apple.mobile.usermanagerd": {
+      "path": "com.apple.mobile.usermanagerd.plist",
+      "sha256": "f47244632e316dddbb4941df92b73dbc0ce5c54084ad89bd8318810d93f7b42d",
+      "program": "/usr/libexec/usermanagerd",
+      "mode": "0644"
+    },
+    "com.apple.mobile.installation_proxy": {
+      "path": "com.apple.mobile_installation_proxy.plist",
+      "sha256": "095f0d3dff40af5f53b8fb1ed47af357d1b2bf9a6eea7962ba2e08eae82d4152",
+      "program": "/usr/libexec/mobile_installation_proxy",
+      "mode": "0644"
+    },
+    "com.apple.mobileactivationd": {
+      "path": "com.apple.mobileactivationd.plist",
+      "sha256": "8bb5bf2babad93c73782591a6689f11d2063a7a2b9b989a2f1d6f08e5f93c768",
+      "program": "/usr/libexec/mobileactivationd",
+      "mode": "0644"
+    },
+    "com.apple.mobilebackup2": {
+      "path": "com.apple.mobilebackup2.plist",
+      "sha256": "472bb3d189910688536dc47924a35df9a214761d03c30e8732c25f7f0df6d99b",
+      "program": "/usr/libexec/BackupAgent2",
+      "mode": "0644"
+    },
+    "com.apple.mobilecheckpoint.checkpointd": {
+      "path": "com.apple.mobilecheckpoint.checkpointd.plist",
+      "sha256": "6eeeafc1b97c22bebf723c56457f79e175bd74a67b5a923135d4e679d939ee92",
+      "program": "/usr/libexec/checkpointd",
+      "mode": "0644"
+    },
+    "com.apple.mobilegestalt.xpc": {
+      "path": "com.apple.mobilegestalt.xpc.plist",
+      "sha256": "93fa8f406bfc622505a6781d23997c4810d95a36bb86c48196eba84b0e417f89",
+      "program": "/usr/libexec/MobileGestaltHelper",
+      "mode": "0644"
+    },
+    "com.apple.mobilerepaird": {
+      "path": "com.apple.mobilerepaird.plist",
+      "sha256": "4425502b16517a5bc35559a604e58a4c9a5b211de27c07253e8471badb16984a",
+      "program": "/usr/libexec/mobilerepaird",
+      "mode": "0644"
+    },
+    "com.apple.mobilestoredemod": {
+      "path": "com.apple.mobilestoredemod.plist",
+      "sha256": "df55eb3209baefe674f6a68732ef6fdf3b53f1eda1d356831e8ed52d8946f61e",
+      "program": "/usr/libexec/demod",
+      "mode": "0644"
+    },
+    "com.apple.mobilestoredemodhelper": {
+      "path": "com.apple.mobilestoredemodhelper.plist",
+      "sha256": "d9e4826a693a64563b1ef0c25ccea20158bb7c2ea41f30df2fc34793fc203ffe",
+      "program": "/usr/libexec/demod_helper",
+      "mode": "0644"
+    },
+    "com.apple.mobiletimerd": {
+      "path": "com.apple.mobiletimerd.plist",
+      "sha256": "e98bf0288522700a3bb25b4c589e0140d6d7a72ad830a488a11e5364c0ad486e",
+      "program": "/System/Library/PrivateFrameworks/MobileTimer.framework/Executables/mobiletimerd",
+      "mode": "0644"
+    },
+    "com.apple.momentsd": {
+      "path": "com.apple.momentsd.plist",
+      "sha256": "73621df9727116733b8fdd1aad03f988e1dae2ea69bdc574367b3bb8798c1861",
+      "program": "/usr/libexec/momentsd",
+      "mode": "0644"
+    },
+    "com.apple.nanoprefsyncd.2": {
+      "path": "com.apple.nanoprefsyncd.plist",
+      "sha256": "8cecaed8e285ba21e47a666d1714ec2ed7abc39c1c1fb5a5caddb80b958afa34",
+      "program": "/System/Library/PrivateFrameworks/NanoPreferencesSync.framework/nanoprefsyncd",
+      "mode": "0644"
+    },
+    "com.apple.nanoregistryd": {
+      "path": "com.apple.nanoregistryd.plist",
+      "sha256": "89b6adcb42d68e0ca5c38c3652d5eaafc7f08438a1993d4aefd4a477c7497d70",
+      "program": "/usr/libexec/nanoregistryd",
+      "mode": "0644"
+    },
+    "com.apple.nanoregistrylaunchd": {
+      "path": "com.apple.nanoregistrylaunchd.plist",
+      "sha256": "4eead8b4c69c746439b68a6ff77aba6db9f03d5dbb642be24c1ecc409702d6cc",
+      "program": "/usr/libexec/nanoregistrylaunchd",
+      "mode": "0644"
+    },
+    "com.apple.nanotimekitcompaniond": {
+      "path": "com.apple.nanotimekitcompaniond.plist",
+      "sha256": "d603b102716012a606d75e00c19c33ebfb7e7985e02e5ac390ca62a0ea8b0f7a",
+      "program": "/System/Library/PrivateFrameworks/NanoTimeKit.framework/nanotimekitcompaniond",
+      "mode": "0644"
+    },
+    "com.apple.naturallanguaged": {
+      "path": "com.apple.naturallanguaged.plist",
+      "sha256": "d8aad7da6c9161cc0bce318092576a088f4503fc9df8e4a10731e1f1f639acbd",
+      "program": "/usr/libexec/naturallanguaged",
+      "mode": "0644"
+    },
+    "com.apple.navd": {
+      "path": "com.apple.navd.plist",
+      "sha256": "a2cb0454f59fcf76e1ec239a3338f51fb18b411259f1d64e15d3926bddf936e0",
+      "program": "/System/Library/PrivateFrameworks/MapsSupport.framework/navd",
+      "mode": "0644"
+    },
+    "com.apple.ndoagent": {
+      "path": "com.apple.ndoagent.plist",
+      "sha256": "8a6fdb5a591aa01425ed7b95dc7142ae7a5ced37c59627f02a640589d9719083",
+      "program": "/System/Library/PrivateFrameworks/NewDeviceOutreach.framework/ndoagent",
+      "mode": "0644"
+    },
+    "com.apple.neagent-ios": {
+      "path": "com.apple.neagent-ios.plist",
+      "sha256": "c601d6f6e9302c925e07743750ad5be656c94a05f9b085874b9004009e18745d",
+      "program": "/usr/libexec/neagent",
+      "mode": "0644"
+    },
+    "com.apple.nearbyd": {
+      "path": "com.apple.nearbyd.plist",
+      "sha256": "e643ebf59b115be6d1159ec74890dbef329bc24280b8f664ac3c11f84f3ee665",
+      "program": "/usr/libexec/nearbyd",
+      "mode": "0644"
+    },
+    "com.apple.nehelper": {
+      "path": "com.apple.nehelper-embedded.plist",
+      "sha256": "55ee4a08144c81ff05bb06cd68a4d81c898a58aa0c21c4e27f14e2ade88fcaeb",
+      "program": "/usr/libexec/nehelper",
+      "mode": "0644"
+    },
+    "com.apple.nesessionmanager": {
+      "path": "com.apple.nesessionmanager.plist",
+      "sha256": "d071e2e2115e5fd986af4851ac171e5d035415f29e3d3ec7bc414d6b47daadbf",
+      "program": "/usr/libexec/nesessionmanager",
+      "mode": "0644"
+    },
+    "com.apple.networkserviceproxy": {
+      "path": "com.apple.networkserviceproxy.plist",
+      "sha256": "8617cbbd44d4f6fe675d1562bdab6c4fb3d3ccf5674a987b6d823e4bc81ef036",
+      "program": "/usr/libexec/networkserviceproxy",
+      "mode": "0644"
+    },
+    "com.apple.newsd": {
+      "path": "com.apple.newsd.plist",
+      "sha256": "0e9565f292d2df12e87b0534ad86f156355ae14063946dab7581ac597e0df182",
+      "program": "/System/Library/PrivateFrameworks/NewsDaemon.framework/newsd",
+      "mode": "0644"
+    },
+    "com.apple.nexusd": {
+      "path": "com.apple.nexusd.plist",
+      "sha256": "6eaadb0fbe5140ec9530f42582ee9794d1f354b35f2bdca3c59441049dc7baf6",
+      "program": "/usr/libexec/nexusd",
+      "mode": "0644"
+    },
+    "com.apple.notifyd": {
+      "path": "com.apple.notifyd.plist",
+      "sha256": "77f766e32177e7cee7559a0cc6484322cb71ee65caef72be900b5283f74b83a0",
+      "program": "/usr/sbin/notifyd",
+      "mode": "0644"
+    },
+    "com.apple.nsurlsessiond": {
+      "path": "com.apple.nsurlsessiond.plist",
+      "sha256": "85b4020e25d69d280833f928b9b5206721b9847d1aedbea3d8474ab0c71e5a00",
+      "program": "/usr/libexec/nsurlsessiond",
+      "mode": "0644"
+    },
+    "com.apple.online-auth-agent.xpc": {
+      "path": "com.apple.online-auth-agent.xpc.plist",
+      "sha256": "4e1191dcabb0d1b3d022a704f87b96caec79ac153d367522989f2133445dfffe",
+      "program": "/usr/libexec/online-auth-agent",
+      "mode": "0644"
+    },
+    "com.apple.ospredictiond": {
+      "path": "com.apple.ospredictiond.plist",
+      "sha256": "a12f803a9216ccc450657a8ab1058d97483d845f74d9ebf840f86ac7c4264234",
+      "program": "/usr/libexec/ospredictiond",
+      "mode": "0644"
+    },
+    "com.apple.parsec-fbf": {
+      "path": "com.apple.parsec-fbf.plist",
+      "sha256": "b54b027e0a94ded9ad8abadd23d84c7091a2c3a472f2c3ead3d8b28ea1dc1185",
+      "program": "/System/Library/PrivateFrameworks/CoreParsec.framework/parsec-fbf",
+      "mode": "0644"
+    },
+    "com.apple.parsecd": {
+      "path": "com.apple.parsecd.plist",
+      "sha256": "9de5f1613e312312dec551d392f19abaf646f3469bbbfd678b59ecbca685cbb7",
+      "program": "/System/Library/PrivateFrameworks/CoreParsec.framework/parsecd",
+      "mode": "0644"
+    },
+    "com.apple.passd": {
+      "path": "com.apple.passd.plist",
+      "sha256": "7e16b181eff7071e4baeb82d41a66f9799eb0f7b1bbc74c36496a77706db9668",
+      "program": "/System/Library/PrivateFrameworks/PassKitCore.framework/passd",
+      "mode": "0644"
+    },
+    "com.apple.pasteboard.pasted": {
+      "path": "com.apple.pasteboard.pasted.plist",
+      "sha256": "d2b54024a56d15a25a44fb25467b4a1f8b1a875874c1fb444b10223189b99f37",
+      "program": "/System/Library/PrivateFrameworks/Pasteboard.framework/Support/pasted",
+      "mode": "0644"
+    },
+    "com.apple.pcapd": {
+      "path": "com.apple.pcapd.plist",
+      "sha256": "525247250f3db49c3030c944060c6c6fc6bdcfbf168e0b8e50b2ff55112388f0",
+      "program": "/usr/libexec/pcapd",
+      "mode": "0644"
+    },
+    "com.apple.peopled": {
+      "path": "com.apple.peopled.plist",
+      "sha256": "17c1e6bac1210a7c626426ddddf486eef37d13e6480c8bf8f21588884ce85483",
+      "program": "/System/Library/PrivateFrameworks/People.framework/peopled",
+      "mode": "0644"
+    },
+    "com.apple.perfdiagsselfenabled": {
+      "path": "com.apple.perfdiagsselfenabled.plist",
+      "sha256": "ad653fc4dc18eae6df83f44737b2102a9d76815fc293aa527ea45795c799b265",
+      "program": "/usr/libexec/perfdiagsselfenabled",
+      "mode": "0644"
+    },
+    "com.apple.pfd": {
+      "path": "com.apple.pfd.plist",
+      "sha256": "3e71e131936da6e6399ef9d1e713eb544085dd966cffa6b16c31d5de76d7661b",
+      "program": "/usr/libexec/pfd",
+      "mode": "0644"
+    },
+    "com.apple.photos.ImageConversionService": {
+      "path": "com.apple.photos.ImageConversionService.plist",
+      "sha256": "4e02a8b027d832f5587dbe1a600bacb82ad22e25b09f26ec23d6af3bfbe2eeec",
+      "program": "/System/Library/PrivateFrameworks/MediaConversionService.framework/XPCServices/com.apple.photos.ImageConversionService.xpc/com.apple.photos.ImageConversionService",
+      "mode": "0644"
+    },
+    "com.apple.photos.VideoConversionService": {
+      "path": "com.apple.photos.VideoConversionService.plist",
+      "sha256": "7e044db4ddd0e11d15392b35eab4bf45789a5cbd9dea3618a61734e9fcf0dfeb",
+      "program": "/System/Library/PrivateFrameworks/MediaConversionService.framework/XPCServices/com.apple.photos.VideoConversionService.xpc/com.apple.photos.VideoConversionService",
+      "mode": "0644"
+    },
+    "com.apple.pipelined": {
+      "path": "com.apple.pipelined.plist",
+      "sha256": "9b13147376f4f5f5d570b4ac76584cb131442733b58bb241bbdea8190107f95b",
+      "program": "/usr/libexec/pipelined",
+      "mode": "0644"
+    },
+    "com.apple.pluginkit.pkd": {
+      "path": "com.apple.pluginkit.pkd.plist",
+      "sha256": "5ebfcf97d4a70dde5da3f2984c7b44f06805410ea0ec0b10abcf211b54830165",
+      "program": "/usr/libexec/pkd",
+      "mode": "0644"
+    },
+    "com.apple.powerd": {
+      "path": "com.apple.powerd.plist",
+      "sha256": "b55aae85d0e801eab80f10424222d241ff185e8d6194bbee9a0686c3d8a69e00",
+      "program": "/System/Library/CoreServices/powerd.bundle/powerd",
+      "mode": "0644"
+    },
+    "com.apple.powerdatad": {
+      "path": "com.apple.powerdatad.plist",
+      "sha256": "a0c0ed6755576e40a19079ad1b2aefb4a277119f85f4a43e35877350ed8cbed2",
+      "program": "/usr/libexec/powerdatad",
+      "mode": "0644"
+    },
+    "com.apple.powerlogHelperd": {
+      "path": "com.apple.powerlogHelperd.plist",
+      "sha256": "8cf226da629299fdd84224af314b374b31d489efaed2434c21454b2253b47086",
+      "program": "/usr/bin/powerlogHelperd",
+      "mode": "0644"
+    },
+    "com.apple.preboardservice": {
+      "path": "com.apple.preboardservice.plist",
+      "sha256": "d48baecfee6cc7d78059de361776837370f78668a20fef77092d590a975b5398",
+      "program": "/usr/libexec/PreboardService",
+      "mode": "0644"
+    },
+    "com.apple.preboardservice_v2": {
+      "path": "com.apple.preboardservice_v2.plist",
+      "sha256": "3240aa9ace65ea1a3b797fe57bda89651cf2115d4062ff6a927f62de8f9bb925",
+      "program": "/usr/libexec/PreboardService",
+      "mode": "0644"
+    },
+    "com.apple.privacyaccountingd": {
+      "path": "com.apple.privacyaccountingd.plist",
+      "sha256": "1ffed07a78aa391016ce2ec8b0753081a0f40e2fca904282ff8fa58920a59695",
+      "program": "/System/Library/PrivateFrameworks/PrivacyAccounting.framework/Versions/A/Resources/privacyaccountingd",
+      "mode": "0644"
+    },
+    "com.apple.proactiveeventtrackerd": {
+      "path": "com.apple.proactiveeventtrackerd.plist",
+      "sha256": "9daa25bbb889edea9732dddd42c88d7c9036786ad42bae4f574582eadf9fcfd9",
+      "program": "/usr/libexec/proactiveeventtrackerd",
+      "mode": "0644"
+    },
+    "com.apple.progressd": {
+      "path": "com.apple.progressd.plist",
+      "sha256": "7fbbcf9d068c504e66c014aa4fbd6d42bb7442541f407c32d6a1610917c7dceb",
+      "program": "/System/Library/Frameworks/ClassKit.framework/progressd",
+      "mode": "0644"
+    },
+    "com.apple.protectedcloudstorage.protectedcloudkeysyncing": {
+      "path": "com.apple.protectedcloudstorage.protectedcloudkeysyncing.plist",
+      "sha256": "8c67464e23776c1005e6c8da7669909ef02353155593bff54e4adc8d495aa35d",
+      "program": "/System/Library/PrivateFrameworks/ProtectedCloudStorage.framework/Helpers/ProtectedCloudKeySyncing",
+      "mode": "0644"
+    },
+    "com.apple.proximitycontrold": {
+      "path": "com.apple.proximitycontrold.plist",
+      "sha256": "65a90b49681248d232b080bdfd6bdc041710473613a73774fd6053fa6853ca6f",
+      "program": "/usr/libexec/proximitycontrold",
+      "mode": "0644"
+    },
+    "com.apple.ptpd": {
+      "path": "com.apple.ptpd.plist",
+      "sha256": "7db66fbf4c141d6c1c0922e0f2b789115257106b39b6bb2325f9d8b962c24842",
+      "program": "/usr/libexec/ptpd",
+      "mode": "0644"
+    },
+    "com.apple.quicklook.ThumbnailsAgent": {
+      "path": "com.apple.quicklook.ThumbnailsAgent.plist",
+      "sha256": "c73a98c3734287e339f79bac4321e6fa890b75c8b7c15cbf5c5cc06e8a9b3408",
+      "program": "/System/Library/Frameworks/QuickLookThumbnailing.framework/Support/com.apple.quicklook.ThumbnailsAgent",
+      "mode": "0644"
+    },
+    "com.apple.racoon": {
+      "path": "com.apple.racoon.plist",
+      "sha256": "573deb69d6cad9aebc8b277eaeac1fb227f72683cbcfb08e3a718a213985b371",
+      "program": "/usr/sbin/racoon",
+      "mode": "0644"
+    },
+    "com.apple.rapportd": {
+      "path": "com.apple.rapportd.plist",
+      "sha256": "ba4d0e18ec6a2919575bdb54296cb792230003daf3c99f53488a1bce954766e6",
+      "program": "/usr/libexec/rapportd",
+      "mode": "0644"
+    },
+    "com.apple.recentsd": {
+      "path": "com.apple.recentsd.plist",
+      "sha256": "87083f7d5fe9c10405b9a9ab50b49b21ed61908f1ca163f13a842e252f0d650f",
+      "program": "/System/Library/PrivateFrameworks/CoreRecents.framework/recentsd",
+      "mode": "0644"
+    },
+    "com.apple.relatived": {
+      "path": "com.apple.relatived.plist",
+      "sha256": "f7f45ac8b22fe9d0352b75018648555da14de5038a37ac0870c99358c67bdc82",
+      "program": "/usr/libexec/relatived",
+      "mode": "0644"
+    },
+    "com.apple.remindd": {
+      "path": "com.apple.remindd.plist",
+      "sha256": "ff5cc2c53cf115a40887eee844d27c167cb7d78209779a6c186c1739c5537a72",
+      "program": "/usr/libexec/remindd",
+      "mode": "0644"
+    },
+    "com.apple.remoted": {
+      "path": "com.apple.remoted.plist",
+      "sha256": "5a27d9bbeabb0f66c90d57565c90d5c2a6f9688476c43f72d23e52e929b24bd4",
+      "program": "/usr/libexec/remoted",
+      "mode": "0644"
+    },
+    "com.apple.remotemanagementd": {
+      "path": "com.apple.remotemanagementd.plist",
+      "sha256": "f17807d9dcd86a68700ec81e163302ac5c703f518d4f874cc5c6211348bf69bd",
+      "program": "/System/Library/PrivateFrameworks/RemoteManagement.framework/remotemanagementd",
+      "mode": "0644"
+    },
+    "com.apple.replayd": {
+      "path": "com.apple.replayd.plist",
+      "sha256": "0254ed1beb9bb7a2aaf3249b27c25264f4c10b807a68bc5ba8a71e611015417e",
+      "program": "/usr/libexec/replayd",
+      "mode": "0644"
+    },
+    "com.apple.replaykitangel": {
+      "path": "com.apple.replaykitangel.plist",
+      "sha256": "1c7a756abe64033b7fe99c3151f7e002272acb3703ebf6676dcd8ee5fda5a7a1",
+      "program": "/Applications/ReplayKitAngel.app/ReplayKitAngel",
+      "mode": "0644"
+    },
+    "com.apple.reversetemplated": {
+      "path": "com.apple.reversetemplated.plist",
+      "sha256": "58791e6ae60fddcaeb1a7e0db7aa1ce900ecababb0b7891943a97015d4af312f",
+      "program": "/System/Library/PrivateFrameworks/CoreSuggestions.framework/reversetemplated",
+      "mode": "0644"
+    },
+    "com.apple.revisiond": {
+      "path": "com.apple.revisiond.plist",
+      "sha256": "450407690ca5dd1ba3a858923f2bc97c73a01891ab09b685002c10982b2ff39b",
+      "program": "/System/Library/PrivateFrameworks/GenerationalStorage.framework/revisiond",
+      "mode": "0644"
+    },
+    "com.apple.rtcreportingd": {
+      "path": "com.apple.rtcreportingd.plist",
+      "sha256": "281a152194a9664c04e10404abf01b983099d8f3ec8d950ae58a609e59868ea6",
+      "program": "/usr/libexec/rtcreportingd",
+      "mode": "0644"
+    },
+    "com.apple.runningboardd": {
+      "path": "com.apple.runningboardd.plist",
+      "sha256": "6b8269c98c466c58c9ad23b080edbe23701614bd0f4fd64ae51f9dfcb78dd8ef",
+      "program": "/usr/libexec/runningboardd",
+      "mode": "0644"
+    },
+    "com.apple.safarifetcherd": {
+      "path": "com.apple.safarifetcherd.plist",
+      "sha256": "f3a553b3fc4d4f3bf580581cce01b8e865b87d03f3179d66ee57472f5290b1a3",
+      "program": "/System/Cryptexes/App/usr/libexec/safarifetcherd",
+      "mode": "0644"
+    },
+    "com.apple.safetyalertsd": {
+      "path": "com.apple.safetyalertsd.plist",
+      "sha256": "202b29545f13276438ee6cb2c0c369fc9eec198020faf1399aeec97cb4009a35",
+      "program": "/usr/libexec/safetyalertsd",
+      "mode": "0644"
+    },
+    "com.apple.screensharingserver": {
+      "path": "com.apple.screensharingserver.plist",
+      "sha256": "9bfd9a5cee41881a5de461202b009e51e029852cb41d7a3812acdc32fbb03016",
+      "program": "/System/Library/CoreServices/ScreenSharingServer.app/ScreenSharingServer",
+      "mode": "0644"
+    },
+    "com.apple.scrod": {
+      "path": "com.apple.scrod.plist",
+      "sha256": "609fa10f0b9daf9bb1954732db19fa31aeb899777283402accea9f613d32a97f",
+      "program": "/System/Library/CoreServices/VoiceOverTouch.app/scrod",
+      "mode": "0644"
+    },
+    "com.apple.searchd": {
+      "path": "com.apple.searchd.plist",
+      "sha256": "b215942847b9f42659dc1c142b8fb0ef09912df4a857f42d665ef2f770167133",
+      "program": "/System/Library/PrivateFrameworks/Search.framework/searchd",
+      "mode": "0644"
+    },
+    "com.apple.security.cloudkeychainproxy3": {
+      "path": "com.apple.security.cloudkeychainproxy3.plist",
+      "sha256": "9bafefd064a1815ae92fae4fabaf6614307bc0318000a8826e1bc31798536887",
+      "program": "/System/Library/Frameworks/Security.framework/CloudKeychainProxy.bundle/CloudKeychainProxy",
+      "mode": "0644"
+    },
+    "com.apple.security.cryptexd": {
+      "path": "com.apple.security.cryptexd.plist",
+      "sha256": "2095679e38c7b47047faf25a7ae90da0ccbbda47230a8a435c765faef9aab5aa",
+      "program": "/usr/libexec/cryptexd",
+      "mode": "0644"
+    },
+    "com.apple.security.swcagent": {
+      "path": "com.apple.security.swcagent.plist",
+      "sha256": "356fcf5bf4fa5344e53e2e46d638c98cbb8578ae9579eba238df99d12bc02803",
+      "program": "/System/Library/Frameworks/Security.framework/swcagent",
+      "mode": "0644"
+    },
+    "com.apple.securityd": {
+      "path": "com.apple.securityd.plist",
+      "sha256": "40893514523314f7ab9ce3377434706dd8bad903a13b1019b4a4b80073d1a7ca",
+      "program": "/usr/libexec/securityd",
+      "mode": "0644"
+    },
+    "com.apple.securityuploadd": {
+      "path": "com.apple.securityuploadd.plist",
+      "sha256": "3dfb3504d6bcd3af4608960e9566373aa4a9eb295da5af8264efaf0c03615d9e",
+      "program": "/usr/libexec/securityuploadd",
+      "mode": "0644"
+    },
+    "com.apple.seld": {
+      "path": "com.apple.seld.plist",
+      "sha256": "106b80576cd9ebe855c919bcbf5510e5c8d0b9610646f3573801a9ccb378f672",
+      "program": "/usr/libexec/seld",
+      "mode": "0644"
+    },
+    "com.apple.sensorkitd": {
+      "path": "com.apple.sensorkitd.plist",
+      "sha256": "dcc1395b837fa49fbcbe777c009e5b871e8a6b265a9bedeae974900702d60b36",
+      "program": "/usr/libexec/sensorkitd",
+      "mode": "0644"
+    },
+    "com.apple.seserviced": {
+      "path": "com.apple.seserviced.plist",
+      "sha256": "83aa5cbadeb52c39fcc57108b0a773ac6f356eae4800beb7b228735e9f5d542d",
+      "program": "/usr/libexec/seserviced",
+      "mode": "0644"
+    },
+    "com.apple.sharing.airdropui": {
+      "path": "com.apple.sharing.airdropui.plist",
+      "sha256": "df60e2d370bfa66ad39b6e819269496fb641971d25eb99b09d88d7e29b5fb5e2",
+      "program": "/Applications/AirDropUI.app/AirDropUI",
+      "mode": "0644"
+    },
+    "com.apple.sharingd": {
+      "path": "com.apple.sharingd.plist",
+      "sha256": "c098e81772481b92c302773bb69b7edb42504459c780bbe8edb571926ad0c256",
+      "program": "/usr/libexec/sharingd",
+      "mode": "0644"
+    },
+    "com.apple.shazamd": {
+      "path": "com.apple.shazamd.plist",
+      "sha256": "dd95162ef6e91934357ff15971b3ae2f4bdf6224a6755099b18890b9419d6182",
+      "program": "/System/Library/Frameworks/ShazamKit.framework/shazamd",
+      "mode": "0644"
+    },
+    "com.apple.sidecar-relay": {
+      "path": "com.apple.sidecar-relay.plist",
+      "sha256": "7c8167dd2ca848381be76ad3548c1d90593e5e1b9d7bd91ea3cae9ac8ba0646a",
+      "program": "/usr/libexec/SidecarRelay",
+      "mode": "0644"
+    },
+    "com.apple.siriactionsd": {
+      "path": "com.apple.siriactionsd.plist",
+      "sha256": "a355fd2a6c7e9056e5a1026ce6a6a55a831a8d8e9834a76bb4f0ec73ea5da4a1",
+      "program": "/System/Library/PrivateFrameworks/VoiceShortcuts.framework/Support/siriactionsd",
+      "mode": "0644"
+    },
+    "com.apple.siriinferenced": {
+      "path": "com.apple.siriinferenced.plist",
+      "sha256": "85d2027382413192cc9357ebeb57ae5f7e807f91c68b1dd14c1447d6f46c2ce8",
+      "program": "/System/Library/PrivateFrameworks/SiriInference.framework/Support/siriinferenced",
+      "mode": "0644"
+    },
+    "com.apple.siriknowledged": {
+      "path": "com.apple.siriknowledged.plist",
+      "sha256": "4a55ba0f2f9231826522f44f0dc8a47faec434b1aee4376ef289f6c6e3a74bf8",
+      "program": "/usr/libexec/siriknowledged",
+      "mode": "0644"
+    },
+    "com.apple.sirittsd": {
+      "path": "com.apple.sirittsd.plist",
+      "sha256": "698dfdf52e1f42d3bac849192117203d6f459fe22a88fde234e6c5a6c3127a98",
+      "program": "/System/Library/PrivateFrameworks/SiriTTSService.framework/sirittsd",
+      "mode": "0644"
+    },
+    "com.apple.sleepd": {
+      "path": "com.apple.sleepd.plist",
+      "sha256": "75ae29369895689331004fb6a227c81b7de5baa5ffb3bffa390c6ac97de6f014",
+      "program": "/System/Library/PrivateFrameworks/SleepDaemon.framework/sleepd",
+      "mode": "0644"
+    },
+    "com.apple.sociallayerd": {
+      "path": "com.apple.sociallayerd.plist",
+      "sha256": "6dd1cb6af6fa94b27f5d1910b46bceb49cc46acb1894160d941bfa0cddec7255",
+      "program": "/System/Library/PrivateFrameworks/SocialLayer.framework/sociallayerd.app/sociallayerd",
+      "mode": "0644"
+    },
+    "com.apple.softposreaderd": {
+      "path": "com.apple.softposreaderd.plist",
+      "sha256": "eee3b535572acc0b2fccc6e94530724ffa0e70b8af418001862c924cd2f55e19",
+      "program": "/usr/libexec/softposreaderd",
+      "mode": "0644"
+    },
+    "com.apple.sosd": {
+      "path": "com.apple.sosd.plist",
+      "sha256": "29b71952c0a83296cd49f0ffaba7a5df1936dc89f52cf45ba6410e0c9c0aa399",
+      "program": "/System/Library/PrivateFrameworks/SOS.framework/sosd",
+      "mode": "0644"
+    },
+    "com.apple.speechmodeltrainingd": {
+      "path": "com.apple.speechmodeltrainingd.plist",
+      "sha256": "791af38bb127f5756d42626782b59b7b3b5fd70d8149c8675b9ea6bd4dfa2e21",
+      "program": "/System/Library/PrivateFrameworks/CoreSpeech.framework/speechmodeltrainingd",
+      "mode": "0644"
+    },
+    "com.apple.spindump": {
+      "path": "com.apple.spindump.plist",
+      "sha256": "6ef610cbe6cdd6729658f2064b1af75df99a799bd1e3caf96fabefc27e6354d9",
+      "program": "/usr/sbin/spindump",
+      "mode": "0644"
+    },
+    "com.apple.splashboard": {
+      "path": "com.apple.splashboardd.plist",
+      "sha256": "04d80a4a7f2dd01c5b6dd8eaef20e7e3bce4278d01ac091d1a0b30b0e4f069ba",
+      "program": "/usr/libexec/splashboardd",
+      "mode": "0644"
+    },
+    "com.apple.sportsd": {
+      "path": "com.apple.sportsd.plist",
+      "sha256": "4bd2d08a4343035eb3b80549e3cb24184cc5563dccd0aa0b7d00e593f924da48",
+      "program": "/usr/libexec/sportsd",
+      "mode": "0644"
+    },
+    "com.apple.spotlight.IndexAgent": {
+      "path": "com.apple.spotlight.IndexAgent.plist",
+      "sha256": "aac7c914a16a3a37e40b20c1094d793f347786511f90b8394c4238b3ddcfe127",
+      "program": "/System/Library/Frameworks/CoreSpotlight.framework/Support/com.apple.spotlight.IndexAgent",
+      "mode": "0644"
+    },
+    "com.apple.spotlightknowledged": {
+      "path": "com.apple.spotlightknowledged.plist",
+      "sha256": "89178d93d340f80d15107739cd38da52f4d038ab593bb2c415d0eb9cd402d7dc",
+      "program": "/System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged",
+      "mode": "0644"
+    },
+    "com.apple.storagedatad": {
+      "path": "com.apple.storagedatad.plist",
+      "sha256": "879abc61510f0ebdae68b44df795c664cb6b9c90fbdcec155708246353a180a2",
+      "program": "/usr/libexec/storagedatad",
+      "mode": "0644"
+    },
+    "com.apple.storagekitd": {
+      "path": "com.apple.storagekitd.plist",
+      "sha256": "36e6954c989f7f6dad21d62ac1358b4501afff77a67d8fe47fc5d301d240572c",
+      "program": "/usr/libexec/storagekitd",
+      "mode": "0644"
+    },
+    "com.apple.storebookkeeperd": {
+      "path": "com.apple.storebookkeeperd.plist",
+      "sha256": "d0934735fc3f449901e6382998d14081e9886fc5c54e4660a756e9eae10a347d",
+      "program": "/System/Library/PrivateFrameworks/StoreBookkeeperClient.framework/Support/storebookkeeperd",
+      "mode": "0644"
+    },
+    "com.apple.storekitd": {
+      "path": "com.apple.storekitd.plist",
+      "sha256": "65f342a16fe91f835ceb8cee1cbc33a3510384b4884c3595613aff8cde3f5ef1",
+      "program": "/System/Library/Frameworks/StoreKit.framework/Support/storekitd",
+      "mode": "0644"
+    },
+    "com.apple.streaming_zip_conduit": {
+      "path": "com.apple.streaming_zip_conduit.plist",
+      "sha256": "a9259ddaf896cf86cdbdd728a5bdc293799611d6d824b912006810137cef9a43",
+      "program": "/usr/libexec/streaming_zip_conduit",
+      "mode": "0644"
+    },
+    "com.apple.subridged": {
+      "path": "com.apple.subridged.plist",
+      "sha256": "e26c4a47548ab973df24d8767ca603a8a7cd1065c935e25d2503dbd9292298f2",
+      "program": "/System/Library/PrivateFrameworks/SoftwareUpdateBridge.framework/Support/subridged",
+      "mode": "0644"
+    },
+    "com.apple.suggestd": {
+      "path": "com.apple.suggestd.plist",
+      "sha256": "3ed4ac9a7e730185d12d0f2a99e199c4f4fbd896195ce4f1c027dd0fc09f3505",
+      "program": "/System/Library/PrivateFrameworks/CoreSuggestions.framework/suggestd",
+      "mode": "0644"
+    },
+    "com.apple.swcd": {
+      "path": "com.apple.swcd.plist",
+      "sha256": "4d3ec623cff605fb3e26fdfd4af70e0d82ace5dd1c1555afed514fd97574363f",
+      "program": "/usr/libexec/swcd",
+      "mode": "0644"
+    },
+    "com.apple.symptomsd-diag": {
+      "path": "com.apple.symptomsd-diag.plist",
+      "sha256": "f929b4c7104d45b13da291bcfc80fb5ef066701ae432d29b62d4d644881b1d8f",
+      "program": "/usr/libexec/symptomsd-diag",
+      "mode": "0644"
+    },
+    "com.apple.symptomsd.helper": {
+      "path": "com.apple.symptomsd.helper.plist",
+      "sha256": "4bbcad90b2091ae287134345ef16b875b0ab9137eaa6756d148b97c16492cf67",
+      "program": "/usr/libexec/symptomsd-helper",
+      "mode": "0644"
+    },
+    "com.apple.symptomsd": {
+      "path": "com.apple.symptomsd.plist",
+      "sha256": "292cc9dfa6291b695881ed28ae7eea58ca3352e96ea876306d14e36773de7bc2",
+      "program": "/usr/libexec/symptomsd",
+      "mode": "0644"
+    },
+    "com.apple.synapse.contentlinkingd": {
+      "path": "com.apple.synapse.contentlinkingd.plist",
+      "sha256": "9167694e2ea969d23beeb8d583dfe23c44c556ec23bf1968e6b192da5425b7f7",
+      "program": "/System/Library/PrivateFrameworks/Synapse.framework/Support/contentlinkingd",
+      "mode": "0644"
+    },
+    "com.apple.sysdiagnose": {
+      "path": "com.apple.sysdiagnose.plist",
+      "sha256": "3ee09f12368ba89e92112314f0b9b29c02c5a7f299b22cd182147408de99df5d",
+      "program": "/usr/bin/sysdiagnose",
+      "mode": "0644"
+    },
+    "com.apple.sysdiagnose_helper": {
+      "path": "com.apple.sysdiagnose_helper.plist",
+      "sha256": "612da64d54d5fc124945a9957770fea6ba7b98723e011721f80810865adc7c18",
+      "program": "/usr/libexec/sysdiagnose_helper",
+      "mode": "0644"
+    },
+    "com.apple.syslogd": {
+      "path": "com.apple.syslogd.plist",
+      "sha256": "da114c62c225a1ab0219b03c6e2ca48b7fb50fb4f3a0db79de26eab85e5ea859",
+      "program": "/usr/sbin/syslogd",
+      "mode": "0644"
+    },
+    "com.apple.tailspind": {
+      "path": "com.apple.tailspind.plist",
+      "sha256": "d6b7f8633f7a6c416848458d5ed07cb5bdd9668e13cd191c2b3cd1612ecfe910",
+      "program": "/usr/libexec/tailspind",
+      "mode": "0644"
+    },
+    "com.apple.tccd": {
+      "path": "com.apple.tccd.plist",
+      "sha256": "d8191cf39f5288b037cb634408a56d5b15cf5d0b7dc56063512a17b0f883c155",
+      "program": "/System/Library/PrivateFrameworks/TCC.framework/Support/tccd",
+      "mode": "0644"
+    },
+    "com.apple.telephonyutilities.callservicesd": {
+      "path": "com.apple.telephonyutilities.callservicesd.plist",
+      "sha256": "156f24652276123c7dfd76c5e4b04798be85a9d19635c60bac0bd09cf9a337f8",
+      "program": "/System/Library/PrivateFrameworks/TelephonyUtilities.framework/callservicesd",
+      "mode": "0644"
+    },
+    "com.apple.terminusd": {
+      "path": "com.apple.terminusd.plist",
+      "sha256": "8ce4cd5417ced803e1e424f26a61c03b8cdf3e478f280423d4e7fdff114fcd9e",
+      "program": "/usr/libexec/terminusd",
+      "mode": "0644"
+    },
+    "com.apple.timed": {
+      "path": "com.apple.timed.plist",
+      "sha256": "1c31b9f93cfcbfc41b9019352cbf0ab45b076fa73c3f1214f350ee7284ba80fd",
+      "program": "/usr/libexec/timed",
+      "mode": "0644"
+    },
+    "com.apple.timezoneupdates.tzd": {
+      "path": "com.apple.timezoneupdates.tzd.plist",
+      "sha256": "0875057b704f24bd12bdff88ff3289f3bf368b107e8d7539e5b2fcd085dc5b15",
+      "program": "/usr/libexec/tzd",
+      "mode": "0644"
+    },
+    "com.apple.tipsd": {
+      "path": "com.apple.tipsd.plist",
+      "sha256": "c1345ad179c06d12322f3c3f5d88525f045b9101512f78ca26f40412e1c79116",
+      "program": "/usr/libexec/tipsd",
+      "mode": "0644"
+    },
+    "com.apple.touchsetupd": {
+      "path": "com.apple.touchsetupd.plist",
+      "sha256": "fdd662a8ed565e1296859c98ad1418736cab6f065e578c412f283d7778813289",
+      "program": "/System/Library/PrivateFrameworks/TouchRemote.framework/Support/touchsetupd",
+      "mode": "0644"
+    },
+    "com.apple.translationd": {
+      "path": "com.apple.translationd.plist",
+      "sha256": "25fd8099aed9557c0865d47a4b22e5877c84260240317ecec1449c39e991eefb",
+      "program": "/System/Library/PrivateFrameworks/Translation.framework/translationd",
+      "mode": "0644"
+    },
+    "com.apple.transparencyStaticKey": {
+      "path": "com.apple.transparencyStaticKey.plist",
+      "sha256": "2fa0915299d1e0776dfc555765a85e4b45b518b14e267817996e5b5e1ce22e3c",
+      "program": "/usr/libexec/transparencyStaticKey",
+      "mode": "0644"
+    },
+    "com.apple.transparencyd": {
+      "path": "com.apple.transparencyd.plist",
+      "sha256": "38d9a822359b0d0d669d60316628ea226ffb899cdde7f05c24c13245149c3026",
+      "program": "/usr/libexec/transparencyd",
+      "mode": "0644"
+    },
+    "com.apple.triald": {
+      "path": "com.apple.triald.plist",
+      "sha256": "22b46a40fcc722361f55716fc310f20068951dbc956d574c11b7b47db4c90990",
+      "program": "/usr/libexec/triald",
+      "mode": "0644"
+    },
+    "com.apple.trustd": {
+      "path": "com.apple.trustd.plist",
+      "sha256": "1907d3838bb9660edefa1d9a0621715b4c64d209b033f851950fb51cab52be89",
+      "program": "/usr/libexec/trustd",
+      "mode": "0644"
+    },
+    "com.apple.tvremoted": {
+      "path": "com.apple.tvremoted.plist",
+      "sha256": "dc8a097fee6102f52333570d278b0d407ef82d242537c3d88ff6760724186a69",
+      "program": "/System/Library/PrivateFrameworks/TVRemoteCore.framework/Support/TVRemoteConnectionService",
+      "mode": "0644"
+    },
+    "com.apple.tzlinkd": {
+      "path": "com.apple.tzlinkd.plist",
+      "sha256": "b4734854ba3efce49223f33ba2fa5f8644aba9d52ab531ade0f0fb5899aba9b4",
+      "program": "/usr/libexec/tzlinkd",
+      "mode": "0644"
+    },
+    "com.apple.uikit.eyedropperd": {
+      "path": "com.apple.uikit.eyedropperd.plist",
+      "sha256": "baa12ae59f9ef0c238e4b56eea8b152d32cfd271b1f8c330074285729d71f72c",
+      "program": "/System/Library/PrivateFrameworks/Eyedropper.framework/Support/eyedropperd",
+      "mode": "0644"
+    },
+    "com.apple.videosubscriptionsd": {
+      "path": "com.apple.videosubscriptionsd.plist",
+      "sha256": "58f550fdd450e644d4f9e48b58f2006792502e8a963a4e6b0e6e04d738f042b3",
+      "program": "/usr/libexec/videosubscriptionsd",
+      "mode": "0644"
+    },
+    "com.apple.voiced": {
+      "path": "com.apple.voiced.plist",
+      "sha256": "6c2f5dca88d70eab1fbaabc5fbc525eb8bce632e646baf42f4e2f4a8756fc4bb",
+      "program": "/System/Library/PrivateFrameworks/VoiceServices.framework/Support/voiced",
+      "mode": "0644"
+    },
+    "com.apple.voicemail.vmd": {
+      "path": "com.apple.voicemail.vmd.plist",
+      "sha256": "dbc4f252475afef9efb0d4cf5c4cbdda2e14c5e3afe6e6b35bed8163705cd030",
+      "program": "/System/Library/PrivateFrameworks/VisualVoicemail.framework/vmd",
+      "mode": "0644"
+    },
+    "com.apple.voicememod": {
+      "path": "com.apple.voicememod.plist",
+      "sha256": "becc1754908c5f47d20c8bd479e9673e5662df03cc3ba3bb2163a061292ebccf",
+      "program": "/System/Library/PrivateFrameworks/VoiceMemos.framework/Support/voicememod",
+      "mode": "0644"
+    },
+    "com.apple.watchlistd": {
+      "path": "com.apple.watchlistd.plist",
+      "sha256": "88f94ddc2bda64ce7b631e20797952a1d00175e508471fbf2927eef55f7db8ae",
+      "program": "/System/Library/PrivateFrameworks/WatchListKit.framework/Support/watchlistd",
+      "mode": "0644"
+    },
+    "com.apple.watchpresenced": {
+      "path": "com.apple.watchpresenced.plist",
+      "sha256": "edadf774a82a1e48752e1f2dc83a4fdbb8d990ba6507550779f642c0bb2b7831",
+      "program": "/usr/libexec/watchpresenced",
+      "mode": "0644"
+    },
+    "com.apple.wcd": {
+      "path": "com.apple.wcd.plist",
+      "sha256": "792b64c92cc44013c762fc4914eb6eb17a22f81c37fc3aaf220d55856571430e",
+      "program": "/usr/libexec/wcd",
+      "mode": "0644"
+    },
+    "com.apple.weatherd": {
+      "path": "com.apple.weatherd.plist",
+      "sha256": "2f974f08f395b8e1cb04a9f9af5ee8c563127bc2b0657ccc3c2801b04436f555",
+      "program": "/System/Library/PrivateFrameworks/WeatherDaemon.framework/weatherd",
+      "mode": "0644"
+    },
+    "com.apple.webinspectord": {
+      "path": "com.apple.webinspectord.plist",
+      "sha256": "83d83b0121b9170eca27f1d531cc6bd3ee8afb903424601a1b9860693d2bca90",
+      "program": "/System/Cryptexes/App/usr/libexec/webinspectord",
+      "mode": "0644"
+    },
+    "com.apple.webkit.adattributiond": {
+      "path": "com.apple.webkit.adattributiond.plist",
+      "sha256": "8447d364162a8857a9f58b3234019ccdd65c9b84eac88aba3ff1ce8f20460c26",
+      "program": "/System/Cryptexes/OS/System/Library/Frameworks/WebKit.framework/Daemons/adattributiond",
+      "mode": "0644"
+    },
+    "com.apple.webkit.webpushd": {
+      "path": "com.apple.webkit.webpushd.plist",
+      "sha256": "8c410645ebc67d8f652651c6520c98cd86333cc465d1f322dc0f12cb5f7ae929",
+      "program": "/System/Cryptexes/App/usr/libexec/webpushd",
+      "mode": "0644"
+    },
+    "com.apple.wifid": {
+      "path": "com.apple.wifid.plist",
+      "sha256": "c80dea7bc89375ec1617d15e47d0983315c89a01f1f3588509767a4901b44d56",
+      "program": "/usr/sbin/wifid",
+      "mode": "0644"
+    },
+    "com.apple.xpc.roleaccountd": {
+      "path": "com.apple.xpc.roleaccountd.plist",
+      "sha256": "c863459ed1bce22489991e1cfad35f254fcfe7b9b395210c9bf8ee140d0b3398",
+      "program": "/usr/libexec/xpcroleaccountd",
+      "mode": "0644"
+    },
+    "com.hakios.demo": {
+      "path": "com.hakios.demo.plist",
+      "sha256": "91d3d94e5ad4b82ee5641b8b54318b4e44e1fed1a90cce1f3c1646fe86d97bbb",
+      "program": "/redwood/sbin/init",
+      "mode": "0644"
+    },
+    "com.hakios.varstore": {
+      "path": "com.hakios.varstore.plist",
+      "sha256": "29e3f49e5d92e23b2e1b704cfeb76c112692630330ad15b793039cd2a91962e2",
+      "program": "/redwood/bin/var_store",
+      "mode": "0644"
+    },
+    "com.hakios.wifi": {
+      "path": "com.hakios.wifi.plist",
+      "sha256": "e58739185fd70b9b00d02cf786cd42177c22f860d12478901e5c86878c1282a3",
+      "program": "/redwood/bin/net_test",
+      "mode": "0644"
+    }
+  },
+  "launchd_jobs": 413,
+  "root_storage": "UFS original APFS; cryptexes on UFS",
+  "oslog_jobs": [
+    "com.apple.backboardd",
+    "com.apple.SpringBoard",
+    "com.apple.lsd",
+    "com.apple.containermanagerd",
+    "com.apple.containermanagerd.system",
+    "com.apple.installcoordinationd"
+  ],
+  "data_filesystem": "journaled HFSX",
+  "software_rendering": "upstream CoreAnimation candidate; hardware unverified",
+  "source_programs_compiled": true,
+  "prebuilt_programs_used": false,
+  "system_validation": {
+    "reused_exact_frozen_image": true,
+    "full_readback_this_build": false,
+    "source_report": "reports/history/hakios-ios16-phase4-r4-20261116/hakios-ios16-phase4-userspace-build.json",
+    "source_report_sha256": "79036d74ca6feaaf5eae67145b02cd63616eba5298858026919e1704ae0a6a8f",
+    "image_sha256": "f9465f526753f9a0d3b9a2f9604650421bfd680a8c43f8e751966dfa7baab4fa",
+    "image_bytes": 2476716032
+  },
+  "static_programs": {
+    "init": {
+      "sha256": "a56278a94de73f103e68e60b3c08ca83e4afdb2a46d945cf708cd9994d675ee4",
+      "architecture": "arm64",
+      "entry": "0x100006788",
+      "unixthread": true,
+      "dyld_required": false,
+      "commands": [
+        25,
+        25,
+        25,
+        25,
+        2,
+        27,
+        42,
+        5
+      ],
+      "flags": "0x1"
+    },
+    "stage0": {
+      "sha256": "7590c8831bd1fbfac6e810b1f3089519ee65eb6e021bebe72776ffa35e244d18",
+      "architecture": "arm64",
+      "entry": "0x100003cec",
+      "unixthread": true,
+      "dyld_required": false,
+      "commands": [
+        25,
+        25,
+        25,
+        25,
+        2,
+        27,
+        42,
+        5
+      ],
+      "flags": "0x1"
+    },
+    "child": {
+      "sha256": "0b1457279af7c04c85329060a108c121c92267c7c54b9a2e98b092e6acc43863",
+      "architecture": "arm64",
+      "entry": "0x100003d20",
+      "unixthread": true,
+      "dyld_required": false,
+      "commands": [
+        25,
+        25,
+        25,
+        25,
+        2,
+        27,
+        42,
+        5
+      ],
+      "flags": "0x1"
+    },
+    "var_store": {
+      "sha256": "282940c7897010c47cc7163dfc107dc00932cb981c94a5852c03da74485a3339",
+      "architecture": "arm64",
+      "entry": "0x100007348",
+      "unixthread": true,
+      "dyld_required": false,
+      "commands": [
+        25,
+        25,
+        25,
+        25,
+        2,
+        27,
+        42,
+        5
+      ],
+      "flags": "0x1"
+    },
+    "hello": {
+      "sha256": "776e7f3dfd0a349c1e13bfd6e78ce3ff24cad7643e14cff33855ebe072e63f29",
+      "architecture": "arm64",
+      "entry": "0x10000387c",
+      "unixthread": true,
+      "dyld_required": false,
+      "commands": [
+        25,
+        25,
+        25,
+        2,
+        27,
+        42,
+        5
+      ],
+      "flags": "0x1"
+    }
+  },
+  "static_contract_check_sha256": "91bd5e529fff33195bf1d8fd8d32f9b3fa7bc31e41fbad2533981f27d565ffe8",
+  "build_script_sha256": "beaf887ede5ffdf3485dda787b5eb02fca750da016bef54f6653604be9c985b3",
+  "userland_linker": {
+    "path": "/usr/lib/llvm-18/bin/ld64.lld",
+    "sha256": "7ad9a0e8fe6d0e79b71172d731e33872c0274e49fceb7b516d774876d5a58ade"
+  },
+  "hardware_verified": false,
+  "qemu_used": false
+}

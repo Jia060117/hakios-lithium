@@ -1,0 +1,174 @@
+{
+  "schema": 1,
+  "attempt": "HakiOS lithium R19",
+  "started_at": "2026-11-15T22:39:09.988174+08:00",
+  "recorded_at": "2026-11-15T22:39:11.456444+08:00",
+  "baseline": {
+    "project": "HakiOS",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2"
+  },
+  "package": {
+    "image_sha256": "bf23f302f1e1e6a13582fd672d3f23b0b133daf169e55871890058f11493afee",
+    "image_bytes": 15728640,
+    "kernel_sha256": "e9a91f1478bdcc30d635ce325ccefed143abbb098e7be8997b4fa8aba0ba6bf0",
+    "loader_sha256": "ba16d73b3eb7552eb20d976568fc1b58bcd07462cbd91e71997b2ec28d880b6a",
+    "fd_sha256": "b9d9a814c91f8267c0eb6f6ad33a5d1185e40b1da0c10687fd2f38beb08da53e",
+    "payload_sha256": "2509610805ed97f03eb13be0f6722847841ef756d1ae9114106218319cfa29c3",
+    "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=2 lithium_storage_test=1 systrace=1 loader_return_after=120",
+    "stock_dtb_table_sha256": "ab929abf55ad4822ae83489a58d6b550b7b24ea8398ce8ead1de7b1d2caed6aa",
+    "test_profile": "p2-storage-readonly",
+    "ramdisk_sha256": "09539ae55a692db3318d1c7016be62d74ef28bf189ba5f362a95b922eff6af80",
+    "storage_probe_sha256": "55a26bbd2ee44f152c05fa66feab0caaeb3bdd5c2462120889e939425c174b23"
+  },
+  "frozen_artifacts_path": "artifacts/hakios/p2-storage-ready-ufs-buffer-map",
+  "frozen_boot_image": "reports/local/20261115-223909-966560-hakios-preflight/lithium-hakios-test.img",
+  "local_log_path": "reports/local/20261115-223909-966560-hakios-preflight",
+  "test_contract_path": "reports/local/20261115-223909-966560-hakios-preflight/test-contract.json",
+  "identity_verified": true,
+  "bootloader_unlocked": true,
+  "userdata_bytes": 250710192128,
+  "temporary_boot_issued": true,
+  "fastboot_returncode": 0,
+  "command_accepted": true,
+  "fastboot_boot_output": "Sending 'boot.img' (15360 KB)                      OKAY [  0.380s]\nBooting                                            OKAY [  0.786s]\nFinished. Total time: 1.171s\n",
+  "latest_usb": {
+    "checked_at": "2026-11-15T22:39:11.456444+08:00",
+    "authorized_device_in_fastboot": false,
+    "adb_present": false,
+    "local_log_path": "reports/local/20261115-223909-966560-hakios-preflight/post-boot-usb.json"
+  },
+  "battery_preflight": {
+    "battery_soc_ok": "yes",
+    "local_log_path": "reports/local/20261115-223909-966560-hakios-preflight/battery-query.json"
+  },
+  "user_screen_observation": {
+    "source": "user_photo",
+    "observation_pending": false,
+    "current_screen": "Retained HFS readonly mount then diagnostic PID1 null read after successful file read",
+    "automatic_reboot_observed": null
+  },
+  "verified_stages": {
+    "fastboot_command": true,
+    "uefi": true,
+    "mmu_hobs": false,
+    "bds": true,
+    "gop": true,
+    "efi_file_hash": false,
+    "loader": true,
+    "kernel": true,
+    "hello": false,
+    "storage_probe": true,
+    "hfs_mount": true,
+    "warm_ufs_ready": true,
+    "loader_userdata_hfsx_header": true,
+    "storage_probe_entry": true,
+    "kernel_userdata_header": true
+  },
+  "outcome": "HFS_mounted_diagnostic_PID1_fault_in_VERSION_hash_after_positive_read",
+  "exact_failure_stage": "diagnostic_check_file_VERSION_hash_reads_cleared_x1_after_read_syscall",
+  "runtime_acceptance": {
+    "storage_test_passed": false,
+    "final_summary_pending": false,
+    "kernel_started": true,
+    "diagnostic_startup_verified": true,
+    "kernel_userdata_header_verified": true,
+    "hfs_mount_verified": true,
+    "mount_readonly_verified": true,
+    "positive_VERSION_read_inferred": true,
+    "ios14_file_reads_verified": false,
+    "unmount_verified": false,
+    "ios14_processes_executed": false,
+    "orderly_return_observed": false,
+    "panic_return_observed": true,
+    "final_summary_retained": true
+  },
+  "hardware_verified": false,
+  "ios14_compatibility_verified": false,
+  "partition_writes_performed": false,
+  "qemu_used": false,
+  "filesystem_input": {
+    "report": "reports/hakios-hfs-journal-repair.json",
+    "frozen_contract_path": "reports/local/20261115-223909-966560-hakios-preflight/filesystem-input.json",
+    "original_volume_plus_verified_journal_delta": true,
+    "prior_maintenance_written_bytes": 8192,
+    "first8192_unchanged": true,
+    "full_volume_after_hash_measured": false
+  },
+  "observation_recorded_at": "2026-11-15T22:47:29.983388+08:00",
+  "screen_evidence": {
+    "photos": [
+      {
+        "path": "reports/local/20261115-223909-966560-hakios-preflight/r19-diagnostic-read-x1-fault.jpg",
+        "sha256": "ba692dc048e4616fbcff321c7f1f3cb9eb5819230a68c412e7a70193a3125f68"
+      }
+    ],
+    "transcription_path": "reports/local/20261115-223909-966560-hakios-preflight/r19-screen-transcription.txt",
+    "transcription_sha256": "7e610b71f1866e36c68e574188d13eda5471b246495b8bfdb8a1ab6942a57a32",
+    "raw_kernel_log_captured": false,
+    "transcription_scope": "Visible text; ambiguous clock ticks explicitly omitted"
+  },
+  "failure": {
+    "signal": "SIGSEGV",
+    "signal_number": 11,
+    "exception": 1,
+    "code": 1,
+    "subcode": 0,
+    "fault_pc": "0x100002aa4",
+    "fault_lr": "0x100002668",
+    "fault_sp": "0x16fdff550",
+    "esr": "0x92000005",
+    "far": "0x0",
+    "panic_caller": "0xfffffff00778caf0",
+    "pc_symbol": "_check_file",
+    "pc_symbol_offset": "0xb0",
+    "fault_instruction": "ldrb w16, [x15], #0x1",
+    "prior_instruction": "mov x15, x1",
+    "file_stage": "VERSION",
+    "positive_read_result_inferred_from_frozen_branch": true,
+    "read_byte_count_not_captured": true,
+    "root_cause": "Diagnostic inline syscall declares x1 input-only; XNU successful read clears x1; compiler reuses x1 as buffer pointer",
+    "contract_evidence": {
+      "r19-fault-disassembly.txt": {
+        "path": "reports/local/20261115-223909-966560-hakios-preflight/r19-fault-disassembly.txt",
+        "sha256": "2854be5fd4bae30ffb23ce729adaf4cc8b60f806eb399b7dde173f327e39330e"
+      },
+      "systemcalls-source.c": {
+        "path": "reports/local/20261115-223909-966560-hakios-preflight/systemcalls-source.c",
+        "sha256": "7e77d5a0d4369f3b5bbf2f1fa60bea4b3fb5117319a3bfddeff8177622f0fdfd"
+      },
+      "libmini-start.S": {
+        "path": "reports/local/20261115-223909-966560-hakios-preflight/libmini-start.S",
+        "sha256": "75024af4f60a89ff82269a7076be303bcb50779f9f1d4ef504231bcf4ea1012c"
+      }
+    }
+  },
+  "measurements": {
+    "loader_return_log_bytes": 23662,
+    "ufs_stage": 6,
+    "header_read_bytes": 8192,
+    "header_match": true,
+    "mount_rc": 0,
+    "mount_readonly": true,
+    "frequency_hz": 19200000,
+    "hardware_elapsed_ms": 13233,
+    "clock_valid": true,
+    "clock_ticks_start": null,
+    "clock_ticks_end": null,
+    "clock_ticks_not_confidently_transcribed": true,
+    "ppi27_start": 0,
+    "ppi27_end": 1044,
+    "irq_delta": 1044,
+    "samples": 0,
+    "stalled": 0,
+    "min_step": 0
+  },
+  "kernel_execution_verified": true,
+  "observation_archival": {
+    "frozen_evidence_hashes_checked": 133,
+    "device_queries_performed": false,
+    "temporary_boot_issued": false,
+    "partition_writes_performed": false,
+    "new_kernel_compiled": false
+  }
+}

@@ -1,0 +1,48 @@
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -2990,6 +2990,10 @@
+ 	}
+ }
+ 
++#if defined(HAKIOS_LITHIUM_G2_RECEIPT) && defined(HAKIOS_LITHIUM)
++#include "../devices/lithium/gpu/g2-live/loader-producer.inc"
++#endif
++
+ static int
+ choose_window(const struct payload_info *pi)
+ {
+@@ -3496,6 +3500,10 @@
+ 	lithium_display_loader_configure(pi.cmdline);
+ #endif
+ 
++#if defined(HAKIOS_LITHIUM_G2_RECEIPT) && defined(HAKIOS_LITHIUM)
++	const int lg2l_receipt_ok = lg2l_loader_capture(1u);
++#endif
++
+ 	/* --- device tree ---------------------------------------------------- */
+ 	const struct platform *plat = PLAT;
+ 	struct dt_writer w = { .base = (uint8_t *)dt_pa, .cur = (uint8_t *)dt_pa, .end = (uint8_t *)(dt_pa + dt_max), .depth = 0 };
+@@ -3526,6 +3534,10 @@
+ 	dt_prop_u32(&w, "#size-cells", 2);
+ 
+ 	dt_begin(&w, "chosen");
++#if defined(HAKIOS_LITHIUM_G2_RECEIPT) && defined(HAKIOS_LITHIUM)
++	if (lg2l_receipt_ok)
++		dt_prop(&w, LG2L_RECEIPT_PROPERTY, &lg2l_loader_receipt, sizeof(lg2l_loader_receipt));
++#endif
+ 	dt_prop(&w, "random-seed", seed, sizeof(seed));
+ 	dt_prop_u64(&w, "dram-base", phys_base);
+ 	dt_prop_u64(&w, "dram-size", win_size);
+@@ -3583,6 +3595,12 @@
+ 	dt_prop_u32(&w, "nvram-current-bank", 0);
+ 	dt_prop(&w, "nvram-proxy-data", nvram_image, sizeof(nvram_image));
+ 	dt_begin(&w, "memory-map");
++#if defined(HAKIOS_LITHIUM_G2_RECEIPT) && defined(HAKIOS_LITHIUM)
++	if (lg2l_receipt_ok) {
++		uint64_t zap[2] = { LG2L_CODE_PA, LG2L_CODE_BYTES };
++		dt_prop(&w, "GPU-ZAP", zap, sizeof(zap));
++	}
++#endif
+ 	/*
+ 	 * "RAMDisk" becomes /dev/md0, the root (the kernel and launchd treat
+ 	 * only md0 as a RAM disk boot); "RAMDisk1" becomes /dev/md1. With both

@@ -1,0 +1,178 @@
+R11 regression: test-hakios-dependency-sync.py
+PASS actual dependency synchronization: post-overlay handoff accepted; stale and unknown changes rejected
+R11 regression: test-hakios-ios16-host.py
+PASS actual log reader: head, wrap, gap, short reads, end, contention, linearization, drain boundary snapshot
+PASS host USB split/combined frames, duplicates and explicit gaps
+PASS corrupt/oversized USB frames rejected
+PASS USB2 transfer termination for every payload size
+PASS LANGID failure recovers only with exact serial; wrong/inaccessible identities rejected
+PASS setup failure preserves terminal status, descriptor errors and releases resources
+R11 regression: test-hakios-ios16-console.py
+PASS actual shared console sink in both build configurations; fatal trace independent of systrace
+R11 regression: test-hakios-ios16-observation.py
+PASS actual first-frame timer with/without lithium; window bounded; existing return path retained
+R11 regression: test-hakios-ios16-boot-observer.py
+PASS production sampler: resume before raw output/symbols; failed suspend/state; bounded/cyclic/overflow frame chains; exact opt-in; constructor watcher without main queue; reviewed finite sample/time bounds; loop milestones; dead thread and create failure; USB completed/timeout/stopped/invalid targets
+R11 regression: test-hakios-ios16-thread-wait.py
+PASS selectors, finite limits, fault/owner-state cases, balanced IPC/thread references
+PASS 50 actual-row/profile comparisons, clipping/guard bytes, BGR24/BGRA32, finite bands, IRQ restoration
+PASS actual R7 wait-context and framebuffer profile functions; real lock owner still requires hardware evidence
+R11 regression: test-hakios-ios16-service-wait.py
+PASS 1650 frozen-R7/R8 pixel and damage-counter comparisons
+PASS read-only current receiver lookup, balanced locks, unsupported/nonwaiting traps
+PASS upstream actual console drain: 14 long/short cases, loss reproduced without sync
+R11 regression: test-hakios-ios16-return.py
+PASS actual loader summary: v4 ABI, mixed binary/text, cause/task/backtrace, bad spans, timer/unknown/shutdown-fault precedence, long lines, null log
+R11 regression: test-hakios-ios16-static.py
+PASS actual R2 init/stage0 rejected; all five rebuilt direct-entry programs valid
+R11 regression: test-hakios-ios16-r9.py
+PASS CPU actual MPIDR mapper/platform dispatch: roundtrips, 65536 affinities, invalid indices/high bits
+PASS UFS actual Data/partition ioctl handlers: SSD=1, 32-bit guards, readiness, writable/geometry/flush regressions
+PASS IPC actual hashed capture/dump: 8 selected names, trylock drop, collision, 128 slots, no locked print/allocation
+PASS actual bulk/ring/console/drain USB=0: 296 cases, controls, 255/256/257/8191, quota, disabled single capture
+PASS actual bulk/ring/console/drain USB=1: 296 cases, controls, 255/256/257/8191, quota, disabled single capture
+PASS R9 ASan/UBSan production host checks; /mnt/f/IOS-MIX1/reports/hakios-ios16-r9-checks.json
+R11 regression: test-hakios-ios16-r10.py
+r10-cpu-irq: PASS
+r9-negative-control: PASS
+R11 regression: test-hakios-ios16-r11.py
+PASS actual R11 state + 10 wrappers: completion, repeated failures, active waits, capacity, concurrent counts, exact arguments/results/errno, output and UUID/refused-hook handling
+PASS R11 cumulative LS actual callsites/slide/14 helpers: all wrappers forward once, preserve group/timeout/result, bounded events
+PASS actual syscall tracker: selection, paths, success/error/control returns, continuation, lost-end retirement, slot/stat capacity and unlocked snapshot output
+PASS R11 production diagnostics checks; no hardware proof
+PASS R11 phase-four regression evidence
+PASS: 13 GPT cases; actual command, direction, boundary and timeout checks under ASan/UBSan
+PASS actual raw engine: stats, bounds, nominal restoration, 602 injected failures, corruption, timeout, denied writes
+/mnt/f/IOS-MIX1/ports/hakios-lithium/patches/0015-lithium-run-a-finalize.patch:12: space before tab in indent.
+ 	uio_t auio;
+/mnt/f/IOS-MIX1/ports/hakios-lithium/patches/0015-lithium-run-a-finalize.patch:13: space before tab in indent.
+ 	int error;
+/mnt/f/IOS-MIX1/ports/hakios-lithium/patches/0015-lithium-run-a-finalize.patch:14: space before tab in indent.
+ 	struct nameidata nd;
+/mnt/f/IOS-MIX1/ports/hakios-lithium/patches/0015-lithium-run-a-finalize.patch:17: space before tab in indent.
+ 	bool put_vnode;
+/mnt/f/IOS-MIX1/ports/hakios-lithium/patches/0015-lithium-run-a-finalize.patch:18: trailing whitespace.
+ 
+warning: squelched 130 whitespace errors
+warning: 135 lines add whitespace errors.
+/mnt/f/IOS-MIX1/ports/hakios-lithium/patches/0014-lithium-hfs-diagnostics.patch:342: space before tab in indent.
+ 	platform_stall_panic_or_spin(PLATFORM_STALL_XNU_LOCATION_BSD_INIT);
+/mnt/f/IOS-MIX1/ports/hakios-lithium/patches/0014-lithium-hfs-diagnostics.patch:344: trailing whitespace.
+ 
+/mnt/f/IOS-MIX1/ports/hakios-lithium/patches/0014-lithium-hfs-diagnostics.patch:347: trailing whitespace.
+ 
+/mnt/f/IOS-MIX1/ports/hakios-lithium/patches/0014-lithium-hfs-diagnostics.patch:351: trailing whitespace.
+ 
+/mnt/f/IOS-MIX1/ports/hakios-lithium/patches/0014-lithium-hfs-diagnostics.patch:352: space before tab in indent.
+ 		bsd_init_kprintf("calling devfs_kernel_mount\n");
+warning: squelched 36 whitespace errors
+warning: 41 lines add whitespace errors.
+PASS production recorder: ownership, nested inclusive times, UFS attribution, wake/timeout, safe stack bounds and 8000 concurrent operations
+PASS production HFS workload: twenty verified replacements, write/fsync/rename/corruption/timeout failures, cleanup and mount/opt-in gates
+PASS actual CPU enumeration: 1/3/4 CPUs, sparse/offline IDs, disabled path, restored binding, strict API bound
+/mnt/f/IOS-MIX1/ports/hakios-lithium/patches/0015-lithium-run-a-finalize.patch:12: space before tab in indent.
+ 	uio_t auio;
+/mnt/f/IOS-MIX1/ports/hakios-lithium/patches/0015-lithium-run-a-finalize.patch:13: space before tab in indent.
+ 	int error;
+/mnt/f/IOS-MIX1/ports/hakios-lithium/patches/0015-lithium-run-a-finalize.patch:14: space before tab in indent.
+ 	struct nameidata nd;
+/mnt/f/IOS-MIX1/ports/hakios-lithium/patches/0015-lithium-run-a-finalize.patch:17: space before tab in indent.
+ 	bool put_vnode;
+/mnt/f/IOS-MIX1/ports/hakios-lithium/patches/0015-lithium-run-a-finalize.patch:18: trailing whitespace.
+ 
+warning: squelched 130 whitespace errors
+warning: 135 lines add whitespace errors.
+PASS production Run A: fast/slow core, live LSDB inventory, no-follow/cross-mount, bounds and malformed entries, attributes, sync/flush errors and reference cleanup
+PASS actual display initialization: coherent default, explicit upstream profiles, original geometry, DT before/after and missing/malformed properties
+PASS R17 native status-bar gate: D22AP 3x/2436 accepted; R16 2x/1334 and invalid/missing profiles rejected
+PASS: 10 flattened DT cases, exact properties, no duplicate keys
+..................
+----------------------------------------------------------------------
+Ran 18 tests in 0.003s
+
+OK
+.................
+----------------------------------------------------------------------
+Ran 17 tests in 0.089s
+
+OK
+test_boot_reaches_copy_only_after_all_simulated_guards (__main__.OfflinePreflightTests.test_boot_reaches_copy_only_after_all_simulated_guards) ... ok
+test_boot_still_requires_decoder_checks_and_usb_environment (__main__.OfflinePreflightTests.test_boot_still_requires_decoder_checks_and_usb_environment) ... ok
+test_consumed_revision_guard_remains_before_target_in_every_mode (__main__.OfflinePreflightTests.test_consumed_revision_guard_remains_before_target_in_every_mode) ... ok
+test_default_retains_all_checks_and_no_boot_gate (__main__.OfflinePreflightTests.test_default_retains_all_checks_and_no_boot_gate) ... ok
+test_disconnected_or_wrong_serial_never_reaches_identity_or_boot (__main__.OfflinePreflightTests.test_disconnected_or_wrong_serial_never_reaches_identity_or_boot) ... ok
+test_host_validation_failures_still_reject_every_mode (__main__.OfflinePreflightTests.test_host_validation_failures_still_reject_every_mode) ... ok
+test_identity_unlock_capacity_battery_and_window_fail_closed (__main__.OfflinePreflightTests.test_identity_unlock_capacity_battery_and_window_fail_closed) ... ok
+test_modes_are_mutually_exclusive_before_any_validation (__main__.OfflinePreflightTests.test_modes_are_mutually_exclusive_before_any_validation) ... ok
+test_offline_returns_after_host_checks_before_target_or_side_effects (__main__.OfflinePreflightTests.test_offline_returns_after_host_checks_before_target_or_side_effects) ... ok
+test_subprocess_tripwire_rejects_accidental_device_path (__main__.OfflinePreflightTests.test_subprocess_tripwire_rejects_accidental_device_path) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.401s
+
+OK
+PASS R19 exact source delta, actual baseline parser default-off, preserved R18 display
+BUILD boot-options-test.c
+PASS boot options: defaults, probe/phase 0, touch dependencies and malformed overrides
+BUILD gpu-firmware-test.c
+PASS A530 firmware views: PM4/PFP metadata, FW2 spans and BO bounds
+BUILD gpu-iova-test.c
+gpu-iova: 3 test groups passed
+BUILD gpu-probe-test.c
+PASS GPU probe model: gates, exact ID, partial acquisition, deadlines and cleanup
+BUILD gpu-submit-test.c
+B4 A530 v5 GPU mock: 4 test groups passed
+BUILD irq-route-test.c
+irq-route: all 988 standard SPI offsets and failure cases passed
+BUILD kernel-admission-test.c
+PASS production kernel admission: default-off, malformed, CPU contract, allocation, unavailable stages
+BUILD qup-i2c-test.c
+qup-i2c: 65792 encoding plans; all 32 prerequisite combinations, NULLs, bounds, state matrix and error atomicity passed (host tag model only)
+BUILD qup-transfer-test.c
+PASS injected fault at all 42 MMIO calls (write)
+PASS injected fault at all 37 MMIO calls (read)
+PASS qup-transfer: packing, 64 transfers, gates, every MMIO fault, bounded errors/cleanup
+BUILD touch-digitizer-test.c
+PASS lithium digitizer coordinates, HakiOS event values and atomic validation
+BUILD touch-frame-test.c
+PASS lithium touch frame decoding, multitouch lifecycle and atomic rejection
+BUILD touch-i2c-test.c
+PASS touch I2C: split report, runtime probe, ownership, retries, deadlines and transactional output
+BUILD touch-irq-test.c
+touch-irq: 16 deterministic host-policy groups passed (read races, storm recovery, transactional deadlines, poll ownership)
+BUILD touch-queue-test.c
+PASS touch queue adapter: geometry, rotations, 10 slots, ID reuse, loss, atomic reject
+PASS 14 peripheral test suites (ASan and UBSan)
+test_cli_exit_codes_json_and_new_output (__main__.DisplayLogCliTests.test_cli_exit_codes_json_and_new_output) ... ok
+test_cli_refuses_existing_output_and_input_aliases (__main__.DisplayLogCliTests.test_cli_refuses_existing_output_and_input_aliases) ... ok
+test_banner_consistency_does_not_invent_capture_provenance (__main__.DisplayLogTests.test_banner_consistency_does_not_invent_capture_provenance) ... ok
+test_cgfloat_rounding_and_one_based_line_evidence (__main__.DisplayLogTests.test_cgfloat_rounding_and_one_based_line_evidence) ... ok
+test_complete_synthetic_profile_and_optional_evidence (__main__.DisplayLogTests.test_complete_synthetic_profile_and_optional_evidence) ... ok
+test_contradictory_samples_fail_in_either_order (__main__.DisplayLogTests.test_contradictory_samples_fail_in_either_order) ... ok
+test_cpu_match_flag_does_not_override_numeric_identity (__main__.DisplayLogTests.test_cpu_match_flag_does_not_override_numeric_identity) ... ok
+test_duplicate_and_mixed_cpu_records_fail (__main__.DisplayLogTests.test_duplicate_and_mixed_cpu_records_fail) ... ok
+test_explicit_failure_takes_precedence_over_missing_evidence (__main__.DisplayLogTests.test_explicit_failure_takes_precedence_over_missing_evidence) ... ok
+test_home_class_and_frame_bounds_must_be_actual_measurements (__main__.DisplayLogTests.test_home_class_and_frame_bounds_must_be_actual_measurements) ... ok
+test_malformed_truncated_and_incomplete_fields_are_unverified (__main__.DisplayLogTests.test_malformed_truncated_and_incomplete_fields_are_unverified) ... ok
+test_missing_mandatory_categories_are_unverified (__main__.DisplayLogTests.test_missing_mandatory_categories_are_unverified) ... ok
+test_mobilegestalt_unavailable_never_infers_required_value (__main__.DisplayLogTests.test_mobilegestalt_unavailable_never_infers_required_value) ... ok
+test_no_optional_loader_markers_or_banner_still_passes (__main__.DisplayLogTests.test_no_optional_loader_markers_or_banner_still_passes) ... ok
+test_nonfinite_measurements_fail (__main__.DisplayLogTests.test_nonfinite_measurements_fail) ... ok
+test_optional_contradictions_and_spoofed_profile_match_fail (__main__.DisplayLogTests.test_optional_contradictions_and_spoofed_profile_match_fail) ... ok
+test_physical_bgr24_is_not_a_four_byte_panel (__main__.DisplayLogTests.test_physical_bgr24_is_not_a_four_byte_panel) ... ok
+test_saved_real_r16_is_not_a_profile_or_visual_pass (__main__.DisplayLogTests.test_saved_real_r16_is_not_a_profile_or_visual_pass) ... ok
+test_scale_2_001_is_not_rounding_tolerance (__main__.DisplayLogTests.test_scale_2_001_is_not_rounding_tolerance) ... ok
+test_surface_row_alignment_format_and_unrelated_small_surfaces (__main__.DisplayLogTests.test_surface_row_alignment_format_and_unrelated_small_surfaces) ... ok
+test_unavailable_selectors_and_dt_properties_are_unverified (__main__.DisplayLogTests.test_unavailable_selectors_and_dt_properties_are_unverified) ... ok
+test_unknown_samples_cannot_complete_required_three (__main__.DisplayLogTests.test_unknown_samples_cannot_complete_required_three) ... ok
+
+----------------------------------------------------------------------
+Ran 22 tests in 0.713s
+
+OK
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 1min 52.376s
+CPU time consumed: 33.299s
+Memory peak: 2.2M
+Memory swap peak: 0B

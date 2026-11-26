@@ -1,0 +1,109 @@
+{
+  "schema": 1,
+  "revision": 8,
+  "recorded_at": "2026-11-17T15:13:11.609303+08:00",
+  "source_snapshot": "reports/local/20261117-043213-541954-ios16-r8/snapshot-final",
+  "local_evidence": "reports/local/20261117-043213-541954-ios16-r8/final-call-analysis/diagnosis-evidence.json",
+  "status": "final_existing_evidence_reviewed_root_cause_not_closed",
+  "transport": {
+    "console_bytes": 366347,
+    "frames": 6849,
+    "same_console_hash": true,
+    "prior_independent_audit_verified": true,
+    "normal_timer_and_drain": true,
+    "scope": "Emitted saved USB byte stream; not all daemon/firmware logs"
+  },
+  "observed_blocker": "SpringBoard application record initialization waits on LaunchServices database readiness",
+  "request_timeline": [
+    {
+      "sequence": 4,
+      "request": "NonBlocking"
+    },
+    {
+      "sequence": 5,
+      "request": "NonBlocking"
+    },
+    {
+      "sequence": 6,
+      "request": "NonBlocking"
+    },
+    {
+      "sequence": 7,
+      "request": "Blocking"
+    },
+    {
+      "sequence": 8,
+      "request": "Blocking"
+    }
+  ],
+  "same_sampled_lock_and_owner_span_seconds": 1441.096197,
+  "same_rpc_continuously_blocked_proven": false,
+  "lsd_final_group_wait_observed_span_seconds": 360.293492,
+  "lsd_final_waiters": [
+    "LSDatabaseBlockingFetchClient getServerStoreBlockingWithCompletionHandler:",
+    "_LSInstallProgressService restoreInactiveInstalls"
+  ],
+  "group_wait_is_unfair_lock": false,
+  "dispatch_time_forever_verified_in_supplied_code": true,
+  "lsd_main_wait": "performJournalRecovery -> dispatch_sync",
+  "changing_dependency": "lsd worker changed from container code-signing-cache invalidation to CFPreferences sync XPC",
+  "exact_runtime_peer_proven": false,
+  "circular_deadlock_proven": false,
+  "missing_database_or_preferences_is_root_cause_proven": false,
+  "existing_system_container_daemon_failure_proven": false,
+  "error_counts": {
+    "missing_extension_bundle_unit": 139,
+    "persona6_lookup_failed": 73,
+    "hid_server_reconnect": 1,
+    "hid_invalid_property": 89,
+    "missing_ls_preferences": 3,
+    "hfs_relocation_error": 1,
+    "container_persona_fix": 1
+  },
+  "storage_candidate": {
+    "hfs_relocation_erange_count": 1,
+    "code_path": "hfs_relocate -> internal hfs_clonefile -> cluster_write",
+    "not_clonefile_syscall_or_apfs_format_requirement": true,
+    "actual_data_ioctl_ssd_property_unhandled": true,
+    "hfs_ssd_flag_controls_relocation": true,
+    "affected_file_and_causal_connection_unobserved": true
+  },
+  "performance": {
+    "configured_cpus": 1,
+    "configured_memory_mib": 2880,
+    "valid_top_busy_percent": [
+      99,
+      98,
+      99,
+      99,
+      99,
+      99,
+      99
+    ],
+    "first_top_interval_excluded": true,
+    "final_free_mb": 1745,
+    "final_available_mb": 2642,
+    "draw_whole_rows_seconds": [
+      0.732545,
+      0.735763,
+      0.74017
+    ],
+    "synchronous_output_and_selected_service_oslog_enabled": true,
+    "logging_slowdown_ratio_measured": false
+  },
+  "desktop_verified": false,
+  "main_queue_observed": false,
+  "main_runloop_observed": false,
+  "next_steps": [
+    "Trace actual database-ready group completion/producer and the pending request queue through existing HakiOS facilities",
+    "Check container identity, dynamic paths, preference replies and persistence before changing directories or caches",
+    "Prepare a truthful SSD capability ioctl for the UFS data device; investigate any remaining relocation failure with file/context",
+    "Reduce broad synchronous console logging while preserving USB error/tail capture and bounded diagnostic events",
+    "Use the same integrated next revision for service readiness, UI progress and HID validation; do not add time as the sole change"
+  ],
+  "runtime_image_changed": false,
+  "device_commands_sent": false,
+  "userdata_reflashed": false,
+  "backup_branch": "archive/ios16-r8-20261117",
+  "backup_commit": "1abbf8c99fc32c56cf135311adc8a6091d1fadcb"
+}

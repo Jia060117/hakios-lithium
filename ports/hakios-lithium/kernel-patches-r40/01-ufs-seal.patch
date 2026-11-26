@@ -1,0 +1,396 @@
+diff --git a/bsd/dev/hakios.ufs.c b/bsd/dev/hakios.ufs.c
+--- a/bsd/dev/hakios.ufs.c
++++ b/bsd/dev/hakios.ufs.c
+@@ -190,8 +190,16 @@
+ static uint32_t lf_ufs_sleeps;
+ #endif
+ static LCK_MTX_DECLARE(ufs_lock, &ufs_lck_grp);
+-/* One writer at a time; never held while the mailbox is, nor while user memory is touched. */
++/* One writer at a time. Lock order: Data transaction -> writer -> mailbox. */
+ static LCK_MTX_DECLARE(ufs_write_mtx, &ufs_lck_grp);
++
++/* Updated only with all three mutexes held. Check under any one of them. */
++static enum {
++	UFS_ADMISSION_OPEN,
++	UFS_ADMISSION_CLOSED,          /* final request in progress or closure failed */
++	UFS_ADMISSION_SEALED,
++} ufs_admission;
++static bool ufs_flush_failed;           /* sticky, under ufs_lock */
+ 
+ #if defined(LITHIUM_ARMV8_0)
+ #include <sys/hakios.fsdiag.h>
+@@ -227,6 +235,7 @@
+ 
+ static volatile int ufs_var_save = VAR_SAVE_NONE;
+ static int ufs_var_busy_pid;
++static bool ufs_raw_write_seen;         /* sticky, under ufs_write_mtx */
+ 
+ /* ufs_write=1 and the one partition it is for: everything else answers EROFS as it always did */
+ static int ufs_write_part = -1;
+@@ -239,6 +248,7 @@
+ static uint32_t ufs_data_bsize = 4096;
+ static bool ufs_data_used;                      /* opened for writing this run: the packed store is not */
+ static LCK_MTX_DECLARE(ufs_data_mtx, &ufs_lck_grp);     /* one write of the data volume at a time */
++static bool ufs_data_write_failed;      /* sticky, under ufs_data_mtx */
+ 
+ SYSCTL_DECL(_kern_hakios);
+ SYSCTL_QUAD(_kern_hakios, OID_AUTO, ufs_requests, CTLFLAG_RD | CTLFLAG_LOCKED, &ufs_requests,
+@@ -304,7 +314,9 @@
+ lithium_fsdiag_stage_end(token,0);
+ #endif
+ }
+-	if (value == 1 && ufs_data_used) {
++	if (value == 1 && ufs_admission != UFS_ADMISSION_OPEN) {
++		error = ESHUTDOWN;
++	} else if (value == 1 && ufs_data_used) {
+ 		error = EBUSY;          /* the data volume is mounted from darwin this run: no packed store into it */
+ 	} else if (value == 1) {
+ 		if (ufs_var_busy_pid != 0 && ufs_var_busy_pid != me) {
+@@ -340,7 +352,8 @@
+  * read into dst, or, with src, written from there. Called with ufs_lock held.
+  */
+ 
+-static int ufs_request_r13_impl(uint32_t op, uint32_t part, uint64_t lba, uint64_t count, uint8_t *dst, const uint8_t *src);
++static int ufs_request_r13_impl(uint32_t op, uint32_t part, uint64_t lba, uint64_t count,
++    uint8_t *dst, const uint8_t *src, uint32_t *final_request);
+ static int
+ ufs_request(uint32_t op, uint32_t part, uint64_t lba, uint64_t count, uint8_t *dst, const uint8_t *src)
+ {
+@@ -349,7 +362,7 @@
+     uint64_t began=lf_now(),firmware_before=ufs_page->answer.ticks;
+     uint32_t sleeps_before=lf_ufs_sleeps;
+ #endif
+-    int value=ufs_request_r13_impl(op,part,lba,count,dst,src);
++    int value=ufs_request_r13_impl(op,part,lba,count,dst,src,NULL);
+ #if defined(LITHIUM_ARMV8_0)
+     uint64_t firmware_ticks=ufs_page->answer.ticks-firmware_before;
+     uint64_t freq=__builtin_arm_rsr64("CNTFRQ_EL0");
+@@ -360,15 +373,23 @@
+     return value;
+ }
+ static int
+-ufs_request_r13_impl(uint32_t op, uint32_t part, uint64_t lba, uint64_t count, uint8_t *dst, const uint8_t *src)
+-{
+-	uint64_t bytes = count * ufs_page->part[part].block_size, started, waited_ms = 0;
+-	uint32_t seq = ++ufs_seq;
++ufs_request_r13_impl(uint32_t op, uint32_t part, uint64_t lba, uint64_t count, uint8_t *dst,
++    const uint8_t *src, uint32_t *final_request)
++{
++	uint64_t bytes, started, waited_ms = 0;
++	uint32_t seq;
+ 	int64_t status;
+ 
++	LCK_MTX_ASSERT_DEBUG(&ufs_lock, LCK_MTX_ASSERT_OWNED);
++	if (final_request == NULL ? ufs_admission != UFS_ADMISSION_OPEN :
++	    (ufs_admission != UFS_ADMISSION_CLOSED || op != BLOCK_OP_FLUSH)) {
++		return ESHUTDOWN;
++	}
+ 	if (ufs_dead) {
+ 		return EIO;
+ 	}
++	bytes = count * ufs_page->part[part].block_size;
++	seq = ++ufs_seq;
+ 	if (op == BLOCK_OP_READ) {
+ 		if (part == ufs_last_part && lba == ufs_last_end) {
+ 			ufs_sequential++;
+@@ -431,6 +452,9 @@
+ 		    op == BLOCK_OP_READ ? "read" : op == BLOCK_OP_FLUSH ? "flush" : "write", (uint64_t)status);
+ 		ufs_errors++;
+ 		return EIO;
++	}
++	if (final_request != NULL) {
++		*final_request = seq;
+ 	}
+ 	if (op != BLOCK_OP_READ) {
+ 		/* BLOCK_OP_WRITE: the loader has flushed, read the blocks back and found them the same */
+@@ -528,6 +552,10 @@
+ lithium_fsdiag_stage_end(token,0);
+ #endif
+ }
++	if (ufs_admission != UFS_ADMISSION_OPEN) {
++		lck_mtx_unlock(&ufs_lock);
++		return ESHUTDOWN;
++	}
+ 	/*
+ 	 * Allocated under the lock: two first readers at once would both allocate (one 4 MB leak),
+ 	 * and one could copy out of a buffer the other has just replaced and never filled.
+@@ -601,7 +629,11 @@
+ #endif
+ }
+ 	/* (a loader that did not answer may still be inside UEFI's driver) */
+-	error = ufs_dead ? EIO : ufshc_switch_in(prove);
++	if (ufs_admission != UFS_ADMISSION_OPEN) {
++		error = ESHUTDOWN;
++	} else {
++		error = ufs_dead ? EIO : ufshc_switch_in(prove);
++	}
+ 	lck_mtx_unlock(&ufs_lock);
+ 	return error;
+ }
+@@ -620,7 +652,7 @@
+ lithium_fsdiag_stage_end(token,0);
+ #endif
+ }
+-	error = ufshc_switch_out(why);
++	error = ufs_admission == UFS_ADMISSION_OPEN ? ufshc_switch_out(why) : ESHUTDOWN;
+ 	lck_mtx_unlock(&ufs_lock);
+ 	return error;
+ }
+@@ -669,7 +701,7 @@
+  * is in memory (ramfs) and only its copy for the next boot is written here.
+  */
+ static int
+-ufs_write(uint32_t op, uint32_t part, uint64_t offset, const uint8_t *src, uint64_t len)
++ufs_write(uint32_t op, uint32_t part, uint64_t offset, const uint8_t *src, uint64_t len, int raw_pid)
+ {
+ 	uint64_t nbs, per;
+ 	int error = 0;
+@@ -704,6 +736,18 @@
+ lithium_fsdiag_stage_end(token,0);
+ #endif
+ }
++	if (ufs_admission != UFS_ADMISSION_OPEN) {
++		lck_mtx_unlock(&ufs_write_mtx);
++		return ESHUTDOWN;
++	}
++	if (raw_pid != 0) {
++		/* uiomove ran unlocked. Recheck the claim and Data exclusion here. */
++		if (ufs_data_used || ufs_var_busy_pid != raw_pid) {
++			lck_mtx_unlock(&ufs_write_mtx);
++			return EPERM;
++		}
++		ufs_raw_write_seen = true;
++	}
+ 	/*
+ 	 * The list goes out once, at the first write, and comes back when the device is closed: a
+ 	 * whole data volume is written a bufferful at a time, and switching the controller's list
+@@ -825,9 +869,6 @@
+ {
+ 	int error;
+ 
+-	if (ufs_data_op() != BLOCK_OP_WRITE_FAST) {
+-		return 0;               /* every write was flushed already */
+-	}
+ 	{
+ #if defined(LITHIUM_ARMV8_0)
+ uint64_t token=lithium_fsdiag_stage_begin("ufs_write_mtx",(uintptr_t)&ufs_write_mtx,0);
+@@ -846,12 +887,98 @@
+ lithium_fsdiag_stage_end(token,0);
+ #endif
+ }
+-	/* one block in bounds, for the loader's checks; nothing of it is touched */
+-	error = ufshc_list_in() ? EIO : ufs_request(BLOCK_OP_FLUSH, (uint32_t)ufs_write_part, UFS_WRITE_FIRST, 1, NULL, NULL);
++	if (ufs_admission != UFS_ADMISSION_OPEN) {
++		error = ESHUTDOWN;
++	} else if (ufs_data_op() != BLOCK_OP_WRITE_FAST) {
++		error = 0;              /* every write was flushed already */
++	} else {
++		/* One block in bounds for the loader's checks. */
++		error = ufshc_list_in() ? EIO :
++		    ufs_request(BLOCK_OP_FLUSH, (uint32_t)ufs_write_part, UFS_WRITE_FIRST, 1, NULL, NULL);
++		if (error != 0) {
++			ufs_flush_failed = true;
++		}
++	}
+ 	lck_mtx_unlock(&ufs_lock);
+ 	lck_mtx_unlock(&ufs_write_mtx);
+ 	return error;
+ }
++
++#if defined(LITHIUM_ARMV8_0)
++int hakios_ufs_seal_for_return(dev_t data_dev, uint32_t *flush_request);
++
++/*
++ * Sleepable, one shot after the caller proves non-forced HFS unmount and
++ * journal completion on data_dev. The caller holds the mount/writer admission
++ * fence and has drained filesystem I/O. Core 0 is still servicing the mailbox.
++ * The result is a mailbox completion cookie. Controller proof belongs to UEFI.
++ */
++int
++hakios_ufs_seal_for_return(dev_t data_dev, uint32_t *flush_request)
++{
++	uint32_t native = 0, rawbench = 0, seq = 0, part;
++	int error = 0;
++
++	if (flush_request == NULL) {
++		return EINVAL;
++	}
++	*flush_request = 0;
++	/* Native requests can run without ufs_lock. Exclude the entire profile. */
++	if ((PE_parse_boot_argn("ufs_native", &native, sizeof(native)) && native != 0) ||
++	    (PE_parse_boot_argn("ufs_rawbench", &rawbench, sizeof(rawbench)) && rawbench == 1)) {
++		return ENOTSUP;
++	}
++	lck_mtx_lock(&ufs_data_mtx);
++	lck_mtx_lock(&ufs_write_mtx);
++	lck_mtx_lock(&ufs_lock);
++	if (ufs_admission != UFS_ADMISSION_OPEN) {
++		error = EALREADY;
++		goto out;
++	}
++	if (!ufs_is_data(data_dev) || ufs_bmajor < 0 || data_dev != makedev(ufs_bmajor, UFS_DATA_MINOR)) {
++		error = ENXIO;
++		goto out;
++	}
++	part = (uint32_t)ufs_write_part;
++	if (part >= ufs_parts || ufs_page->write_part_plus_one != part + 1 ||
++	    ufs_page->write_first != UFS_WRITE_FIRST || ufs_data_op() != BLOCK_OP_WRITE_FAST) {
++		error = ENOTSUP;
++		goto out;
++	}
++	if (!ufs_data_used || ufs_var_busy_pid != 0 || ufs_raw_write_seen ||
++	    ufs_native_on || ufs_native_mapped || ufs_write_was_native || ufshc_list_in() ||
++	    ufs_page->kernel_native.list_in != 0 || ufs_page->loader_native.take_back != 0) {
++		error = EBUSY;
++		goto out;
++	}
++
++	/* From here onwards, a failure leaves the storage closed without a cookie. */
++	ufs_admission = UFS_ADMISSION_CLOSED;
++	if (ufs_dead || ufs_errors != 0 || ufs_flush_failed || ufs_data_write_failed ||
++	    ufs_page->ask.request != ufs_seq || ufs_page->answer.answered != ufs_seq) {
++		error = EIO;
++		goto out;
++	}
++	if (ufs_seq == UINT32_MAX) {           /* reserve zero for an absent receipt */
++		error = EOVERFLOW;
++		goto out;
++	}
++	error = ufs_request_r13_impl(BLOCK_OP_FLUSH, part, UFS_WRITE_FIRST, 1, NULL, NULL, &seq);
++	if (error == 0) {
++		if (ufs_page->loader_native.take_back != 0) {
++			error = EIO;
++			goto out;
++		}
++		ufs_admission = UFS_ADMISSION_SEALED;
++		*flush_request = seq;
++	}
++out:
++	lck_mtx_unlock(&ufs_lock);
++	lck_mtx_unlock(&ufs_write_mtx);
++	lck_mtx_unlock(&ufs_data_mtx);
++	return error;
++}
++#endif
+ 
+ /*
+  * Bytes [offset, offset + len) of the data volume, read into p or written from it. A write that is not whole blocks
+@@ -885,15 +1012,12 @@
+ 	if (!write) {
+ 		return ufs_read((uint32_t)ufs_write_part, base + offset, p, len);
+ 	}
+-	lck_mtx_lock(&ufs_data_mtx);
++	LCK_MTX_ASSERT_DEBUG(&ufs_data_mtx, LCK_MTX_ASSERT_OWNED);
+ 	if (offset % 4096 == 0 && len % 4096 == 0) {
+-		error = ufs_write(ufs_data_op(), (uint32_t)ufs_write_part, base + offset, p, len);
+-		lck_mtx_unlock(&ufs_data_mtx);
+-		return error;
++		return ufs_write(ufs_data_op(), (uint32_t)ufs_write_part, base + offset, p, len, 0);
+ 	}
+ 	bounce = kalloc_data(ufs_buffer_size, Z_WAITOK);
+ 	if (bounce == NULL) {
+-		lck_mtx_unlock(&ufs_data_mtx);
+ 		return ENOMEM;
+ 	}
+ 	while (len > 0 && error == 0) {
+@@ -907,14 +1031,13 @@
+ 		error = ufs_read((uint32_t)ufs_write_part, base + first, bounce, span);
+ 		if (error == 0) {
+ 			memcpy(bounce + skip, p, (size_t)take);
+-			error = ufs_write(ufs_data_op(), (uint32_t)ufs_write_part, base + first, bounce, span);
++			error = ufs_write(ufs_data_op(), (uint32_t)ufs_write_part, base + first, bounce, span, 0);
+ 		}
+ 		offset += take;
+ 		p += take;
+ 		len -= take;
+ 	}
+ 	kfree_data(bounce, ufs_buffer_size);
+-	lck_mtx_unlock(&ufs_data_mtx);
+ 	return error;
+ }
+ 
+@@ -923,20 +1046,36 @@
+ {
+ 	uint64_t offset = (uint64_t)buf_blkno(bp) * ufs_data_bsize, len = buf_count(bp), size = ufs_data_bytes();
+ 	caddr_t mapped;
+-	int error;
+-
++	bool write = !(buf_flags(bp) & B_READ);
++	int error = 0;
++
++	if (write) {
++		/* Include pre-submit Data failures and every chunk of the RMW in the drain. */
++		lck_mtx_lock(&ufs_data_mtx);
++		if (ufs_admission != UFS_ADMISSION_OPEN) {
++			lck_mtx_unlock(&ufs_data_mtx);
++			error = ESHUTDOWN;
++			goto done;
++		}
++	}
+ 	if (offset >= size) {
+-		buf_seterror(bp, offset == size ? 0 : EINVAL);
+-		buf_setresid(bp, buf_count(bp));
+-		buf_biodone(bp);
+-		return;
+-	}
+-	len = MIN(len, size - offset);
+-	/* HFS Plus's cluster I/O hands over pages with no kernel address yet: buf_map() gives them one */
+-	if ((error = buf_map(bp, &mapped)) == 0) {
+-		error = ufs_data_io(!(buf_flags(bp) & B_READ), offset, (uint8_t *)mapped, len);
+-		buf_unmap(bp);
+-	}
++		error = offset == size ? 0 : EINVAL;
++		len = 0;
++	} else {
++		len = MIN(len, size - offset);
++		/* HFS Plus cluster I/O may arrive without a kernel address. */
++		if ((error = buf_map(bp, &mapped)) == 0) {
++			error = ufs_data_io(write, offset, (uint8_t *)mapped, len);
++			buf_unmap(bp);
++		}
++	}
++	if (write) {
++		if (error != 0 || len != buf_count(bp)) {
++			ufs_data_write_failed = true;
++		}
++		lck_mtx_unlock(&ufs_data_mtx);
++	}
++done:
+ 	buf_setresid(bp, (uint32_t)(buf_count(bp) - (error ? 0 : len)));
+ 	if (error) {
+ 		buf_seterror(bp, error);
+@@ -998,6 +1137,10 @@
+ lithium_fsdiag_stage_end(token,0);
+ #endif
+ }
++			if (ufs_admission != UFS_ADMISSION_OPEN) {
++				lck_mtx_unlock(&ufs_write_mtx);
++				return ESHUTDOWN;
++			}
+ 			if (ufs_var_busy_pid != 0) {
+ 				lck_mtx_unlock(&ufs_write_mtx);
+ 				return EBUSY;   /* a saver is writing the packed store into darwin */
+@@ -1213,12 +1356,12 @@
+ 	uint32_t part = (uint32_t)minor(dev);
+ 	uint64_t nbs;
+ 	uint8_t *bounce;
+-	int error = 0;
++	int error = 0, me = proc_selfpid();
+ 
+ 	if (!ufs_ready || part >= ufs_parts || ufs_write_part < 0 || part != (uint32_t)ufs_write_part) {
+ 		return EROFS;
+ 	}
+-	if (ufs_var_busy_pid != proc_selfpid()) {
++	if (me == 0 || ufs_var_busy_pid != me) {
+ 		/* one writer of the store at a time, and it says so first (kern.hakios.var_busy) */
+ 		ufs_write_refused++;
+ 		return EPERM;
+@@ -1240,7 +1383,7 @@
+ 		}
+ 		error = uiomove((caddr_t)bounce, (int)want, uio);
+ 		if (error == 0) {
+-			error = ufs_write(BLOCK_OP_WRITE, part, (uint64_t)at, bounce, (uint64_t)want);
++			error = ufs_write(BLOCK_OP_WRITE, part, (uint64_t)at, bounce, (uint64_t)want, me);
+ 			if (error != 0) {
+ 				/* these bytes did not go in: the write is to say so, not to count them */
+ 				uio_setoffset(uio, at);

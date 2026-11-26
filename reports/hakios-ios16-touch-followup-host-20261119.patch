@@ -1,0 +1,2435 @@
+diff --git a/AGENTS.md b/AGENTS.md
+index 1dfde0e..d3975d1 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -1,3 +1,29 @@
++2026-11-19 latest touch host follow-up: R20-display remains the sole accepted display baseline; R19 is archived. The full host regression now passes 14 existing plus 10 isolated follow-up suites (24 total), with 51 source hashes and frozen R15/R20 hashes checked before/after. This follow-up does not rebuild or alter the production kernel; the previously built Stage 0 kernel remains hash 3e130b765b47ec06ac5e5392d5f94301d22ed43fa37b937827b65ab220180c93 and contains only static resource reporting plus fail-closed Stage 1–3. No physical touch producer or touch package exists. QUP6 UEFI→XNU ownership/handoff, clocks/pinmux/rails, GPIO105/125 IRQ selection, runtime controller reports, and HID delivery remain unverified. No device operation occurred. Report/evidence: reports/hakios-ios16-touch-followup-host-20261119.md and reports/touch-stage0-complete-host-20261119-r2/passed.json.
++2026-11-19 R20-display touch Stage 0 host build: R20-display is the sole accepted display baseline; R19 is archived and will not be retested. The exact ordered patch check, 21 Clang ASan/UBSan suites, HakiOS prepare/config/dependency checks, full kernel + D22AP loader + Mu + 413-job userland build, 83 source-review checks, and 46 ARM instruction scans passed. The built kernel contains the static Stage 0 resource log and QUP6 fail-closed diagnostic. R15/R20 image hashes are unchanged. No physical touch producer or touch package exists; Stage 1–3 remain blocked before MMIO/IRQ/HID. QUP6 handoff/ownership, clock/pinmux/rails, GPIO105/125 IRQ, runtime controller ID/reports, and HID delivery remain unverified. No phone query or operation occurred. Report: reports/hakios-ios16-touch-stage0-build-20261119.md/json.
++R24 触摸主机门禁（历史）：R20-display 为唯一显示基线；用户确认 R19 已测试但分辨率错误，归档且不复测。touch_stage=0..3 严格解析和空事件投递边界经 14 项既有 + 5 项候选 Clang ASan/UBSan 回归通过。本轮未同步活动内核、构建生产触摸包或操作手机。详见 reports/hakios-ios16-touch-r24-host-gate.md。
++
++2026-11-19 当前活动基线已切换为 **R20-display**：用户确认 R20 的显示比例、分辨率、状态栏、图标标签、完整 Dock 和屏幕边界正常。R19 仅保留为历史归档，不再启动、重试、修复或用于显示验收。后续触摸适配以 R20-display 的 1080×2040 BGR24、360×680 points、scale 3 配置为显示参照；R20-display 尚不包含真实 FT5x46/QUP6 触摸后端，触摸包完成主机测试、构建和冻结后再进行真机测试。R20-display 镜像：artifacts/hakios/lithium-ios16/phase4-r20-display/lithium-hakios-ios16-r20-display.img；SHA256 3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82。详见 reports/hakios-ios16-device-r20-display.md/json。
++
++R19 主机包准备记录（历史，2026-11-18）：完整 HakiOS/iOS16.5/Mu/D22AP 与 413 任务构建、46 项指令扫描、完整回归、实际整包读回和离线预检曾通过。其镜像 SHA256 2f74a8da0fe182d39c66a86db398f9816067cb05cce8a6a774398700ed38f60a。用户随后确认 R19 曾上机、显示分辨率不正确；此包仅归档，后续显示以 R20-display 为准，不再补做 R19 验收。
++
++2026-11-19 触摸工作状态：R20-display 已完成显示验收；R21 只读 Stage 0 主机包已组装并独立读回通过（镜像 SHA256 07d9e4cd10ee37854d6fd65df5f8fe36d8d836d1212c77aeca6491a51d82c6f8），但没有实体触摸后端，touch_package_ready=false，不得作为触摸测试包。只有新的真实触摸包完成主机测试、完整构建、包检查和冻结后，才按用户授权查询设备并从 Fastboot 临时启动；不刷写分区、不写 userdata。当前手机状态未由主机查询。详见 reports/hakios-ios16-touch-r21-host-final.md/json。
++
++R16 显示修订已冻结（2026-11-18）：750×1334 隐式 profile 对齐 scale2/subtype1334，新增 DT/MG/UIScreen/window 有界日志；BGR24 物理面板1080×2040/stride3240保持，810像素是误按4字节计算；全部R15 payload参数逐字节保留，包括bootcpu=1 cpus=1。完整构建/回归/包检查通过，未查询/重启/刷写手机，不重刷userdata，R15运行保留。Dock/标签/边界和新尺寸真机结果未验证。备份archive/ios16-r15-before-r16-20261118及外部dirty-source.zip已校验；见reports/hakios-ios16-r16-prepared.md/json。
++
++R15 系统界面里程碑（2026-11-18）：03:41:09临时启动一次；USB持续采集。实际logical0/MPIDR0x80000001/affinity0x1/max_logical0，bootcpu=1 cpus=1，match=1。20轮HFS全部通过：write平均140us、fsync317us、replace481us、read44us；整数2477us、memcpy9559us。用户明确确认已出现锁屏或桌面，具体类型未区分；日志set-seeding-complete-return value1、阻塞fetch返回、SB main_queue_enter=192190ms及CA回调已捕获。LS等待关口已越过，最终sync/跨重启持久化/触摸/稳定性待核验。同次USB接收与45秒只读观察器后台保存进度和最终审计；10800秒正常timer、12600秒主机接收。保持运行与USB连接，不重启、不重试R15、不重刷userdata，UFS/2880MiB；见reports/hakios-ios16-device-r15.md/json。
++
++R15 Run A 实时记录（2026-11-18）：03:41:09临时启动一次，用户确认启动文字；USB持续采集。实际logical0/MPIDR0x80000001/affinity0x1/max_logical0，bootcpu=1 cpus=1，match=1。20轮HFS全部通过：write平均140us、fsync317us、replace481us、read44us；整数2477us、memcpy9559us。原始launchd已启动；LS数据库/桌面/最终sync及持久化待核验，不能仅据提速归因根因已解决。同次USB接收与45秒只读观察器后台保存进度和最终审计；10800秒正常timer、12600秒主机接收。保持运行与USB连接，不重启、不重试R15、不重刷userdata，UFS/2880MiB；见reports/hakios-ios16-device-r15.md/json。
++
++R15 Run A 主机准备完成（2026-11-18）：用户已批准 bootcpu=1 cpus=1，保持编号含义，目标为R14实测较快的affinity0x1；该明确授权覆盖旧记录的保持三核要求。完整HakiOS/iOS16.5/Mu/D22AP/413任务、回归/ASan/UBSan、46项指令/16项包及R15实际payload检查通过。冻结镜像SHA256 ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55；10800秒内核观察、12600秒USB接收。返回前有界列出LS数据库路径/大小/mtime并执行Data VFS_SYNC和设备flush，结果均待真机核验。UFS/2880MiB不变，不重刷userdata，不改journal/flush策略；未查询/启动手机，桌面和跨重启持久化未验证。用户已确认Fastboot连接，可按受保护入口临时启动一次。见reports/hakios-ios16-r15-prepared.md/json。
++
++R14 最终诊断（2026-11-18）：用户原图确认正常timer返回UEFI、未见panic，drain=1；R13诊断CPU越界未复现。三核实测CPU0/1(MPIDR0x100/0x101)整数循环平均162097/162071us，CPU2(0x1)2451us，约66倍差异；准确MHz/逐核缓存开关未测。20轮HFS全部读写校验通过；首个fsync4.05秒中线程CPU约4.05秒、UFS桥933us，buf_biowait31845次；其余两次慢fsync同样主要在桥外。23次采样均TH_RUN且跳过，无停驻内核栈，最终根因未定。systemfile_lock返回锁掩码，errors=2不代表errno。USB652793字节/3415帧独立重解码一致、传输缺口0且timer/drain完整；源丢1697字节、FS80/7、HFS槽满481，非全量日志。SB无提交、lsd不同bundle完成111，桌面未通过。保持UFS/2880MiB/三核，不重试R14、不重刷userdata；下一修订先核实本机时钟/缓存及buf调用者/执行核，不能直接启用上游redwood EPSS地址。见reports/hakios-ios16-r14-final-diagnosis.md/json。
++
++R13 真机故障（2026-11-18）：用户原图确认panic返回UEFI，cpu_common.c:82断言cpu <= ml_get_max_cpu_number()，CPU2/PID1 init。新增CPU诊断固定查询0..3，但三核XNU仅0..2；源码及冻结反汇编确认越界契约缺陷，单核R13同样不可运行。USB9952字节/44帧独立重解码一致，缺口/重复/残帧/device lost均0，仅前缀完整，未捕获panic全文/timer/drain；尚未进入launchd/HFS测试。保持UFS/2880MiB/三核，不重试R13、不重刷userdata。下一修订仅修正诊断CPU遍历边界；HFS瓶颈根因未定。见reports/hakios-ios16-r13-final-diagnosis.md/json。
++
++R13 主机准备完成（2026-11-18）：完整 HakiOS/iOS16.5、UFS/2880MiB；冻结同内核 cpus=3/cpus=1 两包，只有CPU参数不同。500ms慢HFS操作有界取停驻线程栈、真实wait/timer、锁/事务/flush分段、同线程及非独占全窗口UFS计数；逐在线核CPU/cache/timebase诊断，launchd前20轮固定文件测试。完整内核/Mu/D22AP/413任务、ASan/UBSan及既有回归、46项指令/16项包检查/双包比较通过。本轮未查询、启动或刷写手机，根因/桌面未验证。busy线程跳过取栈、未知owner不推断、inclusive时间不可相加；cpus A/B需分两次启动且Data持久进度影响LS对比。未重刷userdata或改journal/flush策略。见reports/hakios-ios16-r13-prepared.md/json。
++
++R12裸存储结果（2026-11-17）：R12 Fastboot临时启动一次，完整HakiOS/iOS16.5/D22AP，2880MiB/三核，100×4KiB读、WRITE_FAST、FLUSH及write+flush在launchd/HFS前完成。各项100/100成功；读均值207us、写146us、flush312us、write+flush465us，最大样本784us；镜像外400KiB scratch恢复100/100、逐块一致。USB 12054字节/54帧独立重解码一致，缺口/重复/残帧/device lost均0，timer正常返回且drain=1；Pipe error发生于成功drain之后。结果选择HFS日志/元数据/序列化调查分支，但不能据此认定R11 20.549s rename根因。本轮未改文件系统策略、不重刷userdata，未验证launchd/桌面/返回屏。见reports/hakios-ios16-r12-final-diagnosis.md/json。
++
+ R11 最终诊断（2026-11-17）：用户原图及USB确认正常timer返回UEFI，未见panic，桌面未通过。最后lsd完成382个不同bundle对象、953次容器调用；4次目录扫描成功返回，但整体gather/enumerate未返回，ready未出现。SB查询com.apple.mobilenotes持续1784.634秒；对象进度仍增加，不能认定同项循环或死锁。同线程容器替换22.924秒中rename占20.549秒并成功返回，须追查HFS/日志/flush/UFS桥接耗时，不能直接定性UFS驱动故障。USB1136171字节/6157帧重解码一致、缺口0、timer排空成功；源端仍丢1766字节，FS丢弃47/结束丢失8，首轮取栈缺1进程，非全量日志。本次仅只读分析与归档，不重试R11/R10、不重刷userdata，保持UFS/2880MiB/三核。见reports/hakios-ios16-r11-final-diagnosis.md/json。
+ 
+ R11 已临时启动一次（2026-11-17）：三核online、原始launchd及60808ms基础图层已记录，当前未目视桌面。新增方法采集为SB1/1、container4/4、lsd5/5，LS11/11；SB查询com.apple.mobilenotes，lsd不同应用完成数持续增加，尚不能认定同项循环或最终根因。USB与45秒只读观察器仍在后台保存同次日志/终态；FS记录有争用丢弃，非全量无损。保持当前运行，不重试R11/R10、不重刷userdata。UFS/2880MiB/三核。见reports/hakios-ios16-device-r11.md/json，准备提交44ec363。
+@@ -28,6 +54,15 @@ R6 最终观测（2026-11-17）：已正常定时返回 UEFI，用户确认结
+ 
+ # IOS-MIX1 项目指令
+ 
++## 并行执行规则（用户于 2026-11-19 更新）
++
++- 对可独立推进的工作优先使用子代理并行处理；用户授权最多同时运行 9 个子代理。实际并发仍受当前工具额度和会话状态限制，达到限制时先关闭已完成代理，不能因此拖住主线。
++- 每次任务先由主代理划分关键路径与可并行工作。子代理必须有明确交付物和互不重叠的写入范围；共享接口、构建配置、设备树、日志和集成文件由主代理统一协调。
++- 代理应只接收完成分工所需的上下文；硬件、设备和构建约束对代理同样生效。需要设备才能确认的结论标为“未验证”，不得猜测。
++- 主代理独立复核代理的文件、行号、差异和测试证据，再逐项合并；每个合并单元通过相应构建/回归后再继续。冲突或失败时隔离并回退该单元，不损坏其他工作。
++- 子任务卡住时应及时中止或重新分配，记录原因并继续不依赖它的工作；不等待单个代理阻塞整个任务。
++- 仅在能带来实际并行收益时增加代理，不为凑数拆分；除用户另有指示，最多同时运行 9 个。
++
+ 更新：2026-11-16。以下路线由用户明确确认，是本仓库最高优先级的项目级路线约束，适用于当前及后续会话。
+ 
+ **最高约束：基于完整 HakiOS 移植增加 MIX 一代设备支持，以 HakiOS 为唯一活动内核基线。原先的 7195 内核仅用于只读对照，不再使用。**
+diff --git a/OPERATIONS.md b/OPERATIONS.md
+index 6cbb3c0..5015d7a 100644
+--- a/OPERATIONS.md
++++ b/OPERATIONS.md
+@@ -1,3 +1,47 @@
++2026-11-19 触摸主机回归最新状态：R20-display 是唯一显示基线；R19 已归档。14 项既有 + 10 项隔离新增外围测试共 24 项全部通过 ASan/UBSan，51 项源码哈希及 R15/R20 冻结镜像哈希前后均一致；本轮没有改动/重建生产内核。现有 Stage 0 kernel 仍为 3e130b765b47ec06ac5e5392d5f94301d22ed43fa37b937827b65ab220180c93，只含静态资源报告与 fail-closed 门禁，不是触摸包。QUP6 UEFI→XNU handoff/ownership、时钟/pinmux/供电、GPIO105/125 IRQ、运行时控制器帧和 HID delivery 未验证；本轮无设备操作。下一步先完成硬件交接证据，再准备默认关闭的 bounded ID/read 测试。报告：reports/hakios-ios16-touch-followup-host-20261119.md；主机证据：reports/touch-stage0-complete-host-20261119-r2/passed.json。
++2026-11-19 最新触摸构建状态：R20-display 是显示基线，R19 归档且不复测。touch Stage 0 已同步到活动 HakiOS workspace 并进入刚构建的内核；完整 kernel/Mu/loader/userland、21 项 ASan/UBSan 回归、83 项源码审查和 46 项指令扫描通过。R15/R20 镜像仍原样。Stage 0 不做 MMIO；stage 1–3 继续 fail-closed。没有物理触摸 producer 或可上机触摸包，未查询或操作手机。QUP6 ownership/handoff、时钟/pinmux/电源、GPIO105/125 IRQ、runtime ID/reports、HID/backboardd delivery 未验证。详见 reports/hakios-ios16-touch-stage0-build-20261119.md/json。
++2026-11-19 触摸源码门禁更新：R19 已真机测试且分辨率错误，归档；显示基线为 R20-display。touch_stage parser 与 stage 0 静态日志已进入 HakiOS lithium 端口源码，stage 1..3 因 QUP6 handoff/所有权未证实而 fail-closed。21 项 Clang ASan/UBSan 主机测试及 45 个源哈希核验通过；活动构建树同步未核实，生产内核未构建，无触摸包或设备操作。QUP6 访问、真实 IRQ/HID 交付仍未验证。只有真实触摸包完成完整构建、包检查和冻结后，才按既有授权查询设备并 Fastboot 临时启动；不刷分区、不写 userdata。当前设备状态未查询。详见 reports/hakios-ios16-touch-stage0-host.md/json。
++
++2026-11-19 触摸 R22 主机阶段（历史）：host 映射与 fixtures 已对齐 R20-display 的 360×680 points / scale 3，触摸 1080×2040 坐标保留为输入；14 项既有外围回归与 5 项候选回归通过 Clang ASan/UBSan。R20/R15 冻结镜像哈希不变。没有活动内核 producer、完整生产构建、触摸镜像或设备操作。R19 已测试且分辨率错误，归档、不重试。详见 reports/hakios-ios16-touch-r22-r20-geometry-host.md。
++
++2026-11-19 活动基线确认：R20-display 是当前显示验收基线，用户已确认其比例和分辨率正常；R19 仅归档，不再启动、重试或修复。R20-display 镜像 SHA256 为 3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82，显示证据见 reports/hakios-ios16-device-r20-display.md/json。后续触摸包必须保留 R20-display 的显示参数，并在主机侧完成检查、构建和冻结后再进行真机测试；R20-display 不含真实 FT5x46/QUP6 后端，不能单独用于物理触摸验收。当前阶段先完成主机侧触摸工作；触摸包通过检查并冻结后，可按上述授权查询设备并临时启动，不刷分区、不写 userdata。
++
++触摸台架当前边界：R21 只读 Stage 0 主机包已组装并独立读回通过，镜像 SHA256 07d9e4cd10ee37854d6fd65df5f8fe36d8d836d1212c77aeca6491a51d82c6f8；它不含实体触摸后端，touch_package_ready=false，不具备触摸上机验收资格。R19 已测试但分辨率不正确，归档、不复测。R20-display 是显示基线；其冻结参数启用 userdata 内的 Darwin Data 写入及 HFS 基准，不能用于禁写验收。只有完整实体触摸包通过主机测试、构建、包检查和冻结后，才按既有授权 Fastboot 临时启动，不刷分区、不写 userdata。详见 reports/hakios-ios16-touch-r21-host-final.md/json。
++
++2026-11-19 触摸真机授权的历史记录：新触摸包通过主机检查并冻结后，可查询设备并从 Fastboot 临时启动；边界是不刷分区、不写 userdata。该授权用于后续新触摸包，不授权重试 R19；当前手机状态未由主机查询。R20-display 不含 FT5x46/QUP6 后端。
++
++2026-11-19T00:15:01.291287+08:00，iOS16 R19联合包临时启动一次，发送和Booting均获Fastboot接受。使用完整HakiOS、真实D22AP loader、双4MiB引导卷和已安装UFS系统，Data范围写入已启用；本次电脑未发出flash。USB接收已提前启动，枚举/传输及服务、显示、触摸仍待证据。内存窗口2880MiB，全部6GB未实现。内核观察时限10800秒，随后保留上游返回摘要。结束摘要保留，自动采集USB日志，无需守屏；发生明确故障则直接据此修复。
++
++后续状态更新（2026-11-19）：用户确认 R19 已上机但显示分辨率错误；该版本已归档，不再启动、重试、修复或用于显示验收。当前唯一有效显示基线为已验收的 R20-display。
++
++R19 主机准备记录（历史，2026-11-18；非活动显示基线）：完整 HakiOS/iOS16.5/Mu/D22AP 与 413 任务构建、46 项指令扫描、完整回归、实际整包读回和离线预检曾通过。镜像 SHA256 2f74a8da0fe182d39c66a86db398f9816067cb05cce8a6a774398700ed38f60a；R19 不再补做显示验收，当前显示基线为 R20-display。
++
++R19 无人值守限制仅为当时任务的历史约束；2026-11-19 用户另行授权在真实触摸包完成主机检查并冻结后进行 Fastboot 临时启动，范围仍不包括分区或 userdata 写入。当前阶段先完成主机侧触摸工作。普通 boot 脚本默认会查询手机，未到冻结测试包阶段不得调用；当前物理状态未查询。
++
++2026-11-18T04:28:09.880060+08:00，iOS16 R16联合包临时启动一次，发送和Booting均获Fastboot接受。使用完整HakiOS、真实D22AP loader、双4MiB引导卷和已安装UFS系统，Data范围写入已启用；本次电脑未发出flash。USB接收已提前启动，枚举/传输及服务、显示、触摸仍待证据。内存窗口2880MiB，全部6GB未实现。内核观察时限10800秒，随后保留上游返回摘要。结束摘要保留，自动采集USB日志，无需守屏；发生明确故障则直接据此修复。
++
++R16 显示修订已冻结（2026-11-18）：750×1334 隐式 profile 对齐 scale2/subtype1334，新增 DT/MG/UIScreen/window 有界日志；BGR24 物理面板1080×2040/stride3240保持，810像素是误按4字节计算；全部R15 payload参数逐字节保留，包括bootcpu=1 cpus=1。完整构建/回归/包检查通过，未查询/重启/刷写手机，不重刷userdata，R15运行保留。Dock/标签/边界和新尺寸真机结果未验证。备份archive/ios16-r15-before-r16-20261118及外部dirty-source.zip已校验；见reports/hakios-ios16-r16-prepared.md/json。
++
++R15 系统界面里程碑（2026-11-18）：03:41:09临时启动一次；USB持续采集。实际logical0/MPIDR0x80000001/affinity0x1/max_logical0，bootcpu=1 cpus=1，match=1。20轮HFS全部通过：write平均140us、fsync317us、replace481us、read44us；整数2477us、memcpy9559us。用户明确确认已出现锁屏或桌面，具体类型未区分；日志set-seeding-complete-return value1、阻塞fetch返回、SB main_queue_enter=192190ms及CA回调已捕获。LS等待关口已越过，最终sync/跨重启持久化/触摸/稳定性待核验。同次USB接收与45秒只读观察器后台保存进度和最终审计；10800秒正常timer、12600秒主机接收。保持运行与USB连接，不重启、不重试R15、不重刷userdata，UFS/2880MiB；见reports/hakios-ios16-device-r15.md/json。
++
++R15 Run A 实时记录（2026-11-18）：03:41:09临时启动一次，用户确认启动文字；USB持续采集。实际logical0/MPIDR0x80000001/affinity0x1/max_logical0，bootcpu=1 cpus=1，match=1。20轮HFS全部通过：write平均140us、fsync317us、replace481us、read44us；整数2477us、memcpy9559us。原始launchd已启动；LS数据库/桌面/最终sync及持久化待核验，不能仅据提速归因根因已解决。同次USB接收与45秒只读观察器后台保存进度和最终审计；10800秒正常timer、12600秒主机接收。保持运行与USB连接，不重启、不重试R15、不重刷userdata，UFS/2880MiB；见reports/hakios-ios16-device-r15.md/json。
++
++2026-11-18T03:41:09.232762+08:00，iOS16 R15联合包临时启动一次，发送和Booting均获Fastboot接受。使用完整HakiOS、真实D22AP loader、双4MiB引导卷和已安装UFS系统，Data范围写入已启用；本次电脑未发出flash。USB接收已提前启动，枚举/传输及服务、显示、触摸仍待证据。内存窗口2880MiB，全部6GB未实现。内核观察时限10800秒，随后保留上游返回摘要。结束摘要保留，自动采集USB日志，无需守屏；发生明确故障则直接据此修复。
++
++R15 Run A 主机准备完成（2026-11-18）：用户已批准 bootcpu=1 cpus=1，保持编号含义，目标为R14实测较快的affinity0x1；该明确授权覆盖旧记录的保持三核要求。完整HakiOS/iOS16.5/Mu/D22AP/413任务、回归/ASan/UBSan、46项指令/16项包及R15实际payload检查通过。冻结镜像SHA256 ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55；10800秒内核观察、12600秒USB接收。返回前有界列出LS数据库路径/大小/mtime并执行Data VFS_SYNC和设备flush，结果均待真机核验。UFS/2880MiB不变，不重刷userdata，不改journal/flush策略；未查询/启动手机，桌面和跨重启持久化未验证。用户已确认Fastboot连接，可按受保护入口临时启动一次。见reports/hakios-ios16-r15-prepared.md/json。
++
++R14 最终诊断（2026-11-18）：用户原图确认正常timer返回UEFI、未见panic，drain=1；R13诊断CPU越界未复现。三核实测CPU0/1(MPIDR0x100/0x101)整数循环平均162097/162071us，CPU2(0x1)2451us，约66倍差异；准确MHz/逐核缓存开关未测。20轮HFS全部读写校验通过；首个fsync4.05秒中线程CPU约4.05秒、UFS桥933us，buf_biowait31845次；其余两次慢fsync同样主要在桥外。23次采样均TH_RUN且跳过，无停驻内核栈，最终根因未定。systemfile_lock返回锁掩码，errors=2不代表errno。USB652793字节/3415帧独立重解码一致、传输缺口0且timer/drain完整；源丢1697字节、FS80/7、HFS槽满481，非全量日志。SB无提交、lsd不同bundle完成111，桌面未通过。保持UFS/2880MiB/三核，不重试R14、不重刷userdata；下一修订先核实本机时钟/缓存及buf调用者/执行核，不能直接启用上游redwood EPSS地址。见reports/hakios-ios16-r14-final-diagnosis.md/json。
++
++2026-11-18T02:40:31.153084+08:00，iOS16 R14联合包临时启动一次，发送和Booting均获Fastboot接受。使用完整HakiOS、真实D22AP loader、双4MiB引导卷和已安装UFS系统，Data范围写入已启用；本次电脑未发出flash。USB接收已提前启动，枚举/传输及服务、显示、触摸仍待证据。内存窗口2880MiB，全部6GB未实现。内核观察时限600秒，随后保留上游返回摘要。结束摘要保留，自动采集USB日志，无需守屏；发生明确故障则直接据此修复。
++
++R13 真机故障（2026-11-18）：用户原图确认panic返回UEFI，cpu_common.c:82断言cpu <= ml_get_max_cpu_number()，CPU2/PID1 init。新增CPU诊断固定查询0..3，但三核XNU仅0..2；源码及冻结反汇编确认越界契约缺陷，单核R13同样不可运行。USB9952字节/44帧独立重解码一致，缺口/重复/残帧/device lost均0，仅前缀完整，未捕获panic全文/timer/drain；尚未进入launchd/HFS测试。保持UFS/2880MiB/三核，不重试R13、不重刷userdata。下一修订仅修正诊断CPU遍历边界；HFS瓶颈根因未定。见reports/hakios-ios16-r13-final-diagnosis.md/json。
++
++2026-11-18T02:20:53.115639+08:00，iOS16 R13联合包临时启动一次，发送和Booting均获Fastboot接受。使用完整HakiOS、真实D22AP loader、双4MiB引导卷和已安装UFS系统，Data范围写入已启用；本次电脑未发出flash。USB接收已提前启动，枚举/传输及服务、显示、触摸仍待证据。内存窗口2880MiB，全部6GB未实现。内核观察时限600秒，随后保留上游返回摘要。结束摘要保留，自动采集USB日志，无需守屏；发生明确故障则直接据此修复。
++
++R13 主机准备完成（2026-11-18）：完整 HakiOS/iOS16.5、UFS/2880MiB；冻结同内核 cpus=3/cpus=1 两包，只有CPU参数不同。500ms慢HFS操作有界取停驻线程栈、真实wait/timer、锁/事务/flush分段、同线程及非独占全窗口UFS计数；逐在线核CPU/cache/timebase诊断，launchd前20轮固定文件测试。完整内核/Mu/D22AP/413任务、ASan/UBSan及既有回归、46项指令/16项包检查/双包比较通过。本轮未查询、启动或刷写手机，根因/桌面未验证。busy线程跳过取栈、未知owner不推断、inclusive时间不可相加；cpus A/B需分两次启动且Data持久进度影响LS对比。未重刷userdata或改journal/flush策略。见reports/hakios-ios16-r13-prepared.md/json。
++
++R12 最终裸存储观测（2026-11-17）：100次4KiB读、WRITE_FAST、FLUSH与write+flush均100/100成功，恢复scratch 100/100逐块一致；read 207us、write 146us、flush 312us、write+flush 465us平均，最大784us。未挂载HFS或启动launchd。USB timer正常返回、drain=1；54帧/12054字节独立重解码相同，缺口、重复、残帧和device lost均0；Pipe error在排空后。转向HFS/journal/metadata调查，尚未改策略，不能断言HFS为R11慢rename根因。未重刷userdata；桌面与返回屏未验证。详见reports/hakios-ios16-r12-final-diagnosis.md/json。
++
+ R11 最终诊断（2026-11-17）：用户原图及USB确认正常timer返回UEFI，未见panic，桌面未通过。最后lsd完成382个不同bundle对象、953次容器调用；4次目录扫描成功返回，但整体gather/enumerate未返回，ready未出现。SB查询com.apple.mobilenotes持续1784.634秒；对象进度仍增加，不能认定同项循环或死锁。同线程容器替换22.924秒中rename占20.549秒并成功返回，须追查HFS/日志/flush/UFS桥接耗时，不能直接定性UFS驱动故障。USB1136171字节/6157帧重解码一致、缺口0、timer排空成功；源端仍丢1766字节，FS丢弃47/结束丢失8，首轮取栈缺1进程，非全量日志。本次仅只读分析与归档，不重试R11/R10、不重刷userdata，保持UFS/2880MiB/三核。见reports/hakios-ios16-r11-final-diagnosis.md/json。
+ 
+ 2026-11-17T21:13:46.667360+08:00，iOS16 R11联合包临时启动一次，发送和Booting均获Fastboot接受。使用完整HakiOS、真实D22AP loader、双4MiB引导卷和已安装UFS系统，Data范围写入已启用；本次电脑未发出flash。USB接收已提前启动，枚举/传输及服务、显示、触摸仍待证据。内存窗口2880MiB，全部6GB未实现。首次真实图形帧后保留30分钟观察窗口，总时限60分钟；无图形帧仍按30分钟结束。结束摘要保留，自动采集USB日志，无需守屏；发生明确故障则直接据此修复。
+@@ -239,3 +283,5 @@ R14后准备：PID1故障记录包已完成完整HakiOS构建、双读取器验
+ 2026-11-13第八轮XNU临时启动已读通UFS，核验容量、GPT CRC和userdata几何，用户随后手动恢复Android。八轮均未持久写入。当前准备完整iOS14.8 HFS根卷及专用userdata写入脚本；既有必要清除授权有效。实际写入须以最终镜像内容验证、fsck、稀疏传输逐字节验证及再次读取MIX身份/解锁/分区容量为前提，并记录在reports/ios14-root-install.json。刷写后保持Fastboot并直接临时启动XNU；Android userdata将被替换，若恢复Android须用原厂recovery重建userdata，不能再将长按电源描述为必然返回原Android桌面。
+ 
+ 2026-11-13 17:12—17:29：安装前重新核验lithium/boot_completed、Fastboot型号MSM8996_A8、解锁状态、userdata长度250710192128字节及max-download-size=512MiB；仅执行 `fastboot -s <private-device-serial> -S 256M flash userdata`。完整根卷16GiB、稀疏传输9383190364字节，36段全部成功，总耗时988.584秒，原Android userdata已替换。没有root、单独erase/format、重分区或其他分区刷写。随后保持Fastboot并临时boot新XNU；该boot步骤自身未刷分区，不能据此将本轮整体记为“无持久写入”。未运行QEMU，手机全盘读回、根挂载及用户空间尚未验证。
++2026-11-19 触摸 R23 主机阶段：R20-display 作为唯一显示基线，EdgeTip 用户态阈值已通过隔离 HakiOS 补丁统一到 360×680 points（左右/顶部16、底部34）。补丁仅改 userland/src/inject.c；完整外围回归和下一阶段主机测试通过，R20/R15 哈希未变。没有实体触摸 producer、生产镜像或真机操作，R19 继续归档不复测。QUP6 handoff、FT5x46 身份、时钟/pinmux/供电和 GPIO IRQ 仍未验证。详见 reports/hakios-ios16-touch-r23-host.md。
++2026-11-19 触摸源码门禁更新：R19 已经真机测试，显示分辨率不正确，已归档；后续以 R20-display 为显示基线。touch_stage parser 与 stage 0 静态日志已在 HakiOS lithium 端口源码集成，stage 1..3 因 QUP6 handoff/所有权未证实而拒绝硬件访问。21 项 Clang ASan/UBSan 主机外围测试、45 个源哈希核验通过；无生产包、无手机查询/启动/刷写、无分区或 userdata 操作。只有实体触摸包完成完整构建、检查及冻结后，才按既有授权查询设备并 Fastboot 临时启动。当前设备状态未查询。详见 reports/hakios-ios16-touch-stage0-host.md。
+diff --git a/PLAN.md b/PLAN.md
+index ecd2efe..0761d85 100644
+--- a/PLAN.md
++++ b/PLAN.md
+@@ -1,3 +1,35 @@
++2026-11-19 最新主机回归：R20-display 是唯一显示基线，R19 归档。14 项既有外围回归 + 10 项隔离后续测试（共 24 项）全部通过 ASan/UBSan；51 项源码哈希与 R15/R20 冻结镜像哈希前后核验一致。此轮只补齐回归入口/主机测试并复核产物，不改生产内核；既有 Stage 0 内核 SHA256 3e130b765b47ec06ac5e5392d5f94301d22ed43fa37b937827b65ab220180c93 已含静态资源日志，Stage 1–3 在 QUP6 handoff 未证实前保持 fail-closed。没有实体触摸 producer 或触摸包，未进行设备操作。下一步先闭合 QUP6 UEFI→XNU 独占交接、时钟/pinmux/供电与 IRQ 证据，再做有界 ID/帧轮询；主机报告 reports/hakios-ios16-touch-followup-host-20261119.md。
++2026-11-19 最新：R20-display touch Stage 0 已完成主机集成与 HakiOS 构建验证。21 项 Clang ASan/UBSan 套件、0010→0012→0021 有序补丁测试、83 项源码审查、完整 kernel/Mu/loader/413-job userland 构建及 46 项指令扫描通过；R15/R20 冻结镜像哈希不变。内核仅含静态 Stage 0 资源行，高阶段仍在 QUP6 前置条件未证实下 fail-closed。没有物理触摸 producer 或可上机触摸包；当前未查询手机。QUP6 所有权/交接、时钟/pinmux/供电、GPIO IRQ、运行时控制器报告和 HID 投递仍未验证。报告 reports/hakios-ios16-touch-stage0-build-20261119.md/json。
++R24 触摸主机门禁（历史）：R20-display 是唯一显示基线；R19 已由用户确认测试但分辨率错误，归档不复测。严格解析和空事件投递边界经 14 项既有 + 5 项候选测试通过；证据及限制见 reports/hakios-ios16-touch-r24-host-gate.md。
++
++2026-11-19 触摸 R22 主机阶段完成：触摸几何/测试夹具已对齐唯一显示基线 R20-display（1080×2040 原始坐标映射到 360×680 points、scale 3）；14 项既有外围测试、5 项候选测试均经 Clang ASan/UBSan 通过，R20/R15 冻结镜像哈希不变。此阶段只改 host 候选/测试，不接活动内核、不构建触摸包、不具备上机资格。QUP6 ownership/handoff、时钟/pinmux/供电及 GPIO105/125 IRQ 冲突仍未验证。R19 已测试但分辨率错误，完全归档、不再复测。详见 reports/hakios-ios16-touch-r22-r20-geometry-host.md 及 reports/touch-r20-geometry-host-20261119-r3/passed.json。
++
++2026-11-19 触摸 Step 5 主机安全契约已完成：QUP/I²C 候选在超时/清理不确定和格式错误时保留 claim 并隔离；独立复核发现并修正 timeout 状态映射，补齐实际 adapter helper 测试。完整 19 套 Clang ASan/UBSan 回归复跑通过，R15/R20 冻结哈希不变。只改主机候选和测试，没有接入活动内核或生成真实触摸包；R21 仍是静态 Stage 0。QUP6 handoff/时钟/pinmux/供电与 GPIO105/125 冲突仍未验证。详见 reports/hakios-ios16-touch-step5-quarantine-host.md/json。
++
++2026-11-19 活动显示基线切换：R20-display 已由用户确认显示比例和分辨率正常，后续开发不再围绕 R19 展开。R19 只读归档，不再启动、重试或修复；触摸实现以 R20-display 的 1080×2040 BGR24、360×680 points、scale 3 为显示参照。R20-display 本身没有真实触摸后端，下一阶段实现默认关闭的 QUP6/FT5x46 producer，完成主机测试、完整 HakiOS 构建和冻结后再临时启动真机。详见 reports/hakios-ios16-device-r20-display.md/json。
++
++触摸主机进度：R21 只读 Stage 0 候选已完成 kernel/loader/Mu 构建、整包组装和独立读回，R20 root/resident 卷逐字节复用；镜像 SHA256 07d9e4cd10ee37854d6fd65df5f8fe36d8d836d1212c77aeca6491a51d82c6f8。它没有实体触摸后端，Stage 1–3 因 QUP6 handoff 未证实而 fail-closed，不可进行触摸验收。下一阶段是默认关闭的 QUP6/FT5x46 producer 实现与主机验证；只有真实触摸包完整构建、检查和冻结后再上机。详见 reports/hakios-ios16-touch-r21-host-final.md/json。
++
++2026-11-19 触摸 Step 3 主机审查完成：并行规则更新为最多9个子代理；FT5x46 63字节帧/状态机和 0020 精确补丁测试通过；QUP6 repeated-START/入口 SW_RESET、GPIO105/125 冲突和真实 producer 缺口已明确。R19 已测试但分辨率错误，归档不复测；R20-display 通过显示验收；两者均无物理触摸后端。R21 Stage 0 已通过主机整包读回，但不是触摸包。下一阶段实现默认关闭的 QUP6/FT5x46 producer，完成构建冻结后再临时启动。详见 reports/hakios-ios16-touch-step3-host.md/json 和 reports/hakios-ios16-touch-r21-host-final.md/json。
++
++R19 主机包准备记录（历史，2026-11-18）：完整 HakiOS/iOS16.5/Mu/D22AP 与 413 任务构建、46 项指令扫描、完整回归、实际整包读回和离线预检曾通过。其镜像 SHA256 2f74a8da0fe182d39c66a86db398f9816067cb05cce8a6a774398700ed38f60a；此包仅归档，后续显示以 R20-display 为准，不再补做 R19 验收。
++
++2026-11-19 触摸真机授权：新触摸包通过主机测试、构建并冻结后，可查询设备并从 Fastboot 临时启动；不刷写分区、不写 userdata。当前手机状态未由主机查询；R20-display 不含真实触摸后端，不能单独用于触摸验收。
++
++R16 显示修订已冻结（2026-11-18）：750×1334 隐式 profile 对齐 scale2/subtype1334，新增 DT/MG/UIScreen/window 有界日志；BGR24 物理面板1080×2040/stride3240保持，810像素是误按4字节计算；全部R15 payload参数逐字节保留，包括bootcpu=1 cpus=1。完整构建/回归/包检查通过，未查询/重启/刷写手机，不重刷userdata，R15运行保留。Dock/标签/边界和新尺寸真机结果未验证。备份archive/ios16-r15-before-r16-20261118及外部dirty-source.zip已校验；见reports/hakios-ios16-r16-prepared.md/json。
++
++R15 系统界面里程碑（2026-11-18）：03:41:09临时启动一次；USB持续采集。实际logical0/MPIDR0x80000001/affinity0x1/max_logical0，bootcpu=1 cpus=1，match=1。20轮HFS全部通过：write平均140us、fsync317us、replace481us、read44us；整数2477us、memcpy9559us。用户明确确认已出现锁屏或桌面，具体类型未区分；日志set-seeding-complete-return value1、阻塞fetch返回、SB main_queue_enter=192190ms及CA回调已捕获。LS等待关口已越过，最终sync/跨重启持久化/触摸/稳定性待核验。同次USB接收与45秒只读观察器后台保存进度和最终审计；10800秒正常timer、12600秒主机接收。保持运行与USB连接，不重启、不重试R15、不重刷userdata，UFS/2880MiB；见reports/hakios-ios16-device-r15.md/json。
++
++R15 Run A 实时记录（2026-11-18）：03:41:09临时启动一次，用户确认启动文字；USB持续采集。实际logical0/MPIDR0x80000001/affinity0x1/max_logical0，bootcpu=1 cpus=1，match=1。20轮HFS全部通过：write平均140us、fsync317us、replace481us、read44us；整数2477us、memcpy9559us。原始launchd已启动；LS数据库/桌面/最终sync及持久化待核验，不能仅据提速归因根因已解决。同次USB接收与45秒只读观察器后台保存进度和最终审计；10800秒正常timer、12600秒主机接收。保持运行与USB连接，不重启、不重试R15、不重刷userdata，UFS/2880MiB；见reports/hakios-ios16-device-r15.md/json。
++
++R15 Run A 主机准备完成（2026-11-18）：用户已批准 bootcpu=1 cpus=1，保持编号含义，目标为R14实测较快的affinity0x1；该明确授权覆盖旧记录的保持三核要求。完整HakiOS/iOS16.5/Mu/D22AP/413任务、回归/ASan/UBSan、46项指令/16项包及R15实际payload检查通过。冻结镜像SHA256 ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55；10800秒内核观察、12600秒USB接收。返回前有界列出LS数据库路径/大小/mtime并执行Data VFS_SYNC和设备flush，结果均待真机核验。UFS/2880MiB不变，不重刷userdata，不改journal/flush策略；未查询/启动手机，桌面和跨重启持久化未验证。用户已确认Fastboot连接，可按受保护入口临时启动一次。见reports/hakios-ios16-r15-prepared.md/json。
++
++R14 最终诊断（2026-11-18）：用户原图确认正常timer返回UEFI、未见panic，drain=1；R13诊断CPU越界未复现。三核实测CPU0/1(MPIDR0x100/0x101)整数循环平均162097/162071us，CPU2(0x1)2451us，约66倍差异；准确MHz/逐核缓存开关未测。20轮HFS全部读写校验通过；首个fsync4.05秒中线程CPU约4.05秒、UFS桥933us，buf_biowait31845次；其余两次慢fsync同样主要在桥外。23次采样均TH_RUN且跳过，无停驻内核栈，最终根因未定。systemfile_lock返回锁掩码，errors=2不代表errno。USB652793字节/3415帧独立重解码一致、传输缺口0且timer/drain完整；源丢1697字节、FS80/7、HFS槽满481，非全量日志。SB无提交、lsd不同bundle完成111，桌面未通过。保持UFS/2880MiB/三核，不重试R14、不重刷userdata；下一修订先核实本机时钟/缓存及buf调用者/执行核，不能直接启用上游redwood EPSS地址。见reports/hakios-ios16-r14-final-diagnosis.md/json。
++
++R13 真机故障（2026-11-18）：用户原图确认panic返回UEFI，cpu_common.c:82断言cpu <= ml_get_max_cpu_number()，CPU2/PID1 init。新增CPU诊断固定查询0..3，但三核XNU仅0..2；源码及冻结反汇编确认越界契约缺陷，单核R13同样不可运行。USB9952字节/44帧独立重解码一致，缺口/重复/残帧/device lost均0，仅前缀完整，未捕获panic全文/timer/drain；尚未进入launchd/HFS测试。保持UFS/2880MiB/三核，不重试R13、不重刷userdata。下一修订仅修正诊断CPU遍历边界；HFS瓶颈根因未定。见reports/hakios-ios16-r13-final-diagnosis.md/json。
++
++R13 主机准备完成（2026-11-18）：完整 HakiOS/iOS16.5、UFS/2880MiB；冻结同内核 cpus=3/cpus=1 两包，只有CPU参数不同。500ms慢HFS操作有界取停驻线程栈、真实wait/timer、锁/事务/flush分段、同线程及非独占全窗口UFS计数；逐在线核CPU/cache/timebase诊断，launchd前20轮固定文件测试。完整内核/Mu/D22AP/413任务、ASan/UBSan及既有回归、46项指令/16项包检查/双包比较通过。本轮未查询、启动或刷写手机，根因/桌面未验证。busy线程跳过取栈、未知owner不推断、inclusive时间不可相加；cpus A/B需分两次启动且Data持久进度影响LS对比。未重刷userdata或改journal/flush策略。见reports/hakios-ios16-r13-prepared.md/json。
++
+ R11 最终诊断（2026-11-17）：用户原图及USB确认正常timer返回UEFI，未见panic，桌面未通过。最后lsd完成382个不同bundle对象、953次容器调用；4次目录扫描成功返回，但整体gather/enumerate未返回，ready未出现。SB查询com.apple.mobilenotes持续1784.634秒；对象进度仍增加，不能认定同项循环或死锁。同线程容器替换22.924秒中rename占20.549秒并成功返回，须追查HFS/日志/flush/UFS桥接耗时，不能直接定性UFS驱动故障。USB1136171字节/6157帧重解码一致、缺口0、timer排空成功；源端仍丢1766字节，FS丢弃47/结束丢失8，首轮取栈缺1进程，非全量日志。本次仅只读分析与归档，不重试R11/R10、不重刷userdata，保持UFS/2880MiB/三核。见reports/hakios-ios16-r11-final-diagnosis.md/json。
+ 
+ R11 已临时启动一次（2026-11-17）：三核online、原始launchd及60808ms基础图层已记录，当前未目视桌面。新增方法采集为SB1/1、container4/4、lsd5/5，LS11/11；SB查询com.apple.mobilenotes，lsd不同应用完成数持续增加，尚不能认定同项循环或最终根因。USB与45秒只读观察器仍在后台保存同次日志/终态；FS记录有争用丢弃，非全量无损。保持当前运行，不重试R11/R10、不重刷userdata。UFS/2880MiB/三核。见reports/hakios-ios16-device-r11.md/json，准备提交44ec363。
+@@ -43,8 +75,9 @@ R5 最终观测（2026-11-17）：已定时返回 UEFI 保留摘要，桌面未
+ 1. 审计已完成：reports/hakios-ios16-migration-phase1.md，保留设备差异，归档14版ABI与集成；用户已批准阶段二。
+ 2. 内核电脑端构建已完成并获用户确认：独立校验备份与Git备份分支已完成；恢复完整上游16路径，保留MSM8996pro/lithium支持。开放全部可用RAM为目标，同步推进USB日志、BGR24、日志完整性和UFS布局边界；按正常上游流程完整构建，解释编译修复。成果及限制见reports/hakios-ios16-migration-phase2.md。
+ 3. 用户空间阶段已完成：完整16.5用户空间、真实身份loader、更新内核/Mu和20GiB内部UFS布局均已构建核验，Data权限/读回/fsck通过。实时GPT核验后，仅向userdata执行一次Fastboot flash，30段全部成功；安装后GPT字节保持一致，System、OS/App cryptex、Data四处共32KiB头部与冻结来源一致，已返回Fastboot。采样不是全盘读回；阶段四 R3/R4 已证明 Data 实际可写挂载与写入读回，完整容器服务响应仍待验证。阶段四已获用户确认。见reports/hakios-ios16-migration-phase3.md及对应JSON。
+-4. 真机调试已获用户确认，正在执行：冻结同一个联合包，采集从launchd前开始的日志，观察真实SpringBoard更新。每次修复明确故障，保留变更记录、故障/结束摘要，不要求守屏；物理触摸和A530加速分别记录。完成后报告并停止。
++4. 真机调试已获用户确认。当前子任务为触摸主机阶段：Stage 0 静态入口已完成完整 HakiOS 生产构建，最新 24 项主机回归通过；该内核没有真实触摸 producer，也没有新触摸包。QUP6 handoff/所有权未证实，暂不查询或启动手机。下一步先取得可信的 UEFI-to-XNU 资源交接/所有权证据；满足后再接入默认关闭的触摸 producer，完成主机测试、完整构建、包检查和冻结，之后才按既有范围 Fastboot 临时启动，不刷分区、不写 userdata。
+ 
+ WSL保持16GiB/12CPU/2GiB swap，任务14GiB/1200%CPU、并发12，大任务顺序执行。P1、UFS读取和旧进程存在性检查不重复验收。
+ 内存不得简单把6GB连续上报：上部RAM、低地址保留区、UEFI、XNUP、DMA与内核页分配必须一致。当前第一扩大窗口2880MiB不是最终目标；未知动态保留区和多内存段接入仍须闭环。
+ 历史计划与原配置在reports/history/hakios-ios14-r31-20261116及备份分支中，历史运行记录不能计作新16集成的验证。
++2026-11-19 触摸 R23 主机阶段完成：以唯一显示基线 R20-display 为准，新增仅改 HakiOS userland/src/inject.c 的 EdgeTip 几何补丁，将 16/16/34 边缘阈值统一到 360×680 points；补丁合同检查、完整 14 项既有外围回归和 5 项下一阶段回归均通过 Clang ASan/UBSan，R20/R15 冻结哈希不变。没有接入 QUP6/FT5x46 producer，没有生成触摸真机包，也没有查询或操作手机。下一步仍是默认关闭的真实 QUP6/FT5x46 producer，完成生产构建、包检查和冻结后再上机。详见 reports/hakios-ios16-touch-r23-host.md。
+diff --git a/maintenance/hakios-lithium/peripherals/boot-options-test.c b/maintenance/hakios-lithium/peripherals/boot-options-test.c
+index 11e896c..55906ac 100644
+--- a/maintenance/hakios-lithium/peripherals/boot-options-test.c
++++ b/maintenance/hakios-lithium/peripherals/boot-options-test.c
+@@ -11,6 +11,7 @@ parse(const char *input, bool valid)
+     assert(lithium_peripheral_options_parse(input, strlen(input), &options) == valid);
+     if (!valid) {
+         assert(!options.touch && !options.touch_log && !options.touch_poll);
++        assert(!options.touch_stage_requested && options.touch_stage == 0);
+         assert(!options.gpu_probe && options.gpu_stage == 0 && !options.gpu_wd);
+     }
+     return options;
+@@ -23,34 +24,56 @@ main(void)
+         "bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata "
+         "var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 "
+         "fbwidth=750 fbheight=1334 loader_return_after=10800", true);
+-    assert(!options.touch && !options.gpu_probe);
++    assert(!options.touch && !options.touch_stage_requested && !options.gpu_probe);
+ 
+     options = parse("gpu_stage=0 touch_log=1 touch_poll=1 gpu_wd=1 touchscreen=1", true);
+     assert(!options.touch && !options.touch_log && !options.touch_poll);
++    assert(!options.touch_stage_requested && options.touch_stage == 0);
+     assert(!options.gpu_probe && options.gpu_stage == 0 && !options.gpu_wd);
+ 
+     options = parse("touch=1\tgpu_probe=1\ngpu_stage=0 gpu_wd=1 touch_poll=1\r", true);
+     assert(options.touch && options.touch_poll && !options.touch_log);
++    assert(!options.touch_stage_requested);
+     assert(options.gpu_probe && options.gpu_stage == 0 && options.gpu_wd);
+ 
+     options = parse("touch=1 touch_log=1 touch_poll=0 gpu_stage=1", true);
+     assert(options.touch && options.touch_log && !options.touch_poll);
++    assert(!options.touch_stage_requested);
+     assert(options.gpu_probe && options.gpu_stage == 1 && !options.gpu_wd);
+     assert(parse("gpu_stage=4", true).gpu_stage == 4);
+ 
++    static const char *stage_args[] = {
++        "touch_stage=0", "touch_stage=1", "touch_stage=2", "touch_stage=3",
++    };
++    for (unsigned stage = 0; stage <= 3; ++stage) {
++        options = parse(stage_args[stage], true);
++        assert(!options.touch && !options.touch_log && !options.touch_poll);
++        assert(options.touch_stage_requested && options.touch_stage == stage);
++        assert(!options.gpu_probe && options.gpu_stage == 0 && !options.gpu_wd);
++    }
++    options = parse("gpu_probe=1 gpu_stage=4 gpu_wd=1 touch_stage=0", true);
++    assert(options.touch_stage_requested && options.touch_stage == 0);
++    assert(options.gpu_probe && options.gpu_stage == 4 && options.gpu_wd);
++
+     const char *invalid[] = {
+         "touch", "touch=", "touch=1=1", "touch=2", "touch=01", "touch=-1",
+         "touch=1 touch=1", "touch=0 touch=1", "touch_log=3", "touch_poll=9",
+         "gpu_stage=5", "gpu_stage=x", "gpu_stage= 1", "touch=1 gpu_wd=2",
+         "gpu_probe=1 gpu_probe=0", "gpu_stage=1 gpu_stage=0",
++        "touch_stage", "touch_stage=", "touch_stage=4", "touch_stage=x",
++        "touch_stage=00", "touch_stage=-1", "touch_stage=1x",
++        "touch_stage=0 touch_stage=0", "touch_stage=0 touch_stage=3",
++        "touch=0 touch_stage=0", "touch_stage=1 touch=1",
++        "touch_log=0 touch_stage=2", "touch_poll=1 touch_stage=3",
+     };
+     for (size_t i = 0; i < sizeof(invalid) / sizeof(invalid[0]); ++i) {
+         parse(invalid[i], false);
+     }
+     static const char hidden_args[] = "touch=1 \0gpu_stage=1";
+     assert(!lithium_peripheral_options_parse(hidden_args, sizeof(hidden_args) - 1, &options));
+-    assert(!options.touch && !options.gpu_probe);
++    assert(!options.touch && !options.touch_stage_requested && options.touch_stage == 0);
++    assert(!options.gpu_probe);
+     assert(lithium_peripheral_options_parse(NULL, 0, &options));
+     assert(!lithium_peripheral_options_parse(NULL, 1, &options));
+-    puts("PASS boot options: defaults, probe/phase 0, touch dependencies and malformed overrides");
++    puts("PASS boot options: defaults, explicit touch stages, legacy conflicts, GPU and malformed overrides");
+ }
+diff --git a/maintenance/hakios-lithium/peripherals/boot-options.h b/maintenance/hakios-lithium/peripherals/boot-options.h
+index e2a91b8..c5e5197 100644
+--- a/maintenance/hakios-lithium/peripherals/boot-options.h
++++ b/maintenance/hakios-lithium/peripherals/boot-options.h
+@@ -8,6 +8,8 @@ struct lithium_peripheral_options {
+     bool touch;
+     bool touch_log;
+     bool touch_poll;
++    bool touch_stage_requested;
++    unsigned touch_stage;
+     bool gpu_probe;
+     unsigned gpu_stage;
+     bool gpu_wd;
+@@ -23,6 +25,7 @@ enum lithium_peripheral_option_id {
+     LITHIUM_TOUCH,
+     LITHIUM_TOUCH_LOG,
+     LITHIUM_TOUCH_POLL,
++    LITHIUM_TOUCH_STAGE,
+     LITHIUM_GPU_PROBE,
+     LITHIUM_GPU_STAGE,
+     LITHIUM_GPU_WD,
+@@ -45,6 +48,7 @@ lithium_peripheral_options_parse(const char *args, size_t length,
+         [LITHIUM_TOUCH] = {"touch", sizeof("touch") - 1, 1},
+         [LITHIUM_TOUCH_LOG] = {"touch_log", sizeof("touch_log") - 1, 1},
+         [LITHIUM_TOUCH_POLL] = {"touch_poll", sizeof("touch_poll") - 1, 1},
++        [LITHIUM_TOUCH_STAGE] = {"touch_stage", sizeof("touch_stage") - 1, 3},
+         [LITHIUM_GPU_PROBE] = {"gpu_probe", sizeof("gpu_probe") - 1, 1},
+         [LITHIUM_GPU_STAGE] = {"gpu_stage", sizeof("gpu_stage") - 1, 4},
+         [LITHIUM_GPU_WD] = {"gpu_wd", sizeof("gpu_wd") - 1, 1},
+@@ -86,7 +90,11 @@ lithium_peripheral_options_parse(const char *args, size_t length,
+             if (size != name_length + 2 || (seen & (1u << key)) != 0) {
+                 return false;
+             }
+-            const unsigned value = (unsigned)((unsigned char)args[start + name_length + 1] - '0');
++            const char digit = args[start + name_length + 1];
++            if (digit < '0' || digit > '9') {
++                return false;
++            }
++            const unsigned value = (unsigned)(digit - '0');
+             if (value > keys[key].max_value) {
+                 return false;
+             }
+@@ -95,9 +103,16 @@ lithium_peripheral_options_parse(const char *args, size_t length,
+             break;
+         }
+     }
++    const unsigned legacy_touch = (1u << LITHIUM_TOUCH) |
++        (1u << LITHIUM_TOUCH_LOG) | (1u << LITHIUM_TOUCH_POLL);
++    if ((seen & (1u << LITHIUM_TOUCH_STAGE)) != 0 && (seen & legacy_touch) != 0) {
++        return false;
++    }
+     options->touch = values[LITHIUM_TOUCH] != 0;
+     options->touch_log = options->touch && values[LITHIUM_TOUCH_LOG] != 0;
+     options->touch_poll = options->touch && values[LITHIUM_TOUCH_POLL] != 0;
++    options->touch_stage_requested = (seen & (1u << LITHIUM_TOUCH_STAGE)) != 0;
++    options->touch_stage = values[LITHIUM_TOUCH_STAGE];
+     options->gpu_stage = values[LITHIUM_GPU_STAGE];
+     options->gpu_probe = values[LITHIUM_GPU_PROBE] != 0 || options->gpu_stage != 0;
+     options->gpu_wd = options->gpu_probe && values[LITHIUM_GPU_WD] != 0;
+diff --git a/maintenance/hakios-lithium/peripherals/gpu-submit-test.c b/maintenance/hakios-lithium/peripherals/gpu-submit-test.c
+index f5fc3ac..e694d2a 100644
+--- a/maintenance/hakios-lithium/peripherals/gpu-submit-test.c
++++ b/maintenance/hakios-lithium/peripherals/gpu-submit-test.c
+@@ -4,6 +4,13 @@
+ #include <stdio.h>
+ 
+ #define UNTOUCHED UINT32_C(0xfeedface)
++#define FENCE_IOVA UINT64_C(0x0000000100000040)
++
++static void
++configure_iova(struct lithium_gpu_mock *mock)
++{
++    assert(lithium_gpu_mock_configure_iova(mock, FENCE_IOVA, 8, 40));
++}
+ 
+ static void
+ test_geometry_and_capacity(void)
+@@ -24,9 +31,10 @@ test_geometry_and_capacity(void)
+     assert(mock.state == LITHIUM_GPU_MOCK_DETACHED);
+ 
+     assert(lithium_gpu_mock_attach(&mock, LITHIUM_GPU_A530_V5, ring, 4));
++    configure_iova(&mock);
+     assert(!lithium_gpu_mock_attach(&mock, LITHIUM_GPU_A530_V5, ring, 8));
+     assert(lithium_gpu_mock_free_words(&mock) == 3);
+-    assert(lithium_gpu_mock_submit(&mock, 0, 1, &fence) ==
++    assert(lithium_gpu_mock_submit(&mock, 0, 1, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_NO_SPACE);
+     assert(fence == UNTOUCHED && mock.state == LITHIUM_GPU_MOCK_IDLE);
+     for (size_t i = 0; i < 4; ++i) {
+@@ -36,6 +44,78 @@ test_geometry_and_capacity(void)
+     assert(lithium_gpu_mock_release(&mock) && mock.ring == NULL);
+ }
+ 
++static void
++test_exact_packet_boundary_and_iova(void)
++{
++    struct lithium_gpu_mock mock = {0};
++    uint32_t ring[8];
++    uint32_t fence = UNTOUCHED;
++    for (size_t i = 0; i < 8; ++i)
++        ring[i] = UNTOUCHED;
++    assert(lithium_gpu_mock_attach(&mock, LITHIUM_GPU_A530_V5, ring, 8));
++    configure_iova(&mock);
++    mock.read = 2;
++    mock.write = 4; /* Exactly five writable words remain in this ring. */
++    assert(lithium_gpu_mock_free_words(&mock) == LITHIUM_GPU_MOCK_PACKET_WORDS);
++    assert(lithium_gpu_mock_submit(&mock, 0, 10, FENCE_IOVA + 4, &fence) ==
++        LITHIUM_GPU_MOCK_OK);
++    assert(fence == 1 && mock.write == 1 && mock.read == 2);
++    assert(lithium_gpu_mock_free_words(&mock) == 0);
++    assert(ring[4] == UINT32_C(0x70460004) &&
++        ring[5] == UINT32_C(0x80000004) &&
++        ring[6] == (uint32_t)(FENCE_IOVA + 4) && ring[7] == 1 && ring[0] == 1);
++
++    struct lithium_gpu_mock boundary = {0};
++    uint32_t boundary_ring[8];
++    for (size_t i = 0; i < 8; ++i)
++        boundary_ring[i] = UNTOUCHED;
++    assert(lithium_gpu_mock_attach(&boundary, LITHIUM_GPU_A530_V5,
++        boundary_ring, 8));
++    configure_iova(&boundary);
++    fence = UNTOUCHED;
++    assert(lithium_gpu_mock_submit(&boundary, 0, 10, FENCE_IOVA + 8,
++        &fence) == LITHIUM_GPU_MOCK_INVALID);
++    assert(lithium_gpu_mock_submit(&boundary, 0, 10, FENCE_IOVA + 1,
++        &fence) == LITHIUM_GPU_MOCK_INVALID);
++    assert(lithium_gpu_mock_submit(&boundary, 0, 10, FENCE_IOVA - 4,
++        &fence) == LITHIUM_GPU_MOCK_INVALID);
++    assert(fence == UNTOUCHED && boundary.write == 0 &&
++        boundary.state == LITHIUM_GPU_MOCK_IDLE);
++    for (size_t i = 0; i < 8; ++i)
++        assert(boundary_ring[i] == UNTOUCHED);
++
++    struct lithium_gpu_mock invalid = {0};
++    uint32_t invalid_ring[8] = {0};
++    assert(lithium_gpu_mock_attach(&invalid, LITHIUM_GPU_A530_V5,
++        invalid_ring, 8));
++    assert(!lithium_gpu_mock_configure_iova(&invalid, FENCE_IOVA, 0, 40));
++    assert(!lithium_gpu_mock_configure_iova(&invalid, UINT64_MAX - 3, 8, 64));
++    assert(!lithium_gpu_mock_configure_iova(&invalid, UINT64_C(0xfffffffc),
++        8, 32));
++}
++
++static void
++test_malformed_ring_fails_closed(void)
++{
++    struct lithium_gpu_mock mock = {0};
++    uint32_t ring[8];
++    uint32_t fence = UNTOUCHED;
++    for (size_t i = 0; i < 8; ++i)
++        ring[i] = UNTOUCHED;
++    assert(lithium_gpu_mock_attach(&mock, LITHIUM_GPU_A530_V5, ring, 8));
++    configure_iova(&mock);
++    mock.write = mock.capacity;
++    assert(lithium_gpu_mock_submit(&mock, 0, 10, FENCE_IOVA, &fence) ==
++        LITHIUM_GPU_MOCK_INVALID);
++    assert(mock.state == LITHIUM_GPU_MOCK_SOFTWARE_FALLBACK);
++    assert(mock.write == mock.capacity && mock.read == 0 &&
++        mock.pending_fence == 0 && fence == UNTOUCHED);
++    assert(!lithium_gpu_mock_quiesce(&mock, true, true));
++    assert(!lithium_gpu_mock_recover(&mock, true, true, true));
++    for (size_t i = 0; i < 8; ++i)
++        assert(ring[i] == UNTOUCHED);
++}
++
+ static void
+ test_packet_wrap_irq_and_poll(void)
+ {
+@@ -53,12 +133,13 @@ test_packet_wrap_irq_and_poll(void)
+         ring[i] = UNTOUCHED;
+     }
+     assert(lithium_gpu_mock_attach(&mock, LITHIUM_GPU_A530_V5, ring, 8));
++    configure_iova(&mock);
+     assert(lithium_gpu_mock_free_words(&mock) == 7);
+-    assert(lithium_gpu_mock_submit(&mock, 20, 10, &fence) ==
++    assert(lithium_gpu_mock_submit(&mock, 20, 10, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_OK);
+     assert(fence == 1 && mock.write == 5 && mock.read == 0);
+     assert(lithium_gpu_mock_free_words(&mock) == 2);
+-    assert(lithium_gpu_mock_submit(&mock, 21, 10, &fence) ==
++    assert(lithium_gpu_mock_submit(&mock, 21, 10, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_BUSY);
+     for (size_t i = 0; i < 8; ++i) {
+         assert(ring[i] == first[i]);
+@@ -79,7 +160,7 @@ test_packet_wrap_irq_and_poll(void)
+     assert(!lithium_gpu_mock_retire(&mock, fence));
+     assert(!lithium_gpu_mock_release(&mock));
+ 
+-    assert(lithium_gpu_mock_submit(&mock, 23, 10, &fence) ==
++    assert(lithium_gpu_mock_submit(&mock, 23, 10, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_OK);
+     assert(fence == 2 && mock.write == 2 && mock.read == 5);
+     for (size_t i = 0; i < 8; ++i) {
+@@ -91,7 +172,7 @@ test_packet_wrap_irq_and_poll(void)
+     assert(mock.state == LITHIUM_GPU_MOCK_COMPLETE_POLL);
+     assert(lithium_gpu_mock_retire(&mock, fence));
+     assert(lithium_gpu_mock_quiesce(&mock, true, true));
+-    assert(lithium_gpu_mock_submit(&mock, 34, 10, &fence) ==
++    assert(lithium_gpu_mock_submit(&mock, 34, 10, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_BUSY);
+     assert(lithium_gpu_mock_release(&mock));
+ }
+@@ -104,7 +185,8 @@ test_watchdog_and_quiescence(void)
+     uint32_t fence;
+ 
+     assert(lithium_gpu_mock_attach(&mock, LITHIUM_GPU_A530_V5, ring, 8));
+-    assert(lithium_gpu_mock_submit(&mock, 100, 5, &fence) ==
++    configure_iova(&mock);
++    assert(lithium_gpu_mock_submit(&mock, 100, 5, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_OK);
+     assert(lithium_gpu_mock_sample(&mock, 104, 0, true));
+     assert(mock.state == LITHIUM_GPU_MOCK_PENDING);
+@@ -116,15 +198,31 @@ test_watchdog_and_quiescence(void)
+     assert(!lithium_gpu_mock_quiesce(&mock, true, false));
+     assert(!lithium_gpu_mock_release(&mock));
+     assert(mock.ring == ring && mock.pending_fence == fence && mock.read == 0);
++    assert(!lithium_gpu_mock_recover(&mock, false, true, true));
++    assert(mock.state == LITHIUM_GPU_MOCK_SOFTWARE_FALLBACK &&
++        mock.pending_fence == fence && mock.write == 5);
++    assert(lithium_gpu_mock_submit(&mock, 106, 5, FENCE_IOVA, &fence) ==
++        LITHIUM_GPU_MOCK_BUSY);
++    assert(!lithium_gpu_mock_recover(&mock, true, true, false));
++    assert(mock.state == LITHIUM_GPU_MOCK_SOFTWARE_FALLBACK);
++    assert(lithium_gpu_mock_recover(&mock, true, true, true));
++    assert(mock.state == LITHIUM_GPU_MOCK_IDLE && mock.read == 0 &&
++        mock.write == 0 && mock.pending_fence == 0);
++    assert(lithium_gpu_mock_submit(&mock, 107, 5, FENCE_IOVA, &fence) ==
++        LITHIUM_GPU_MOCK_OK);
++    assert(fence == 2);
++    assert(lithium_gpu_mock_sample(&mock, 108, fence, false));
++    assert(lithium_gpu_mock_retire(&mock, fence));
+     assert(lithium_gpu_mock_quiesce(&mock, true, true));
+     assert(mock.pending_fence == 0 && mock.read == mock.write);
+     assert(!lithium_gpu_mock_sample(&mock, 107, fence, true));
+     assert(lithium_gpu_mock_release(&mock));
+ 
+     assert(lithium_gpu_mock_attach(&mock, LITHIUM_GPU_A530_V5, ring, 8));
+-    assert(lithium_gpu_mock_submit(&mock, 1, 1, &fence) ==
++    configure_iova(&mock);
++    assert(lithium_gpu_mock_submit(&mock, 1, 1, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_OK);
+-    assert(fence == 2); /* A stale sample from the previous attachment. */
++    assert(fence == 3); /* A stale sample from the previous attachment. */
+     assert(lithium_gpu_mock_sample(&mock, 1, 1, true));
+     assert(mock.state == LITHIUM_GPU_MOCK_PENDING);
+     assert(lithium_gpu_mock_sample(&mock, 3, fence, true));
+@@ -133,7 +231,8 @@ test_watchdog_and_quiescence(void)
+     assert(lithium_gpu_mock_release(&mock));
+ 
+     assert(lithium_gpu_mock_attach(&mock, LITHIUM_GPU_A530_V5, ring, 8));
+-    assert(lithium_gpu_mock_submit(&mock, 1, 1, &fence) ==
++    configure_iova(&mock);
++    assert(lithium_gpu_mock_submit(&mock, 1, 1, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_OK);
+     assert(!lithium_gpu_mock_quiesce(&mock, false, true));
+     assert(lithium_gpu_mock_quiesce(&mock, true, true));
+@@ -149,26 +248,28 @@ test_time_and_fence_limits(void)
+     uint32_t ring[8] = {UNTOUCHED};
+ 
+     assert(lithium_gpu_mock_attach(&mock, LITHIUM_GPU_A530_V5, ring, 8));
+-    assert(lithium_gpu_mock_submit(&mock, 0, 0, &fence) ==
++    configure_iova(&mock);
++    assert(lithium_gpu_mock_submit(&mock, 0, 0, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_INVALID);
+-    assert(lithium_gpu_mock_submit(&mock, 0, 1, NULL) ==
++    assert(lithium_gpu_mock_submit(&mock, 0, 1, FENCE_IOVA, NULL) ==
+         LITHIUM_GPU_MOCK_INVALID);
+     assert(lithium_gpu_mock_submit(&mock, 0, LITHIUM_GPU_MOCK_MAX_TIMEOUT_US + 1,
+-        &fence) == LITHIUM_GPU_MOCK_INVALID);
+-    assert(lithium_gpu_mock_submit(&mock, UINT64_MAX, 1, &fence) ==
++        FENCE_IOVA, &fence) == LITHIUM_GPU_MOCK_INVALID);
++    assert(lithium_gpu_mock_submit(&mock, UINT64_MAX, 1, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_INVALID);
+     assert(ring[0] == UNTOUCHED && fence == UNTOUCHED && mock.write == 0);
+-    assert(lithium_gpu_mock_submit(&mock, UINT64_MAX - 1, 1, &fence) ==
++    assert(lithium_gpu_mock_submit(&mock, UINT64_MAX - 1, 1, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_OK);
+     assert(fence == UINT32_MAX && ring[4] == UINT32_MAX);
+     assert(lithium_gpu_mock_sample(&mock, UINT64_MAX, fence, false));
+     assert(lithium_gpu_mock_retire(&mock, fence));
+-    assert(lithium_gpu_mock_submit(&mock, UINT64_MAX - 2, 1, &fence) ==
++    assert(lithium_gpu_mock_submit(&mock, UINT64_MAX - 2, 1, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_INVALID);
+     assert(lithium_gpu_mock_quiesce(&mock, true, true));
+     assert(lithium_gpu_mock_release(&mock));
+     assert(lithium_gpu_mock_attach(&mock, LITHIUM_GPU_A530_V5, ring, 8));
+-    assert(lithium_gpu_mock_submit(&mock, 0, 1, &fence) ==
++    configure_iova(&mock);
++    assert(lithium_gpu_mock_submit(&mock, 0, 1, FENCE_IOVA, &fence) ==
+         LITHIUM_GPU_MOCK_FENCE_EXHAUSTED);
+     assert(mock.state == LITHIUM_GPU_MOCK_IDLE && mock.write == 0);
+     assert(lithium_gpu_mock_quiesce(&mock, true, true));
+@@ -179,9 +280,11 @@ int
+ main(void)
+ {
+     test_geometry_and_capacity();
++    test_exact_packet_boundary_and_iova();
++    test_malformed_ring_fails_closed();
+     test_packet_wrap_irq_and_poll();
+     test_watchdog_and_quiescence();
+     test_time_and_fence_limits();
+-    puts("B4 A530 v5 GPU mock: 4 test groups passed");
++    puts("B4 A530 v5 GPU mock: 6 test groups passed");
+     return 0;
+ }
+diff --git a/maintenance/hakios-lithium/peripherals/gpu-submit.h b/maintenance/hakios-lithium/peripherals/gpu-submit.h
+index f069611..12e8c34 100644
+--- a/maintenance/hakios-lithium/peripherals/gpu-submit.h
++++ b/maintenance/hakios-lithium/peripherals/gpu-submit.h
+@@ -18,6 +18,8 @@ enum lithium_gpu_mock_state {
+     LITHIUM_GPU_MOCK_COMPLETE_POLL,
+     LITHIUM_GPU_MOCK_WATCHDOG,
+     LITHIUM_GPU_MOCK_QUIESCED,
++    /* Permanently blocks GPU submission until external recovery is proven. */
++    LITHIUM_GPU_MOCK_SOFTWARE_FALLBACK,
+ };
+ 
+ enum lithium_gpu_mock_result {
+@@ -41,9 +43,66 @@ struct lithium_gpu_mock {
+     uint32_t pending_fence;
+     uint64_t last_us;
+     uint64_t deadline_us;
++    uint64_t iova_base;
++    uint64_t iova_last;
++    unsigned iova_bits;
++    bool iova_configured;
+     enum lithium_gpu_mock_state state;
+ };
+ 
++static inline bool
++lithium_gpu_mock_iova_span(uint64_t base, uint64_t bytes, unsigned bits,
++    uint64_t *last)
++{
++    if (last == NULL || bits == 0 || bits > 64 || bytes == 0 ||
++        bytes - 1 > UINT64_MAX - base) {
++        return false;
++    }
++    const uint64_t end = base + bytes - 1;
++    if (bits < 64 && (end >> bits) != 0) {
++        return false;
++    }
++    *last = end;
++    return true;
++}
++
++/* Configure only aperture bounds; this does not prove mapping or ownership. */
++static inline bool
++lithium_gpu_mock_configure_iova(struct lithium_gpu_mock *mock, uint64_t base,
++    uint64_t bytes, unsigned bits)
++{
++    uint64_t last;
++    if (mock->state != LITHIUM_GPU_MOCK_IDLE || mock->iova_configured ||
++        mock->read != mock->write ||
++        !lithium_gpu_mock_iova_span(base, bytes, bits, &last)) {
++        return false;
++    }
++    mock->iova_base = base;
++    mock->iova_last = last;
++    mock->iova_bits = bits;
++    mock->iova_configured = true;
++    return true;
++}
++
++static inline bool
++lithium_gpu_mock_iova_slot_valid(const struct lithium_gpu_mock *mock,
++    uint64_t address)
++{
++    return mock->iova_configured && (address & UINT64_C(3)) == 0 &&
++        address >= mock->iova_base && address <= mock->iova_last &&
++        mock->iova_last - address >= sizeof(uint32_t) - 1 &&
++        (mock->iova_bits == 64 || (address >> mock->iova_bits) == 0);
++}
++
++static inline bool
++lithium_gpu_mock_ring_valid(const struct lithium_gpu_mock *mock)
++{
++    return mock->ring != NULL && mock->capacity >= 2 &&
++        mock->capacity <= LITHIUM_GPU_MOCK_MAX_RING_WORDS &&
++        (mock->capacity & (mock->capacity - 1)) == 0 &&
++        mock->read < mock->capacity && mock->write < mock->capacity;
++}
++
+ static inline bool
+ lithium_gpu_mock_attach(struct lithium_gpu_mock *mock, uint32_t chip_id,
+     uint32_t *ring, size_t capacity)
+@@ -64,7 +123,8 @@ static inline size_t
+ lithium_gpu_mock_free_words(const struct lithium_gpu_mock *mock)
+ {
+     if (mock->state == LITHIUM_GPU_MOCK_DETACHED ||
+-        mock->state == LITHIUM_GPU_MOCK_QUIESCED) {
++        mock->state == LITHIUM_GPU_MOCK_QUIESCED ||
++        !lithium_gpu_mock_ring_valid(mock)) {
+         return 0;
+     }
+     /* Reserve one word to distinguish full from empty. */
+@@ -75,14 +135,19 @@ lithium_gpu_mock_free_words(const struct lithium_gpu_mock *mock)
+ 
+ static inline enum lithium_gpu_mock_result
+ lithium_gpu_mock_submit(struct lithium_gpu_mock *mock, uint64_t now_us,
+-    uint64_t timeout_us, uint32_t *fence)
++    uint64_t timeout_us, uint64_t fence_iova, uint32_t *fence)
+ {
+     if (mock->state != LITHIUM_GPU_MOCK_IDLE) {
+         return LITHIUM_GPU_MOCK_BUSY;
+     }
++    if (!lithium_gpu_mock_ring_valid(mock)) {
++        mock->state = LITHIUM_GPU_MOCK_SOFTWARE_FALLBACK;
++        return LITHIUM_GPU_MOCK_INVALID;
++    }
+     if (fence == NULL || now_us < mock->last_us || timeout_us == 0 ||
+         timeout_us > LITHIUM_GPU_MOCK_MAX_TIMEOUT_US ||
+-        now_us > UINT64_MAX - timeout_us) {
++        now_us > UINT64_MAX - timeout_us ||
++        !lithium_gpu_mock_iova_slot_valid(mock, fence_iova)) {
+         return LITHIUM_GPU_MOCK_INVALID;
+     }
+     if (lithium_gpu_mock_free_words(mock) < LITHIUM_GPU_MOCK_PACKET_WORDS) {
+@@ -97,11 +162,12 @@ lithium_gpu_mock_submit(struct lithium_gpu_mock *mock, uint64_t now_us,
+      * drivers/gpu/drm/msm/adreno/a5xx_gpu.c:219-227 and
+      * adreno_gpu.h:637-664. Encode only the
+      * CP_EVENT_WRITE/CACHE_FLUSH_TS fence packet with IRQ requested.
+-     * The two address words are a fixed mock tag, with no backing mapping.
++     * The address words contain the caller's candidate IOVA. This CPU-only
++     * model checks aperture bounds and alignment, but has no backing mapping.
+      */
+     const uint32_t packet[LITHIUM_GPU_MOCK_PACKET_WORDS] = {
+         UINT32_C(0x70460004), UINT32_C(0x80000004),
+-        UINT32_C(0x00000040), UINT32_C(0x00000001),
++        (uint32_t)fence_iova, (uint32_t)(fence_iova >> 32),
+         next,
+     };
+     const size_t mask = mock->capacity - 1;
+@@ -167,6 +233,7 @@ lithium_gpu_mock_quiesce(struct lithium_gpu_mock *mock, bool engine_idle,
+     bool irq_drained)
+ {
+     if (!engine_idle || !irq_drained ||
++        !lithium_gpu_mock_ring_valid(mock) ||
+         (mock->state != LITHIUM_GPU_MOCK_IDLE &&
+         mock->state != LITHIUM_GPU_MOCK_PENDING &&
+         mock->state != LITHIUM_GPU_MOCK_WATCHDOG)) {
+@@ -179,6 +246,36 @@ lithium_gpu_mock_quiesce(struct lithium_gpu_mock *mock, bool engine_idle,
+     return true;
+ }
+ 
++/*
++ * Reset acknowledgements and idle/IRQ proofs are synthetic test inputs. A
++ * failed or incomplete recovery latches software-only fallback and retains
++ * the ring; it never certifies that real DMA has stopped.
++ */
++static inline bool
++lithium_gpu_mock_recover(struct lithium_gpu_mock *mock, bool reset_ack,
++    bool engine_idle, bool irq_drained)
++{
++    if (mock->state != LITHIUM_GPU_MOCK_WATCHDOG &&
++        mock->state != LITHIUM_GPU_MOCK_SOFTWARE_FALLBACK) {
++        return false;
++    }
++    if (!reset_ack || !engine_idle || !irq_drained ||
++        !lithium_gpu_mock_ring_valid(mock)) {
++        mock->state = LITHIUM_GPU_MOCK_SOFTWARE_FALLBACK;
++        return false;
++    }
++    /* Treat acknowledged reset as a fresh empty-ring boundary. */
++    for (size_t i = 0; i < mock->capacity; ++i) {
++        mock->ring[i] = 0;
++    }
++    mock->read = 0;
++    mock->write = 0;
++    mock->pending_fence = 0;
++    mock->deadline_us = 0;
++    mock->state = LITHIUM_GPU_MOCK_IDLE;
++    return true;
++}
++
+ static inline bool
+ lithium_gpu_mock_release(struct lithium_gpu_mock *mock)
+ {
+diff --git a/maintenance/hakios-lithium/peripherals/kernel-admission-test.c b/maintenance/hakios-lithium/peripherals/kernel-admission-test.c
+index 785d941..2491a3f 100644
+--- a/maintenance/hakios-lithium/peripherals/kernel-admission-test.c
++++ b/maintenance/hakios-lithium/peripherals/kernel-admission-test.c
+@@ -8,7 +8,7 @@ typedef void (*worker_fn)(thread_call_param_t,thread_call_param_t);
+ typedef worker_fn thread_call_t;
+ static const char *args;
+ static char lines[4096];
+-static unsigned allocated, entered, queried;
++static unsigned allocated, entered, queried, affinity_reads;
+ static uint64_t test_affinity = 1;
+ static int max_cpu;
+ static int allocation_fail;
+@@ -27,14 +27,14 @@ static size_t bounded_len(const char *s, size_t max) {
+ }
+ #define __unused __attribute__((unused))
+ #define LITHIUM_PERIPHERAL_HOST_TEST 1
+-#define LITHIUM_PERIPHERAL_AFFINITY() (test_affinity)
++#define LITHIUM_PERIPHERAL_AFFINITY() (++affinity_reads, test_affinity)
+ #define printf log_line
+ #define strnlen bounded_len
+ #include "../../../ports/hakios-lithium/peripherals/kernel.inc"
+ #undef printf
+ #undef strnlen
+ static void reset(const char *value) {
+-    args=value; memset(lines,0,sizeof(lines)); allocated=entered=queried=0;
++    args=value; memset(lines,0,sizeof(lines)); allocated=entered=queried=affinity_reads=0;
+     test_affinity=1; max_cpu=0; allocation_fail=0;
+ }
+ int main(void) {
+@@ -46,6 +46,21 @@ int main(void) {
+     assert(allocated==1 && entered==1 && queried==1);
+     assert(strstr(lines,"platform_backend_unverified") && strstr(lines,"poll=1 raw_log=1 mmio=0"));
+     assert(!strstr(lines,"LITHIUM GPU"));
++    reset("touch_stage=0"); lithium_peripheral_init();
++    assert(allocated==1 && entered==1 && queried==0 && affinity_reads==0 &&
++        strstr(lines,"stage=0 status=static"));
++    assert(strstr(lines,"irq_candidates=105,125") && strstr(lines,"pin_roles=unverified") &&
++        strstr(lines,"supplies=L14,LAB,IBB") && strstr(lines,"clock_state=unverified") &&
++        strstr(lines,"mmio=0 irq_attached=0 hid_events=0"));
++    for (unsigned stage=1; stage<=3; ++stage) {
++        char value[32]; snprintf(value,sizeof(value),"touch_stage=%u",stage);
++        reset(value); lithium_peripheral_init();
++        assert(allocated==1 && entered==1 && queried==1 && affinity_reads==1 &&
++            strstr(lines,"qup6_handoff_unverified"));
++        assert(strstr(lines,"mmio=0 irq_attached=0 hid_events=0"));
++    }
++    reset("touch_stage=0 touch=0"); lithium_peripheral_init();
++    assert(!allocated && !entered && strstr(lines,"invalid_peripheral_bootargs"));
+     reset("gpu_probe=1 gpu_stage=0"); lithium_peripheral_init();
+     assert(strstr(lines,"requested_stage=0") && strstr(lines,"software_fallback=1"));
+     for(unsigned stage=1;stage<=4;stage++) {
+diff --git a/maintenance/hakios-lithium/peripherals/touch-digitizer-test.c b/maintenance/hakios-lithium/peripherals/touch-digitizer-test.c
+index d68facd..cfcc072 100644
+--- a/maintenance/hakios-lithium/peripherals/touch-digitizer-test.c
++++ b/maintenance/hakios-lithium/peripherals/touch-digitizer-test.c
+@@ -5,7 +5,10 @@
+ #include <string.h>
+ 
+ static const struct lithium_digitizer_viewport full = {
+-    .display_x_max = 1080, .display_y_max = 2040, .right = 1080, .bottom = 2040
++    .display_x_max = LITHIUM_R20_WIDTH_POINTS - 1,
++    .display_y_max = LITHIUM_R20_HEIGHT_POINTS - 1,
++    .right = LITHIUM_R20_WIDTH_POINTS - 1,
++    .bottom = LITHIUM_R20_HEIGHT_POINTS - 1
+ };
+ 
+ static void
+@@ -14,29 +17,100 @@ expect_near(double observed, double expected)
+     assert(observed > expected - 1e-10 && observed < expected + 1e-10);
+ }
+ 
++static void
++expect_shared_queue_normalization(double observed, uint32_t queue_value)
++{
++    const double expected = (double)queue_value / 65535.0;
++    /* The HakiOS sample ABI quantizes normalized coordinates to 16 bits. */
++    assert(observed > expected - (1.0 / 65535.0) &&
++        observed < expected + (1.0 / 65535.0));
++}
++
++static struct lithium_digitizer_point
++point_at(double display_x, double display_y)
++{
++    return (struct lithium_digitizer_point){
++        .x = display_x / (LITHIUM_R20_WIDTH_POINTS - 1.0),
++        .y = display_y / (LITHIUM_R20_HEIGHT_POINTS - 1.0),
++        .display_x = display_x,
++        .display_y = display_y
++    };
++}
++
++static void
++test_edge_tip_thresholds(void)
++{
++    const double right_boundary = LITHIUM_R20_WIDTH_POINTS -
++        LITHIUM_DIGITIZER_EDGE_RIGHT_POINTS;
++    const double bottom_boundary = LITHIUM_R20_HEIGHT_POINTS -
++        LITHIUM_DIGITIZER_EDGE_BOTTOM_POINTS;
++    const struct lithium_digitizer_point points[] = {
++        point_at(LITHIUM_DIGITIZER_EDGE_LEFT_POINTS - 0.001, 340),
++        point_at(LITHIUM_DIGITIZER_EDGE_LEFT_POINTS, 340),
++        point_at(LITHIUM_DIGITIZER_EDGE_LEFT_POINTS + 0.001, 340),
++        point_at(right_boundary + 0.001, 340),
++        point_at(right_boundary, 340),
++        point_at(right_boundary - 0.001, 340),
++        point_at(180, LITHIUM_DIGITIZER_EDGE_TOP_POINTS - 0.001),
++        point_at(180, LITHIUM_DIGITIZER_EDGE_TOP_POINTS),
++        point_at(180, LITHIUM_DIGITIZER_EDGE_TOP_POINTS + 0.001),
++        point_at(180, bottom_boundary + 0.001),
++        point_at(180, bottom_boundary),
++        point_at(180, bottom_boundary - 0.001)
++    };
++    const bool expected[] = {
++        true, false, false,
++        true, false, false,
++        true, false, false,
++        true, false, false
++    };
++    for (size_t i = 0; i < sizeof(points) / sizeof(points[0]); ++i) {
++        assert(lithium_digitizer_point_from_edge_tip(&full, &points[i]) == expected[i]);
++    }
++}
++
+ static void
+ test_mapping(void)
+ {
+     struct lithium_digitizer_viewport viewport = {
+-        .display_x_max = 1000, .display_y_max = 2000,
+-        .left = 100, .top = 200, .right = 900, .bottom = 1400
++        .display_x_max = LITHIUM_R20_WIDTH_POINTS - 1,
++        .display_y_max = LITHIUM_R20_HEIGHT_POINTS - 1,
++        .left = 36, .top = 68, .right = 323, .bottom = 611
+     };
+     const enum lithium_digitizer_rotation rotations[] = {0, 90, 180, 270};
+     const uint16_t corners[][2] = {{0,0}, {1080,0}, {1080,2040}, {0,2040}};
+-    const unsigned display[][2] = {{100,200}, {900,200}, {900,1400}, {100,1400}};
+-    const unsigned interior[][2] = {{300,1100}, {300,500}, {700,500}, {700,1100}};
++    const unsigned display[][2] = {{36,68}, {323,68}, {323,611}, {36,611}};
++    const double interior[][2] = {{107.75,475.25}, {107.75,203.75},
++        {251.25,203.75}, {251.25,475.25}};
+     struct lithium_digitizer_point point;
+     for (size_t r = 0; r < 4; ++r) {
+         viewport.clockwise = rotations[r];
++        const struct lithium_touch_geometry shared_geometry = {
++            .width = viewport.display_x_max + 1,
++            .height = viewport.display_y_max + 1,
++            .left = viewport.left, .top = viewport.top,
++            .right = viewport.right, .bottom = viewport.bottom,
++            .rotation = (unsigned)viewport.clockwise
++        };
+         for (size_t i = 0; i < 4; ++i) {
+             const size_t j = (i + r) % 4;
+             assert(lithium_digitizer_map_point(&viewport, corners[i][0], corners[i][1], &point));
+             assert(point.display_x == display[j][0] && point.display_y == display[j][1]);
+-            expect_near(point.x, display[j][0] / 1000.0);
+-            expect_near(point.y, display[j][1] / 2000.0);
++            expect_near(point.x, display[j][0] / 359.0);
++            expect_near(point.y, display[j][1] / 679.0);
++            uint32_t queue_x, queue_y;
++            assert(lithium_touch_queue_map(&shared_geometry, corners[i][0], corners[i][1],
++                &queue_x, &queue_y));
++            expect_shared_queue_normalization(point.x, queue_x);
++            expect_shared_queue_normalization(point.y, queue_y);
+         }
+         assert(lithium_digitizer_map_point(&viewport, 270, 1530, &point));
+-        assert(point.display_x == interior[r][0] && point.display_y == interior[r][1]);
++        expect_near(point.display_x, interior[r][0]);
++        expect_near(point.display_y, interior[r][1]);
++        uint32_t queue_x, queue_y;
++        assert(lithium_touch_queue_map(&shared_geometry, 270, 1530, &queue_x, &queue_y));
++        expect_shared_queue_normalization(point.x, queue_x);
++        expect_shared_queue_normalization(point.y, queue_y);
+     }
+     assert(lithium_digitizer_map_point(&full, 1080, 2040, &point));
+     assert(point.x == 1 && point.y == 1);
+@@ -46,7 +120,7 @@ test_mapping(void)
+     viewport.clockwise = (enum lithium_digitizer_rotation)45;
+     assert(!lithium_digitizer_map_point(&viewport, 1, 1, &point));
+     viewport.clockwise = LITHIUM_DIGITIZER_ROTATE_0;
+-    viewport.right = 1001;
++    viewport.right = 360;
+     assert(!lithium_digitizer_map_point(&viewport, 1, 1, &point));
+     viewport.right = viewport.left;
+     assert(!lithium_digitizer_map_point(&viewport, 1, 1, &point));
+@@ -127,7 +201,7 @@ test_lifecycle(void)
+     take(&parser, &digitizer, bytes, 102, &events);
+     assert(events.finger_count == 3 && hand->mask == 0x06 && hand->touch);
+     expect_finger(&events.fingers[0], 102, 1, 1, 0x803, false);
+-    assert(events.fingers[0].point.display_x == 500);
++    expect_near(events.fingers[0].point.display_x, 500.0 * 359.0 / 1080.0);
+     expect_finger(&events.fingers[1], 102, 3, 1, 0x003, true);
+     expect_finger(&events.fingers[2], 102, 2, 2, 0x004, true);
+ 
+@@ -190,6 +264,7 @@ int
+ main(void)
+ {
+     test_mapping();
++    test_edge_tip_thresholds();
+     test_lifecycle();
+     test_capacity_and_bad_input();
+     puts("PASS lithium digitizer coordinates, HakiOS event values and atomic validation");
+diff --git a/maintenance/hakios-lithium/peripherals/touch-digitizer.h b/maintenance/hakios-lithium/peripherals/touch-digitizer.h
+index 3af76fe..808272d 100644
+--- a/maintenance/hakios-lithium/peripherals/touch-digitizer.h
++++ b/maintenance/hakios-lithium/peripherals/touch-digitizer.h
+@@ -1,7 +1,7 @@
+ #ifndef LITHIUM_TOUCH_DIGITIZER_H
+ #define LITHIUM_TOUCH_DIGITIZER_H
+ 
+-#include "touch-frame.h"
++#include "touch-queue.h"
+ 
+ /* Event values from HakiOS userland/src/inject.c:620-647,814-845. */
+ enum {
+@@ -15,6 +15,14 @@ enum {
+     LITHIUM_DIGITIZER_MAX_FINGERS = 2 * LITHIUM_TOUCH_MAX_CONTACTS
+ };
+ 
++/* R20-display EdgeTip in 360x680 display points. */
++enum {
++    LITHIUM_DIGITIZER_EDGE_LEFT_POINTS = 16,
++    LITHIUM_DIGITIZER_EDGE_RIGHT_POINTS = 16,
++    LITHIUM_DIGITIZER_EDGE_TOP_POINTS = 16,
++    LITHIUM_DIGITIZER_EDGE_BOTTOM_POINTS = 34
++};
++
+ enum lithium_digitizer_rotation {
+     LITHIUM_DIGITIZER_ROTATE_0 = 0,
+     LITHIUM_DIGITIZER_ROTATE_90 = 90,
+@@ -35,30 +43,43 @@ struct lithium_digitizer_point {
+ };
+ 
+ static inline bool
+-lithium_digitizer_map_point(const struct lithium_digitizer_viewport *viewport,
+-    uint16_t raw_x, uint16_t raw_y, struct lithium_digitizer_point *point)
++lithium_digitizer_point_from_edge_tip(
++    const struct lithium_digitizer_viewport *viewport,
++    const struct lithium_digitizer_point *point)
+ {
+     if (viewport == NULL || point == NULL ||
+-        raw_x > LITHIUM_TOUCH_X_MAX || raw_y > LITHIUM_TOUCH_Y_MAX ||
+-        viewport->left >= viewport->right || viewport->top >= viewport->bottom ||
+-        viewport->right > viewport->display_x_max ||
+-        viewport->bottom > viewport->display_y_max) {
++        viewport->display_x_max == UINT32_MAX || viewport->display_y_max == UINT32_MAX) {
+         return false;
+     }
++    const double display_width = (double)viewport->display_x_max + 1.0;
++    const double display_height = (double)viewport->display_y_max + 1.0;
++    return point->display_x < LITHIUM_DIGITIZER_EDGE_LEFT_POINTS ||
++        point->display_x > display_width - LITHIUM_DIGITIZER_EDGE_RIGHT_POINTS ||
++        point->display_y < LITHIUM_DIGITIZER_EDGE_TOP_POINTS ||
++        point->display_y > display_height - LITHIUM_DIGITIZER_EDGE_BOTTOM_POINTS;
++}
+ 
+-    const double u = (double)raw_x / LITHIUM_TOUCH_X_MAX;
+-    const double v = (double)raw_y / LITHIUM_TOUCH_Y_MAX;
+-    double x, y;
+-    switch (viewport->clockwise) {
+-    case LITHIUM_DIGITIZER_ROTATE_0:   x = u;     y = v;     break;
+-    case LITHIUM_DIGITIZER_ROTATE_90:  x = 1-v;   y = u;     break;
+-    case LITHIUM_DIGITIZER_ROTATE_180: x = 1-u;   y = 1-v;   break;
+-    case LITHIUM_DIGITIZER_ROTATE_270: x = v;     y = 1-u;   break;
+-    default: return false;
++static inline bool
++lithium_digitizer_map_point(const struct lithium_digitizer_viewport *viewport,
++    uint16_t raw_x, uint16_t raw_y, struct lithium_digitizer_point *point)
++{
++    if (viewport == NULL || point == NULL ||
++        viewport->display_x_max == UINT32_MAX || viewport->display_y_max == UINT32_MAX) {
++        return false;
+     }
+-
+-    const double display_x = viewport->left + x * (viewport->right - viewport->left);
+-    const double display_y = viewport->top + y * (viewport->bottom - viewport->top);
++    const struct lithium_touch_geometry geometry = {
++        .width = viewport->display_x_max + 1,
++        .height = viewport->display_y_max + 1,
++        .left = viewport->left, .top = viewport->top,
++        .right = viewport->right, .bottom = viewport->bottom,
++        .rotation = (unsigned)viewport->clockwise
++    };
++    struct lithium_touch_mapped_fraction mapped;
++    if (!lithium_touch_map_fraction(&geometry, raw_x, raw_y, &mapped)) return false;
++    const double display_x = ((double)mapped.x_numerator / mapped.x_denominator) *
++        viewport->display_x_max;
++    const double display_y = ((double)mapped.y_numerator / mapped.y_denominator) *
++        viewport->display_y_max;
+     *point = (struct lithium_digitizer_point){
+         .x = display_x / viewport->display_x_max,
+         .y = display_y / viewport->display_y_max,
+@@ -181,8 +202,7 @@ lithium_digitizer_make_events(struct lithium_digitizer_state *state,
+             next_state.slots[slot] = (struct lithium_digitizer_slot){
+                 .identity = contact->identity,
+                 .controller_id = contact->controller_id,
+-                .edge = finger->point.x < 16.0 / 375 || finger->point.x > 1 - 16.0 / 375 ||
+-                        finger->point.y < 16.0 / 812 || finger->point.y > 1 - 34.0 / 812
++                .edge = lithium_digitizer_point_from_edge_tip(viewport, &finger->point)
+             };
+         }
+         if (slot == LITHIUM_TOUCH_MAX_CONTACTS || (active_slots & (1u << slot)) != 0) {
+diff --git a/maintenance/hakios-lithium/peripherals/touch-i2c-test.c b/maintenance/hakios-lithium/peripherals/touch-i2c-test.c
+index 9d33f0b..9cccfb6 100644
+--- a/maintenance/hakios-lithium/peripherals/touch-i2c-test.c
++++ b/maintenance/hakios-lithium/peripherals/touch-i2c-test.c
+@@ -26,7 +26,11 @@ struct fixture {
+     enum lithium_touch_i2c_status claim_status;
+     unsigned claims;
+     unsigned releases;
++    unsigned quarantines;
+     bool claimed;
++    bool quarantined;
++    bool release_uncertain;
++    enum lithium_touch_i2c_quarantine_reason quarantine_reason;
+ };
+ 
+ #define SCRIPT(steps) .script = (steps), .exchanges = sizeof(steps) / sizeof((steps)[0])
+@@ -48,6 +52,9 @@ mock_claim(void *context, uint32_t qup_base, uint64_t deadline)
+     assert(deadline == fixture->deadline && fixture->ticks < deadline);
+     ++fixture->claims;
+     fixture->ticks += fixture->claim_elapsed;
++    if (fixture->quarantined) {
++        return LITHIUM_TOUCH_I2C_QUARANTINED;
++    }
+     if (fixture->claimed) {
+         return LITHIUM_TOUCH_I2C_BUSY;
+     }
+@@ -67,6 +74,30 @@ mock_release(void *context)
+     fixture->ticks += fixture->release_elapsed;
+ }
+ 
++static enum lithium_touch_i2c_handoff_state
++mock_checked_release(void *context)
++{
++    struct fixture *fixture = context;
++    assert(fixture->claimed && !fixture->quarantined);
++    ++fixture->releases;
++    fixture->ticks += fixture->release_elapsed;
++    if (fixture->release_uncertain) {
++        return LITHIUM_TOUCH_I2C_HANDOFF_UNCERTAIN;
++    }
++    fixture->claimed = false;
++    return LITHIUM_TOUCH_I2C_HANDOFF_RELEASED;
++}
++
++static void
++mock_quarantine(void *context, enum lithium_touch_i2c_quarantine_reason reason)
++{
++    struct fixture *fixture = context;
++    assert(fixture->claimed);
++    ++fixture->quarantines;
++    fixture->quarantine_reason = reason;
++    fixture->quarantined = true;
++}
++
+ static struct lithium_touch_i2c_completion
+ mock_write_read(void *context, uint8_t address, uint8_t reg, uint8_t *read,
+     size_t length, uint64_t deadline)
+@@ -90,6 +121,27 @@ static const struct lithium_touch_i2c_ops ops = {
+     .release = mock_release,
+ };
+ 
++static const struct lithium_touch_i2c_safety_ops safety_ops = {
++    .release = mock_checked_release,
++    .quarantine = mock_quarantine,
++};
++
++static enum lithium_touch_i2c_status
++read_report(const struct lithium_touch_i2c_ops *callbacks, struct fixture *fixture,
++    uint64_t deadline, struct lithium_touch_i2c_report *report)
++{
++    return lithium_touch_i2c_read_report_with_safety(callbacks, &safety_ops, fixture,
++        deadline, report);
++}
++
++static enum lithium_touch_i2c_status
++probe(const struct lithium_touch_i2c_ops *callbacks, struct fixture *fixture,
++    uint64_t deadline, struct lithium_touch_i2c_identity *identity)
++{
++    return lithium_touch_i2c_probe_with_safety(callbacks, &safety_ops, fixture,
++        deadline, identity);
++}
++
+ static void
+ test_split_report_restarts_after_nack(void)
+ {
+@@ -100,7 +152,7 @@ test_split_report_restarts_after_nack(void)
+     };
+     struct fixture fixture = { SCRIPT(script), .deadline = UINT64_MAX, .ticks = UINT64_MAX - 6 };
+     struct lithium_touch_i2c_report report;
+-    assert(lithium_touch_i2c_read_report(&ops, &fixture, UINT64_MAX, &report) ==
++    assert(read_report(&ops, &fixture, UINT64_MAX, &report) ==
+         LITHIUM_TOUCH_I2C_OK);
+     _Static_assert(sizeof(report.bytes) == 63, "parser needs the full 63-byte report");
+     for (size_t i = 0; i < sizeof(report.bytes); ++i) {
+@@ -119,7 +171,7 @@ test_runtime_probe(void)
+     };
+     struct fixture fixture = { SCRIPT(script), .deadline = DEADLINE };
+     struct lithium_touch_i2c_identity identity = {0};
+-    assert(lithium_touch_i2c_probe(&ops, &fixture, DEADLINE, &identity) ==
++    assert(probe(&ops, &fixture, DEADLINE, &identity) ==
+         LITHIUM_TOUCH_I2C_OK);
+     assert(identity.chip_id == 0x87 && identity.firmware_version == 0x29 &&
+         identity.vendor_id == 0x3b);
+@@ -130,24 +182,36 @@ test_runtime_probe(void)
+         {0xa8, 1, {LITHIUM_TOUCH_I2C_TIMEOUT, 1, 0}, 0, 1},
+     };
+     fixture = (struct fixture){ SCRIPT(failed), .deadline = DEADLINE };
+-    assert(lithium_touch_i2c_probe(&ops, &fixture, DEADLINE, &identity) ==
++    assert(probe(&ops, &fixture, DEADLINE, &identity) ==
+         LITHIUM_TOUCH_I2C_TIMEOUT);
+     assert(identity.chip_id == 0x87 && identity.firmware_version == 0x29 &&
+         identity.vendor_id == 0x3b);
+-    assert(fixture.transfers == 3 && fixture.releases == 1);
++    assert(fixture.transfers == 3 && fixture.releases == 0 && fixture.quarantines == 1);
++    assert(fixture.quarantined && fixture.claimed &&
++        fixture.quarantine_reason == LITHIUM_TOUCH_I2C_QUARANTINE_TRANSFER_UNCERTAIN);
+ }
+ 
+ static void
+ expect_report_failure(const struct lithium_touch_i2c_ops *callbacks, struct fixture *fixture,
+-    enum lithium_touch_i2c_status status, unsigned claims, unsigned releases)
++    enum lithium_touch_i2c_status status, unsigned claims, unsigned releases,
++    unsigned quarantines)
+ {
+     struct lithium_touch_i2c_report report;
+     memset(report.bytes, 0x5a, sizeof(report.bytes));
+-    assert(lithium_touch_i2c_read_report(callbacks, fixture, fixture->deadline, &report) == status);
++    const enum lithium_touch_i2c_status actual =
++        read_report(callbacks, fixture, fixture->deadline, &report);
++    assert(actual == status);
+     for (size_t i = 0; i < sizeof(report.bytes); ++i) {
+         assert(report.bytes[i] == 0x5a);
+     }
+-    assert(fixture->claims == claims && fixture->releases == releases);
++    if (fixture->claims != claims || fixture->releases != releases ||
++        fixture->quarantines != quarantines) {
++        fprintf(stderr, "ownership counts status=%u expected_status=%u: got claim=%u release=%u quarantine=%u; expected %u/%u/%u\n",
++            (unsigned)actual, (unsigned)status,
++            fixture->claims, fixture->releases, fixture->quarantines,
++            claims, releases, quarantines);
++        assert(false);
++    }
+     assert(fixture->transfers == fixture->exchanges);
+ }
+ 
+@@ -168,14 +232,22 @@ test_failed_second_half_keeps_previous_report(void)
+         {{LITHIUM_TOUCH_I2C_TIMEOUT, 1, 0}, LITHIUM_TOUCH_I2C_TIMEOUT},
+         {{LITHIUM_TOUCH_I2C_NOT_OWNED, 0, 0}, LITHIUM_TOUCH_I2C_NOT_OWNED},
+         {{LITHIUM_TOUCH_I2C_IO_ERROR, 1, 0}, LITHIUM_TOUCH_I2C_IO_ERROR},
++        {{LITHIUM_TOUCH_I2C_CLEANUP_UNCERTAIN, 1, 0},
++            LITHIUM_TOUCH_I2C_CLEANUP_UNCERTAIN},
+     };
+     for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+         const struct exchange script[] = {
+             FULL(0x00, 32, 0x10), {0x20, 31, cases[i].done, 0x30, 1},
+         };
+         struct fixture fixture = { SCRIPT(script), .deadline = DEADLINE };
+-        expect_report_failure(&ops, &fixture, cases[i].expected, 1, 1);
+-        assert(!fixture.claimed);
++        const bool malformed = cases[i].done.written > 1 || cases[i].done.read > 31 ||
++            (cases[i].done.read != 0 && cases[i].done.written == 0);
++        const bool uncertain = malformed ||
++            (cases[i].done.status != LITHIUM_TOUCH_I2C_OK &&
++             cases[i].done.status != LITHIUM_TOUCH_I2C_NACK);
++        expect_report_failure(&ops, &fixture, cases[i].expected, 1,
++            uncertain ? 0 : 1, uncertain ? 1 : 0);
++        assert(fixture.claimed == uncertain && fixture.quarantined == uncertain);
+     }
+ }
+ 
+@@ -188,24 +260,24 @@ test_retry_limit_and_deadline(void)
+         FULL(0x00, 32, 0x70), NACK(0x20, 31, 1),
+     };
+     struct fixture fixture = { SCRIPT(nacks), .deadline = DEADLINE };
+-    expect_report_failure(&ops, &fixture, LITHIUM_TOUCH_I2C_NACK, 1, 1);
++    expect_report_failure(&ops, &fixture, LITHIUM_TOUCH_I2C_NACK, 1, 1, 0);
+ 
+     fixture = (struct fixture){
+         .script = nacks, .exchanges = 2, .ticks = DEADLINE - 2, .deadline = DEADLINE,
+     };
+-    expect_report_failure(&ops, &fixture, LITHIUM_TOUCH_I2C_TIMEOUT, 1, 1);
++    expect_report_failure(&ops, &fixture, LITHIUM_TOUCH_I2C_TIMEOUT, 1, 1, 0);
+ 
+     const struct exchange full[] = { FULL(0x00, 32, 0x10), FULL(0x20, 31, 0x30) };
+     fixture = (struct fixture){
+         .script = full, .exchanges = 1, .ticks = DEADLINE - 1, .deadline = DEADLINE,
+     };
+-    expect_report_failure(&ops, &fixture, LITHIUM_TOUCH_I2C_TIMEOUT, 1, 1);
++    expect_report_failure(&ops, &fixture, LITHIUM_TOUCH_I2C_TIMEOUT, 1, 1, 0);
+     fixture = (struct fixture){ SCRIPT(full), .ticks = DEADLINE - 2, .deadline = DEADLINE };
+-    expect_report_failure(&ops, &fixture, LITHIUM_TOUCH_I2C_TIMEOUT, 1, 1);
++    expect_report_failure(&ops, &fixture, LITHIUM_TOUCH_I2C_TIMEOUT, 1, 1, 0);
+     fixture = (struct fixture){
+         SCRIPT(full), .ticks = DEADLINE - 3, .deadline = DEADLINE, .release_elapsed = 1,
+     };
+-    expect_report_failure(&ops, &fixture, LITHIUM_TOUCH_I2C_TIMEOUT, 1, 1);
++    expect_report_failure(&ops, &fixture, LITHIUM_TOUCH_I2C_TIMEOUT, 1, 1, 0);
+ }
+ 
+ static void
+@@ -214,27 +286,63 @@ test_claim_and_validation(void)
+     struct fixture fixture = { .deadline = DEADLINE };
+     struct lithium_touch_i2c_ops incomplete = ops;
+     incomplete.claim = NULL;
+-    expect_report_failure(&incomplete, &fixture, LITHIUM_TOUCH_I2C_INVALID, 0, 0);
++    assert(lithium_touch_i2c_read_report_with_safety(&incomplete, &safety_ops,
++        &fixture, fixture.deadline, &(struct lithium_touch_i2c_report){0}) ==
++        LITHIUM_TOUCH_I2C_INVALID);
+     incomplete = ops;
+     incomplete.release = NULL;
+-    expect_report_failure(&incomplete, &fixture, LITHIUM_TOUCH_I2C_INVALID, 0, 0);
++    assert(lithium_touch_i2c_read_report(&incomplete, &fixture, fixture.deadline,
++        &(struct lithium_touch_i2c_report){0}) == LITHIUM_TOUCH_I2C_INVALID);
++    struct lithium_touch_i2c_safety_ops incomplete_safety = safety_ops;
++    incomplete_safety.quarantine = NULL;
++    assert(lithium_touch_i2c_read_report_with_safety(&ops, &incomplete_safety, &fixture,
++        fixture.deadline, &(struct lithium_touch_i2c_report){0}) == LITHIUM_TOUCH_I2C_INVALID);
+     assert(lithium_touch_i2c_probe(&ops, &fixture, DEADLINE, NULL) == LITHIUM_TOUCH_I2C_INVALID);
+     assert(lithium_touch_i2c_read_report(&ops, &fixture, DEADLINE, NULL) ==
+         LITHIUM_TOUCH_I2C_INVALID);
+     assert(fixture.claims == 0);
++    assert(fixture.releases == 0 && fixture.quarantines == 0);
+ 
+     fixture = (struct fixture){ .deadline = DEADLINE, .claim_status = LITHIUM_TOUCH_I2C_NOT_OWNED };
+-    expect_report_failure(&ops, &fixture, LITHIUM_TOUCH_I2C_NOT_OWNED, 1, 0);
++    expect_report_failure(&ops, &fixture, LITHIUM_TOUCH_I2C_NOT_OWNED, 1, 0, 0);
+     fixture = (struct fixture){ .deadline = DEADLINE, .claimed = true };
+-    expect_report_failure(&ops, &fixture, LITHIUM_TOUCH_I2C_BUSY, 1, 0);
++    expect_report_failure(&ops, &fixture, LITHIUM_TOUCH_I2C_BUSY, 1, 0, 0);
+     assert(fixture.claimed);
+ 
+     fixture = (struct fixture){ .deadline = DEADLINE, .ticks = DEADLINE };
+-    expect_report_failure(&ops, &fixture, LITHIUM_TOUCH_I2C_TIMEOUT, 0, 0);
++    expect_report_failure(&ops, &fixture, LITHIUM_TOUCH_I2C_TIMEOUT, 0, 0, 0);
+     fixture = (struct fixture){ .deadline = DEADLINE, .claim_elapsed = DEADLINE };
+-    expect_report_failure(&ops, &fixture, LITHIUM_TOUCH_I2C_TIMEOUT, 1, 1);
++    expect_report_failure(&ops, &fixture, LITHIUM_TOUCH_I2C_TIMEOUT, 1, 1, 0);
+     fixture = (struct fixture){ .deadline = DEADLINE, .claim_status = LITHIUM_TOUCH_I2C_TIMEOUT };
+-    expect_report_failure(&ops, &fixture, LITHIUM_TOUCH_I2C_TIMEOUT, 1, 0);
++    expect_report_failure(&ops, &fixture, LITHIUM_TOUCH_I2C_TIMEOUT, 1, 0, 0);
++}
++
++static void
++test_quarantine_and_duplicate_isolation(void)
++{
++    const struct exchange uncertain[] = {
++        {0x00, 32, {LITHIUM_TOUCH_I2C_TIMEOUT, 1, 0}, 0, 1},
++    };
++    struct fixture fixture = { SCRIPT(uncertain), .deadline = DEADLINE };
++    struct lithium_touch_i2c_report report;
++    assert(read_report(&ops, &fixture, DEADLINE, &report) == LITHIUM_TOUCH_I2C_TIMEOUT);
++    assert(fixture.claimed && fixture.quarantined && fixture.releases == 0 &&
++        fixture.quarantines == 1 && fixture.transfers == 1);
++    assert(fixture.quarantine_reason == LITHIUM_TOUCH_I2C_QUARANTINE_TRANSFER_UNCERTAIN);
++    assert(read_report(&ops, &fixture, DEADLINE, &report) == LITHIUM_TOUCH_I2C_QUARANTINED);
++    assert(fixture.claims == 2 && fixture.transfers == 1 && fixture.releases == 0 &&
++        fixture.quarantines == 1 && fixture.claimed);
++
++    const struct exchange safe[] = { FULL(0x00, 32, 0x10), FULL(0x20, 31, 0x30) };
++    fixture = (struct fixture){ SCRIPT(safe), .deadline = DEADLINE, .release_uncertain = true };
++    assert(read_report(&ops, &fixture, DEADLINE, &report) ==
++        LITHIUM_TOUCH_I2C_QUARANTINED);
++    assert(fixture.claimed && fixture.quarantined && fixture.releases == 1 &&
++        fixture.quarantines == 1 && fixture.transfers == 2);
++    assert(fixture.quarantine_reason == LITHIUM_TOUCH_I2C_QUARANTINE_RELEASE_UNCERTAIN);
++    assert(read_report(&ops, &fixture, DEADLINE, &report) == LITHIUM_TOUCH_I2C_QUARANTINED);
++    assert(fixture.claims == 2 && fixture.transfers == 2 && fixture.releases == 1 &&
++        fixture.quarantines == 1);
+ }
+ 
+ int
+@@ -245,6 +353,7 @@ main(void)
+     test_failed_second_half_keeps_previous_report();
+     test_retry_limit_and_deadline();
+     test_claim_and_validation();
+-    puts("PASS touch I2C: split report, runtime probe, ownership, retries, deadlines and transactional output");
++    test_quarantine_and_duplicate_isolation();
++    puts("PASS touch I2C: safe release, NACK, entry failure, timeout, cleanup uncertainty, quarantine and idempotent isolation");
+     return 0;
+ }
+diff --git a/maintenance/hakios-lithium/peripherals/touch-i2c.h b/maintenance/hakios-lithium/peripherals/touch-i2c.h
+index 32953ef..ea305ce 100644
+--- a/maintenance/hakios-lithium/peripherals/touch-i2c.h
++++ b/maintenance/hakios-lithium/peripherals/touch-i2c.h
+@@ -1,6 +1,7 @@
+ #ifndef LITHIUM_TOUCH_I2C_H
+ #define LITHIUM_TOUCH_I2C_H
+ 
++#include <stdbool.h>
+ #include <stddef.h>
+ #include <stdint.h>
+ 
+@@ -20,7 +21,31 @@ enum lithium_touch_i2c_status {
+     LITHIUM_TOUCH_I2C_TIMEOUT,
+     LITHIUM_TOUCH_I2C_NO_PROGRESS,
+     LITHIUM_TOUCH_I2C_SHORT,
+-    LITHIUM_TOUCH_I2C_IO_ERROR
++    LITHIUM_TOUCH_I2C_IO_ERROR,
++    /* The platform has latched this controller out of service. */
++    LITHIUM_TOUCH_I2C_QUARANTINED,
++    /* Transfer or cleanup state is not known to be safe for another owner. */
++    LITHIUM_TOUCH_I2C_CLEANUP_UNCERTAIN
++};
++
++enum lithium_touch_i2c_handoff_state {
++    /* Zero is deliberately fail-closed for callback implementations. */
++    LITHIUM_TOUCH_I2C_HANDOFF_UNCERTAIN = 0,
++    LITHIUM_TOUCH_I2C_HANDOFF_RELEASED = 1
++};
++
++enum lithium_touch_i2c_quarantine_reason {
++    LITHIUM_TOUCH_I2C_QUARANTINE_TRANSFER_UNCERTAIN,
++    LITHIUM_TOUCH_I2C_QUARANTINE_RELEASE_UNCERTAIN
++};
++
++/* Optional strict ownership callbacks. RELEASED means the controller and the
++ * software claim were both safely handed back. Any other result must retain
++ * the claim. quarantine must be idempotent, retain the claim, and make later
++ * claim attempts return LITHIUM_TOUCH_I2C_QUARANTINED until explicit recovery. */
++struct lithium_touch_i2c_safety_ops {
++    enum lithium_touch_i2c_handoff_state (*release)(void *context);
++    void (*quarantine)(void *context, enum lithium_touch_i2c_quarantine_reason reason);
+ };
+ 
+ struct lithium_touch_i2c_completion {
+@@ -34,15 +59,21 @@ struct lithium_touch_i2c_ops {
+      * claim and write_read must enforce the absolute deadline internally. */
+     uint64_t (*now)(void *context);
+     /* Verify platform ownership of this QUP and exclusively claim it until
+-     * release. Only OK acquires a claim. Failure leaves no claim to release. */
++     * release. Only OK acquires a claim. Failure leaves no claim to release.
++     * A controller latched by quarantine must reject subsequent claims with
++     * LITHIUM_TOUCH_I2C_QUARANTINED. */
+     enum lithium_touch_i2c_status (*claim)(void *context, uint32_t qup_base,
+         uint64_t deadline);
+     /* On the claimed controller: START, address+W, one reg byte, repeated
+      * START, address+R, read, STOP. Counts are payload bytes for each phase.
+-     * Report NACK only after making the bus ready for another transaction. */
++     * OK and NACK are positive assertions that STOP/cleanup completed and the
++     * controller is idle and safe to reuse. NACK must not be returned until
++     * that condition is confirmed. TIMEOUT, IO_ERROR, NOT_OWNED, and
++     * CLEANUP_UNCERTAIN do not assert safe cleanup; callers must quarantine. */
+     struct lithium_touch_i2c_completion (*write_read)(void *context,
+         uint8_t address, uint8_t reg, uint8_t *read, size_t length, uint64_t deadline);
+-    /* Bounded cleanup of the claim, including after timeout or transfer failure. */
++    /* Legacy release callback. Called only after a confirmed-safe transaction.
++     * It must not perform uncertain hardware cleanup. */
+     void (*release)(void *context);
+ };
+ 
+@@ -63,12 +94,15 @@ struct lithium_touch_i2c_read_step {
+ 
+ /* steps and scratch are private to the two fixed read sequences below. */
+ static inline enum lithium_touch_i2c_status
+-lithium_touch_i2c_read_sequence(const struct lithium_touch_i2c_ops *ops,
++lithium_touch_i2c_read_sequence_internal(const struct lithium_touch_i2c_ops *ops,
++    const struct lithium_touch_i2c_safety_ops *safety,
+     void *context, uint64_t deadline, const struct lithium_touch_i2c_read_step *steps,
+     size_t step_count, uint8_t *scratch)
+ {
+     if (ops == NULL || ops->now == NULL || ops->claim == NULL ||
+-        ops->write_read == NULL || ops->release == NULL) {
++        ops->write_read == NULL ||
++        (safety == NULL && ops->release == NULL) ||
++        (safety != NULL && (safety->release == NULL || safety->quarantine == NULL))) {
+         return LITHIUM_TOUCH_I2C_INVALID;
+     }
+     if (ops->now(context) >= deadline) {
+@@ -80,6 +114,8 @@ lithium_touch_i2c_read_sequence(const struct lithium_touch_i2c_ops *ops,
+     if (status != LITHIUM_TOUCH_I2C_OK) {
+         return ops->now(context) >= deadline ? LITHIUM_TOUCH_I2C_TIMEOUT : status;
+     }
++    /* A successful claim promises an idle controller before any transfer. */
++    bool bus_safe = true;
+ 
+     for (unsigned attempt = 0; attempt < LITHIUM_TOUCH_I2C_MAX_ATTEMPTS; ++attempt) {
+         size_t offset = 0;
+@@ -92,13 +128,20 @@ lithium_touch_i2c_read_sequence(const struct lithium_touch_i2c_ops *ops,
+                 ops->write_read(context, LITHIUM_TOUCH_I2C_ADDR, steps[i].reg,
+                     scratch + offset, steps[i].length, deadline);
+             status = done.status;
+-            if (status == LITHIUM_TOUCH_I2C_TIMEOUT || ops->now(context) >= deadline) {
+-                status = LITHIUM_TOUCH_I2C_TIMEOUT;
+-                goto release;
++            /* Only OK/NACK carry the callback's explicit safe-to-reuse
++             * guarantee. Any other transfer status is fail-closed. */
++            if (status != LITHIUM_TOUCH_I2C_OK && status != LITHIUM_TOUCH_I2C_NACK) {
++                bus_safe = false;
++                goto quarantine;
+             }
+             if (done.written > 1 || done.read > steps[i].length ||
+                 (done.read != 0 && done.written == 0)) {
+                 status = LITHIUM_TOUCH_I2C_IO_ERROR;
++                bus_safe = false;
++                goto quarantine;
++            }
++            if (ops->now(context) >= deadline) {
++                status = LITHIUM_TOUCH_I2C_TIMEOUT;
+                 goto release;
+             }
+             if (status != LITHIUM_TOUCH_I2C_OK) {
+@@ -124,11 +167,47 @@ lithium_touch_i2c_read_sequence(const struct lithium_touch_i2c_ops *ops,
+     }
+ 
+ release:
+-    ops->release(context);
++    if (!bus_safe) {
++        goto quarantine;
++    }
++    if (safety != NULL) {
++        if (safety->release(context) != LITHIUM_TOUCH_I2C_HANDOFF_RELEASED) {
++            safety->quarantine(context, LITHIUM_TOUCH_I2C_QUARANTINE_RELEASE_UNCERTAIN);
++            return LITHIUM_TOUCH_I2C_QUARANTINED;
++        }
++    } else {
++        ops->release(context);
++    }
+     if (status == LITHIUM_TOUCH_I2C_OK && ops->now(context) >= deadline) {
+         return LITHIUM_TOUCH_I2C_TIMEOUT;
+     }
+     return status;
++
++quarantine:
++    if (safety != NULL) {
++        safety->quarantine(context, LITHIUM_TOUCH_I2C_QUARANTINE_TRANSFER_UNCERTAIN);
++    }
++    /* No release: ownership remains reserved even for the legacy entrypoints. */
++    return status;
++}
++
++static inline enum lithium_touch_i2c_status
++lithium_touch_i2c_read_sequence_with_safety(const struct lithium_touch_i2c_ops *ops,
++    const struct lithium_touch_i2c_safety_ops *safety, void *context,
++    uint64_t deadline, const struct lithium_touch_i2c_read_step *steps,
++    size_t step_count, uint8_t *scratch)
++{
++    return lithium_touch_i2c_read_sequence_internal(ops, safety, context, deadline,
++        steps, step_count, scratch);
++}
++
++static inline enum lithium_touch_i2c_status
++lithium_touch_i2c_read_sequence(const struct lithium_touch_i2c_ops *ops,
++    void *context, uint64_t deadline, const struct lithium_touch_i2c_read_step *steps,
++    size_t step_count, uint8_t *scratch)
++{
++    return lithium_touch_i2c_read_sequence_internal(ops, NULL, context, deadline,
++        steps, step_count, scratch);
+ }
+ 
+ /* Return raw runtime identity bytes. Chip validation needs board evidence. */
+@@ -152,6 +231,27 @@ lithium_touch_i2c_probe(const struct lithium_touch_i2c_ops *ops, void *context,
+     return status;
+ }
+ 
++static inline enum lithium_touch_i2c_status
++lithium_touch_i2c_probe_with_safety(const struct lithium_touch_i2c_ops *ops,
++    const struct lithium_touch_i2c_safety_ops *safety, void *context,
++    uint64_t deadline, struct lithium_touch_i2c_identity *identity)
++{
++    if (identity == NULL) {
++        return LITHIUM_TOUCH_I2C_INVALID;
++    }
++    static const struct lithium_touch_i2c_read_step steps[] = {
++        {0xa3, 1}, {0xa6, 1}, {0xa8, 1}
++    };
++    uint8_t raw[3] = {0};
++    const enum lithium_touch_i2c_status status =
++        lithium_touch_i2c_read_sequence_internal(ops, safety, context, deadline, steps,
++            sizeof(steps) / sizeof(steps[0]), raw);
++    if (status == LITHIUM_TOUCH_I2C_OK) {
++        *identity = (struct lithium_touch_i2c_identity){raw[0], raw[1], raw[2]};
++    }
++    return status;
++}
++
+ /* Publish only the complete stock split read. The claim serializes bus access.
+  * Whether the chip latches a frame across both reads requires hardware evidence. */
+ static inline enum lithium_touch_i2c_status
+@@ -174,4 +274,25 @@ lithium_touch_i2c_read_report(const struct lithium_touch_i2c_ops *ops, void *con
+     return status;
+ }
+ 
++static inline enum lithium_touch_i2c_status
++lithium_touch_i2c_read_report_with_safety(const struct lithium_touch_i2c_ops *ops,
++    const struct lithium_touch_i2c_safety_ops *safety, void *context,
++    uint64_t deadline, struct lithium_touch_i2c_report *report)
++{
++    if (report == NULL) {
++        return LITHIUM_TOUCH_I2C_INVALID;
++    }
++    static const struct lithium_touch_i2c_read_step steps[] = {
++        {0x00, 32}, {0x20, LITHIUM_TOUCH_I2C_REPORT_SIZE - 32}
++    };
++    struct lithium_touch_i2c_report staged = {0};
++    const enum lithium_touch_i2c_status status =
++        lithium_touch_i2c_read_sequence_internal(ops, safety, context, deadline, steps,
++            sizeof(steps) / sizeof(steps[0]), staged.bytes);
++    if (status == LITHIUM_TOUCH_I2C_OK) {
++        *report = staged;
++    }
++    return status;
++}
++
+ #endif
+diff --git a/maintenance/hakios-lithium/peripherals/touch-queue-test.c b/maintenance/hakios-lithium/peripherals/touch-queue-test.c
+index 1083c3e..b9d0158 100644
+--- a/maintenance/hakios-lithium/peripherals/touch-queue-test.c
++++ b/maintenance/hakios-lithium/peripherals/touch-queue-test.c
+@@ -9,7 +9,8 @@ static void finger(uint8_t *frame, unsigned i, unsigned id, unsigned event, unsi
+     p[2] = (uint8_t)((id << 4) | (y >> 8)); p[3] = (uint8_t)y; p[4] = 0; p[5] = 1;
+ }
+ int main(void) {
+-    struct lithium_touch_geometry g = {750,1334,0,0,749,1333,0};
++    struct lithium_touch_geometry g = lithium_touch_geometry_r20();
++    assert(g.width == 360 && g.height == 680 && g.right == 359 && g.bottom == 679);
+     uint32_t x = 123, y = 456;
+     assert(lithium_touch_queue_map(&g,1080,2040,&x,&y) && x == 65535 && y == 65535);
+     assert(lithium_touch_queue_map(&g,540,1020,&x,&y) && x == 32768 && y == 32768);
+@@ -18,11 +19,11 @@ int main(void) {
+         assert(x == ((r == 90 || r == 180) ? 65535u : 0u));
+         assert(y == ((r == 180 || r == 270) ? 65535u : 0u));
+     }
+-    g.rotation = 0; g.left = 100; g.right = 649;
+-    assert(lithium_touch_queue_map(&g,0,0,&x,&y) && x == (100u*65535+374)/749);
++    g.rotation = 0; g.left = 36; g.right = 323;
++    assert(lithium_touch_queue_map(&g,0,0,&x,&y) && x == (36u*65535+179)/359);
+     g = (struct lithium_touch_geometry){UINT32_MAX,UINT32_MAX,0,0,UINT32_MAX-1,UINT32_MAX-1,0};
+     assert(lithium_touch_queue_map(&g,1080,2040,&x,&y) && x == 65535 && y == 65535);
+-    g = (struct lithium_touch_geometry){750,1334,0,0,749,1333,0};
++    g = lithium_touch_geometry_r20();
+     struct lithium_touch_queue_state s = {0};
+     struct lithium_touch_queue_batch b; uint8_t f[63]; empty(f);
+     finger(f,0,14,0,1080,2040);
+diff --git a/maintenance/hakios-lithium/peripherals/touch-queue.h b/maintenance/hakios-lithium/peripherals/touch-queue.h
+index 3c6f79e..c4598bd 100644
+--- a/maintenance/hakios-lithium/peripherals/touch-queue.h
++++ b/maintenance/hakios-lithium/peripherals/touch-queue.h
+@@ -12,6 +12,34 @@ struct lithium_touch_geometry {
+     unsigned rotation;              /* clockwise: 0/90/180/270 */
+ };
+ 
++enum {
++    LITHIUM_R20_WIDTH_POINTS = 360,
++    LITHIUM_R20_HEIGHT_POINTS = 680
++};
++
++/* R20-display is the accepted lithium screen profile: 360x680 points at
++ * scale 3 over a 1080x2040 touch/display coordinate range. Keep the mapping
++ * origin and extent here so producer code and host tests use one profile. */
++static inline struct lithium_touch_geometry
++lithium_touch_geometry_r20(void)
++{
++    return (struct lithium_touch_geometry){
++        .width = LITHIUM_R20_WIDTH_POINTS,
++        .height = LITHIUM_R20_HEIGHT_POINTS,
++        .left = 0, .top = 0,
++        .right = LITHIUM_R20_WIDTH_POINTS - 1,
++        .bottom = LITHIUM_R20_HEIGHT_POINTS - 1,
++        .rotation = 0
++    };
++}
++
++/* Exact normalized coordinate before conversion to the HakiOS 16-bit ABI.
++ * The queue and digitizer adapters share this one transform and geometry. */
++struct lithium_touch_mapped_fraction {
++    uint64_t x_numerator, x_denominator;
++    uint64_t y_numerator, y_denominator;
++};
++
+ struct lithium_touch_queue_event { uint32_t type, finger, x, y; };
+ struct lithium_touch_queue_batch {
+     size_t count;
+@@ -24,10 +52,10 @@ struct lithium_touch_queue_state {
+ };
+ 
+ static inline bool
+-lithium_touch_queue_map(const struct lithium_touch_geometry *g,
+-    uint16_t raw_x, uint16_t raw_y, uint32_t *x, uint32_t *y)
++lithium_touch_map_fraction(const struct lithium_touch_geometry *g,
++    uint16_t raw_x, uint16_t raw_y, struct lithium_touch_mapped_fraction *mapped)
+ {
+-    if (!g || !x || !y || g->width < 2 || g->height < 2 ||
++    if (!g || !mapped || g->width < 2 || g->height < 2 ||
+         g->left >= g->right || g->top >= g->bottom ||
+         g->right >= g->width || g->bottom >= g->height ||
+         raw_x > LITHIUM_TOUCH_X_MAX || raw_y > LITHIUM_TOUCH_Y_MAX) return false;
+@@ -43,16 +71,26 @@ lithium_touch_queue_map(const struct lithium_touch_geometry *g,
+         ux = LITHIUM_TOUCH_Y_MAX; vy = LITHIUM_TOUCH_X_MAX; break;
+     default: return false;
+     }
+-    /* The fractional render position is retained until normalization.
+-     * Multiplying by 65535 only after division keeps uint64_t bounded for
+-     * every uint32_t geometry without prematurely rounding a render pixel. */
+-    const uint64_t xn = (uint64_t)g->left * ux + (uint64_t)u * (g->right - g->left);
+-    const uint64_t yn = (uint64_t)g->top * vy + (uint64_t)v * (g->bottom - g->top);
+-    const uint64_t xd = (uint64_t)(g->width - 1) * ux;
+-    const uint64_t yd = (uint64_t)(g->height - 1) * vy;
+-    /* xn <= xd <= UINT32_MAX * 2040; thus xn*65535 fits uint64_t. */
+-    *x = (uint32_t)((xn * 65535 + xd / 2) / xd);
+-    *y = (uint32_t)((yn * 65535 + yd / 2) / yd);
++    mapped->x_numerator = (uint64_t)g->left * ux + (uint64_t)u * (g->right - g->left);
++    mapped->y_numerator = (uint64_t)g->top * vy + (uint64_t)v * (g->bottom - g->top);
++    mapped->x_denominator = (uint64_t)(g->width - 1) * ux;
++    mapped->y_denominator = (uint64_t)(g->height - 1) * vy;
++    return true;
++}
++
++static inline bool
++lithium_touch_queue_map(const struct lithium_touch_geometry *g,
++    uint16_t raw_x, uint16_t raw_y, uint32_t *x, uint32_t *y)
++{
++    if (!x || !y) return false;
++    struct lithium_touch_mapped_fraction mapped;
++    if (!lithium_touch_map_fraction(g, raw_x, raw_y, &mapped)) return false;
++    /* Keep the fractional position until normalization; the largest product
++     * is bounded by UINT32_MAX * 2040 * 65535 and fits uint64_t. */
++    *x = (uint32_t)((mapped.x_numerator * 65535 + mapped.x_denominator / 2) /
++        mapped.x_denominator);
++    *y = (uint32_t)((mapped.y_numerator * 65535 + mapped.y_denominator / 2) /
++        mapped.y_denominator);
+     return true;
+ }
+ 
+diff --git a/project.json b/project.json
+index c9c704d..ecbdb9d 100644
+--- a/project.json
++++ b/project.json
+@@ -41,19 +41,21 @@
+     "packaged_for_lithium": true,
+     "hardware_started": true,
+     "ios14_compatibility_verified": false,
+-    "springboard_verified": false,
+-    "status": "R11 normal timer return; three CPUs and base frame observed; SpringBoard database wait unresolved",
++    "springboard_verified": true,
++    "status": "R20-display verified; stage-0 touch source integrated and host-gated; physical backend pending",
+     "configuration_scaffold_created": true,
+     "upstream_config_checks_passed": true,
+-    "platform_uefi_verified": false,
++    "platform_uefi_verified": true,
+     "loader_started": true,
+-    "hello_started": false,
+-    "hardware_evidence_report": "reports\\hakios-ios16-device-r11.json",
+-    "latest_kernel_binary_hardware_verified": false,
+-    "kernel_sha256": "6694ed8c895f8c52fc74ab008400c778aea106b15c16deefdee7961dae824313"
++    "hello_started": true,
++    "hardware_evidence_report": "reports\\hakios-ios16-device-r20-display.json",
++    "latest_kernel_binary_hardware_verified": true,
++    "kernel_sha256": "8e9209c1ff077ba6ad16cbd467c6cceb3cb6b16c0357667e513b913190fd9b4b",
++    "latest_kernel_binary_verification_scope": "R20-display SpringBoard home screen and 1080x2040 display layout",
++    "springboard_display_verified": true
+   },
+   "schema": 2,
+-  "stage": "iOS16 phase4 R11 completed: database build incomplete at timer, slow container rename measured",
++  "stage": "iOS16 phase4 R20-display verified; touch stage-0 source gate passed; QUP6 ownership evidence and physical backend pending",
+   "project_instructions_path": "AGENTS.md",
+   "plan_path": "PLAN.md",
+   "operations_path": "OPERATIONS.md",
+@@ -63,24 +65,25 @@
+   "active_workspace": "/home/jia/ios-mix1-build/hakios-lithium-ios16",
+   "source_lock_path": "upstreams.lock.json",
+   "source_audit_report": "reports/hakios-p0-audit.md",
+-  "current_device_status": "R11 ended at UEFI summary, confirmed by user photo; no restart or reflash issued",
++  "current_device_status": "R20-display SpringBoard home screen and display geometry were user-confirmed; current phone state not queried; R21 remains a read-only host package, later stage-0 port source integration passed host tests, no physical touch package exists",
+   "device_state": {
+-    "last_observation_baseline": "ios16_r11_full_hakios",
+-    "live_state_requeried": true,
++    "last_observation_baseline": "ios16_r20_display_hakios",
++    "live_state_requeried": false,
+     "userdata_contains_ios14_hfsx": false,
+     "android_recovery_requirement": "Stock recovery must recreate userdata; use power plus volume-down for Fastboot after failed XNU boot",
+     "root_install_report": "reports/hakios-ios16-install.json",
+     "root_integrity_report": "reports/hakios-ios16-install.json",
+-    "live_usb_requeried": true,
+-    "latest_usb_query_report": "reports/hakios-ios16-device-r11.json",
+-    "latest_device_test_report": "reports\\hakios-ios16-device-r11.json",
+-    "last_screen_observation_source": "R11 terminal user photo",
+-    "last_screen_observation": "UEFI TIMER DEADLINE REACHED; NO PANIC TEXT IN RETAINED LOG",
+-    "current_physical_state_source": "User photo and matching USB timer/drain",
+-    "current_physical_state": "R11 ended at UEFI retained summary",
++    "live_usb_requeried": false,
++    "latest_usb_query_report": "reports/hakios-ios16-device-r20-display.json",
++    "latest_device_test_report": "reports\\hakios-ios16-device-r20-display.json",
++    "last_screen_observation_source": "User reply and photo recorded in R20-display device report",
++    "last_screen_observation": "R20-display SpringBoard home screen; display aspect and resolution confirmed normal",
++    "current_physical_state_source": "User report on 2026-11-19; host not queried",
++    "current_physical_state": "R20-display was left running at the home screen; current physical state has not been queried",
++    "current_state_host_queried": false,
+     "userdata_journal_initialized": false,
+     "userdata_journal_repair_report": null,
+-    "userdata_hfs_mount_verified": false,
++    "userdata_hfs_mount_verified": true,
+     "userdata_contains_ios16_ufs_layout": true,
+     "root_integrity_scope": "32KiB component headers and unchanged 24KiB primary GPT sample; not full partition readback",
+     "latest_device_operation_report": "reports/hakios-ios16-install.json",
+@@ -101,7 +104,7 @@
+     "identity": "iPhone10,3 / D22AP",
+     "ipsw_path": "D:\\iPhone10,3,iPhone10,6_16.5_20F66_Restore.ipsw",
+     "storage_preference": "UFS on-demand",
+-    "integration_status": "UFS/Data read-write observed; R10 SpringBoard waits before main queue on LS database readiness; scan/container metadata operations active, exact failure unproven"
++    "integration_status": "R12 raw 4KiB UFS read/write/flush averages below 0.5ms; investigate HFS journal/metadata/serialization; R11 rename root cause remains unproven"
+   },
+   "legacy_7195_reference": {
+     "usage": "read_only_comparison_and_historical_evidence_only",
+@@ -123,7 +126,7 @@
+     "usb_log_transfer_verified": true,
+     "ios16_userspace_prepared": true,
+     "ios16_launchd_hardware_verified": true,
+-    "springboard_verified": false,
++    "springboard_verified": true,
+     "graphics_and_touch_verified": false,
+     "a530_acceleration_verified": false,
+     "ios16_data_image_prepared": true,
+@@ -139,7 +142,7 @@
+     "springboard_screen_ownership_verified": false,
+     "usb_kernel_stream_through_timer_boundary_verified": true,
+     "usb_normal_timer_boundary_drain_hardware_verified": true,
+-    "usb_full_log_capture_scope": "R11 1136171 bytes/6157 frames through timer and successful drain verified; source dropped1766 bytes, first stack round missing one process, FS omissions47/end_lost8.",
++    "usb_full_log_capture_scope": "R12 raw-diagnostic kernel stream 12054 bytes/54 frames through timer and successful drain verified; zero transport gaps/loss. Receiver Pipe error followed successful drain. No launchd or firmware-wide log scope in this prelaunch run.",
+     "usb_framed_transport_complete": true,
+     "three_xnu_cpu_startup_verified": true,
+     "long_term_smp_stability_verified": false
+@@ -158,33 +161,36 @@
+     "large_tasks_sequential": true
+   },
+   "work_status": {
+-    "status": "ios16_phase4_r11_final_diagnosis_recorded",
++    "status": "ios16_phase4_r20_display_verified_touch_stage0_host_gate_passed_physical_backend_pending",
+     "phase2_approved": true,
+     "device_operations_performed": true,
+     "device_boots_performed": true,
+     "partition_writes_performed": true,
+-    "hakios_temporary_boot_count": 42,
++    "hakios_temporary_boot_count": 48,
+     "backup_branch": "archive/ios14-r31-20261116",
+-    "next_step": "Investigate measured container rename/close and database scan/signature costs; retain UFS/2880MiB/three CPUs, no R11 retry or userdata reflash",
++    "next_step": "Obtain trusted QUP6 ownership and UEFI-to-XNU handoff evidence before hardware access; then integrate and freeze a physical touch package",
+     "phase3_approved": true,
+     "auxiliary_stock_reader_boots_accepted": 4,
+-    "ios16_boots_performed": 11,
++    "ios16_boots_performed": 17,
+     "auxiliary_stock_reader_adb_runtime_observations": 3,
+-    "latest_evidence_recorded_at": "2026-11-17T22:02:20.677316+08:00",
++    "latest_evidence_recorded_at": "2026-11-19T08:32:43+08:00",
++    "latest_host_report": "reports/hakios-ios16-touch-stage0-host.md",
+     "r5_backup_branch": "archive/ios16-r5-20261117",
+     "r6_backup_branch": "archive/ios16-r6-20261117",
+     "r7_backup_branch": "archive/ios16-r7-20261117",
+     "r8_backup_branch": "archive/ios16-r8-20261117",
+     "host_shutdown_requested_by_user": true,
+     "r9_backup_branch": "archive/ios16-r9-20261117",
+-    "r10_backup_branch": "archive/ios16-r10-before-r11-20261117"
++    "r10_backup_branch": "archive/ios16-r10-before-r11-20261117",
++    "current_run_shutdown_authorized": false,
++    "host_shutdown_request_scope": "Historical R8 only; no R15 shutdown requested"
+   },
+   "active_workspace_report": "reports/hakios-workspace.json",
+   "config_check_report": "reports/hakios-config-check.json",
+   "refactor_report": "reports/hakios-project-refactor.md",
+   "test_package_report": "reports/hakios-test-package.json",
+   "p0_closure_report": "reports/hakios-p0-closure.json",
+-  "current_report": "reports\\hakios-ios16-device-r11.json",
++  "current_report": "reports\\hakios-ios16-touch-stage0-host.json",
+   "latest_diagnosis_report": "reports/hakios-ios16-r11-final-diagnosis.json",
+   "repeat_ready_report": null,
+   "platform_observation_workflow": {
+@@ -300,5 +306,658 @@
+       "userdata_hfs_mount_verified": true
+     }
+   },
+-  "last_test_prepared_report": "reports/hakios-ios16-r11-prepared.json"
++  "last_test_prepared_report": "reports/hakios-ios16-r11-prepared.json",
++  "ios16_r13": {
++    "host_prepared": true,
++    "prepared_report": "reports/hakios-ios16-r13-prepared.json",
++    "phone_query_performed": false,
++    "boot_issued": false,
++    "flash_issued": false,
++    "variants": [
++      {
++        "cpus": 3,
++        "image_path": "artifacts/hakios/lithium-ios16/phase4-r13/lithium-hakios-ios16-r13.img",
++        "image_sha256": "f2594aa3ca007109d596b0429f798be3c54b001829db8f7c4e04bd2443326be1",
++        "cmdline": "bootcpu=2 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=750 fbheight=1334 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=600 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794939085 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1"
++      },
++      {
++        "cpus": 1,
++        "image_path": "artifacts/hakios/lithium-ios16/phase4-r13-cpus1/lithium-hakios-ios16-r13.img",
++        "image_sha256": "73a08867268e31717b17f4ed86ac0d6e153a20629d895d9f4ac792ec6269ccb6",
++        "cmdline": "bootcpu=2 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=750 fbheight=1334 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=600 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794939085 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1"
++      }
++    ],
++    "kernel_memory_mib": 2880,
++    "springboard_verified": false,
++    "root_cause_fixed": false
++  },
++  "ios16_r15": {
++    "revision": 15,
++    "prepared_at": "2026-11-18T03:41:00.382380+08:00",
++    "status": "host_prepared_not_device_tested",
++    "passed": true,
++    "image_path": "artifacts/hakios/lithium-ios16/phase4-r15/lithium-hakios-ios16-r15.img",
++    "image_sha256": "ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55",
++    "image_bytes": 16265216,
++    "kernel_sha256": "7d76f0e065d2ac544b75914deb2c0770b1d32805aaafe509eab07d8298aef8c8",
++    "baseline": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
++    "xnu": "8796.121.2",
++    "userspace": "16.5/20F66/D22AP/arm64",
++    "payload_boot_args": "bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=750 fbheight=1334 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1",
++    "observation_seconds": 12600,
++    "kernel_return_seconds": 10800,
++    "kernel_memory_mib": 2880,
++    "cpu_selection": {
++      "bootcpu": 1,
++      "cpus": 1,
++      "expected_logical": 0,
++      "expected_affinity": "0x1",
++      "numbering_preserved": true,
++      "user_approved": true,
++      "hardware_verified": false
++    },
++    "backup": {
++      "branch": "archive/ios16-r14-before-r15-20261118",
++      "archive": "/mnt/e/IOS-MIX1-artifacts/ios16-d22ap/r14-before-r15-20261118/dirty-source.zip",
++      "sha256": "cf71b711297f9d899b7049cd0ba5bc58b16f124153ffa7145aaebbbcde716edc",
++      "kernel_fingerprint": {
++        "base_commit": "c54f35ca767986246321eb901baf8f5ff7923f6a",
++        "tracked_diff_sha256": "c3ed1bb24a1c8a79dd47585f8475eedffe85551ea31897765cef8056157c1062",
++        "added_files": {
++          "bsd/dev/hakios.adreno.c": "bc7a4c255364dbf0efa23ecdf933c6a2ddbd973c9339b2646afd9e2dbc730645",
++          "bsd/dev/hakios.adsp.c": "bacf1a7f7ff6528fc930cbae6e73bdc0506859a0c12ed356c5acc52d315ad92f",
++          "bsd/dev/hakios.apfs_check.c": "1b1d0d7f361c94a51647a74f65d484d9387eb16f3141f4a3ecfc62fc751e6e60",
++          "bsd/dev/hakios.apple80211.c": "d4763a51413998c0c46a0eff0c8bcef5716b59402ceab6d473e524b4431e86b9",
++          "bsd/dev/hakios.audio.c": "d7c778fea6297c79f2138780e2b3ff5613d347cdb154d09362758fd34e985953",
++          "bsd/dev/hakios.battery.c": "0facf6d2eed5b093823f86728dfa6494a12fa926aef9c472c9b7fd1835b5dbe5",
++          "bsd/dev/hakios.battguard.c": "705c3a39c30a5e47a453cf40a81e868b36c1f7f8e073ff4cb88ea364afc43f5b",
++          "bsd/dev/hakios.bt.c": "bef8a1ef1af3c593290c1d9355a7b6547a4136b776d7bcd87efce6f91b6dd31b",
++          "bsd/dev/hakios.buttons.c": "e5bc4912d8f37d91804fa3b8427a87f54a96907a00f8a1f8468034b3a3cd3779",
++          "bsd/dev/hakios.camera.c": "7a675ff23910722fa346de2c721859320c6c4400636d404587f769f42c32512d",
++          "bsd/dev/hakios.cell.c": "55ef36f37aad381434e4b020d3f227d117e8957acb0bc402303afb6e4dfedd78",
++          "bsd/dev/hakios.cpufreq.c": "6048378648cb1ea6d4125f31036dfddaab799ba126b192dcd4855d7c4713c35c",
++          "bsd/dev/hakios.focaltech_fw.h": "59e06f76c38888b881a31601a78713fe2ace092624400cde65f6246eabdaa70b",
++          "bsd/dev/hakios.goodix.c": "023806f01aad5a2c20a6367b1770d6cff00cd21f71b37a54181934a02c448d1f",
++          "bsd/dev/hakios.guard.c": "9fd6a51185bef552ad8ebbe9a35a2fc20393fbe73aec853a6516d31ab65d6f46",
++          "bsd/dev/hakios.haptic.c": "271530fc117b5116a5f9de62a546c4a288646ed4e034c398831ee49d5b126224",
++          "bsd/dev/hakios.image.c": "509d4793309c52efe321b1b710a46b7b3d3bd6674464940e159883e11194efaa",
++          "bsd/dev/hakios.input.c": "a8a427f1fb7c9c78cd69c531bdde87ee38d80ea1ed2a2f93dd58b0c0313c09dc",
++          "bsd/dev/hakios.ipa.c": "ea26b1c858be45bfbb4ac07d7e9d2064ac7677735bb2ad3b818a6466067ecb86",
++          "bsd/dev/hakios.lithium_usb.c": "d3a8f21ba0fa005b91aa7f2a338a310bdec8fb5fe6d750aba6c4564e39495c4e",
++          "bsd/dev/hakios.lx.c": "7ee76d56202c9c5529842d45ee20c9ea2410940719b365c95db08207fb809f84",
++          "bsd/dev/hakios.mic.c": "c24d5f2c651ac6c9547b8f17c1c004f1b00b3161663534e854583a5b8f666f7a",
++          "bsd/dev/hakios.mpss.c": "085e44ec0ee2c27d1be70225adc6042977b8a822487c79338760afc6c98c0262",
++          "bsd/dev/hakios.nas.c": "a304a72eee593e6563648ebb492697538355532e4903f9d9755d9d877ee72a73",
++          "bsd/dev/hakios.net.c": "5ed99766af4858137fc41f39498fb384e8d142220411159522fd8b8bdb5507e5",
++          "bsd/dev/hakios.platform.c": "20902fddf834acff66914e32a902716291cc7f65fcd11c9efba3c119fdbf11f4",
++          "bsd/dev/hakios.pmic.c": "b78a9bf43c90877439ca5260ead42b86e839beaee5b6bcd39c3f00acebe3ab11",
++          "bsd/dev/hakios.qmi.c": "5feb3ddc9c4244701e2f462e77500a732a3fe1f55d43127a2341ca9a55c1c0a1",
++          "bsd/dev/hakios.socinfo.c": "4d2f0b513777afb6c2400241656c1aa94c4f30bb1dd8afc98733eb13e04ccc81",
++          "bsd/dev/hakios.sound.c": "f8743e9c18e5a23981bbfe05300de5942185b1011ece6ac1ffe3d3a6ac0f49ac",
++          "bsd/dev/hakios.sparse.c": "614538183266c310800ed8be647153911d89e0adb4401b897dde235244fc67e8",
++          "bsd/dev/hakios.speaker.c": "52a2df3ff361b369daaf284f47db36a818e87448ab3b80291afd656897345857",
++          "bsd/dev/hakios.sta.c": "9ea972a32152402badbbcc162846fe00e61f02f2de355ea8cd770cfd2b462174",
++          "bsd/dev/hakios.stubs.c": "53f395750a91748b397182e6065e35e8a7f827d3c7dc63ee700c0323fa9d4171",
++          "bsd/dev/hakios.thermal.c": "08f5b641a985679e3d3b8bb88694b08e22aa0c6b6a6f21cd86fcb65fb4f10a0c",
++          "bsd/dev/hakios.torch.c": "6ecaeff44402ab94b1da2181a97cf30200cc48e8b057b454495bedd1f411057e",
++          "bsd/dev/hakios.ufs.c": "d3dabab761c7606e305b301d049c190ccc7159015727e34737d8639b54c8f2ee",
++          "bsd/dev/hakios.ufshc.c": "a535ec001c6bb54f58932ecc77949f17d2e307d768b2dd7ba9bb68b9d4be49ce",
++          "bsd/dev/hakios.ufshc.h": "51623bbaac4539707e421b5d0d5a69c5afd6e4d409ffd9494a927250dc03f197",
++          "bsd/dev/hakios.version.c": "b8a8f417d51b8d6ca2f0e28c5738e9593d6421fccc1316cdee624727cb757f22",
++          "bsd/dev/hakios.virtio_blk.c": "fecd3f6b1b584962325aa7be1f16a66168cae16b1e5a6c8f30054770860a4a32",
++          "bsd/dev/hakios.virtio_input.c": "a4991ada1413477b51fa224e6145361363d8c984807e606522f8b8a14fb706f3",
++          "bsd/dev/hakios.virtio_net.c": "ccc36788c2fe95f57cdf71d74094fdb8ce6a74fe072c62356ef3d37787f7706a",
++          "bsd/dev/hakios.virtio_sound.c": "81c314d4ecd51f93dd4ce31b34126e3b1721cc41c8fae690c417be6d0d3da39d",
++          "bsd/dev/hakios.wifi.c": "7a413b1b8b46a899c4d3fd33832aac2159d976c5fea4d285f7f0351ec014a411",
++          "bsd/dev/hakios.wlfw.c": "4282f0973383948c16cbdf5e29c7b9943bdbc5246b67ad7620d6c448ca969c0c",
++          "bsd/hfs/BTree.c": "5e5218841483cad27b726ddb3236ec338193703317a896bf35fe954bb2557f85",
++          "bsd/hfs/BTreeAllocate.c": "d3b93c18ab2b4288ce7db1bfe06b19062d0a5534c28ea68727f24187b7b5d46f",
++          "bsd/hfs/BTreeMiscOps.c": "b1c05e1fd329ec78d2a969272894808ebf4524690728aaa74a516007078f1114",
++          "bsd/hfs/BTreeNodeOps.c": "e6d6fb45246196a812578d04a120d66b514f382417c397aee3ed4de7006b7c76",
++          "bsd/hfs/BTreeNodeReserve.c": "a661629c2f3b880a1b11df76b2be5f2a3bc89a771051a1d4a64868f8ffaa7449",
++          "bsd/hfs/BTreeScanner.c": "53830b590cdee4d5b2573673ceb34dbd9047ffe9a7a888f89438b7fff4dd624d",
++          "bsd/hfs/BTreeScanner.h": "d699b9d97fb8e34ea21877c4c5b211fa3d299113b5e850068dca865b3d9d92f1",
++          "bsd/hfs/BTreeTreeOps.c": "0f2e99ba6787de63a10c1bd3f77114b6620524b6988d70f453a61854cc4f6581",
++          "bsd/hfs/BTreeWrapper.c": "eef9a2c0134413831985d4c9634a901bb06b686f8e8c6c340c33b60595882a9c",
++          "bsd/hfs/BTreesInternal.h": "5570f580314567526391af167015177dd6b49fc06506993fdbb9c1e3d0cc3d95",
++          "bsd/hfs/BTreesPrivate.h": "7dd82baf612edde7f0ffc61f705eb80e5d837e0e3457f5d6174261753234b2b8",
++          "bsd/hfs/CatalogPrivate.h": "27a50b7eb29d0b5ff82e148f6bf7aeaacdb05c3fbe31bf56eab26ba8c567f156",
++          "bsd/hfs/CatalogUtilities.c": "c4c1f3b20b01ef6979dd12d8fc5570b3bf1ff0afeaab53c74b6a2a3fd32ee4a7",
++          "bsd/hfs/FileExtentMapping.c": "ff09aa78dff0a31e54bbbfc13f092c191e38fc82b847120f928823f674408fe8",
++          "bsd/hfs/FileIDsServices.c": "6c1d9ed2f250424aa260f456acc2256b4fa75660d22642bceebd6b7ff00320d3",
++          "bsd/hfs/FileMgrInternal.h": "debc8d04fd4ff9f97c4d56db91007c64e7ad2bb94afd6b7134da043e53810808",
++          "bsd/hfs/HFSUnicodeWrappers.h": "d5ef6fe1d30a4737a80f39e99cc52b193105fd1f7bb56e5166a434cc65b037f1",
++          "bsd/hfs/MacOSStubs.c": "102530be503838883e6845851dbcdcb803fa688f094abbcbd95ddcd860780b06",
++          "bsd/hfs/UCStringCompareData.h": "88773669ce79ebe2d6bcc84d3341c3c2586e649984ac97453adb1b8706440464",
++          "bsd/hfs/UnicodeWrappers.c": "7300de813b94d41d14faf9aa2a0ddf436010bb43d258f81fc92ab841bc7157f2",
++          "bsd/hfs/VolumeAllocation.c": "7432017a062974b79e250d3b85854e1ad0b426dd3e7d17033bdc3f0b76c606b1",
++          "bsd/hfs/hfs.h": "abc79026f3cbeb6de3d60b169d83b5b6bbae6cba468c30acd53ad2c41fd9db87",
++          "bsd/hfs/hfs_alloc_trace.h": "75cf3c92ba0669326db3564604829f6c7172643f3ebef7a3cb816010b579407e",
++          "bsd/hfs/hfs_attrlist.c": "7b235015840726cf9e8ae9f964cde5c440f50ace9f2c4f959368f68bfc1f7781",
++          "bsd/hfs/hfs_attrlist.h": "0a0077a26583fc92d3a11d2889d17d79e08b4897c73bdc3cb27dfb6771a03708",
++          "bsd/hfs/hfs_btreeio.c": "a31b4e9e1e88f9be39abb93d9cfb5cc833db6098452e8d918a041f32b3c6df16",
++          "bsd/hfs/hfs_btreeio.h": "41a1a2cb48727b5491c87e2aa1dc9fa36906c8b551c4ff61fe5ac8e4b3cb6998",
++          "bsd/hfs/hfs_builtin.c": "f13af79ab1e79b1a10a844c6e7b261423d6cdd588d8966393931271ac9f1a1d9",
++          "bsd/hfs/hfs_catalog.c": "a7d1b1e033c257b71ff9f6c8cca0bf7950451f4e73fae4678de09363508fd592",
++          "bsd/hfs/hfs_catalog.h": "912f082970cdf33777644d9e6202e01cdb138dacbf01f8457e0e06d83ea7fb9a",
++          "bsd/hfs/hfs_chash.c": "e6a19187d3541ad0bd9bc728d6f5aff2cfa7f5f0b34ff34d1c5d021f8185cfac",
++          "bsd/hfs/hfs_cnode.c": "45348162594bda791de81db45cd596e9e29f896da9d72f490b9d03bf9a3e2115",
++          "bsd/hfs/hfs_cnode.h": "10b5461ba5d69f9e417576a8e3f06d8f82e0983dd72e265d35cbfb2aac79c1d9",
++          "bsd/hfs/hfs_cprotect.c": "c7b7b8ec63626d4f2f6de48c363ea8483770b0e7d212e6ec409c627c277337b3",
++          "bsd/hfs/hfs_cprotect.h": "0a3fc13e26803138580a0755e9f4c8fe49c576950b3aca9725ea1d6a79cd0f26",
++          "bsd/hfs/hfs_dbg.h": "f3e4c64d62058b4df85357894a13e8782befb63e87a2f7ed6ce5d38cbf07c723",
++          "bsd/hfs/hfs_endian.c": "5b2d6fef8acc45bc6d2317639a8a9f3a1ecb6f3fb1cc5dc19bb50101be003749",
++          "bsd/hfs/hfs_endian.h": "dcdada4fd78a1b4e48856ecb2361a6caf953f6f69e800ef9e20862c15e1a6899",
++          "bsd/hfs/hfs_extents.c": "26dcef3c47b4cda7c8b0a5b8dd8dac0eb5cd1ba6808eedc51835ac9ac6adc249",
++          "bsd/hfs/hfs_extents.h": "434a0089a7517e926398708fcbff3269283260653452fe61be53614c97a76dc8",
++          "bsd/hfs/hfs_format.h": "8ac2afc412220f401f7c966a08f1d0ea7199345eb4d8cefa7dc28281fb0e8cb6",
++          "bsd/hfs/hfs_fsctl.h": "6ab11993c5bdccc67612e8c724cfad256425c970095c64749b0b5ced012bea80",
++          "bsd/hfs/hfs_fsinfo.c": "c1c23045f259a2ee32628d103a49b7ccd3e60f3be47ffa1b2ce2f60916921079",
++          "bsd/hfs/hfs_hotfiles.c": "b9e935d6915a5dc5386542801b8b15a951a2b02973e6ec3ef27d583eb3d3788e",
++          "bsd/hfs/hfs_hotfiles.h": "6e23cb4821193d2056c070f4022087484a8843d767ec29d94420bf518248dfd1",
++          "bsd/hfs/hfs_iokit.h": "3d5109f4f345a9838fdacde9ce256e4c23f0affbc3084eaa9c9b6b8b1b72f6e3",
++          "bsd/hfs/hfs_journal.c": "ad46b71ebc890177d49e8de2f6b69a79a30456864eca533413a4d35eb82c0316",
++          "bsd/hfs/hfs_journal.h": "1de7e23acb743775d99970ce83ddad68d2f56200ab52f5dfd7aafa8038b4aa40",
++          "bsd/hfs/hfs_kdebug.h": "2af9d6c3c9e7e0d7edd0994317ebb23a0b1429e9dcd870c9ad050a9bc6c2bdc7",
++          "bsd/hfs/hfs_link.c": "0f05caf589cc1b322765385e966ae16f977a41eb3ea31fd64fbc506fde021184",
++          "bsd/hfs/hfs_lookup.c": "5babbc098fd439b440621c9e92fe9f6ceb7129e998500ca159277fa7548dad62",
++          "bsd/hfs/hfs_macos_defs.h": "2a0091093935d41f154ea4ce0cecbbd321175329e06e801591337de38c8b663b",
++          "bsd/hfs/hfs_mount.h": "665c064e92254bb2537c9a42c644cf937f9b4e28eeff03324394d484a3d4f40d",
++          "bsd/hfs/hfs_notification.c": "8a11e181d759080627a3b8520b1cf6fe2b007a5cb2310d0afb588af8fb599135",
++          "bsd/hfs/hfs_quota.c": "cd4fb914264324da7cede2b3d47b5f5875e112ee5769fd805c4a174e0a7119ed",
++          "bsd/hfs/hfs_quota.h": "88b8708d537e9cd61cf00cfac51f5185a5323022112edc8f90018897aa6b546a",
++          "bsd/hfs/hfs_readwrite.c": "826adb6a58547af3bc1fcb8746b287e92ccdd89b034c657f2ca50c10539cd6f6",
++          "bsd/hfs/hfs_resize.c": "062eea886737072c323ef32ca633ccc337f9a41a4e150209fe19a7010e790950",
++          "bsd/hfs/hfs_search.c": "a14999ea5f46a5d4dd761493a25ba0f5164dfc1f903af80d2939351af11d516c",
++          "bsd/hfs/hfs_unistr.h": "fe22ca3ff255369fe5d45e4b749bfb4e1e7cac320e2269ced432890953752d81",
++          "bsd/hfs/hfs_vfsops.c": "adb7bc15f2e9e0d65a14334dfed4cc0d8716e7344d9d8f8612f7afe50aa3719f",
++          "bsd/hfs/hfs_vfsutils.c": "a5af57c797b17ccb8275bbf83dfb5a781660f2d38cbd211418c4b47facf32490",
++          "bsd/hfs/hfs_vnops.c": "e04e635581ca7b04015046d0b0b176faf4d36cc328e260bc462691099e9ff60b",
++          "bsd/hfs/hfs_xattr.c": "72a46b1d1c474e00f481baf922fd6efaa9706c22e31b44be5cd004f9c46add08",
++          "bsd/hfs/kext-config.h": "956c5f6dadadd95e78d0dbf4db17dbd1eff5a6dcc05ce06e8330def599658ac3",
++          "bsd/hfs/rangelist.c": "68be20c590f8560cefed9d019e59334f9003bc2d206bee06ddaf3deff9c31ec6",
++          "bsd/hfs/rangelist.h": "fe6db3c57b781b570bb892d45da09c339ee3f2f904b9fc8501111081921baf31",
++          "bsd/hfs_encodings/hfs_encodinghint.c": "e2c94b4c8fb418ac8c4c104afab0f8b24fa051080cbf1c9ffdca518ad6ed9d2e",
++          "bsd/hfs_encodings/hfs_encodings.c": "4465b509151aaf7ef3b25203ef96ae59bf6315247909b52b848b95363d66c30b",
++          "bsd/hfs_encodings/hfs_encodings.h": "8045a6f3d2bea7ee5a6646308fc6196df280d8fc418b3a1d5dbe05961fdb88e6",
++          "bsd/hfs_encodings/hfs_encodings_internal.h": "17e47e26f21875cb48c1fa02a1c0f45788e8ebfa3a50f31304c0e297895ed873",
++          "bsd/kern/kern_minimac.c": "bbd9176d658d20961b1515dd65e554946de28a8537131df79d7029927da83999",
++          "bsd/miscfs/apfs/apfs.h": "4d1f575350df17244c854c7338793c7a61e8623a25f164f49ebe636a73632f02",
++          "bsd/miscfs/apfs/apfs_deflate.c": "c3f11fc28c1247aa1b3d74b0666d3497ddc59dbf277e969e45624f3c3a6e860d",
++          "bsd/miscfs/apfs/apfs_format.h": "0ac5524aad4f2eb0c33d8ae8b8d608e88dd4ce5d1f1a37c3c0e4db4f2b141b0a",
++          "bsd/miscfs/apfs/apfs_lib.c": "d6b7f2855a030a9fc07385848a2d17c4b3fc63b5d14998f9e9724c294dcfac11",
++          "bsd/miscfs/apfs/apfs_lib.h": "92bf9a7010f1559c808e07c96eae6a282f2858fd1d47c588b106ecf094a5348f",
++          "bsd/miscfs/apfs/apfs_store.c": "7cae718e6254ca5156df29ea8e297bc4a98e47e227ec68b7b27d37843137805b",
++          "bsd/miscfs/apfs/apfs_store.h": "1deb82b95d6c0ef594c027878ba1a8974506a9ef8101c8dee200c8af238e80fc",
++          "bsd/miscfs/apfs/apfs_vfsops.c": "dbc3597901cce82f9257f553824b419b466f8497f69e1b18e8c1f0204775dbb9",
++          "bsd/miscfs/apfs/apfs_vnops.c": "f3dcd203e6aa63b4d5f760f18a477ea22a6f9489e99db022a5a26ef15418a8ef",
++          "bsd/miscfs/apfs/apfs_write.c": "71ab8382668b4172dd16e8cf4acaab5e58558c33c6dc142871824c7cc97a5260",
++          "bsd/miscfs/apfs/apfs_write.h": "f05ceef111a380b17e8ee23033aacfe8d3d6f9d1857fa91e3b035b7bd9696d70",
++          "bsd/miscfs/apfs/apfs_zbitmap.c": "a35fb93f094d4fcc1c5966aff1e7d5c9e87250480835660098e03762736679c8",
++          "bsd/miscfs/apfs/libdeflate/COPYING": "4ad69099cb4374836fd27583d9991e2838cd86b6e4666ab26b2d32582c91e73a",
++          "bsd/miscfs/apfs/libdeflate/common_defs.h": "0702970eb23da9bca3be9f31fe71824b2f88c4fbac55c59cee8d42cdaec63b63",
++          "bsd/miscfs/apfs/libdeflate/lib/adler32.c": "63099826db3ddf84c15bfba30940f9689917185df8c30ff27a2bc2b7cb6a19f2",
++          "bsd/miscfs/apfs/libdeflate/lib/arm/adler32_impl.h": "b7e43d7b91db98d774243cf29ee41941edf93e71b5a3f5cc3ede34d8b70a93d9",
++          "bsd/miscfs/apfs/libdeflate/lib/arm/cpu_features.h": "0cff5c0110021dc8b18511e328f913f1bad21f31ad927497d1f428db4e6ed239",
++          "bsd/miscfs/apfs/libdeflate/lib/arm/crc32_impl.h": "5a24f5087e665b30516f83c2e09a58ed01dab867895a6cefc2f1c833d12482d3",
++          "bsd/miscfs/apfs/libdeflate/lib/arm/crc32_pmull_helpers.h": "e469001ad29607cab992ae29c9eaac331427d6b103d11d58d37158b3aa0be95c",
++          "bsd/miscfs/apfs/libdeflate/lib/arm/crc32_pmull_wide.h": "c53a58d1e3dc5e75d23c1338fed6cc431ee6fbdfcd4ac94f576579258ac34a88",
++          "bsd/miscfs/apfs/libdeflate/lib/arm/matchfinder_impl.h": "11cd6a9c47d2dadf746f7a944c72c672b40bc83b2ffb43356e0b7ced6b6b8038",
++          "bsd/miscfs/apfs/libdeflate/lib/cpu_features_common.h": "f4eb0800558e9116dd14446ccfb9b1896f970aec6de42c18366a29bde73fd0da",
++          "bsd/miscfs/apfs/libdeflate/lib/decompress_template.h": "ade3034c1d5c840cb31bd9738a015be804862a8dfce03c14ac2f5b3a826792b8",
++          "bsd/miscfs/apfs/libdeflate/lib/deflate_constants.h": "72ea6e5f0abe53e781203e3f383603a765a768b860a09b3356be36bfd87c8af3",
++          "bsd/miscfs/apfs/libdeflate/lib/deflate_decompress.c": "bc16ab65325ce4ac14af830b2cf6c805770beab01fd2f09226dca3dfa3f8bb47",
++          "bsd/miscfs/apfs/libdeflate/lib/lib_common.h": "e7aa1f2750434e1019ffabda577dab0fdf5b95f010f6f20aa7e21323b3bcceea",
++          "bsd/miscfs/apfs/libdeflate/lib/zlib_constants.h": "562e16b83ac33ac6d351cdfdf1962750576080d65c22ab66cad0aaa33695bebb",
++          "bsd/miscfs/apfs/libdeflate/lib/zlib_decompress.c": "704a57fb91c36c1c88b04a3482694de08c794ca0cb3904ac247a206802aa6ee0",
++          "bsd/miscfs/apfs/libdeflate/libdeflate.h": "957cda6906c2be6c8978cf19779f1aad9dd121af1147a10e184b137db353678d",
++          "bsd/miscfs/apfs/libzbitmap/libzbitmap.c": "37dc640d3c8b076e3ad2c4a889702fc3a918a3c17f72c575ea5f6ed36815c38b",
++          "bsd/miscfs/apfs/libzbitmap/libzbitmap.h": "0237307fb7376198a01ae74b21c5e656170b0992bf0c55c0eafb69a1f285ebda",
++          "bsd/miscfs/ramfs/ramfs.c": "14884af48b8d8de3d569df6cff59fafb9c6328d9a606bed27e24a69d4d2d98c4",
++          "bsd/pthread/pthread_kext_static.c": "7afc0924a0c07c9668eabfe8cf17b170264041a7af0b9e848f215b9891312b1b",
++          "bsd/sys/hakios.apfs_check.h": "076225c1137cfa12c4cd3ccd86a6a2bd789bb30c1b2e7119c71d17cd6326aaed",
++          "bsd/sys/hakios.audio.h": "6a195fe19f0dfa30d1cab266b2c8f10f95a6395be67358af3961baa60fc2f22b",
++          "bsd/sys/hakios.camera.h": "d229dcbf0b0d18bb83d45de51e0becef41b9184db9d43824627eb7c497a74766",
++          "bsd/sys/hakios.fsdiag.h": "ba732bc291033e88d86ced5ada28c4dd9593cddeb754daa533e9287019419c11",
++          "bsd/sys/hakios.input.h": "28b3f02204632beafdab6a94d8fae1d5a065000d004391b5a6d792eb653a836c",
++          "bsd/sys/hakios.ipa.h": "8a5d990b4a31ec3e24a1eef6c0561232994a7cfd4ec5cf3eabba985ee4bf1661",
++          "bsd/sys/hakios.lx.h": "f323a4adfb7a459ad1f3d83cdbdda5110df051ad9293d2c2a63c4220db961f99",
++          "bsd/sys/hakios.nas.h": "8f4f7caf9d6716c36790616606b8288b8b32038eaa2453e3b40b1b02e6783194",
++          "bsd/sys/hakios.net.h": "05d377ba6b71cc485676fe3632f49bfa30d2cbc1a6476ec723abb0f8ed12fff4",
++          "bsd/sys/hakios.qmi.h": "a9c358f7a797a534c84c77b7f05f43f507345160e72ad366ff739213214f0648",
++          "bsd/sys/hakios.qrtr.h": "d9658ba4ddbc941cf201edfadbfdb38248c4939641d394eb7fecb50be1180e66",
++          "bsd/sys/hakios.sparse.h": "a8bbaceadde8f86d4890d8df4a415196e77872ef3d6efe3c78d50ee8d7c868ff",
++          "bsd/sys/hakios.sta.h": "d98aa48457d2b1b63779b37a39878539a13f22a924161e6526e3568f0759798f",
++          "bsd/sys/hakios.version.h": "e28c2a3aac77b2d205ffd3099d4952be6832b4ae4f878d2149211ab491077da1",
++          "bsd/sys/hakios.virtio_blk.h": "d706c178431404330ae329238663d63230971d8106d1ee9656bcecef93b9fa38",
++          "iokit/Kernel/GenericARMPE.cpp": "954687575a0b814b645a9721640f380a8a870b27b3546d2eaae1276a4d907b82",
++          "iokit/Kernel/MiniAppleKeyStore.cpp": "e8e9efcd8db6027d88eefdb88b9fb9270a71798429c6008695568f9d23722bc5",
++          "iokit/Kernel/MiniDrivers.h": "f5b7446b61c1b53f79fef563541747f4f0e2b6d2fb9009684ad72a95c7c6553b",
++          "iokit/Kernel/MiniIOMobileFramebuffer.cpp": "a26e7d18ae83ca8ab94c2dc56a55ff678004dd9151e1be687dd2589039663c9a",
++          "iokit/Kernel/MiniIONetworkStack.cpp": "3b7cdf77ac3e2a472c55f7dd622d04979782e46d8bd3589c535a5d97a252ef12",
++          "iokit/Kernel/MiniIOSurface.cpp": "8e5c2d391cec40835aca8d6c4803c9602c4080460355368177b9943eec838058",
++          "iokit/Kernel/MiniIOSurface.h": "97fd00aa6f18dbe9dfa4b13786bca250b5fae24ddbf99c1fea0c7c25802bb426",
++          "iokit/Kernel/hakios.battery.cpp": "695718935e1b6d78c8450f6cf4c2005605e984bcaf93e7796eb9a6d84a56b56a",
++          "iokit/Kernel/hakios.gpu.cpp": "2d3ba9f37a45980438299137bb24f89fe81ff3376850337a3b5df51ff4ef8eb8",
++          "iokit/Kernel/hakios.stubs.cpp": "8bc87974f8615cbb3a400a29fada73b76820e2ea70f19994736d628f7af12218",
++          "iokit/Kernel/hakios.wlan.cpp": "c09833d2d1f486f0623fa588985bde692434b0e8023f99e23869bf0895aad551",
++          "libkern/amfi/miniamfi.c": "071c9795555e436454605cc8e2d9c85cab882325fd8352adeb3132479538fee1",
++          "libkern/amfi/miniamfi_entitlements.cpp": "342e276410dbc80cbe735681279b8280d1f19375db59a47ac1a8ec1240b60d6d",
++          "osfmk/arm64/generic_arm64_support.c": "4936afa2d728d6bd968c6fb401b6027fa162209cb1e7cc61a845787774a7e72d",
++          "osfmk/arm64/gic_v3_irq.c": "b4fd28e8f79e8bdc49b3271d1f88a0cdd6a33c793e59237a295b3812c63125cb",
++          "osfmk/arm64/kpc.c": "31cd51ee78b5cc06eb5787ee18bf22b75a9592c1dbff758c461ab445521f1365",
++          "osfmk/arm64/loader_return.c": "c1d76f06d55a9ef1a72483029db504297821e153bc7a255e8e067241de944999",
++          "osfmk/arm64/ppl/sart.h": "0630ec54c77fee801bd6ee16fcccbe3ad42ac6f3cfbb64a95ef57f5bbead8250",
++          "osfmk/arm64/ppl/uat.h": "ef93267d8b4c6582a708d08722f202a0b9e16cef0ea35f777ef0f8c443a4aca2",
++          "osfmk/arm64/psci_smp.c": "143d4b2a2dae86b628a94395b4034b86f878ef200e7d8e3ce636cffaede2f8b4",
++          "osfmk/arm64/psci_smp.h": "861b78c09bacf88c733d2c989d2f20c9b31854e050e06883822e0aba833f5ba4",
++          "osfmk/arm64/tunables/tunables.s": "acc19ceded1615350c7a8d1c100598115592ff09b164a3363a58a2a8cf9c0018",
++          "osfmk/arm64/user_exception_trace.c": "882d4eeb970d494d700e177f18d13cb74081624f542f5ae209d5abb1fc0f91f1",
++          "osfmk/minicrypto/mc_aes.c": "f4fa92ccd8291ba1e729d88058841ecf76e18e09cfac803955ae534946c266cb",
++          "osfmk/minicrypto/mc_digests.c": "64b30e9c4378eb8ebc910647fdf2c22854d51266f1c7ae4dc75da0fd3f2f6219",
++          "osfmk/minicrypto/mc_provider.c": "9c612ea54894f6f127b3fbf2c8ece5205c32efd6b9fffd606062f8f392348a30",
++          "osfmk/minicrypto/minicrypto.h": "09e487f3aaa9d1fe91039a62ac980f9b79c16ce6c1688b16051b76bab7787dd6"
++        }
++      }
++    },
++    "build_tasks": [
++      "hakios-r15-prepare",
++      "hakios-deps",
++      "hakios-r15-review",
++      "hakios-r15-regressions",
++      "hakios-kernel",
++      "hakios-support",
++      "hakios-r15-userspace",
++      "hakios-r15-build-check",
++      "hakios-r15-freeze",
++      "hakios-r15-package",
++      "hakios-r15-package-checks"
++    ],
++    "resources": {
++      "approved_on": "2026-11-16",
++      "wsl_memory_gib": 16,
++      "wsl_processors": 12,
++      "wsl_swap_gib": 2,
++      "task_memory_gib": 14,
++      "task_memory_high_gib": 12,
++      "task_swap_gib": 1,
++      "task_cpu_quota_percent": 1200,
++      "task_max_processes": 1024,
++      "build_jobs": 12,
++      "large_tasks_sequential": true
++    },
++    "evidence_sha256": {
++      "reports/hakios-ios16-r15-checks.json": "bfe4e6a1a3bbb435f1f02272e693748c080d2db7b898256b02a838af81a1f3cc",
++      "reports/hakios-ios16-r15-package-checks.json": "bdc20d8d754fb210c62600bbd4766abfe9262384f74bd3c787c5e623dfbb3a7d",
++      "reports/hakios-ios16-phase4-build-checks.json": "fec3ea863d1cb7a2411fa049c0273c7414d1fccc8d710c9c3286ce0e9c6bd33a",
++      "reports/hakios-ios16-phase4-userspace-build.json": "46ce27dcf7d6cd7226b23a7f79f18dddd448f972c911aced5e9cfc75e5239d53",
++      "reports/hakios-ios16-boot-userspace-r15.json": "25c15f88925e426a0bc6df13397f1d747f548089d3513e7899436dc25d46ccf7",
++      "reports/hakios-kernel-build.json": "0753d713aa21666b698d596755729d04cdc2f16c7b9fa99728cb826b5d30c35a",
++      "reports/hakios-support-build.json": "ea3a259bd44e13a246e2dcd51e5736b4aafa5504adb85df9b8d7f5aa2d06390d",
++      "reports/hakios-ios16-package-host-checks.json": "e117974ee0a09a4ebf8ac2197b4a7bd997d5a3350e5c98c249ebacbaf7412543"
++    },
++    "phone_query_performed": true,
++    "phone_boot_performed": true,
++    "phone_flash_performed": false,
++    "userdata_reinstall_required": false,
++    "journal_policy_changed": false,
++    "flush_policy_changed": false,
++    "hardware_verified": false,
++    "database_ready_verified": true,
++    "data_sync_verified": false,
++    "cross_reboot_persistence_verified": false,
++    "springboard_verified": false,
++    "boot_issued": true,
++    "fast_core_mapping_verified": true,
++    "runtime_report": "reports/hakios-ios16-device-r15.json",
++    "springboard_display_verified": true
++  },
++  "ios16_r16": {
++    "revision": 16,
++    "status": "host_prepared_display_acceptance_pending",
++    "passed": true,
++    "prepared_at": "2026-11-18T04:21:24.781402+08:00",
++    "image_path": "artifacts/hakios/lithium-ios16/phase4-r16/lithium-hakios-ios16-r16.img",
++    "image_sha256": "bd466615ab19ccd44eb23ec87273a23a499681d954d64e6b88c23676ffb8f94b",
++    "image_bytes": 16269312,
++    "kernel_sha256": "4decf0392eb21f175dd75140ea92bc4074e4e612fda682d2a3685ecd2afd0b2b",
++    "baseline": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
++    "userspace": "16.5/20F66/D22AP/arm64",
++    "payload_boot_args": "bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=750 fbheight=1334 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1",
++    "boot_args_byte_identical_to_r15": true,
++    "backup": {
++      "branch": "archive/ios16-r15-before-r16-20261118",
++      "archive": "/mnt/e/IOS-MIX1-artifacts/ios16-d22ap/r15-before-r16-20261118/dirty-source.zip",
++      "sha256": "58e9f526233f3eabbcdb14f492772255144eba884c6de4adffd47351dac89f6a",
++      "kernel_fingerprint": {
++        "base_commit": "c54f35ca767986246321eb901baf8f5ff7923f6a",
++        "tracked_diff_sha256": "cbec69734fc57070c70c3e8f491891b254e0362658291b9fb57b700b263a049b",
++        "added_files": {
++          "bsd/dev/hakios.adreno.c": "bc7a4c255364dbf0efa23ecdf933c6a2ddbd973c9339b2646afd9e2dbc730645",
++          "bsd/dev/hakios.adsp.c": "bacf1a7f7ff6528fc930cbae6e73bdc0506859a0c12ed356c5acc52d315ad92f",
++          "bsd/dev/hakios.apfs_check.c": "1b1d0d7f361c94a51647a74f65d484d9387eb16f3141f4a3ecfc62fc751e6e60",
++          "bsd/dev/hakios.apple80211.c": "d4763a51413998c0c46a0eff0c8bcef5716b59402ceab6d473e524b4431e86b9",
++          "bsd/dev/hakios.audio.c": "d7c778fea6297c79f2138780e2b3ff5613d347cdb154d09362758fd34e985953",
++          "bsd/dev/hakios.battery.c": "0facf6d2eed5b093823f86728dfa6494a12fa926aef9c472c9b7fd1835b5dbe5",
++          "bsd/dev/hakios.battguard.c": "705c3a39c30a5e47a453cf40a81e868b36c1f7f8e073ff4cb88ea364afc43f5b",
++          "bsd/dev/hakios.bt.c": "bef8a1ef1af3c593290c1d9355a7b6547a4136b776d7bcd87efce6f91b6dd31b",
++          "bsd/dev/hakios.buttons.c": "e5bc4912d8f37d91804fa3b8427a87f54a96907a00f8a1f8468034b3a3cd3779",
++          "bsd/dev/hakios.camera.c": "7a675ff23910722fa346de2c721859320c6c4400636d404587f769f42c32512d",
++          "bsd/dev/hakios.cell.c": "55ef36f37aad381434e4b020d3f227d117e8957acb0bc402303afb6e4dfedd78",
++          "bsd/dev/hakios.cpufreq.c": "6048378648cb1ea6d4125f31036dfddaab799ba126b192dcd4855d7c4713c35c",
++          "bsd/dev/hakios.focaltech_fw.h": "59e06f76c38888b881a31601a78713fe2ace092624400cde65f6246eabdaa70b",
++          "bsd/dev/hakios.goodix.c": "023806f01aad5a2c20a6367b1770d6cff00cd21f71b37a54181934a02c448d1f",
++          "bsd/dev/hakios.guard.c": "9fd6a51185bef552ad8ebbe9a35a2fc20393fbe73aec853a6516d31ab65d6f46",
++          "bsd/dev/hakios.haptic.c": "271530fc117b5116a5f9de62a546c4a288646ed4e034c398831ee49d5b126224",
++          "bsd/dev/hakios.image.c": "509d4793309c52efe321b1b710a46b7b3d3bd6674464940e159883e11194efaa",
++          "bsd/dev/hakios.input.c": "a8a427f1fb7c9c78cd69c531bdde87ee38d80ea1ed2a2f93dd58b0c0313c09dc",
++          "bsd/dev/hakios.ipa.c": "ea26b1c858be45bfbb4ac07d7e9d2064ac7677735bb2ad3b818a6466067ecb86",
++          "bsd/dev/hakios.lithium_usb.c": "d3a8f21ba0fa005b91aa7f2a338a310bdec8fb5fe6d750aba6c4564e39495c4e",
++          "bsd/dev/hakios.lx.c": "7ee76d56202c9c5529842d45ee20c9ea2410940719b365c95db08207fb809f84",
++          "bsd/dev/hakios.mic.c": "c24d5f2c651ac6c9547b8f17c1c004f1b00b3161663534e854583a5b8f666f7a",
++          "bsd/dev/hakios.mpss.c": "085e44ec0ee2c27d1be70225adc6042977b8a822487c79338760afc6c98c0262",
++          "bsd/dev/hakios.nas.c": "a304a72eee593e6563648ebb492697538355532e4903f9d9755d9d877ee72a73",
++          "bsd/dev/hakios.net.c": "5ed99766af4858137fc41f39498fb384e8d142220411159522fd8b8bdb5507e5",
++          "bsd/dev/hakios.platform.c": "20902fddf834acff66914e32a902716291cc7f65fcd11c9efba3c119fdbf11f4",
++          "bsd/dev/hakios.pmic.c": "b78a9bf43c90877439ca5260ead42b86e839beaee5b6bcd39c3f00acebe3ab11",
++          "bsd/dev/hakios.qmi.c": "5feb3ddc9c4244701e2f462e77500a732a3fe1f55d43127a2341ca9a55c1c0a1",
++          "bsd/dev/hakios.socinfo.c": "4d2f0b513777afb6c2400241656c1aa94c4f30bb1dd8afc98733eb13e04ccc81",
++          "bsd/dev/hakios.sound.c": "f8743e9c18e5a23981bbfe05300de5942185b1011ece6ac1ffe3d3a6ac0f49ac",
++          "bsd/dev/hakios.sparse.c": "614538183266c310800ed8be647153911d89e0adb4401b897dde235244fc67e8",
++          "bsd/dev/hakios.speaker.c": "52a2df3ff361b369daaf284f47db36a818e87448ab3b80291afd656897345857",
++          "bsd/dev/hakios.sta.c": "9ea972a32152402badbbcc162846fe00e61f02f2de355ea8cd770cfd2b462174",
++          "bsd/dev/hakios.stubs.c": "53f395750a91748b397182e6065e35e8a7f827d3c7dc63ee700c0323fa9d4171",
++          "bsd/dev/hakios.thermal.c": "08f5b641a985679e3d3b8bb88694b08e22aa0c6b6a6f21cd86fcb65fb4f10a0c",
++          "bsd/dev/hakios.torch.c": "6ecaeff44402ab94b1da2181a97cf30200cc48e8b057b454495bedd1f411057e",
++          "bsd/dev/hakios.ufs.c": "d3dabab761c7606e305b301d049c190ccc7159015727e34737d8639b54c8f2ee",
++          "bsd/dev/hakios.ufshc.c": "a535ec001c6bb54f58932ecc77949f17d2e307d768b2dd7ba9bb68b9d4be49ce",
++          "bsd/dev/hakios.ufshc.h": "51623bbaac4539707e421b5d0d5a69c5afd6e4d409ffd9494a927250dc03f197",
++          "bsd/dev/hakios.version.c": "b8a8f417d51b8d6ca2f0e28c5738e9593d6421fccc1316cdee624727cb757f22",
++          "bsd/dev/hakios.virtio_blk.c": "fecd3f6b1b584962325aa7be1f16a66168cae16b1e5a6c8f30054770860a4a32",
++          "bsd/dev/hakios.virtio_input.c": "a4991ada1413477b51fa224e6145361363d8c984807e606522f8b8a14fb706f3",
++          "bsd/dev/hakios.virtio_net.c": "ccc36788c2fe95f57cdf71d74094fdb8ce6a74fe072c62356ef3d37787f7706a",
++          "bsd/dev/hakios.virtio_sound.c": "81c314d4ecd51f93dd4ce31b34126e3b1721cc41c8fae690c417be6d0d3da39d",
++          "bsd/dev/hakios.wifi.c": "7a413b1b8b46a899c4d3fd33832aac2159d976c5fea4d285f7f0351ec014a411",
++          "bsd/dev/hakios.wlfw.c": "4282f0973383948c16cbdf5e29c7b9943bdbc5246b67ad7620d6c448ca969c0c",
++          "bsd/hfs/BTree.c": "5e5218841483cad27b726ddb3236ec338193703317a896bf35fe954bb2557f85",
++          "bsd/hfs/BTreeAllocate.c": "d3b93c18ab2b4288ce7db1bfe06b19062d0a5534c28ea68727f24187b7b5d46f",
++          "bsd/hfs/BTreeMiscOps.c": "b1c05e1fd329ec78d2a969272894808ebf4524690728aaa74a516007078f1114",
++          "bsd/hfs/BTreeNodeOps.c": "e6d6fb45246196a812578d04a120d66b514f382417c397aee3ed4de7006b7c76",
++          "bsd/hfs/BTreeNodeReserve.c": "a661629c2f3b880a1b11df76b2be5f2a3bc89a771051a1d4a64868f8ffaa7449",
++          "bsd/hfs/BTreeScanner.c": "53830b590cdee4d5b2573673ceb34dbd9047ffe9a7a888f89438b7fff4dd624d",
++          "bsd/hfs/BTreeScanner.h": "d699b9d97fb8e34ea21877c4c5b211fa3d299113b5e850068dca865b3d9d92f1",
++          "bsd/hfs/BTreeTreeOps.c": "0f2e99ba6787de63a10c1bd3f77114b6620524b6988d70f453a61854cc4f6581",
++          "bsd/hfs/BTreeWrapper.c": "eef9a2c0134413831985d4c9634a901bb06b686f8e8c6c340c33b60595882a9c",
++          "bsd/hfs/BTreesInternal.h": "5570f580314567526391af167015177dd6b49fc06506993fdbb9c1e3d0cc3d95",
++          "bsd/hfs/BTreesPrivate.h": "7dd82baf612edde7f0ffc61f705eb80e5d837e0e3457f5d6174261753234b2b8",
++          "bsd/hfs/CatalogPrivate.h": "27a50b7eb29d0b5ff82e148f6bf7aeaacdb05c3fbe31bf56eab26ba8c567f156",
++          "bsd/hfs/CatalogUtilities.c": "c4c1f3b20b01ef6979dd12d8fc5570b3bf1ff0afeaab53c74b6a2a3fd32ee4a7",
++          "bsd/hfs/FileExtentMapping.c": "ff09aa78dff0a31e54bbbfc13f092c191e38fc82b847120f928823f674408fe8",
++          "bsd/hfs/FileIDsServices.c": "6c1d9ed2f250424aa260f456acc2256b4fa75660d22642bceebd6b7ff00320d3",
++          "bsd/hfs/FileMgrInternal.h": "debc8d04fd4ff9f97c4d56db91007c64e7ad2bb94afd6b7134da043e53810808",
++          "bsd/hfs/HFSUnicodeWrappers.h": "d5ef6fe1d30a4737a80f39e99cc52b193105fd1f7bb56e5166a434cc65b037f1",
++          "bsd/hfs/MacOSStubs.c": "102530be503838883e6845851dbcdcb803fa688f094abbcbd95ddcd860780b06",
++          "bsd/hfs/UCStringCompareData.h": "88773669ce79ebe2d6bcc84d3341c3c2586e649984ac97453adb1b8706440464",
++          "bsd/hfs/UnicodeWrappers.c": "7300de813b94d41d14faf9aa2a0ddf436010bb43d258f81fc92ab841bc7157f2",
++          "bsd/hfs/VolumeAllocation.c": "7432017a062974b79e250d3b85854e1ad0b426dd3e7d17033bdc3f0b76c606b1",
++          "bsd/hfs/hfs.h": "abc79026f3cbeb6de3d60b169d83b5b6bbae6cba468c30acd53ad2c41fd9db87",
++          "bsd/hfs/hfs_alloc_trace.h": "75cf3c92ba0669326db3564604829f6c7172643f3ebef7a3cb816010b579407e",
++          "bsd/hfs/hfs_attrlist.c": "7b235015840726cf9e8ae9f964cde5c440f50ace9f2c4f959368f68bfc1f7781",
++          "bsd/hfs/hfs_attrlist.h": "0a0077a26583fc92d3a11d2889d17d79e08b4897c73bdc3cb27dfb6771a03708",
++          "bsd/hfs/hfs_btreeio.c": "a31b4e9e1e88f9be39abb93d9cfb5cc833db6098452e8d918a041f32b3c6df16",
++          "bsd/hfs/hfs_btreeio.h": "41a1a2cb48727b5491c87e2aa1dc9fa36906c8b551c4ff61fe5ac8e4b3cb6998",
++          "bsd/hfs/hfs_builtin.c": "f13af79ab1e79b1a10a844c6e7b261423d6cdd588d8966393931271ac9f1a1d9",
++          "bsd/hfs/hfs_catalog.c": "a7d1b1e033c257b71ff9f6c8cca0bf7950451f4e73fae4678de09363508fd592",
++          "bsd/hfs/hfs_catalog.h": "912f082970cdf33777644d9e6202e01cdb138dacbf01f8457e0e06d83ea7fb9a",
++          "bsd/hfs/hfs_chash.c": "e6a19187d3541ad0bd9bc728d6f5aff2cfa7f5f0b34ff34d1c5d021f8185cfac",
++          "bsd/hfs/hfs_cnode.c": "45348162594bda791de81db45cd596e9e29f896da9d72f490b9d03bf9a3e2115",
++          "bsd/hfs/hfs_cnode.h": "10b5461ba5d69f9e417576a8e3f06d8f82e0983dd72e265d35cbfb2aac79c1d9",
++          "bsd/hfs/hfs_cprotect.c": "c7b7b8ec63626d4f2f6de48c363ea8483770b0e7d212e6ec409c627c277337b3",
++          "bsd/hfs/hfs_cprotect.h": "0a3fc13e26803138580a0755e9f4c8fe49c576950b3aca9725ea1d6a79cd0f26",
++          "bsd/hfs/hfs_dbg.h": "f3e4c64d62058b4df85357894a13e8782befb63e87a2f7ed6ce5d38cbf07c723",
++          "bsd/hfs/hfs_endian.c": "5b2d6fef8acc45bc6d2317639a8a9f3a1ecb6f3fb1cc5dc19bb50101be003749",
++          "bsd/hfs/hfs_endian.h": "dcdada4fd78a1b4e48856ecb2361a6caf953f6f69e800ef9e20862c15e1a6899",
++          "bsd/hfs/hfs_extents.c": "26dcef3c47b4cda7c8b0a5b8dd8dac0eb5cd1ba6808eedc51835ac9ac6adc249",
++          "bsd/hfs/hfs_extents.h": "434a0089a7517e926398708fcbff3269283260653452fe61be53614c97a76dc8",
++          "bsd/hfs/hfs_format.h": "8ac2afc412220f401f7c966a08f1d0ea7199345eb4d8cefa7dc28281fb0e8cb6",
++          "bsd/hfs/hfs_fsctl.h": "6ab11993c5bdccc67612e8c724cfad256425c970095c64749b0b5ced012bea80",
++          "bsd/hfs/hfs_fsinfo.c": "c1c23045f259a2ee32628d103a49b7ccd3e60f3be47ffa1b2ce2f60916921079",
++          "bsd/hfs/hfs_hotfiles.c": "b9e935d6915a5dc5386542801b8b15a951a2b02973e6ec3ef27d583eb3d3788e",
++          "bsd/hfs/hfs_hotfiles.h": "6e23cb4821193d2056c070f4022087484a8843d767ec29d94420bf518248dfd1",
++          "bsd/hfs/hfs_iokit.h": "3d5109f4f345a9838fdacde9ce256e4c23f0affbc3084eaa9c9b6b8b1b72f6e3",
++          "bsd/hfs/hfs_journal.c": "ad46b71ebc890177d49e8de2f6b69a79a30456864eca533413a4d35eb82c0316",
++          "bsd/hfs/hfs_journal.h": "1de7e23acb743775d99970ce83ddad68d2f56200ab52f5dfd7aafa8038b4aa40",
++          "bsd/hfs/hfs_kdebug.h": "2af9d6c3c9e7e0d7edd0994317ebb23a0b1429e9dcd870c9ad050a9bc6c2bdc7",
++          "bsd/hfs/hfs_link.c": "0f05caf589cc1b322765385e966ae16f977a41eb3ea31fd64fbc506fde021184",
++          "bsd/hfs/hfs_lookup.c": "5babbc098fd439b440621c9e92fe9f6ceb7129e998500ca159277fa7548dad62",
++          "bsd/hfs/hfs_macos_defs.h": "2a0091093935d41f154ea4ce0cecbbd321175329e06e801591337de38c8b663b",
++          "bsd/hfs/hfs_mount.h": "665c064e92254bb2537c9a42c644cf937f9b4e28eeff03324394d484a3d4f40d",
++          "bsd/hfs/hfs_notification.c": "8a11e181d759080627a3b8520b1cf6fe2b007a5cb2310d0afb588af8fb599135",
++          "bsd/hfs/hfs_quota.c": "cd4fb914264324da7cede2b3d47b5f5875e112ee5769fd805c4a174e0a7119ed",
++          "bsd/hfs/hfs_quota.h": "88b8708d537e9cd61cf00cfac51f5185a5323022112edc8f90018897aa6b546a",
++          "bsd/hfs/hfs_readwrite.c": "826adb6a58547af3bc1fcb8746b287e92ccdd89b034c657f2ca50c10539cd6f6",
++          "bsd/hfs/hfs_resize.c": "062eea886737072c323ef32ca633ccc337f9a41a4e150209fe19a7010e790950",
++          "bsd/hfs/hfs_search.c": "a14999ea5f46a5d4dd761493a25ba0f5164dfc1f903af80d2939351af11d516c",
++          "bsd/hfs/hfs_unistr.h": "fe22ca3ff255369fe5d45e4b749bfb4e1e7cac320e2269ced432890953752d81",
++          "bsd/hfs/hfs_vfsops.c": "adb7bc15f2e9e0d65a14334dfed4cc0d8716e7344d9d8f8612f7afe50aa3719f",
++          "bsd/hfs/hfs_vfsutils.c": "a5af57c797b17ccb8275bbf83dfb5a781660f2d38cbd211418c4b47facf32490",
++          "bsd/hfs/hfs_vnops.c": "e04e635581ca7b04015046d0b0b176faf4d36cc328e260bc462691099e9ff60b",
++          "bsd/hfs/hfs_xattr.c": "72a46b1d1c474e00f481baf922fd6efaa9706c22e31b44be5cd004f9c46add08",
++          "bsd/hfs/kext-config.h": "956c5f6dadadd95e78d0dbf4db17dbd1eff5a6dcc05ce06e8330def599658ac3",
++          "bsd/hfs/rangelist.c": "68be20c590f8560cefed9d019e59334f9003bc2d206bee06ddaf3deff9c31ec6",
++          "bsd/hfs/rangelist.h": "fe6db3c57b781b570bb892d45da09c339ee3f2f904b9fc8501111081921baf31",
++          "bsd/hfs_encodings/hfs_encodinghint.c": "e2c94b4c8fb418ac8c4c104afab0f8b24fa051080cbf1c9ffdca518ad6ed9d2e",
++          "bsd/hfs_encodings/hfs_encodings.c": "4465b509151aaf7ef3b25203ef96ae59bf6315247909b52b848b95363d66c30b",
++          "bsd/hfs_encodings/hfs_encodings.h": "8045a6f3d2bea7ee5a6646308fc6196df280d8fc418b3a1d5dbe05961fdb88e6",
++          "bsd/hfs_encodings/hfs_encodings_internal.h": "17e47e26f21875cb48c1fa02a1c0f45788e8ebfa3a50f31304c0e297895ed873",
++          "bsd/kern/kern_minimac.c": "bbd9176d658d20961b1515dd65e554946de28a8537131df79d7029927da83999",
++          "bsd/miscfs/apfs/apfs.h": "4d1f575350df17244c854c7338793c7a61e8623a25f164f49ebe636a73632f02",
++          "bsd/miscfs/apfs/apfs_deflate.c": "c3f11fc28c1247aa1b3d74b0666d3497ddc59dbf277e969e45624f3c3a6e860d",
++          "bsd/miscfs/apfs/apfs_format.h": "0ac5524aad4f2eb0c33d8ae8b8d608e88dd4ce5d1f1a37c3c0e4db4f2b141b0a",
++          "bsd/miscfs/apfs/apfs_lib.c": "d6b7f2855a030a9fc07385848a2d17c4b3fc63b5d14998f9e9724c294dcfac11",
++          "bsd/miscfs/apfs/apfs_lib.h": "92bf9a7010f1559c808e07c96eae6a282f2858fd1d47c588b106ecf094a5348f",
++          "bsd/miscfs/apfs/apfs_store.c": "7cae718e6254ca5156df29ea8e297bc4a98e47e227ec68b7b27d37843137805b",
++          "bsd/miscfs/apfs/apfs_store.h": "1deb82b95d6c0ef594c027878ba1a8974506a9ef8101c8dee200c8af238e80fc",
++          "bsd/miscfs/apfs/apfs_vfsops.c": "dbc3597901cce82f9257f553824b419b466f8497f69e1b18e8c1f0204775dbb9",
++          "bsd/miscfs/apfs/apfs_vnops.c": "f3dcd203e6aa63b4d5f760f18a477ea22a6f9489e99db022a5a26ef15418a8ef",
++          "bsd/miscfs/apfs/apfs_write.c": "71ab8382668b4172dd16e8cf4acaab5e58558c33c6dc142871824c7cc97a5260",
++          "bsd/miscfs/apfs/apfs_write.h": "f05ceef111a380b17e8ee23033aacfe8d3d6f9d1857fa91e3b035b7bd9696d70",
++          "bsd/miscfs/apfs/apfs_zbitmap.c": "a35fb93f094d4fcc1c5966aff1e7d5c9e87250480835660098e03762736679c8",
++          "bsd/miscfs/apfs/libdeflate/COPYING": "4ad69099cb4374836fd27583d9991e2838cd86b6e4666ab26b2d32582c91e73a",
++          "bsd/miscfs/apfs/libdeflate/common_defs.h": "0702970eb23da9bca3be9f31fe71824b2f88c4fbac55c59cee8d42cdaec63b63",
++          "bsd/miscfs/apfs/libdeflate/lib/adler32.c": "63099826db3ddf84c15bfba30940f9689917185df8c30ff27a2bc2b7cb6a19f2",
++          "bsd/miscfs/apfs/libdeflate/lib/arm/adler32_impl.h": "b7e43d7b91db98d774243cf29ee41941edf93e71b5a3f5cc3ede34d8b70a93d9",
++          "bsd/miscfs/apfs/libdeflate/lib/arm/cpu_features.h": "0cff5c0110021dc8b18511e328f913f1bad21f31ad927497d1f428db4e6ed239",
++          "bsd/miscfs/apfs/libdeflate/lib/arm/crc32_impl.h": "5a24f5087e665b30516f83c2e09a58ed01dab867895a6cefc2f1c833d12482d3",
++          "bsd/miscfs/apfs/libdeflate/lib/arm/crc32_pmull_helpers.h": "e469001ad29607cab992ae29c9eaac331427d6b103d11d58d37158b3aa0be95c",
++          "bsd/miscfs/apfs/libdeflate/lib/arm/crc32_pmull_wide.h": "c53a58d1e3dc5e75d23c1338fed6cc431ee6fbdfcd4ac94f576579258ac34a88",
++          "bsd/miscfs/apfs/libdeflate/lib/arm/matchfinder_impl.h": "11cd6a9c47d2dadf746f7a944c72c672b40bc83b2ffb43356e0b7ced6b6b8038",
++          "bsd/miscfs/apfs/libdeflate/lib/cpu_features_common.h": "f4eb0800558e9116dd14446ccfb9b1896f970aec6de42c18366a29bde73fd0da",
++          "bsd/miscfs/apfs/libdeflate/lib/decompress_template.h": "ade3034c1d5c840cb31bd9738a015be804862a8dfce03c14ac2f5b3a826792b8",
++          "bsd/miscfs/apfs/libdeflate/lib/deflate_constants.h": "72ea6e5f0abe53e781203e3f383603a765a768b860a09b3356be36bfd87c8af3",
++          "bsd/miscfs/apfs/libdeflate/lib/deflate_decompress.c": "bc16ab65325ce4ac14af830b2cf6c805770beab01fd2f09226dca3dfa3f8bb47",
++          "bsd/miscfs/apfs/libdeflate/lib/lib_common.h": "e7aa1f2750434e1019ffabda577dab0fdf5b95f010f6f20aa7e21323b3bcceea",
++          "bsd/miscfs/apfs/libdeflate/lib/zlib_constants.h": "562e16b83ac33ac6d351cdfdf1962750576080d65c22ab66cad0aaa33695bebb",
++          "bsd/miscfs/apfs/libdeflate/lib/zlib_decompress.c": "704a57fb91c36c1c88b04a3482694de08c794ca0cb3904ac247a206802aa6ee0",
++          "bsd/miscfs/apfs/libdeflate/libdeflate.h": "957cda6906c2be6c8978cf19779f1aad9dd121af1147a10e184b137db353678d",
++          "bsd/miscfs/apfs/libzbitmap/libzbitmap.c": "37dc640d3c8b076e3ad2c4a889702fc3a918a3c17f72c575ea5f6ed36815c38b",
++          "bsd/miscfs/apfs/libzbitmap/libzbitmap.h": "0237307fb7376198a01ae74b21c5e656170b0992bf0c55c0eafb69a1f285ebda",
++          "bsd/miscfs/ramfs/ramfs.c": "14884af48b8d8de3d569df6cff59fafb9c6328d9a606bed27e24a69d4d2d98c4",
++          "bsd/pthread/pthread_kext_static.c": "7afc0924a0c07c9668eabfe8cf17b170264041a7af0b9e848f215b9891312b1b",
++          "bsd/sys/hakios.apfs_check.h": "076225c1137cfa12c4cd3ccd86a6a2bd789bb30c1b2e7119c71d17cd6326aaed",
++          "bsd/sys/hakios.audio.h": "6a195fe19f0dfa30d1cab266b2c8f10f95a6395be67358af3961baa60fc2f22b",
++          "bsd/sys/hakios.camera.h": "d229dcbf0b0d18bb83d45de51e0becef41b9184db9d43824627eb7c497a74766",
++          "bsd/sys/hakios.fsdiag.h": "ba732bc291033e88d86ced5ada28c4dd9593cddeb754daa533e9287019419c11",
++          "bsd/sys/hakios.input.h": "28b3f02204632beafdab6a94d8fae1d5a065000d004391b5a6d792eb653a836c",
++          "bsd/sys/hakios.ipa.h": "8a5d990b4a31ec3e24a1eef6c0561232994a7cfd4ec5cf3eabba985ee4bf1661",
++          "bsd/sys/hakios.lx.h": "f323a4adfb7a459ad1f3d83cdbdda5110df051ad9293d2c2a63c4220db961f99",
++          "bsd/sys/hakios.nas.h": "8f4f7caf9d6716c36790616606b8288b8b32038eaa2453e3b40b1b02e6783194",
++          "bsd/sys/hakios.net.h": "05d377ba6b71cc485676fe3632f49bfa30d2cbc1a6476ec723abb0f8ed12fff4",
++          "bsd/sys/hakios.qmi.h": "a9c358f7a797a534c84c77b7f05f43f507345160e72ad366ff739213214f0648",
++          "bsd/sys/hakios.qrtr.h": "d9658ba4ddbc941cf201edfadbfdb38248c4939641d394eb7fecb50be1180e66",
++          "bsd/sys/hakios.sparse.h": "a8bbaceadde8f86d4890d8df4a415196e77872ef3d6efe3c78d50ee8d7c868ff",
++          "bsd/sys/hakios.sta.h": "d98aa48457d2b1b63779b37a39878539a13f22a924161e6526e3568f0759798f",
++          "bsd/sys/hakios.version.h": "e28c2a3aac77b2d205ffd3099d4952be6832b4ae4f878d2149211ab491077da1",
++          "bsd/sys/hakios.virtio_blk.h": "d706c178431404330ae329238663d63230971d8106d1ee9656bcecef93b9fa38",
++          "iokit/Kernel/GenericARMPE.cpp": "954687575a0b814b645a9721640f380a8a870b27b3546d2eaae1276a4d907b82",
++          "iokit/Kernel/MiniAppleKeyStore.cpp": "e8e9efcd8db6027d88eefdb88b9fb9270a71798429c6008695568f9d23722bc5",
++          "iokit/Kernel/MiniDrivers.h": "f5b7446b61c1b53f79fef563541747f4f0e2b6d2fb9009684ad72a95c7c6553b",
++          "iokit/Kernel/MiniIOMobileFramebuffer.cpp": "a26e7d18ae83ca8ab94c2dc56a55ff678004dd9151e1be687dd2589039663c9a",
++          "iokit/Kernel/MiniIONetworkStack.cpp": "3b7cdf77ac3e2a472c55f7dd622d04979782e46d8bd3589c535a5d97a252ef12",
++          "iokit/Kernel/MiniIOSurface.cpp": "8e5c2d391cec40835aca8d6c4803c9602c4080460355368177b9943eec838058",
++          "iokit/Kernel/MiniIOSurface.h": "97fd00aa6f18dbe9dfa4b13786bca250b5fae24ddbf99c1fea0c7c25802bb426",
++          "iokit/Kernel/hakios.battery.cpp": "695718935e1b6d78c8450f6cf4c2005605e984bcaf93e7796eb9a6d84a56b56a",
++          "iokit/Kernel/hakios.gpu.cpp": "2d3ba9f37a45980438299137bb24f89fe81ff3376850337a3b5df51ff4ef8eb8",
++          "iokit/Kernel/hakios.stubs.cpp": "8bc87974f8615cbb3a400a29fada73b76820e2ea70f19994736d628f7af12218",
++          "iokit/Kernel/hakios.wlan.cpp": "c09833d2d1f486f0623fa588985bde692434b0e8023f99e23869bf0895aad551",
++          "libkern/amfi/miniamfi.c": "071c9795555e436454605cc8e2d9c85cab882325fd8352adeb3132479538fee1",
++          "libkern/amfi/miniamfi_entitlements.cpp": "342e276410dbc80cbe735681279b8280d1f19375db59a47ac1a8ec1240b60d6d",
++          "osfmk/arm64/generic_arm64_support.c": "4936afa2d728d6bd968c6fb401b6027fa162209cb1e7cc61a845787774a7e72d",
++          "osfmk/arm64/gic_v3_irq.c": "b4fd28e8f79e8bdc49b3271d1f88a0cdd6a33c793e59237a295b3812c63125cb",
++          "osfmk/arm64/kpc.c": "31cd51ee78b5cc06eb5787ee18bf22b75a9592c1dbff758c461ab445521f1365",
++          "osfmk/arm64/loader_return.c": "0964c6b452cd3e3efbfd58a36cfa289b9a0743d6eba074673ec2a0491d69f275",
++          "osfmk/arm64/ppl/sart.h": "0630ec54c77fee801bd6ee16fcccbe3ad42ac6f3cfbb64a95ef57f5bbead8250",
++          "osfmk/arm64/ppl/uat.h": "ef93267d8b4c6582a708d08722f202a0b9e16cef0ea35f777ef0f8c443a4aca2",
++          "osfmk/arm64/psci_smp.c": "143d4b2a2dae86b628a94395b4034b86f878ef200e7d8e3ce636cffaede2f8b4",
++          "osfmk/arm64/psci_smp.h": "861b78c09bacf88c733d2c989d2f20c9b31854e050e06883822e0aba833f5ba4",
++          "osfmk/arm64/tunables/tunables.s": "acc19ceded1615350c7a8d1c100598115592ff09b164a3363a58a2a8cf9c0018",
++          "osfmk/arm64/user_exception_trace.c": "882d4eeb970d494d700e177f18d13cb74081624f542f5ae209d5abb1fc0f91f1",
++          "osfmk/minicrypto/mc_aes.c": "f4fa92ccd8291ba1e729d88058841ecf76e18e09cfac803955ae534946c266cb",
++          "osfmk/minicrypto/mc_digests.c": "64b30e9c4378eb8ebc910647fdf2c22854d51266f1c7ae4dc75da0fd3f2f6219",
++          "osfmk/minicrypto/mc_provider.c": "9c612ea54894f6f127b3fbf2c8ece5205c32efd6b9fffd606062f8f392348a30",
++          "osfmk/minicrypto/minicrypto.h": "09e487f3aaa9d1fe91039a62ac980f9b79c16ce6c1688b16051b76bab7787dd6"
++        }
++      }
++    },
++    "source_lines": {
++      "ports/hakios-lithium/diagnostics/display-profile.h": 11,
++      "ports/hakios-lithium/diagnostics/display-kernel.inc": 17,
++      "ports/hakios-lithium/diagnostics/display-userspace.inc": 66,
++      "ports/hakios-lithium/patches/0016-lithium-display-profile.patch": 16,
++      "scripts/hakios_r16.py": 8,
++      "scripts/prepare-hakios-ios16-r16.py": 9,
++      "scripts/test-hakios-ios16-r16.py": 78,
++      "scripts/test-hakios-ios16-r16-package.py": 8
++    },
++    "active_source_lines": {
++      "xnu/files/iokit/Kernel/MiniIOMobileFramebuffer.cpp": 621,
++      "userland/src/inject_sb.c": 1384
++    },
++    "build_tasks": [
++      "hakios-r16-prepare",
++      "hakios-deps",
++      "hakios-r16-review",
++      "hakios-r16-regressions",
++      "hakios-kernel",
++      "hakios-support",
++      "hakios-r16-userspace",
++      "hakios-r16-build-check",
++      "hakios-r16-freeze",
++      "hakios-r16-package",
++      "hakios-r16-package-checks"
++    ],
++    "evidence_sha256": {
++      "reports/hakios-ios16-r16-checks.json": "04d68a38973dc739928bc3c61dbc2c0f21d04fd71892d905d093a74ee2f4c405",
++      "reports/hakios-ios16-r16-package-checks.json": "72fb8339fdfbae7ffe1c6b5f2b6bff873aa49a278a1963b90c04cacb2c8f3a90",
++      "reports/hakios-ios16-phase4-build-checks.json": "4d914c86c4e82b2dbf200dda6f519b5f0c41b3a798c8d36e8abd925e9e9d4e66",
++      "reports/hakios-ios16-phase4-userspace-build.json": "229ff1c1f3086d0104aecd70c7a4179961523a7cb2e839a5e160ec6166fc8276",
++      "reports/hakios-ios16-boot-userspace-r16.json": "7c856445ea80e48fbaafdb47af9a4703739b561b63188d4b26cadc4e618db4d0",
++      "reports/hakios-ios16-package-host-checks.json": "13977339df73fb26c095f3f5ed654cbd7a190030415faeff76914e54ed650696",
++      "reports/hakios-kernel-build.json": "72d20d53bac1e10f6957d0555f0a5f8771934d31e380e95663edb381a6474cc0",
++      "reports/hakios-support-build.json": "1e8eaa58141ebb12372b7428d1ed4789da2a6348d891e4b39c28e7b3edb778d0"
++    },
++    "physical_panel": {
++      "width": 1080,
++      "height": 2040,
++      "stride_bytes": 3240,
++      "format": "BGR24"
++    },
++    "render": {
++      "width": 750,
++      "height": 1334,
++      "format": "BGRA32",
++      "prior_stride_measured": 3072
++    },
++    "intended_profile": {
++      "scale": 2,
++      "artwork_subtype": 1334,
++      "points": [
++        375,
++        667
++      ]
++    },
++    "prior_uiscreen_bounds_measured": false,
++    "framebuffer_mapping_changed": false,
++    "phone_query_performed": false,
++    "phone_boot_performed": false,
++    "phone_flash_performed": false,
++    "userdata_reinstall_required": false,
++    "hardware_verified": false,
++    "dock_verified": false,
++    "labels_verified": false,
++    "content_bounds_verified": false,
++    "mg_answers_verified": false,
++    "uiscreen_bounds_verified": false,
++    "physical_touch_verified": false
++  },
++  "ios16_display_baseline": {
++    "revision": "R20-display",
++    "image_path": "artifacts/hakios/lithium-ios16/phase4-r20-display/lithium-hakios-ios16-r20-display.img",
++    "image_sha256": "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82",
++    "display_report": "reports/hakios-ios16-device-r20-display.json",
++    "display_verified": true,
++    "logical_bounds": "360x680 points",
++    "scale": 3,
++    "native_bounds": "1080x2040 pixels",
++    "framebuffer": "1080x2040 BGR24, stride 3240",
++    "touch_backend_present": false,
++    "r19_followup": "archived; no further boot, retry, repair, or display acceptance",
++    "r19_display_tested": true,
++    "r19_display_resolution_correct": false,
++    "r19_user_disposition": "archived; R20-display is the sole accepted display baseline"
++  },
++  "touch_test_boundary": {
++    "recorded_on": "2026-11-19",
++    "mode": "touch_stage0_complete_hakios_build_passed_physical_backend_pending",
++    "phone_queries_allowed": false,
++    "phone_boot_allowed": false,
++    "partition_operations_allowed": false,
++    "qemu_allowed": false,
++    "user_explicit_resumption_required": false,
++    "device_state": "R20-display home screen was user-confirmed; current phone state has not been queried",
++    "resumption_scope": "new frozen touch package temporary boot only; no partition or userdata writes",
++    "revision": 21,
++    "display_baseline_revision": "R20-display",
++    "host_candidate": "R20-display remains the only accepted display image; current Stage 0 kernel/loader/Mu/userland host outputs are built, but no touch package was assembled",
++    "latest_host_gate_report": "reports/hakios-ios16-touch-stage0-build-20261119.json",
++    "host_candidate_image_sha256": "07d9e4cd10ee37854d6fd65df5f8fe36d8d836d1212c77aeca6491a51d82c6f8",
++    "host_package_ready": true,
++    "touch_package_ready": false,
++    "current_candidate_device_test_ready": false,
++    "port_stage0_source_integrated": true,
++    "production_kernel_build_verified": true,
++    "physical_touch_backend_present": false,
++    "host_test_suites_passed": 21,
++    "host_test_evidence": "artifacts/hakios/lithium-ios16/touch-r20-host-gate-20261119-r7/passed.json",
++    "latest_host_regression": {
++      "date": "2026-11-19",
++      "passed": true,
++      "existing_suites": 14,
++      "followup_suites": 10,
++      "total_suites": 24,
++      "source_hash_count": 51,
++      "evidence": "reports/touch-stage0-complete-host-20261119-r2/passed.json",
++      "evidence_sha256": "def9fb7d3d766623cec56e0962d27c6a84ef9e2e86aa4dd45d936511145b59d4",
++      "physical_touch_verified": false,
++      "touch_package_ready": false
++    },
++    "active_build_workspace_sync_verified": true,
++    "latest_kernel_contains_touch_stage_verified": true,
++    "production_kernel_sha256": "3e130b765b47ec06ac5e5392d5f94301d22ed43fa37b937827b65ab220180c93",
++    "host_build_report": "reports/hakios-ios16-touch-stage0-build-20261119.md",
++    "conditional_device_authorization": "Only after a physical touch backend is integrated and a complete package passes host tests, build, package checks, and freeze",
++    "hardware_verified": false,
++    "report": "reports/hakios-ios16-device-r20-display.json",
++    "package_report": "reports/hakios-ios16-touch-r21-host-final.json"
++  }
+ }

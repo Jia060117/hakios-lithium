@@ -1,0 +1,175 @@
+{
+  "schema": 1,
+  "revision": "R34-touch-live-ram",
+  "recorded_at": "2026-11-20T17:14:33.216619+08:00",
+  "report": "reports/hakios-ios16-device-r34-touch-live.md",
+  "authorization": "User: 可以测试 R34",
+  "scope": "One RAM boot, GPIO89 reset low10ms/high300ms, QUP6 0x38 ID/report reads, touch input queue, USB capture, 180s timer and automatic Fastboot, bounded readonly return check",
+  "outcome": "ram_physical_touch_and_queue_verified_fastboot_endpoint_observed",
+  "accepted_at": "2026-11-20T17:05:15.400713+08:00",
+  "image": {
+    "path": "artifacts\\hakios\\lithium-ios16\\phase4-r34-touch-live-ram-final\\lithium-hakios-ios16-r34-touch-live-ram.img",
+    "image_sha256": "d1bbc6bf94defeacacf3ffbbae32bd3e227b70ef74bb1ceda2fb5539f8ad0d3b",
+    "image_bytes": 16318464,
+    "kernel_sha256": "799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c",
+    "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 touch=1 touch_log=1 touch_poll=1 touch_diag=1 return_fastboot=1 return_fastboot_delay=10",
+    "components_rehashed": 10,
+    "unique_fastboot_return_record": true
+  },
+  "actual_cpu": {
+    "logical": 0,
+    "mpidr": "0x80000001",
+    "affinity": "0x1",
+    "bootcpu": 1,
+    "cpus": 1,
+    "match": true
+  },
+  "touch": {
+    "id_register": "0xa3",
+    "address": "0x38",
+    "id": "0xe7",
+    "id_read_error": 0,
+    "report_bytes": 63,
+    "successful_report_count_lower_bound": 7200,
+    "queue_posted_events": 197,
+    "down_move_up_observed": true,
+    "observed_finger_ids": [
+      0
+    ],
+    "final_visible_points": 0,
+    "polling": true,
+    "configured_poll_delay_ms": 16,
+    "gic_irq_attached": false,
+    "read_error_lines": 0,
+    "report_error_lines": 0,
+    "physical_multitouch_verified": false,
+    "queue_sink": "hakios_touch_post_batch",
+    "queue_acceptance_verified": true,
+    "backboardd_digitizer_delivery_verified": false,
+    "visible_ui_response_verified": false,
+    "screen_edge_coordinate_accuracy_verified": false,
+    "long_term_stability_verified": false,
+    "reset_gpio": 89,
+    "reset_low_ms": 10,
+    "reset_high_settle_ms": 300,
+    "supply_mode": "inherited",
+    "firmware_writes": false,
+    "regulator_writes": false,
+    "reset_alone_proven_as_r32_root_cause": false,
+    "first_raw_points_15_meaning": "unassigned; raw observation retained"
+  },
+  "timer_seconds": 180,
+  "normal_timer_observed": true,
+  "usb": {
+    "raw_bytes": 18844,
+    "console_bytes": 15484,
+    "frames": 105,
+    "raw_sha256": "f3a96f4887624e75778ca6999c5c1701226d79c62697f8213115d38c50507af1",
+    "console_sha256": "376978cb808fd4b364aa88b76223fe94ddf2e9203705a84249a8b5bd6959621c",
+    "first_offset": 0,
+    "final_offset": 15484,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "incomplete_frame_bytes": 0,
+    "device_lost_max": 0,
+    "frames_reporting_device_loss": 0,
+    "independent_parser_agrees_with_frozen_receiver": true,
+    "frozen_redecode_equals_complete_console": true,
+    "transport_verified": true,
+    "kernel_banner_offset": 0,
+    "timer_offset": 15065,
+    "normal_return_offset": 15368,
+    "drain_success": true,
+    "drain_records": [
+      {
+        "offset": 15435,
+        "drained": 1,
+        "target": 15435
+      }
+    ],
+    "emitted_kernel_stream_through_timer_verified": true,
+    "all_firmware_daemon_and_original_printf_logs_complete": false,
+    "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
+  },
+  "receiver_terminal_status": {
+    "started_at": "2026-11-20T17:05:14.079850+08:00",
+    "enumerated": true,
+    "frames": 105,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "status": "capture_failed",
+    "output": "F:\\IOS-MIX1\\reports\\local\\20261120-r34-touch-live-approved\\console.log",
+    "device_commands_sent": false,
+    "candidate_seen": true,
+    "identity_verified": true,
+    "descriptor_errors": 0,
+    "descriptor_error_samples": [],
+    "configuration_verified": true,
+    "console_bytes": 15484,
+    "failure_stage": "capturing",
+    "failure": "[Errno 32] Pipe error",
+    "finished_at": "2026-11-20T17:08:47.256267+08:00"
+  },
+  "return_verification": {
+    "started_at": "2026-11-20T17:10:56.500439+08:00",
+    "elapsed_s": 341.099726,
+    "fastboot_observed": true,
+    "devices": [
+      [
+        "54223ce9",
+        "fastboot"
+      ]
+    ],
+    "product_verified": true,
+    "outcome": "same_device_fastboot_after_run",
+    "finished_at": "2026-11-20T17:10:56.546671+08:00"
+  },
+  "uefi_prepare_commit_usb_fields_captured": false,
+  "hardware_keys_post_run_confirmation_collected": false,
+  "automatic_fastboot_causality_scope": "Same-device endpoint observed after configured timed return; no new post-run hardware-key confirmation. Prior R33 no-key confirmation is not inherited.",
+  "ram_only": true,
+  "ufs_profile_booted": false,
+  "ufs_auto_return_supported": false,
+  "commands": {
+    "readonly_preflight": 5,
+    "temporary_boot": 1,
+    "readonly_post_return": 2,
+    "total_fastboot": 8,
+    "partition_operations": 0,
+    "flash_erase": 0,
+    "adb": 0,
+    "qemu": false,
+    "firmware_downloads": 0,
+    "automatic_retry": false
+  },
+  "boot_totals": {
+    "hakios": 59,
+    "ios16": 28
+  },
+  "local_evidence": "reports/local/20261120-r34-touch-live-approved",
+  "subagent_review": {
+    "agent": "Descartes",
+    "path": "evidence/touch-live-20261120/qup/r34-runtime-note.txt",
+    "scope": "Saved transport/queue observations through reports5400; no device operations",
+    "main_review": "Read actual source sink/counter and final console independently; report lower bound7200, posted197; completed independent USB replay and endpoint check"
+  },
+  "next_candidate": {
+    "path": "artifacts\\hakios\\lithium-ios16\\phase4-r34-touch-live-ufs-final\\lithium-hakios-ios16-r34-touch-live-ufs.img",
+    "image_sha256": "47740664f56fcf021096493444cc96934223f49ce0dfc099920bfb73cfc426ed",
+    "image_bytes": 16318464,
+    "kernel_sha256": "799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c",
+    "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1",
+    "components_rehashed": 10,
+    "unique_fastboot_return_record": true
+  },
+  "next_scope": "UFS desktop response/coordinates/multitouch; normal Data writes require corresponding authorization. No automatic new boot.",
+  "unresolved": [
+    "SpringBoard/backboardd visible response",
+    "physical multitouch",
+    "screen-edge coordinate accuracy",
+    "true GPIO IRQ delivery",
+    "long-term stability",
+    "R32 single-cause isolation",
+    "UEFI internal prepare/commit stream fields"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "cases": 4,
+  "exact_upstream_rc_exec_block_exercised": true,
+  "exec_adapter_fails_with_enoexec": true,
+  "real_host_stderr": true,
+  "source_sha256": "9ef9e8107529cee4b19a08c453de9aa55cd540c89a2dc7b66ea977f7da07b08a",
+  "test_source_sha256": "b0b247e89201fc38ec8f2cc91f2b2ee5e0fb94febead286e29a59e5a5eb5f092",
+  "checks": [
+    "/sbin/launchd: Exec format error",
+    "/sbin/launchd.darwin: Exec format error",
+    "/bin/other: Exec format error",
+    "PASS exact upstream rc remaps original launchd on disk root and retains exec errno8",
+    "PASS non-PID1, RAM-root and unrelated exec paths retain upstream behavior without PID1 markers"
+  ],
+  "sanitizer": "address,undefined",
+  "hardware_verified": false,
+  "qemu_used": false
+}

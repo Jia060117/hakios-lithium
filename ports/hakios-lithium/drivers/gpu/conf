@@ -1,0 +1,5 @@
+# No device accesses: link the shared C page-table core in its own TU.
+driver LITHIUM_GPU_TABLES
+	file bsd/dev/hakios.lithium_gpu_tables.c
+	default y
+	help A530 SMMUv2 table algorithms; runtime GPU entry remains default off.

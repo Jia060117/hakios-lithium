@@ -1,0 +1,4387 @@
+{
+  "schema": 1,
+  "revision": "R32-touch-qup-transfer",
+  "recorded_at": "2026-11-20T02:52:54.905476+08:00",
+  "phase": "normal_timer_drained_controller_nack_coerrors_no_id",
+  "image_path": "artifacts/hakios/lithium-ios16/phase4-r32-touch-qup-transfer/lithium-hakios-ios16-r32-touch-qup-transfer.img",
+  "image_sha256": "b260776a3fff5513134b2c594e364eb58fb95a495c9a7625e6866354345fe767",
+  "kernel_sha256": "d88137b422c89892222279c87d1cb4798c7c40e6b4810955afd7909bada3a1a9",
+  "payload_boot_args": "bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 touch_stage=1 touch_clock_init=1 touch_diag=1 touch_qup_transfer=1",
+  "fastboot_accepted_at": "2026-11-20T02:44:12.258921+08:00",
+  "command_accepted": true,
+  "temporary_boots_this_session": 1,
+  "readonly_preflight_commands": 5,
+  "device_queries_after_boot": 0,
+  "host_partition_commands": 0,
+  "adb_commands": 0,
+  "android_recovery_boots": 0,
+  "qemu": false,
+  "auto_retry": false,
+  "hakios_total_boots": 56,
+  "ios16_total_boots": 25,
+  "first_run_bus_activity_unverified": true,
+  "new_fifo_tag_io_requested": true,
+  "id_requested": true,
+  "physical_touch_verified": false,
+  "runtime_observed": true,
+  "physical_screen_verified": false,
+  "authorization": "User explicitly replied 可以上机 to R32 frozen one-ID test scope; main explained readonly preflight, QUP initialization, one0x38/A3 transaction, USB capture and no flash/retry",
+  "approved_scope": "Readonly Fastboot identity/unlock/battery/download preflight; one frozen R32 RAM temporary boot: Stage1clock/pin, unchanged R31 QUP initialization then TX9/read1 at0x38/A3 and secondRUN, no terminal reset/ACK/retry, USB capture",
+  "local_log_path": "reports/local/20261120-r32-touch-qup-transfer-approved",
+  "host_report": "reports/hakios-ios16-touch-r32-prepared.json",
+  "observations": "QUP initializer and ordered software FIFO request executed; controller reported NACK with FAIL and INVALID_READ_ADDR before input completion; no RX/ID or STOP observation",
+  "evidence_sha256": {
+    "reports/local/20261120-r32-touch-qup-transfer-approved/console.log": "9b85802c338b778429cf953225c9ce7ffeaed38d82ddc7f2cde3378f368c7333",
+    "reports/local/20261120-r32-touch-qup-transfer-approved/console.frames": "f1d10cd1d5dbef77c0a76289aafc2e0f5cec5d4c0ea53ba100b9f88bf9262dd3",
+    "reports/local/20261120-r32-touch-qup-transfer-approved/capture-host.py": "d5a9aecdd3c5ac728b233628d9ae810a598a35ba05d9068d0db3ed70fde3791c",
+    "reports/local/20261120-r32-touch-qup-transfer-approved/usb-status.json": "a10bfe03b772f876a1e0600f2cd4ad7664015d6ab002fd6678e9eea8c197db69",
+    "reports/local/20261120-r32-touch-qup-transfer-approved/usb-audit-final.json": "fbfcd4c7720aa7dcd6fe7587b31052d08823c092444c7300773f0c15cae6a7e7",
+    "reports/local/20261120-r32-touch-qup-transfer-approved/commands.json": "0d800fa181ed23c7b11fdeb57f98a65c7b7362b58da88649c2428d2ba546cc6b",
+    "reports/local/20261120-r32-touch-qup-transfer-approved/result.json": "8c55bdb9b95207bf7b3141cc55cc22a2bc1d7ac27b83e1b3817a2245a1306169",
+    "reports/local/20261120-r32-touch-qup-transfer-approved/launch-record.json": "e3cbe695d5650f3a96cbec8275c238115ff8d4e593d2442a599e169393124aaf",
+    "reports/local/20261120-r32-touch-qup-transfer-approved/entry-sources.json": "ce125b892b301b6fa2d6dbe652a7bf7646357c52106db4da62655ff510e2bb68",
+    "reports/local/20261120-r32-touch-qup-transfer-approved/authorization.json": "3548d8d38ee6976e3fee3f1cf134b3b452ea097977e50426d9ae489c4d18d6f8",
+    "reports/local/20261120-r32-touch-qup-transfer-approved/main-error-decode.json": "7d46311fb66bef15f3912079a6530dc8942cfd1e4f3c23b1a9f8bb7b00472364",
+    "reports/local/20261120-r32-touch-qup-transfer-approved/main-stream-review.json": "d0b19130055c5ef698fd935614a21fa7d67956d5304978f8563309b7e768300b",
+    "reports/local/20261120-r32-touch-qup-transfer-approved/runtime-main-review.json": "fd559e8b1f52e824d92cd94390a91d3ed074e23e877bcae3aedb78ef014d340f",
+    "evidence/touch-r32-20261120/runtime-review/final.json": "5507b7c4db8ac49445103ec607df7c140cb3a1df55b69c79027c7dcff0bc9229",
+    "evidence/touch-r32-20261120/runtime-review/final.md": "b116e13c00857eae34d308c5d26d2b6c6dcccf05644ecc5d5c84ed394756352d",
+    "evidence/touch-r32-20261120/runtime-review/analyze-saved.py": "ace2b49ee68e284aea1fc235670f17b03cb02b44ed029f7a8aa95be8ef5148fd",
+    "reports/hakios-ios16-touch-r32-prepared.json": "1dcd4fa24397284a4a8a2d0b51ec7137d01791f9eac95aa7c27bfdafd796b33b"
+  },
+  "cpu": {
+    "logical": 0,
+    "mpidr": "0x80000001",
+    "affinity": "0x1",
+    "bootcpu": 1,
+    "cpus": 1,
+    "max_logical": 0,
+    "match": true
+  },
+  "stage1": {
+    "reads": 26,
+    "writes": 3,
+    "mappings": 8,
+    "elapsed_us": 316,
+    "clocks_checked": true,
+    "pins_checked": true
+  },
+  "transfer_result": {
+    "status": "nack",
+    "reason": "status_nack",
+    "phase_ok": 1,
+    "guard_ok": 1,
+    "attempt": 1,
+    "complete": 0,
+    "quarantined": 1,
+    "poisoned": 0
+  },
+  "transfer_progress": {
+    "run_issued": 1,
+    "run_accepted": 1,
+    "run_observed": 1,
+    "input_done": 0,
+    "stop": 0
+  },
+  "transfer_counters": {
+    "reads": 484,
+    "writes": 22,
+    "polls": 4,
+    "rx_reads": 0,
+    "elapsed_us": 1106,
+    "transaction_elapsed_us": 198
+  },
+  "initializer": {
+    "status": "observed",
+    "reason": "prefifo_pause_observed_no_new_tags",
+    "reads": 411,
+    "writes": 18,
+    "polls": 4,
+    "pause": 1
+  },
+  "raw_receive": {
+    "valid": 0,
+    "word": null,
+    "id_byte": null,
+    "id_committed": 0,
+    "identity_match": "unverified"
+  },
+  "adapter": {
+    "status": "stopped",
+    "adapter_reason": "none",
+    "physical_reads": 562,
+    "physical_writes": 22,
+    "extra_mappings": 1,
+    "fifo_reads_attempted": 0,
+    "terminal_gic": null,
+    "quarantine": 1
+  },
+  "samples": {
+    "pre_load0": {
+      "metadata": {
+        "stage": "pre_load0",
+        "attempted": 1,
+        "complete": 1,
+        "valid": 127,
+        "poll": 0
+      },
+      "times": {
+        "start_absolute_us": 3657371333,
+        "accepted_absolute_us": 3657371342
+      },
+      "registers": {
+        "VERSION": 537264128,
+        "ERROR": 0,
+        "STATUS": 202440704,
+        "OPERATIONAL": 0,
+        "STATE": 287,
+        "IN_COUNT": 0,
+        "OUT_COUNT": 0
+      },
+      "decoded_status": {
+        "raw": 202440704,
+        "raw_hex": "0x0c110000",
+        "error_mask_hex": "0x00000000",
+        "asserted_error_bits": [],
+        "fail_two_bit_field": 0,
+        "nack": false,
+        "unknown_bits_hex": "0x00000000",
+        "write_buffer_full": 0,
+        "bus_active": 0,
+        "bus_master": 0,
+        "dat_state": 0,
+        "clk_state": 0,
+        "o_fsm": 1,
+        "i_fsm": 2,
+        "sda": 1,
+        "scl": 1
+      }
+    },
+    "pre_load1": {
+      "metadata": {
+        "stage": "pre_load1",
+        "attempted": 1,
+        "complete": 1,
+        "valid": 127,
+        "poll": 0
+      },
+      "times": {
+        "start_absolute_us": 3657371348,
+        "accepted_absolute_us": 3657371355
+      },
+      "registers": {
+        "VERSION": 537264128,
+        "ERROR": 0,
+        "STATUS": 202440704,
+        "OPERATIONAL": 16,
+        "STATE": 287,
+        "IN_COUNT": 0,
+        "OUT_COUNT": 1
+      },
+      "decoded_status": {
+        "raw": 202440704,
+        "raw_hex": "0x0c110000",
+        "error_mask_hex": "0x00000000",
+        "asserted_error_bits": [],
+        "fail_two_bit_field": 0,
+        "nack": false,
+        "unknown_bits_hex": "0x00000000",
+        "write_buffer_full": 0,
+        "bus_active": 0,
+        "bus_master": 0,
+        "dat_state": 0,
+        "clk_state": 0,
+        "o_fsm": 1,
+        "i_fsm": 2,
+        "sda": 1,
+        "scl": 1
+      }
+    },
+    "pre_load2": {
+      "metadata": {
+        "stage": "pre_load2",
+        "attempted": 1,
+        "complete": 1,
+        "valid": 127,
+        "poll": 0
+      },
+      "times": {
+        "start_absolute_us": 3657371359,
+        "accepted_absolute_us": 3657371366
+      },
+      "registers": {
+        "VERSION": 537264128,
+        "ERROR": 0,
+        "STATUS": 202440704,
+        "OPERATIONAL": 16,
+        "STATE": 287,
+        "IN_COUNT": 0,
+        "OUT_COUNT": 2
+      },
+      "decoded_status": {
+        "raw": 202440704,
+        "raw_hex": "0x0c110000",
+        "error_mask_hex": "0x00000000",
+        "asserted_error_bits": [],
+        "fail_two_bit_field": 0,
+        "nack": false,
+        "unknown_bits_hex": "0x00000000",
+        "write_buffer_full": 0,
+        "bus_active": 0,
+        "bus_master": 0,
+        "dat_state": 0,
+        "clk_state": 0,
+        "o_fsm": 1,
+        "i_fsm": 2,
+        "sda": 1,
+        "scl": 1
+      }
+    },
+    "pre_run": {
+      "metadata": {
+        "stage": "pre_run",
+        "attempted": 1,
+        "complete": 1,
+        "valid": 127,
+        "poll": 0
+      },
+      "times": {
+        "start_absolute_us": 3657371371,
+        "accepted_absolute_us": 3657371378
+      },
+      "registers": {
+        "VERSION": 537264128,
+        "ERROR": 0,
+        "STATUS": 202440704,
+        "OPERATIONAL": 16,
+        "STATE": 287,
+        "IN_COUNT": 0,
+        "OUT_COUNT": 3
+      },
+      "decoded_status": {
+        "raw": 202440704,
+        "raw_hex": "0x0c110000",
+        "error_mask_hex": "0x00000000",
+        "asserted_error_bits": [],
+        "fail_two_bit_field": 0,
+        "nack": false,
+        "unknown_bits_hex": "0x00000000",
+        "write_buffer_full": 0,
+        "bus_active": 0,
+        "bus_master": 0,
+        "dat_state": 0,
+        "clk_state": 0,
+        "o_fsm": 1,
+        "i_fsm": 2,
+        "sda": 1,
+        "scl": 1
+      }
+    },
+    "completion": {
+      "metadata": {
+        "stage": "completion",
+        "attempted": 1,
+        "complete": 1,
+        "valid": 127,
+        "poll": 4
+      },
+      "times": {
+        "start_absolute_us": 3657371497,
+        "accepted_absolute_us": 3657371506
+      },
+      "registers": {
+        "VERSION": 537264128,
+        "ERROR": 0,
+        "STATUS": 219349192,
+        "OPERATIONAL": 16,
+        "STATE": 285,
+        "IN_COUNT": 0,
+        "OUT_COUNT": 3
+      },
+      "decoded_status": {
+        "raw": 219349192,
+        "raw_hex": "0x0d1300c8",
+        "error_mask_hex": "0x010000c8",
+        "asserted_error_bits": [
+          {
+            "bit": 3,
+            "name": "PACKET_NACKED"
+          },
+          {
+            "bit": 6,
+            "name": "FAILED_bit6"
+          },
+          {
+            "bit": 7,
+            "name": "FAIL_field_bit7"
+          },
+          {
+            "bit": 24,
+            "name": "INVALID_READ_ADDR"
+          }
+        ],
+        "fail_two_bit_field": 3,
+        "nack": true,
+        "unknown_bits_hex": "0x00000000",
+        "write_buffer_full": 0,
+        "bus_active": 0,
+        "bus_master": 0,
+        "dat_state": 0,
+        "clk_state": 0,
+        "o_fsm": 3,
+        "i_fsm": 2,
+        "sda": 1,
+        "scl": 1
+      }
+    },
+    "post_rx": {
+      "metadata": {
+        "stage": "post_rx",
+        "attempted": 0,
+        "complete": 0,
+        "valid": 0,
+        "poll": 0
+      },
+      "times": {},
+      "registers": {},
+      "decoded_status": null
+    },
+    "stop": {
+      "metadata": {
+        "stage": "stop",
+        "attempted": 0,
+        "complete": 0,
+        "valid": 0,
+        "poll": 0
+      },
+      "times": {},
+      "registers": {},
+      "decoded_status": null
+    },
+    "first_failure": {
+      "metadata": {
+        "stage": "first_failure",
+        "attempted": 1,
+        "complete": 1,
+        "valid": 127,
+        "poll": 4
+      },
+      "times": {
+        "start_absolute_us": 3657371497,
+        "accepted_absolute_us": 3657371506
+      },
+      "registers": {
+        "VERSION": 537264128,
+        "ERROR": 0,
+        "STATUS": 219349192,
+        "OPERATIONAL": 16,
+        "STATE": 285,
+        "IN_COUNT": 0,
+        "OUT_COUNT": 3
+      },
+      "decoded_status": {
+        "raw": 219349192,
+        "raw_hex": "0x0d1300c8",
+        "error_mask_hex": "0x010000c8",
+        "asserted_error_bits": [
+          {
+            "bit": 3,
+            "name": "PACKET_NACKED"
+          },
+          {
+            "bit": 6,
+            "name": "FAILED_bit6"
+          },
+          {
+            "bit": 7,
+            "name": "FAIL_field_bit7"
+          },
+          {
+            "bit": 24,
+            "name": "INVALID_READ_ADDR"
+          }
+        ],
+        "fail_two_bit_field": 3,
+        "nack": true,
+        "unknown_bits_hex": "0x00000000",
+        "write_buffer_full": 0,
+        "bus_active": 0,
+        "bus_master": 0,
+        "dat_state": 0,
+        "clk_state": 0,
+        "o_fsm": 3,
+        "i_fsm": 2,
+        "sda": 1,
+        "scl": 1
+      }
+    }
+  },
+  "field_groups": {
+    "init.0.0": {
+      "expected": 17,
+      "printed": 17,
+      "valid": 17,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 151,
+          "byte_offset": 11681
+        },
+        {
+          "index": 1,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 284,
+          "record_valid": true,
+          "line": 152,
+          "byte_offset": 11781
+        },
+        {
+          "index": 2,
+          "reg": "CONFIG",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 153,
+          "byte_offset": 11879
+        },
+        {
+          "index": 3,
+          "reg": "IO_MODES",
+          "valid": 1,
+          "value": 165,
+          "record_valid": true,
+          "line": 154,
+          "byte_offset": 11978
+        },
+        {
+          "index": 4,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 192,
+          "record_valid": true,
+          "line": 155,
+          "byte_offset": 12079
+        },
+        {
+          "index": 5,
+          "reg": "ERROR_FLAGS",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 156,
+          "byte_offset": 12183
+        },
+        {
+          "index": 6,
+          "reg": "ERROR_FLAGS_EN",
+          "valid": 1,
+          "value": 60,
+          "record_valid": true,
+          "line": 157,
+          "byte_offset": 12287
+        },
+        {
+          "index": 7,
+          "reg": "OPERATIONAL_MASK",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 158,
+          "byte_offset": 12394
+        },
+        {
+          "index": 8,
+          "reg": "OUT_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 159,
+          "byte_offset": 12503
+        },
+        {
+          "index": 9,
+          "reg": "IN_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 160,
+          "byte_offset": 12610
+        },
+        {
+          "index": 10,
+          "reg": "MX_OUTPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 161,
+          "byte_offset": 12716
+        },
+        {
+          "index": 11,
+          "reg": "MX_INPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 162,
+          "byte_offset": 12819
+        },
+        {
+          "index": 12,
+          "reg": "MX_READ",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 163,
+          "byte_offset": 12921
+        },
+        {
+          "index": 13,
+          "reg": "MX_WRITE",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 164,
+          "byte_offset": 13022
+        },
+        {
+          "index": 14,
+          "reg": "MASTER_CONFIG",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 165,
+          "byte_offset": 13124
+        },
+        {
+          "index": 15,
+          "reg": "CLK_CTL",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 166,
+          "byte_offset": 13231
+        },
+        {
+          "index": 16,
+          "reg": "I2C_STATUS",
+          "valid": 1,
+          "value": 201326592,
+          "record_valid": true,
+          "line": 167,
+          "byte_offset": 13332
+        }
+      ],
+      "pair_stable_all": true
+    },
+    "init.0.1": {
+      "expected": 17,
+      "printed": 17,
+      "valid": 17,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 168,
+          "byte_offset": 13436
+        },
+        {
+          "index": 1,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 284,
+          "record_valid": true,
+          "line": 169,
+          "byte_offset": 13536
+        },
+        {
+          "index": 2,
+          "reg": "CONFIG",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 170,
+          "byte_offset": 13634
+        },
+        {
+          "index": 3,
+          "reg": "IO_MODES",
+          "valid": 1,
+          "value": 165,
+          "record_valid": true,
+          "line": 171,
+          "byte_offset": 13733
+        },
+        {
+          "index": 4,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 192,
+          "record_valid": true,
+          "line": 172,
+          "byte_offset": 13834
+        },
+        {
+          "index": 5,
+          "reg": "ERROR_FLAGS",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 173,
+          "byte_offset": 13938
+        },
+        {
+          "index": 6,
+          "reg": "ERROR_FLAGS_EN",
+          "valid": 1,
+          "value": 60,
+          "record_valid": true,
+          "line": 174,
+          "byte_offset": 14042
+        },
+        {
+          "index": 7,
+          "reg": "OPERATIONAL_MASK",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 175,
+          "byte_offset": 14149
+        },
+        {
+          "index": 8,
+          "reg": "OUT_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 176,
+          "byte_offset": 14258
+        },
+        {
+          "index": 9,
+          "reg": "IN_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 177,
+          "byte_offset": 14365
+        },
+        {
+          "index": 10,
+          "reg": "MX_OUTPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 178,
+          "byte_offset": 14471
+        },
+        {
+          "index": 11,
+          "reg": "MX_INPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 179,
+          "byte_offset": 14574
+        },
+        {
+          "index": 12,
+          "reg": "MX_READ",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 180,
+          "byte_offset": 14676
+        },
+        {
+          "index": 13,
+          "reg": "MX_WRITE",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 181,
+          "byte_offset": 14777
+        },
+        {
+          "index": 14,
+          "reg": "MASTER_CONFIG",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 182,
+          "byte_offset": 14879
+        },
+        {
+          "index": 15,
+          "reg": "CLK_CTL",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 183,
+          "byte_offset": 14986
+        },
+        {
+          "index": 16,
+          "reg": "I2C_STATUS",
+          "valid": 1,
+          "value": 201326592,
+          "record_valid": true,
+          "line": 184,
+          "byte_offset": 15087
+        }
+      ]
+    },
+    "init.1.0": {
+      "expected": 17,
+      "printed": 17,
+      "valid": 17,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 185,
+          "byte_offset": 15191
+        },
+        {
+          "index": 1,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 284,
+          "record_valid": true,
+          "line": 186,
+          "byte_offset": 15291
+        },
+        {
+          "index": 2,
+          "reg": "CONFIG",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 187,
+          "byte_offset": 15389
+        },
+        {
+          "index": 3,
+          "reg": "IO_MODES",
+          "valid": 1,
+          "value": 165,
+          "record_valid": true,
+          "line": 188,
+          "byte_offset": 15488
+        },
+        {
+          "index": 4,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 192,
+          "record_valid": true,
+          "line": 189,
+          "byte_offset": 15589
+        },
+        {
+          "index": 5,
+          "reg": "ERROR_FLAGS",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 190,
+          "byte_offset": 15693
+        },
+        {
+          "index": 6,
+          "reg": "ERROR_FLAGS_EN",
+          "valid": 1,
+          "value": 60,
+          "record_valid": true,
+          "line": 191,
+          "byte_offset": 15797
+        },
+        {
+          "index": 7,
+          "reg": "OPERATIONAL_MASK",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 192,
+          "byte_offset": 15904
+        },
+        {
+          "index": 8,
+          "reg": "OUT_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 193,
+          "byte_offset": 16013
+        },
+        {
+          "index": 9,
+          "reg": "IN_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 194,
+          "byte_offset": 16120
+        },
+        {
+          "index": 10,
+          "reg": "MX_OUTPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 195,
+          "byte_offset": 16226
+        },
+        {
+          "index": 11,
+          "reg": "MX_INPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 196,
+          "byte_offset": 16329
+        },
+        {
+          "index": 12,
+          "reg": "MX_READ",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 197,
+          "byte_offset": 16431
+        },
+        {
+          "index": 13,
+          "reg": "MX_WRITE",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 198,
+          "byte_offset": 16532
+        },
+        {
+          "index": 14,
+          "reg": "MASTER_CONFIG",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 199,
+          "byte_offset": 16634
+        },
+        {
+          "index": 15,
+          "reg": "CLK_CTL",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 200,
+          "byte_offset": 16741
+        },
+        {
+          "index": 16,
+          "reg": "I2C_STATUS",
+          "valid": 1,
+          "value": 201326592,
+          "record_valid": true,
+          "line": 201,
+          "byte_offset": 16842
+        }
+      ],
+      "pair_stable_all": true
+    },
+    "init.1.1": {
+      "expected": 17,
+      "printed": 17,
+      "valid": 17,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 202,
+          "byte_offset": 16946
+        },
+        {
+          "index": 1,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 284,
+          "record_valid": true,
+          "line": 203,
+          "byte_offset": 17046
+        },
+        {
+          "index": 2,
+          "reg": "CONFIG",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 204,
+          "byte_offset": 17144
+        },
+        {
+          "index": 3,
+          "reg": "IO_MODES",
+          "valid": 1,
+          "value": 165,
+          "record_valid": true,
+          "line": 205,
+          "byte_offset": 17243
+        },
+        {
+          "index": 4,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 192,
+          "record_valid": true,
+          "line": 206,
+          "byte_offset": 17344
+        },
+        {
+          "index": 5,
+          "reg": "ERROR_FLAGS",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 207,
+          "byte_offset": 17448
+        },
+        {
+          "index": 6,
+          "reg": "ERROR_FLAGS_EN",
+          "valid": 1,
+          "value": 60,
+          "record_valid": true,
+          "line": 208,
+          "byte_offset": 17552
+        },
+        {
+          "index": 7,
+          "reg": "OPERATIONAL_MASK",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 209,
+          "byte_offset": 17659
+        },
+        {
+          "index": 8,
+          "reg": "OUT_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 210,
+          "byte_offset": 17768
+        },
+        {
+          "index": 9,
+          "reg": "IN_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 211,
+          "byte_offset": 17875
+        },
+        {
+          "index": 10,
+          "reg": "MX_OUTPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 212,
+          "byte_offset": 17981
+        },
+        {
+          "index": 11,
+          "reg": "MX_INPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 213,
+          "byte_offset": 18084
+        },
+        {
+          "index": 12,
+          "reg": "MX_READ",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 214,
+          "byte_offset": 18186
+        },
+        {
+          "index": 13,
+          "reg": "MX_WRITE",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 215,
+          "byte_offset": 18287
+        },
+        {
+          "index": 14,
+          "reg": "MASTER_CONFIG",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 216,
+          "byte_offset": 18389
+        },
+        {
+          "index": 15,
+          "reg": "CLK_CTL",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 217,
+          "byte_offset": 18496
+        },
+        {
+          "index": 16,
+          "reg": "I2C_STATUS",
+          "valid": 1,
+          "value": 201326592,
+          "record_valid": true,
+          "line": 218,
+          "byte_offset": 18597
+        }
+      ]
+    },
+    "init.2.0": {
+      "expected": 17,
+      "printed": 17,
+      "valid": 17,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 219,
+          "byte_offset": 18701
+        },
+        {
+          "index": 1,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 284,
+          "record_valid": true,
+          "line": 220,
+          "byte_offset": 18801
+        },
+        {
+          "index": 2,
+          "reg": "CONFIG",
+          "valid": 1,
+          "value": 519,
+          "record_valid": true,
+          "line": 221,
+          "byte_offset": 18899
+        },
+        {
+          "index": 3,
+          "reg": "IO_MODES",
+          "valid": 1,
+          "value": 165,
+          "record_valid": true,
+          "line": 222,
+          "byte_offset": 18998
+        },
+        {
+          "index": 4,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 192,
+          "record_valid": true,
+          "line": 223,
+          "byte_offset": 19099
+        },
+        {
+          "index": 5,
+          "reg": "ERROR_FLAGS",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 224,
+          "byte_offset": 19203
+        },
+        {
+          "index": 6,
+          "reg": "ERROR_FLAGS_EN",
+          "valid": 1,
+          "value": 60,
+          "record_valid": true,
+          "line": 225,
+          "byte_offset": 19307
+        },
+        {
+          "index": 7,
+          "reg": "OPERATIONAL_MASK",
+          "valid": 1,
+          "value": 768,
+          "record_valid": true,
+          "line": 226,
+          "byte_offset": 19414
+        },
+        {
+          "index": 8,
+          "reg": "OUT_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 227,
+          "byte_offset": 19523
+        },
+        {
+          "index": 9,
+          "reg": "IN_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 228,
+          "byte_offset": 19630
+        },
+        {
+          "index": 10,
+          "reg": "MX_OUTPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 229,
+          "byte_offset": 19736
+        },
+        {
+          "index": 11,
+          "reg": "MX_INPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 230,
+          "byte_offset": 19839
+        },
+        {
+          "index": 12,
+          "reg": "MX_READ",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 231,
+          "byte_offset": 19941
+        },
+        {
+          "index": 13,
+          "reg": "MX_WRITE",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 232,
+          "byte_offset": 20042
+        },
+        {
+          "index": 14,
+          "reg": "MASTER_CONFIG",
+          "valid": 1,
+          "value": 1,
+          "record_valid": true,
+          "line": 233,
+          "byte_offset": 20144
+        },
+        {
+          "index": 15,
+          "reg": "CLK_CTL",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 234,
+          "byte_offset": 20251
+        },
+        {
+          "index": 16,
+          "reg": "I2C_STATUS",
+          "valid": 1,
+          "value": 201326592,
+          "record_valid": true,
+          "line": 235,
+          "byte_offset": 20352
+        }
+      ],
+      "pair_stable_all": true
+    },
+    "init.2.1": {
+      "expected": 17,
+      "printed": 17,
+      "valid": 17,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 236,
+          "byte_offset": 20456
+        },
+        {
+          "index": 1,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 284,
+          "record_valid": true,
+          "line": 237,
+          "byte_offset": 20556
+        },
+        {
+          "index": 2,
+          "reg": "CONFIG",
+          "valid": 1,
+          "value": 519,
+          "record_valid": true,
+          "line": 238,
+          "byte_offset": 20654
+        },
+        {
+          "index": 3,
+          "reg": "IO_MODES",
+          "valid": 1,
+          "value": 165,
+          "record_valid": true,
+          "line": 239,
+          "byte_offset": 20753
+        },
+        {
+          "index": 4,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 192,
+          "record_valid": true,
+          "line": 240,
+          "byte_offset": 20854
+        },
+        {
+          "index": 5,
+          "reg": "ERROR_FLAGS",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 241,
+          "byte_offset": 20958
+        },
+        {
+          "index": 6,
+          "reg": "ERROR_FLAGS_EN",
+          "valid": 1,
+          "value": 60,
+          "record_valid": true,
+          "line": 242,
+          "byte_offset": 21062
+        },
+        {
+          "index": 7,
+          "reg": "OPERATIONAL_MASK",
+          "valid": 1,
+          "value": 768,
+          "record_valid": true,
+          "line": 243,
+          "byte_offset": 21169
+        },
+        {
+          "index": 8,
+          "reg": "OUT_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 244,
+          "byte_offset": 21278
+        },
+        {
+          "index": 9,
+          "reg": "IN_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 245,
+          "byte_offset": 21385
+        },
+        {
+          "index": 10,
+          "reg": "MX_OUTPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 246,
+          "byte_offset": 21491
+        },
+        {
+          "index": 11,
+          "reg": "MX_INPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 247,
+          "byte_offset": 21594
+        },
+        {
+          "index": 12,
+          "reg": "MX_READ",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 248,
+          "byte_offset": 21696
+        },
+        {
+          "index": 13,
+          "reg": "MX_WRITE",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 249,
+          "byte_offset": 21797
+        },
+        {
+          "index": 14,
+          "reg": "MASTER_CONFIG",
+          "valid": 1,
+          "value": 1,
+          "record_valid": true,
+          "line": 250,
+          "byte_offset": 21899
+        },
+        {
+          "index": 15,
+          "reg": "CLK_CTL",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 251,
+          "byte_offset": 22006
+        },
+        {
+          "index": 16,
+          "reg": "I2C_STATUS",
+          "valid": 1,
+          "value": 201326592,
+          "record_valid": true,
+          "line": 252,
+          "byte_offset": 22107
+        }
+      ]
+    },
+    "init.3.0": {
+      "expected": 17,
+      "printed": 17,
+      "valid": 17,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 253,
+          "byte_offset": 22211
+        },
+        {
+          "index": 1,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 284,
+          "record_valid": true,
+          "line": 254,
+          "byte_offset": 22311
+        },
+        {
+          "index": 2,
+          "reg": "CONFIG",
+          "valid": 1,
+          "value": 519,
+          "record_valid": true,
+          "line": 255,
+          "byte_offset": 22409
+        },
+        {
+          "index": 3,
+          "reg": "IO_MODES",
+          "valid": 1,
+          "value": 49317,
+          "record_valid": true,
+          "line": 256,
+          "byte_offset": 22508
+        },
+        {
+          "index": 4,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 192,
+          "record_valid": true,
+          "line": 257,
+          "byte_offset": 22609
+        },
+        {
+          "index": 5,
+          "reg": "ERROR_FLAGS",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 258,
+          "byte_offset": 22713
+        },
+        {
+          "index": 6,
+          "reg": "ERROR_FLAGS_EN",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 259,
+          "byte_offset": 22817
+        },
+        {
+          "index": 7,
+          "reg": "OPERATIONAL_MASK",
+          "valid": 1,
+          "value": 768,
+          "record_valid": true,
+          "line": 260,
+          "byte_offset": 22924
+        },
+        {
+          "index": 8,
+          "reg": "OUT_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 261,
+          "byte_offset": 23033
+        },
+        {
+          "index": 9,
+          "reg": "IN_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 262,
+          "byte_offset": 23140
+        },
+        {
+          "index": 10,
+          "reg": "MX_OUTPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 263,
+          "byte_offset": 23246
+        },
+        {
+          "index": 11,
+          "reg": "MX_INPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 264,
+          "byte_offset": 23349
+        },
+        {
+          "index": 12,
+          "reg": "MX_READ",
+          "valid": 1,
+          "value": 3,
+          "record_valid": true,
+          "line": 265,
+          "byte_offset": 23451
+        },
+        {
+          "index": 13,
+          "reg": "MX_WRITE",
+          "valid": 1,
+          "value": 9,
+          "record_valid": true,
+          "line": 266,
+          "byte_offset": 23552
+        },
+        {
+          "index": 14,
+          "reg": "MASTER_CONFIG",
+          "valid": 1,
+          "value": 1,
+          "record_valid": true,
+          "line": 267,
+          "byte_offset": 23654
+        },
+        {
+          "index": 15,
+          "reg": "CLK_CTL",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 268,
+          "byte_offset": 23761
+        },
+        {
+          "index": 16,
+          "reg": "I2C_STATUS",
+          "valid": 1,
+          "value": 201326592,
+          "record_valid": true,
+          "line": 269,
+          "byte_offset": 23862
+        }
+      ],
+      "pair_stable_all": true
+    },
+    "init.3.1": {
+      "expected": 17,
+      "printed": 17,
+      "valid": 17,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 270,
+          "byte_offset": 23966
+        },
+        {
+          "index": 1,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 284,
+          "record_valid": true,
+          "line": 271,
+          "byte_offset": 24066
+        },
+        {
+          "index": 2,
+          "reg": "CONFIG",
+          "valid": 1,
+          "value": 519,
+          "record_valid": true,
+          "line": 272,
+          "byte_offset": 24164
+        },
+        {
+          "index": 3,
+          "reg": "IO_MODES",
+          "valid": 1,
+          "value": 49317,
+          "record_valid": true,
+          "line": 273,
+          "byte_offset": 24263
+        },
+        {
+          "index": 4,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 192,
+          "record_valid": true,
+          "line": 274,
+          "byte_offset": 24364
+        },
+        {
+          "index": 5,
+          "reg": "ERROR_FLAGS",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 275,
+          "byte_offset": 24468
+        },
+        {
+          "index": 6,
+          "reg": "ERROR_FLAGS_EN",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 276,
+          "byte_offset": 24572
+        },
+        {
+          "index": 7,
+          "reg": "OPERATIONAL_MASK",
+          "valid": 1,
+          "value": 768,
+          "record_valid": true,
+          "line": 277,
+          "byte_offset": 24679
+        },
+        {
+          "index": 8,
+          "reg": "OUT_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 278,
+          "byte_offset": 24788
+        },
+        {
+          "index": 9,
+          "reg": "IN_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 279,
+          "byte_offset": 24895
+        },
+        {
+          "index": 10,
+          "reg": "MX_OUTPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 280,
+          "byte_offset": 25001
+        },
+        {
+          "index": 11,
+          "reg": "MX_INPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 281,
+          "byte_offset": 25104
+        },
+        {
+          "index": 12,
+          "reg": "MX_READ",
+          "valid": 1,
+          "value": 3,
+          "record_valid": true,
+          "line": 282,
+          "byte_offset": 25206
+        },
+        {
+          "index": 13,
+          "reg": "MX_WRITE",
+          "valid": 1,
+          "value": 9,
+          "record_valid": true,
+          "line": 283,
+          "byte_offset": 25307
+        },
+        {
+          "index": 14,
+          "reg": "MASTER_CONFIG",
+          "valid": 1,
+          "value": 1,
+          "record_valid": true,
+          "line": 284,
+          "byte_offset": 25409
+        },
+        {
+          "index": 15,
+          "reg": "CLK_CTL",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 285,
+          "byte_offset": 25516
+        },
+        {
+          "index": 16,
+          "reg": "I2C_STATUS",
+          "valid": 1,
+          "value": 201326592,
+          "record_valid": true,
+          "line": 286,
+          "byte_offset": 25617
+        }
+      ]
+    },
+    "init.4.0": {
+      "expected": 17,
+      "printed": 17,
+      "valid": 17,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 287,
+          "byte_offset": 25721
+        },
+        {
+          "index": 1,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 285,
+          "record_valid": true,
+          "line": 288,
+          "byte_offset": 25821
+        },
+        {
+          "index": 2,
+          "reg": "CONFIG",
+          "valid": 1,
+          "value": 519,
+          "record_valid": true,
+          "line": 289,
+          "byte_offset": 25919
+        },
+        {
+          "index": 3,
+          "reg": "IO_MODES",
+          "valid": 1,
+          "value": 49317,
+          "record_valid": true,
+          "line": 290,
+          "byte_offset": 26018
+        },
+        {
+          "index": 4,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 291,
+          "byte_offset": 26119
+        },
+        {
+          "index": 5,
+          "reg": "ERROR_FLAGS",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 292,
+          "byte_offset": 26223
+        },
+        {
+          "index": 6,
+          "reg": "ERROR_FLAGS_EN",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 293,
+          "byte_offset": 26327
+        },
+        {
+          "index": 7,
+          "reg": "OPERATIONAL_MASK",
+          "valid": 1,
+          "value": 768,
+          "record_valid": true,
+          "line": 294,
+          "byte_offset": 26434
+        },
+        {
+          "index": 8,
+          "reg": "OUT_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 295,
+          "byte_offset": 26543
+        },
+        {
+          "index": 9,
+          "reg": "IN_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 296,
+          "byte_offset": 26650
+        },
+        {
+          "index": 10,
+          "reg": "MX_OUTPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 297,
+          "byte_offset": 26756
+        },
+        {
+          "index": 11,
+          "reg": "MX_INPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 298,
+          "byte_offset": 26859
+        },
+        {
+          "index": 12,
+          "reg": "MX_READ",
+          "valid": 1,
+          "value": 3,
+          "record_valid": true,
+          "line": 299,
+          "byte_offset": 26961
+        },
+        {
+          "index": 13,
+          "reg": "MX_WRITE",
+          "valid": 1,
+          "value": 9,
+          "record_valid": true,
+          "line": 300,
+          "byte_offset": 27062
+        },
+        {
+          "index": 14,
+          "reg": "MASTER_CONFIG",
+          "valid": 1,
+          "value": 1,
+          "record_valid": true,
+          "line": 301,
+          "byte_offset": 27164
+        },
+        {
+          "index": 15,
+          "reg": "CLK_CTL",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 302,
+          "byte_offset": 27271
+        },
+        {
+          "index": 16,
+          "reg": "I2C_STATUS",
+          "valid": 1,
+          "value": 202440704,
+          "record_valid": true,
+          "line": 303,
+          "byte_offset": 27372
+        }
+      ],
+      "pair_stable_all": true
+    },
+    "init.4.1": {
+      "expected": 17,
+      "printed": 17,
+      "valid": 17,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 304,
+          "byte_offset": 27476
+        },
+        {
+          "index": 1,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 285,
+          "record_valid": true,
+          "line": 305,
+          "byte_offset": 27576
+        },
+        {
+          "index": 2,
+          "reg": "CONFIG",
+          "valid": 1,
+          "value": 519,
+          "record_valid": true,
+          "line": 306,
+          "byte_offset": 27674
+        },
+        {
+          "index": 3,
+          "reg": "IO_MODES",
+          "valid": 1,
+          "value": 49317,
+          "record_valid": true,
+          "line": 307,
+          "byte_offset": 27773
+        },
+        {
+          "index": 4,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 308,
+          "byte_offset": 27874
+        },
+        {
+          "index": 5,
+          "reg": "ERROR_FLAGS",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 309,
+          "byte_offset": 27978
+        },
+        {
+          "index": 6,
+          "reg": "ERROR_FLAGS_EN",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 310,
+          "byte_offset": 28082
+        },
+        {
+          "index": 7,
+          "reg": "OPERATIONAL_MASK",
+          "valid": 1,
+          "value": 768,
+          "record_valid": true,
+          "line": 311,
+          "byte_offset": 28189
+        },
+        {
+          "index": 8,
+          "reg": "OUT_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 312,
+          "byte_offset": 28298
+        },
+        {
+          "index": 9,
+          "reg": "IN_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 313,
+          "byte_offset": 28405
+        },
+        {
+          "index": 10,
+          "reg": "MX_OUTPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 314,
+          "byte_offset": 28511
+        },
+        {
+          "index": 11,
+          "reg": "MX_INPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 315,
+          "byte_offset": 28614
+        },
+        {
+          "index": 12,
+          "reg": "MX_READ",
+          "valid": 1,
+          "value": 3,
+          "record_valid": true,
+          "line": 316,
+          "byte_offset": 28716
+        },
+        {
+          "index": 13,
+          "reg": "MX_WRITE",
+          "valid": 1,
+          "value": 9,
+          "record_valid": true,
+          "line": 317,
+          "byte_offset": 28817
+        },
+        {
+          "index": 14,
+          "reg": "MASTER_CONFIG",
+          "valid": 1,
+          "value": 1,
+          "record_valid": true,
+          "line": 318,
+          "byte_offset": 28919
+        },
+        {
+          "index": 15,
+          "reg": "CLK_CTL",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 319,
+          "byte_offset": 29026
+        },
+        {
+          "index": 16,
+          "reg": "I2C_STATUS",
+          "valid": 1,
+          "value": 202440704,
+          "record_valid": true,
+          "line": 320,
+          "byte_offset": 29127
+        }
+      ]
+    },
+    "init.5.0": {
+      "expected": 17,
+      "printed": 17,
+      "valid": 17,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 321,
+          "byte_offset": 29231
+        },
+        {
+          "index": 1,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 285,
+          "record_valid": true,
+          "line": 322,
+          "byte_offset": 29331
+        },
+        {
+          "index": 2,
+          "reg": "CONFIG",
+          "valid": 1,
+          "value": 519,
+          "record_valid": true,
+          "line": 323,
+          "byte_offset": 29429
+        },
+        {
+          "index": 3,
+          "reg": "IO_MODES",
+          "valid": 1,
+          "value": 49317,
+          "record_valid": true,
+          "line": 324,
+          "byte_offset": 29528
+        },
+        {
+          "index": 4,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 325,
+          "byte_offset": 29629
+        },
+        {
+          "index": 5,
+          "reg": "ERROR_FLAGS",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 326,
+          "byte_offset": 29733
+        },
+        {
+          "index": 6,
+          "reg": "ERROR_FLAGS_EN",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 327,
+          "byte_offset": 29837
+        },
+        {
+          "index": 7,
+          "reg": "OPERATIONAL_MASK",
+          "valid": 1,
+          "value": 768,
+          "record_valid": true,
+          "line": 328,
+          "byte_offset": 29944
+        },
+        {
+          "index": 8,
+          "reg": "OUT_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 329,
+          "byte_offset": 30053
+        },
+        {
+          "index": 9,
+          "reg": "IN_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 330,
+          "byte_offset": 30160
+        },
+        {
+          "index": 10,
+          "reg": "MX_OUTPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 331,
+          "byte_offset": 30266
+        },
+        {
+          "index": 11,
+          "reg": "MX_INPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 332,
+          "byte_offset": 30369
+        },
+        {
+          "index": 12,
+          "reg": "MX_READ",
+          "valid": 1,
+          "value": 3,
+          "record_valid": true,
+          "line": 333,
+          "byte_offset": 30471
+        },
+        {
+          "index": 13,
+          "reg": "MX_WRITE",
+          "valid": 1,
+          "value": 9,
+          "record_valid": true,
+          "line": 334,
+          "byte_offset": 30572
+        },
+        {
+          "index": 14,
+          "reg": "MASTER_CONFIG",
+          "valid": 1,
+          "value": 1,
+          "record_valid": true,
+          "line": 335,
+          "byte_offset": 30674
+        },
+        {
+          "index": 15,
+          "reg": "CLK_CTL",
+          "valid": 1,
+          "value": 4063356,
+          "record_valid": true,
+          "line": 336,
+          "byte_offset": 30781
+        },
+        {
+          "index": 16,
+          "reg": "I2C_STATUS",
+          "valid": 1,
+          "value": 202440704,
+          "record_valid": true,
+          "line": 337,
+          "byte_offset": 30882
+        }
+      ],
+      "pair_stable_all": true
+    },
+    "init.5.1": {
+      "expected": 17,
+      "printed": 17,
+      "valid": 17,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 338,
+          "byte_offset": 30986
+        },
+        {
+          "index": 1,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 285,
+          "record_valid": true,
+          "line": 339,
+          "byte_offset": 31086
+        },
+        {
+          "index": 2,
+          "reg": "CONFIG",
+          "valid": 1,
+          "value": 519,
+          "record_valid": true,
+          "line": 340,
+          "byte_offset": 31184
+        },
+        {
+          "index": 3,
+          "reg": "IO_MODES",
+          "valid": 1,
+          "value": 49317,
+          "record_valid": true,
+          "line": 341,
+          "byte_offset": 31283
+        },
+        {
+          "index": 4,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 342,
+          "byte_offset": 31384
+        },
+        {
+          "index": 5,
+          "reg": "ERROR_FLAGS",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 343,
+          "byte_offset": 31488
+        },
+        {
+          "index": 6,
+          "reg": "ERROR_FLAGS_EN",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 344,
+          "byte_offset": 31592
+        },
+        {
+          "index": 7,
+          "reg": "OPERATIONAL_MASK",
+          "valid": 1,
+          "value": 768,
+          "record_valid": true,
+          "line": 345,
+          "byte_offset": 31699
+        },
+        {
+          "index": 8,
+          "reg": "OUT_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 346,
+          "byte_offset": 31808
+        },
+        {
+          "index": 9,
+          "reg": "IN_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 347,
+          "byte_offset": 31915
+        },
+        {
+          "index": 10,
+          "reg": "MX_OUTPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 348,
+          "byte_offset": 32021
+        },
+        {
+          "index": 11,
+          "reg": "MX_INPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 349,
+          "byte_offset": 32124
+        },
+        {
+          "index": 12,
+          "reg": "MX_READ",
+          "valid": 1,
+          "value": 3,
+          "record_valid": true,
+          "line": 350,
+          "byte_offset": 32226
+        },
+        {
+          "index": 13,
+          "reg": "MX_WRITE",
+          "valid": 1,
+          "value": 9,
+          "record_valid": true,
+          "line": 351,
+          "byte_offset": 32327
+        },
+        {
+          "index": 14,
+          "reg": "MASTER_CONFIG",
+          "valid": 1,
+          "value": 1,
+          "record_valid": true,
+          "line": 352,
+          "byte_offset": 32429
+        },
+        {
+          "index": 15,
+          "reg": "CLK_CTL",
+          "valid": 1,
+          "value": 4063356,
+          "record_valid": true,
+          "line": 353,
+          "byte_offset": 32536
+        },
+        {
+          "index": 16,
+          "reg": "I2C_STATUS",
+          "valid": 1,
+          "value": 202440704,
+          "record_valid": true,
+          "line": 354,
+          "byte_offset": 32637
+        }
+      ]
+    },
+    "init.6.0": {
+      "expected": 17,
+      "printed": 17,
+      "valid": 17,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 355,
+          "byte_offset": 32741
+        },
+        {
+          "index": 1,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 287,
+          "record_valid": true,
+          "line": 356,
+          "byte_offset": 32841
+        },
+        {
+          "index": 2,
+          "reg": "CONFIG",
+          "valid": 1,
+          "value": 519,
+          "record_valid": true,
+          "line": 357,
+          "byte_offset": 32939
+        },
+        {
+          "index": 3,
+          "reg": "IO_MODES",
+          "valid": 1,
+          "value": 49317,
+          "record_valid": true,
+          "line": 358,
+          "byte_offset": 33038
+        },
+        {
+          "index": 4,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 359,
+          "byte_offset": 33139
+        },
+        {
+          "index": 5,
+          "reg": "ERROR_FLAGS",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 360,
+          "byte_offset": 33243
+        },
+        {
+          "index": 6,
+          "reg": "ERROR_FLAGS_EN",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 361,
+          "byte_offset": 33347
+        },
+        {
+          "index": 7,
+          "reg": "OPERATIONAL_MASK",
+          "valid": 1,
+          "value": 768,
+          "record_valid": true,
+          "line": 362,
+          "byte_offset": 33454
+        },
+        {
+          "index": 8,
+          "reg": "OUT_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 363,
+          "byte_offset": 33563
+        },
+        {
+          "index": 9,
+          "reg": "IN_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 364,
+          "byte_offset": 33670
+        },
+        {
+          "index": 10,
+          "reg": "MX_OUTPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 365,
+          "byte_offset": 33776
+        },
+        {
+          "index": 11,
+          "reg": "MX_INPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 366,
+          "byte_offset": 33879
+        },
+        {
+          "index": 12,
+          "reg": "MX_READ",
+          "valid": 1,
+          "value": 3,
+          "record_valid": true,
+          "line": 367,
+          "byte_offset": 33981
+        },
+        {
+          "index": 13,
+          "reg": "MX_WRITE",
+          "valid": 1,
+          "value": 9,
+          "record_valid": true,
+          "line": 368,
+          "byte_offset": 34082
+        },
+        {
+          "index": 14,
+          "reg": "MASTER_CONFIG",
+          "valid": 1,
+          "value": 1,
+          "record_valid": true,
+          "line": 369,
+          "byte_offset": 34184
+        },
+        {
+          "index": 15,
+          "reg": "CLK_CTL",
+          "valid": 1,
+          "value": 4063356,
+          "record_valid": true,
+          "line": 370,
+          "byte_offset": 34291
+        },
+        {
+          "index": 16,
+          "reg": "I2C_STATUS",
+          "valid": 1,
+          "value": 202440704,
+          "record_valid": true,
+          "line": 371,
+          "byte_offset": 34392
+        }
+      ],
+      "pair_stable_all": true
+    },
+    "init.6.1": {
+      "expected": 17,
+      "printed": 17,
+      "valid": 17,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 372,
+          "byte_offset": 34496
+        },
+        {
+          "index": 1,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 287,
+          "record_valid": true,
+          "line": 373,
+          "byte_offset": 34596
+        },
+        {
+          "index": 2,
+          "reg": "CONFIG",
+          "valid": 1,
+          "value": 519,
+          "record_valid": true,
+          "line": 374,
+          "byte_offset": 34694
+        },
+        {
+          "index": 3,
+          "reg": "IO_MODES",
+          "valid": 1,
+          "value": 49317,
+          "record_valid": true,
+          "line": 375,
+          "byte_offset": 34793
+        },
+        {
+          "index": 4,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 376,
+          "byte_offset": 34894
+        },
+        {
+          "index": 5,
+          "reg": "ERROR_FLAGS",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 377,
+          "byte_offset": 34998
+        },
+        {
+          "index": 6,
+          "reg": "ERROR_FLAGS_EN",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 378,
+          "byte_offset": 35102
+        },
+        {
+          "index": 7,
+          "reg": "OPERATIONAL_MASK",
+          "valid": 1,
+          "value": 768,
+          "record_valid": true,
+          "line": 379,
+          "byte_offset": 35209
+        },
+        {
+          "index": 8,
+          "reg": "OUT_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 380,
+          "byte_offset": 35318
+        },
+        {
+          "index": 9,
+          "reg": "IN_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 381,
+          "byte_offset": 35425
+        },
+        {
+          "index": 10,
+          "reg": "MX_OUTPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 382,
+          "byte_offset": 35531
+        },
+        {
+          "index": 11,
+          "reg": "MX_INPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 383,
+          "byte_offset": 35634
+        },
+        {
+          "index": 12,
+          "reg": "MX_READ",
+          "valid": 1,
+          "value": 3,
+          "record_valid": true,
+          "line": 384,
+          "byte_offset": 35736
+        },
+        {
+          "index": 13,
+          "reg": "MX_WRITE",
+          "valid": 1,
+          "value": 9,
+          "record_valid": true,
+          "line": 385,
+          "byte_offset": 35837
+        },
+        {
+          "index": 14,
+          "reg": "MASTER_CONFIG",
+          "valid": 1,
+          "value": 1,
+          "record_valid": true,
+          "line": 386,
+          "byte_offset": 35939
+        },
+        {
+          "index": 15,
+          "reg": "CLK_CTL",
+          "valid": 1,
+          "value": 4063356,
+          "record_valid": true,
+          "line": 387,
+          "byte_offset": 36046
+        },
+        {
+          "index": 16,
+          "reg": "I2C_STATUS",
+          "valid": 1,
+          "value": 202440704,
+          "record_valid": true,
+          "line": 388,
+          "byte_offset": 36147
+        }
+      ]
+    },
+    "init.7.0": {
+      "expected": 17,
+      "printed": 17,
+      "valid": 17,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 389,
+          "byte_offset": 36251
+        },
+        {
+          "index": 1,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 287,
+          "record_valid": true,
+          "line": 390,
+          "byte_offset": 36351
+        },
+        {
+          "index": 2,
+          "reg": "CONFIG",
+          "valid": 1,
+          "value": 519,
+          "record_valid": true,
+          "line": 391,
+          "byte_offset": 36449
+        },
+        {
+          "index": 3,
+          "reg": "IO_MODES",
+          "valid": 1,
+          "value": 49317,
+          "record_valid": true,
+          "line": 392,
+          "byte_offset": 36548
+        },
+        {
+          "index": 4,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 393,
+          "byte_offset": 36649
+        },
+        {
+          "index": 5,
+          "reg": "ERROR_FLAGS",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 394,
+          "byte_offset": 36753
+        },
+        {
+          "index": 6,
+          "reg": "ERROR_FLAGS_EN",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 395,
+          "byte_offset": 36857
+        },
+        {
+          "index": 7,
+          "reg": "OPERATIONAL_MASK",
+          "valid": 1,
+          "value": 768,
+          "record_valid": true,
+          "line": 396,
+          "byte_offset": 36964
+        },
+        {
+          "index": 8,
+          "reg": "OUT_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 397,
+          "byte_offset": 37073
+        },
+        {
+          "index": 9,
+          "reg": "IN_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 398,
+          "byte_offset": 37180
+        },
+        {
+          "index": 10,
+          "reg": "MX_OUTPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 399,
+          "byte_offset": 37286
+        },
+        {
+          "index": 11,
+          "reg": "MX_INPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 400,
+          "byte_offset": 37389
+        },
+        {
+          "index": 12,
+          "reg": "MX_READ",
+          "valid": 1,
+          "value": 3,
+          "record_valid": true,
+          "line": 401,
+          "byte_offset": 37491
+        },
+        {
+          "index": 13,
+          "reg": "MX_WRITE",
+          "valid": 1,
+          "value": 9,
+          "record_valid": true,
+          "line": 402,
+          "byte_offset": 37592
+        },
+        {
+          "index": 14,
+          "reg": "MASTER_CONFIG",
+          "valid": 1,
+          "value": 1,
+          "record_valid": true,
+          "line": 403,
+          "byte_offset": 37694
+        },
+        {
+          "index": 15,
+          "reg": "CLK_CTL",
+          "valid": 1,
+          "value": 4063356,
+          "record_valid": true,
+          "line": 404,
+          "byte_offset": 37801
+        },
+        {
+          "index": 16,
+          "reg": "I2C_STATUS",
+          "valid": 1,
+          "value": 202440704,
+          "record_valid": true,
+          "line": 405,
+          "byte_offset": 37902
+        }
+      ],
+      "pair_stable_all": true
+    },
+    "init.7.1": {
+      "expected": 17,
+      "printed": 17,
+      "valid": 17,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 406,
+          "byte_offset": 38006
+        },
+        {
+          "index": 1,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 287,
+          "record_valid": true,
+          "line": 407,
+          "byte_offset": 38106
+        },
+        {
+          "index": 2,
+          "reg": "CONFIG",
+          "valid": 1,
+          "value": 519,
+          "record_valid": true,
+          "line": 408,
+          "byte_offset": 38204
+        },
+        {
+          "index": 3,
+          "reg": "IO_MODES",
+          "valid": 1,
+          "value": 49317,
+          "record_valid": true,
+          "line": 409,
+          "byte_offset": 38303
+        },
+        {
+          "index": 4,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 410,
+          "byte_offset": 38404
+        },
+        {
+          "index": 5,
+          "reg": "ERROR_FLAGS",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 411,
+          "byte_offset": 38508
+        },
+        {
+          "index": 6,
+          "reg": "ERROR_FLAGS_EN",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 412,
+          "byte_offset": 38612
+        },
+        {
+          "index": 7,
+          "reg": "OPERATIONAL_MASK",
+          "valid": 1,
+          "value": 768,
+          "record_valid": true,
+          "line": 413,
+          "byte_offset": 38719
+        },
+        {
+          "index": 8,
+          "reg": "OUT_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 414,
+          "byte_offset": 38828
+        },
+        {
+          "index": 9,
+          "reg": "IN_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 415,
+          "byte_offset": 38935
+        },
+        {
+          "index": 10,
+          "reg": "MX_OUTPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 416,
+          "byte_offset": 39041
+        },
+        {
+          "index": 11,
+          "reg": "MX_INPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 417,
+          "byte_offset": 39144
+        },
+        {
+          "index": 12,
+          "reg": "MX_READ",
+          "valid": 1,
+          "value": 3,
+          "record_valid": true,
+          "line": 418,
+          "byte_offset": 39246
+        },
+        {
+          "index": 13,
+          "reg": "MX_WRITE",
+          "valid": 1,
+          "value": 9,
+          "record_valid": true,
+          "line": 419,
+          "byte_offset": 39347
+        },
+        {
+          "index": 14,
+          "reg": "MASTER_CONFIG",
+          "valid": 1,
+          "value": 1,
+          "record_valid": true,
+          "line": 420,
+          "byte_offset": 39449
+        },
+        {
+          "index": 15,
+          "reg": "CLK_CTL",
+          "valid": 1,
+          "value": 4063356,
+          "record_valid": true,
+          "line": 421,
+          "byte_offset": 39556
+        },
+        {
+          "index": 16,
+          "reg": "I2C_STATUS",
+          "valid": 1,
+          "value": 202440704,
+          "record_valid": true,
+          "line": 422,
+          "byte_offset": 39657
+        }
+      ]
+    },
+    "init_poll.0": {
+      "expected": 5,
+      "printed": 5,
+      "valid": 5,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 128,
+          "byte_offset": 9463
+        },
+        {
+          "index": 1,
+          "reg": "ERROR",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 129,
+          "byte_offset": 9560
+        },
+        {
+          "index": 2,
+          "reg": "STATUS",
+          "valid": 1,
+          "value": 201326592,
+          "record_valid": true,
+          "line": 130,
+          "byte_offset": 9655
+        },
+        {
+          "index": 3,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 192,
+          "record_valid": true,
+          "line": 131,
+          "byte_offset": 9751
+        },
+        {
+          "index": 4,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 284,
+          "record_valid": true,
+          "line": 132,
+          "byte_offset": 9852
+        }
+      ]
+    },
+    "init_poll.1": {
+      "expected": 5,
+      "printed": 5,
+      "valid": 5,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 134,
+          "byte_offset": 10041
+        },
+        {
+          "index": 1,
+          "reg": "ERROR",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 135,
+          "byte_offset": 10138
+        },
+        {
+          "index": 2,
+          "reg": "STATUS",
+          "valid": 1,
+          "value": 201326592,
+          "record_valid": true,
+          "line": 136,
+          "byte_offset": 10233
+        },
+        {
+          "index": 3,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 192,
+          "record_valid": true,
+          "line": 137,
+          "byte_offset": 10329
+        },
+        {
+          "index": 4,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 284,
+          "record_valid": true,
+          "line": 138,
+          "byte_offset": 10430
+        }
+      ]
+    },
+    "init_poll.2": {
+      "expected": 5,
+      "printed": 5,
+      "valid": 5,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 140,
+          "byte_offset": 10619
+        },
+        {
+          "index": 1,
+          "reg": "ERROR",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 141,
+          "byte_offset": 10716
+        },
+        {
+          "index": 2,
+          "reg": "STATUS",
+          "valid": 1,
+          "value": 202440704,
+          "record_valid": true,
+          "line": 142,
+          "byte_offset": 10811
+        },
+        {
+          "index": 3,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 143,
+          "byte_offset": 10907
+        },
+        {
+          "index": 4,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 285,
+          "record_valid": true,
+          "line": 144,
+          "byte_offset": 11008
+        }
+      ]
+    },
+    "init_poll.3": {
+      "expected": 5,
+      "printed": 5,
+      "valid": 5,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 146,
+          "byte_offset": 11197
+        },
+        {
+          "index": 1,
+          "reg": "ERROR",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 147,
+          "byte_offset": 11294
+        },
+        {
+          "index": 2,
+          "reg": "STATUS",
+          "valid": 1,
+          "value": 202440704,
+          "record_valid": true,
+          "line": 148,
+          "byte_offset": 11389
+        },
+        {
+          "index": 3,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 149,
+          "byte_offset": 11485
+        },
+        {
+          "index": 4,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 287,
+          "record_valid": true,
+          "line": 150,
+          "byte_offset": 11586
+        }
+      ]
+    },
+    "guard": {
+      "expected": 17,
+      "printed": 17,
+      "valid": 17,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 423,
+          "byte_offset": 39761
+        },
+        {
+          "index": 1,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 287,
+          "record_valid": true,
+          "line": 424,
+          "byte_offset": 39847
+        },
+        {
+          "index": 2,
+          "reg": "CONFIG",
+          "valid": 1,
+          "value": 519,
+          "record_valid": true,
+          "line": 425,
+          "byte_offset": 39931
+        },
+        {
+          "index": 3,
+          "reg": "IO_MODES",
+          "valid": 1,
+          "value": 49317,
+          "record_valid": true,
+          "line": 426,
+          "byte_offset": 40016
+        },
+        {
+          "index": 4,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 427,
+          "byte_offset": 40103
+        },
+        {
+          "index": 5,
+          "reg": "ERROR_FLAGS",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 428,
+          "byte_offset": 40193
+        },
+        {
+          "index": 6,
+          "reg": "ERROR_FLAGS_EN",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 429,
+          "byte_offset": 40283
+        },
+        {
+          "index": 7,
+          "reg": "OPERATIONAL_MASK",
+          "valid": 1,
+          "value": 768,
+          "record_valid": true,
+          "line": 430,
+          "byte_offset": 40376
+        },
+        {
+          "index": 8,
+          "reg": "OUT_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 431,
+          "byte_offset": 40471
+        },
+        {
+          "index": 9,
+          "reg": "IN_FIFO_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 432,
+          "byte_offset": 40564
+        },
+        {
+          "index": 10,
+          "reg": "MX_OUTPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 433,
+          "byte_offset": 40656
+        },
+        {
+          "index": 11,
+          "reg": "MX_INPUT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 434,
+          "byte_offset": 40745
+        },
+        {
+          "index": 12,
+          "reg": "MX_READ",
+          "valid": 1,
+          "value": 3,
+          "record_valid": true,
+          "line": 435,
+          "byte_offset": 40833
+        },
+        {
+          "index": 13,
+          "reg": "MX_WRITE",
+          "valid": 1,
+          "value": 9,
+          "record_valid": true,
+          "line": 436,
+          "byte_offset": 40920
+        },
+        {
+          "index": 14,
+          "reg": "MASTER_CONFIG",
+          "valid": 1,
+          "value": 1,
+          "record_valid": true,
+          "line": 437,
+          "byte_offset": 41008
+        },
+        {
+          "index": 15,
+          "reg": "CLK_CTL",
+          "valid": 1,
+          "value": 4063356,
+          "record_valid": true,
+          "line": 438,
+          "byte_offset": 41101
+        },
+        {
+          "index": 16,
+          "reg": "I2C_STATUS",
+          "valid": 1,
+          "value": 202440704,
+          "record_valid": true,
+          "line": 439,
+          "byte_offset": 41188
+        }
+      ]
+    },
+    "pre_load0": {
+      "expected": 7,
+      "printed": 7,
+      "valid": 7,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 441,
+          "byte_offset": 41365
+        },
+        {
+          "index": 1,
+          "reg": "ERROR",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 442,
+          "byte_offset": 41455
+        },
+        {
+          "index": 2,
+          "reg": "STATUS",
+          "valid": 1,
+          "value": 202440704,
+          "record_valid": true,
+          "line": 443,
+          "byte_offset": 41543
+        },
+        {
+          "index": 3,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 444,
+          "byte_offset": 41632
+        },
+        {
+          "index": 4,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 287,
+          "record_valid": true,
+          "line": 445,
+          "byte_offset": 41726
+        },
+        {
+          "index": 5,
+          "reg": "IN_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 446,
+          "byte_offset": 41814
+        },
+        {
+          "index": 6,
+          "reg": "OUT_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 447,
+          "byte_offset": 41905
+        }
+      ]
+    },
+    "pre_load1": {
+      "expected": 7,
+      "printed": 7,
+      "valid": 7,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 451,
+          "byte_offset": 42247
+        },
+        {
+          "index": 1,
+          "reg": "ERROR",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 452,
+          "byte_offset": 42337
+        },
+        {
+          "index": 2,
+          "reg": "STATUS",
+          "valid": 1,
+          "value": 202440704,
+          "record_valid": true,
+          "line": 453,
+          "byte_offset": 42425
+        },
+        {
+          "index": 3,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 16,
+          "record_valid": true,
+          "line": 454,
+          "byte_offset": 42514
+        },
+        {
+          "index": 4,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 287,
+          "record_valid": true,
+          "line": 455,
+          "byte_offset": 42608
+        },
+        {
+          "index": 5,
+          "reg": "IN_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 456,
+          "byte_offset": 42696
+        },
+        {
+          "index": 6,
+          "reg": "OUT_COUNT",
+          "valid": 1,
+          "value": 1,
+          "record_valid": true,
+          "line": 457,
+          "byte_offset": 42787
+        }
+      ]
+    },
+    "pre_load2": {
+      "expected": 7,
+      "printed": 7,
+      "valid": 7,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 461,
+          "byte_offset": 43129
+        },
+        {
+          "index": 1,
+          "reg": "ERROR",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 462,
+          "byte_offset": 43219
+        },
+        {
+          "index": 2,
+          "reg": "STATUS",
+          "valid": 1,
+          "value": 202440704,
+          "record_valid": true,
+          "line": 463,
+          "byte_offset": 43307
+        },
+        {
+          "index": 3,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 16,
+          "record_valid": true,
+          "line": 464,
+          "byte_offset": 43396
+        },
+        {
+          "index": 4,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 287,
+          "record_valid": true,
+          "line": 465,
+          "byte_offset": 43490
+        },
+        {
+          "index": 5,
+          "reg": "IN_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 466,
+          "byte_offset": 43578
+        },
+        {
+          "index": 6,
+          "reg": "OUT_COUNT",
+          "valid": 1,
+          "value": 2,
+          "record_valid": true,
+          "line": 467,
+          "byte_offset": 43669
+        }
+      ]
+    },
+    "pre_run": {
+      "expected": 7,
+      "printed": 7,
+      "valid": 7,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 471,
+          "byte_offset": 44009
+        },
+        {
+          "index": 1,
+          "reg": "ERROR",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 472,
+          "byte_offset": 44097
+        },
+        {
+          "index": 2,
+          "reg": "STATUS",
+          "valid": 1,
+          "value": 202440704,
+          "record_valid": true,
+          "line": 473,
+          "byte_offset": 44183
+        },
+        {
+          "index": 3,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 16,
+          "record_valid": true,
+          "line": 474,
+          "byte_offset": 44270
+        },
+        {
+          "index": 4,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 287,
+          "record_valid": true,
+          "line": 475,
+          "byte_offset": 44362
+        },
+        {
+          "index": 5,
+          "reg": "IN_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 476,
+          "byte_offset": 44448
+        },
+        {
+          "index": 6,
+          "reg": "OUT_COUNT",
+          "valid": 1,
+          "value": 3,
+          "record_valid": true,
+          "line": 477,
+          "byte_offset": 44537
+        }
+      ]
+    },
+    "completion": {
+      "expected": 7,
+      "printed": 7,
+      "valid": 7,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 481,
+          "byte_offset": 44874
+        },
+        {
+          "index": 1,
+          "reg": "ERROR",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 482,
+          "byte_offset": 44965
+        },
+        {
+          "index": 2,
+          "reg": "STATUS",
+          "valid": 1,
+          "value": 219349192,
+          "record_valid": true,
+          "line": 483,
+          "byte_offset": 45054
+        },
+        {
+          "index": 3,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 16,
+          "record_valid": true,
+          "line": 484,
+          "byte_offset": 45144
+        },
+        {
+          "index": 4,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 285,
+          "record_valid": true,
+          "line": 485,
+          "byte_offset": 45239
+        },
+        {
+          "index": 5,
+          "reg": "IN_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 486,
+          "byte_offset": 45328
+        },
+        {
+          "index": 6,
+          "reg": "OUT_COUNT",
+          "valid": 1,
+          "value": 3,
+          "record_valid": true,
+          "line": 487,
+          "byte_offset": 45420
+        }
+      ]
+    },
+    "post_rx": {
+      "expected": 7,
+      "printed": 7,
+      "valid": 0,
+      "unread": 7,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 0,
+          "value": null,
+          "record_valid": true,
+          "line": 491,
+          "byte_offset": 45763
+        },
+        {
+          "index": 1,
+          "reg": "ERROR",
+          "valid": 0,
+          "value": null,
+          "record_valid": true,
+          "line": 492,
+          "byte_offset": 45847
+        },
+        {
+          "index": 2,
+          "reg": "STATUS",
+          "valid": 0,
+          "value": null,
+          "record_valid": true,
+          "line": 493,
+          "byte_offset": 45929
+        },
+        {
+          "index": 3,
+          "reg": "OPERATIONAL",
+          "valid": 0,
+          "value": null,
+          "record_valid": true,
+          "line": 494,
+          "byte_offset": 46012
+        },
+        {
+          "index": 4,
+          "reg": "STATE",
+          "valid": 0,
+          "value": null,
+          "record_valid": true,
+          "line": 495,
+          "byte_offset": 46100
+        },
+        {
+          "index": 5,
+          "reg": "IN_COUNT",
+          "valid": 0,
+          "value": null,
+          "record_valid": true,
+          "line": 496,
+          "byte_offset": 46182
+        },
+        {
+          "index": 6,
+          "reg": "OUT_COUNT",
+          "valid": 0,
+          "value": null,
+          "record_valid": true,
+          "line": 497,
+          "byte_offset": 46267
+        }
+      ]
+    },
+    "stop": {
+      "expected": 7,
+      "printed": 7,
+      "valid": 0,
+      "unread": 7,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 0,
+          "value": null,
+          "record_valid": true,
+          "line": 499,
+          "byte_offset": 46435
+        },
+        {
+          "index": 1,
+          "reg": "ERROR",
+          "valid": 0,
+          "value": null,
+          "record_valid": true,
+          "line": 500,
+          "byte_offset": 46516
+        },
+        {
+          "index": 2,
+          "reg": "STATUS",
+          "valid": 0,
+          "value": null,
+          "record_valid": true,
+          "line": 501,
+          "byte_offset": 46595
+        },
+        {
+          "index": 3,
+          "reg": "OPERATIONAL",
+          "valid": 0,
+          "value": null,
+          "record_valid": true,
+          "line": 502,
+          "byte_offset": 46675
+        },
+        {
+          "index": 4,
+          "reg": "STATE",
+          "valid": 0,
+          "value": null,
+          "record_valid": true,
+          "line": 503,
+          "byte_offset": 46760
+        },
+        {
+          "index": 5,
+          "reg": "IN_COUNT",
+          "valid": 0,
+          "value": null,
+          "record_valid": true,
+          "line": 504,
+          "byte_offset": 46839
+        },
+        {
+          "index": 6,
+          "reg": "OUT_COUNT",
+          "valid": 0,
+          "value": null,
+          "record_valid": true,
+          "line": 505,
+          "byte_offset": 46921
+        }
+      ]
+    },
+    "first_failure": {
+      "expected": 7,
+      "printed": 7,
+      "valid": 7,
+      "unread": 0,
+      "missing_or_bad": 0,
+      "fields": [
+        {
+          "index": 0,
+          "reg": "VERSION",
+          "valid": 1,
+          "value": 537264128,
+          "record_valid": true,
+          "line": 507,
+          "byte_offset": 47095
+        },
+        {
+          "index": 1,
+          "reg": "ERROR",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 508,
+          "byte_offset": 47189
+        },
+        {
+          "index": 2,
+          "reg": "STATUS",
+          "valid": 1,
+          "value": 219349192,
+          "record_valid": true,
+          "line": 509,
+          "byte_offset": 47281
+        },
+        {
+          "index": 3,
+          "reg": "OPERATIONAL",
+          "valid": 1,
+          "value": 16,
+          "record_valid": true,
+          "line": 510,
+          "byte_offset": 47374
+        },
+        {
+          "index": 4,
+          "reg": "STATE",
+          "valid": 1,
+          "value": 285,
+          "record_valid": true,
+          "line": 511,
+          "byte_offset": 47472
+        },
+        {
+          "index": 5,
+          "reg": "IN_COUNT",
+          "valid": 1,
+          "value": 0,
+          "record_valid": true,
+          "line": 512,
+          "byte_offset": 47564
+        },
+        {
+          "index": 6,
+          "reg": "OUT_COUNT",
+          "valid": 1,
+          "value": 3,
+          "record_valid": true,
+          "line": 513,
+          "byte_offset": 47659
+        }
+      ]
+    }
+  },
+  "ordered_write_trace": [
+    {
+      "kind": "write",
+      "values": {
+        "index": 0,
+        "off": 12,
+        "value": 1,
+        "returned_on_time": 1
+      },
+      "line": 517,
+      "byte_offset": 47990,
+      "raw": "LITHIUM TOUCH transfer write index=0 off=0x00c value=0x00000001 returned_on_time=1"
+    },
+    {
+      "kind": "write",
+      "values": {
+        "index": 1,
+        "off": 4,
+        "value": 0,
+        "returned_on_time": 1
+      },
+      "line": 518,
+      "byte_offset": 48073,
+      "raw": "LITHIUM TOUCH transfer write index=1 off=0x004 value=0x00000000 returned_on_time=1"
+    },
+    {
+      "kind": "write",
+      "values": {
+        "index": 2,
+        "off": 0,
+        "value": 519,
+        "returned_on_time": 1
+      },
+      "line": 519,
+      "byte_offset": 48156,
+      "raw": "LITHIUM TOUCH transfer write index=2 off=0x000 value=0x00000207 returned_on_time=1"
+    },
+    {
+      "kind": "write",
+      "values": {
+        "index": 3,
+        "off": 32,
+        "value": 60,
+        "returned_on_time": 1
+      },
+      "line": 520,
+      "byte_offset": 48239,
+      "raw": "LITHIUM TOUCH transfer write index=3 off=0x020 value=0x0000003c returned_on_time=1"
+    },
+    {
+      "kind": "write",
+      "values": {
+        "index": 4,
+        "off": 40,
+        "value": 768,
+        "returned_on_time": 1
+      },
+      "line": 521,
+      "byte_offset": 48322,
+      "raw": "LITHIUM TOUCH transfer write index=4 off=0x028 value=0x00000300 returned_on_time=1"
+    },
+    {
+      "kind": "write",
+      "values": {
+        "index": 5,
+        "off": 1032,
+        "value": 1,
+        "returned_on_time": 1
+      },
+      "line": 522,
+      "byte_offset": 48405,
+      "raw": "LITHIUM TOUCH transfer write index=5 off=0x408 value=0x00000001 returned_on_time=1"
+    },
+    {
+      "kind": "write",
+      "values": {
+        "index": 6,
+        "off": 32,
+        "value": 0,
+        "returned_on_time": 1
+      },
+      "line": 523,
+      "byte_offset": 48488,
+      "raw": "LITHIUM TOUCH transfer write index=6 off=0x020 value=0x00000000 returned_on_time=1"
+    },
+    {
+      "kind": "write",
+      "values": {
+        "index": 7,
+        "off": 40,
+        "value": 768,
+        "returned_on_time": 1
+      },
+      "line": 524,
+      "byte_offset": 48571,
+      "raw": "LITHIUM TOUCH transfer write index=7 off=0x028 value=0x00000300 returned_on_time=1"
+    },
+    {
+      "kind": "write",
+      "values": {
+        "index": 8,
+        "off": 512,
+        "value": 0,
+        "returned_on_time": 1
+      },
+      "line": 525,
+      "byte_offset": 48654,
+      "raw": "LITHIUM TOUCH transfer write index=8 off=0x200 value=0x00000000 returned_on_time=1"
+    },
+    {
+      "kind": "write",
+      "values": {
+        "index": 9,
+        "off": 256,
+        "value": 0,
+        "returned_on_time": 1
+      },
+      "line": 526,
+      "byte_offset": 48737,
+      "raw": "LITHIUM TOUCH transfer write index=9 off=0x100 value=0x00000000 returned_on_time=1"
+    },
+    {
+      "kind": "write",
+      "values": {
+        "index": 10,
+        "off": 520,
+        "value": 3,
+        "returned_on_time": 1
+      },
+      "line": 527,
+      "byte_offset": 48820,
+      "raw": "LITHIUM TOUCH transfer write index=10 off=0x208 value=0x00000003 returned_on_time=1"
+    },
+    {
+      "kind": "write",
+      "values": {
+        "index": 11,
+        "off": 336,
+        "value": 9,
+        "returned_on_time": 1
+      },
+      "line": 528,
+      "byte_offset": 48904,
+      "raw": "LITHIUM TOUCH transfer write index=11 off=0x150 value=0x00000009 returned_on_time=1"
+    },
+    {
+      "kind": "write",
+      "values": {
+        "index": 12,
+        "off": 0,
+        "value": 519,
+        "returned_on_time": 1
+      },
+      "line": 529,
+      "byte_offset": 48988,
+      "raw": "LITHIUM TOUCH transfer write index=12 off=0x000 value=0x00000207 returned_on_time=1"
+    },
+    {
+      "kind": "write",
+      "values": {
+        "index": 13,
+        "off": 8,
+        "value": 49317,
+        "returned_on_time": 1
+      },
+      "line": 530,
+      "byte_offset": 49072,
+      "raw": "LITHIUM TOUCH transfer write index=13 off=0x008 value=0x0000c0a5 returned_on_time=1"
+    },
+    {
+      "kind": "write",
+      "values": {
+        "index": 14,
+        "off": 1032,
+        "value": 1,
+        "returned_on_time": 1
+      },
+      "line": 531,
+      "byte_offset": 49156,
+      "raw": "LITHIUM TOUCH transfer write index=14 off=0x408 value=0x00000001 returned_on_time=1"
+    },
+    {
+      "kind": "write",
+      "values": {
+        "index": 15,
+        "off": 4,
+        "value": 1,
+        "returned_on_time": 1
+      },
+      "line": 532,
+      "byte_offset": 49240,
+      "raw": "LITHIUM TOUCH transfer write index=15 off=0x004 value=0x00000001 returned_on_time=1"
+    },
+    {
+      "kind": "write",
+      "values": {
+        "index": 16,
+        "off": 1024,
+        "value": 4063356,
+        "returned_on_time": 1
+      },
+      "line": 533,
+      "byte_offset": 49324,
+      "raw": "LITHIUM TOUCH transfer write index=16 off=0x400 value=0x003e007c returned_on_time=1"
+    },
+    {
+      "kind": "write",
+      "values": {
+        "index": 17,
+        "off": 4,
+        "value": 3,
+        "returned_on_time": 1
+      },
+      "line": 534,
+      "byte_offset": 49408,
+      "raw": "LITHIUM TOUCH transfer write index=17 off=0x004 value=0x00000003 returned_on_time=1"
+    },
+    {
+      "kind": "write",
+      "values": {
+        "index": 18,
+        "off": 272,
+        "value": 25325697,
+        "returned_on_time": 1
+      },
+      "line": 535,
+      "byte_offset": 49492,
+      "raw": "LITHIUM TOUCH transfer write index=18 off=0x110 value=0x01827081 returned_on_time=1"
+    },
+    {
+      "kind": "write",
+      "values": {
+        "index": 19,
+        "off": 272,
+        "value": 2272362915,
+        "returned_on_time": 1
+      },
+      "line": 536,
+      "byte_offset": 49576,
+      "raw": "LITHIUM TOUCH transfer write index=19 off=0x110 value=0x877181a3 returned_on_time=1"
+    },
+    {
+      "kind": "write",
+      "values": {
+        "index": 20,
+        "off": 272,
+        "value": 1,
+        "returned_on_time": 1
+      },
+      "line": 537,
+      "byte_offset": 49660,
+      "raw": "LITHIUM TOUCH transfer write index=20 off=0x110 value=0x00000001 returned_on_time=1"
+    },
+    {
+      "kind": "write",
+      "values": {
+        "index": 21,
+        "off": 4,
+        "value": 1,
+        "returned_on_time": 1
+      },
+      "line": 538,
+      "byte_offset": 49744,
+      "raw": "LITHIUM TOUCH transfer write index=21 off=0x004 value=0x00000001 returned_on_time=1"
+    }
+  ],
+  "first_failure_decode": {
+    "recorded_at": "2026-11-20T02:48:12.125987+08:00",
+    "status_raw": "0xd1300c8",
+    "known_error_bits": "0x10000c8",
+    "nack": true,
+    "fail_field": 3,
+    "invalid_read_address": true,
+    "invalid_read_sequence": false,
+    "invalid_tag": false,
+    "bus_error": false,
+    "arbitration_lost": false,
+    "invalid_write": false,
+    "bus_active": false,
+    "bus_master": false,
+    "dat_state": 0,
+    "clk_state": 0,
+    "out_fsm": 3,
+    "in_fsm": 2,
+    "sda_sampled_high": true,
+    "scl_sampled_high": true,
+    "uncovered_bits": "0x0",
+    "root_cause_established": false,
+    "physical_stop_waveform_verified": false,
+    "source_reason": "core tests NACK before broad error mask, so all raw co-error fields must be retained",
+    "source_lines": {
+      "ports/hakios-lithium/peripherals/touch-qup-transfer-core.h": "400-410",
+      "evidence/touch-r31-20261120/protocol/micode-i2c-msm-v2.h": "129-171",
+      "evidence/touch-r31-20261120/protocol/i2c-msm-prof-dbg.c": "196-214"
+    },
+    "device_queries": 0
+  },
+  "first_failed_access": {
+    "valid": 0,
+    "access": null,
+    "off": null
+  },
+  "software_tagged_request_issued": true,
+  "controller_reported_nack": true,
+  "controller_reported_invalid_read_addr": true,
+  "raw_id_observed": false,
+  "accepted_id": false,
+  "transfer_complete": false,
+  "input_done": false,
+  "stop_observed": false,
+  "physical_chip_id_verified": false,
+  "physical_i2c_waveform_verified": false,
+  "physical_ownership_verified": false,
+  "actual_scl_frequency_measured": false,
+  "status_numeric_fsm_semantics_verified": false,
+  "normal_timer": true,
+  "timer_seconds": 180,
+  "drain_success": true,
+  "usb_audit": {
+    "raw_bytes": 59257,
+    "console_bytes": 52537,
+    "frames": 210,
+    "raw_sha256": "f1d10cd1d5dbef77c0a76289aafc2e0f5cec5d4c0ea53ba100b9f88bf9262dd3",
+    "console_sha256": "9b85802c338b778429cf953225c9ce7ffeaed38d82ddc7f2cde3378f368c7333",
+    "first_offset": 0,
+    "final_offset": 52537,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "incomplete_frame_bytes": 0,
+    "device_lost_max": 0,
+    "frames_reporting_device_loss": 0,
+    "independent_parser_agrees_with_frozen_receiver": true,
+    "frozen_redecode_equals_complete_console": true,
+    "transport_verified": true,
+    "kernel_banner_offset": 0,
+    "timer_offset": 52210,
+    "normal_return_offset": 52421,
+    "drain_success": true,
+    "drain_records": [
+      {
+        "offset": 52488,
+        "drained": 1,
+        "target": 52488
+      }
+    ],
+    "emitted_kernel_stream_through_timer_verified": true,
+    "all_firmware_daemon_and_original_printf_logs_complete": false,
+    "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
+  },
+  "emitted_kernel_stream_through_timer_verified": true,
+  "full_runtime_log_verified": false,
+  "source_writer_contention_dropped_bytes": 0,
+  "receiver_status_preserved": {
+    "started_at": "2026-11-20T02:44:10.967336+08:00",
+    "enumerated": true,
+    "frames": 210,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "status": "capture_failed",
+    "output": "F:\\IOS-MIX1\\reports\\local\\20261120-r32-touch-qup-transfer-approved\\console.log",
+    "device_commands_sent": false,
+    "candidate_seen": true,
+    "identity_verified": true,
+    "descriptor_errors": 0,
+    "descriptor_error_samples": [],
+    "configuration_verified": true,
+    "console_bytes": 52537,
+    "failure_stage": "capturing",
+    "failure": "[Errno 32] Pipe error",
+    "finished_at": "2026-11-20T02:47:44.093120+08:00"
+  },
+  "pipe_error_after_successful_drain": true,
+  "data_sync_error": {
+    "errno": 2,
+    "phase": "lookup",
+    "expected_ram_diagnostic_scope": true,
+    "device_flush_reached": false
+  },
+  "runtime_independent_review": {
+    "passed": true,
+    "at": "2026-11-20T02:52:53.958320+08:00",
+    "agent": "Franklin",
+    "agent_report_sha256": "b116e13c00857eae34d308c5d26d2b6c6dcccf05644ecc5d5c84ed394756352d",
+    "agent_json_sha256": "5507b7c4db8ac49445103ec607df7c140cb3a1df55b69c79027c7dcff0bc9229",
+    "parser_sha256": "ace2b49ee68e284aea1fc235670f17b03cb02b44ed029f7a8aa95be8ef5148fd",
+    "source_files": 9,
+    "source_anchors": 24,
+    "raw_log_records_checked": 420,
+    "console_sha256": "9b85802c338b778429cf953225c9ce7ffeaed38d82ddc7f2cde3378f368c7333",
+    "raw_sha256": "f1d10cd1d5dbef77c0a76289aafc2e0f5cec5d4c0ea53ba100b9f88bf9262dd3",
+    "no_consistency_failures": true,
+    "raw_status": "0x0d1300c8",
+    "errors": "NACK + FAIL two-bit3 + INVALID_READ_ADDR",
+    "id_read": false,
+    "stop_observed": false,
+    "all22writes_returned_on_time": true,
+    "device_queries": 0
+  },
+  "next_step": "Next host revision: analyze co-reported NACK/FAIL/INVALID_READ_ADDR without clearing evidence; compare the exact tagged FIFO stream, counts/mode and state order with pinned vendor code and controller error semantics, then establish touch power/reset/electrical/handoff prerequisites from lithium evidence. Preserve R20/R31/R32. Do not infer wrong address, missing power or a chip model from these flags; no address scan, reset/rail change or new device boot is authorized by this result.",
+  "root_cause_established": false,
+  "unverified": [
+    "Physical ACK/NACK, START/repeated-START/STOP waveforms and electrical cause.",
+    "Actual target at 0x38, returned chip identity and FT5x46 model; no identity is inferred.",
+    "Ownership/secure-world exclusion and concurrent handlers/other execution environments.",
+    "Complete error/completion visibility with ERROR_EN=0 and OP_MASK=0x300.",
+    "FIFO occupancy-count units, transient semantics and non-consuming count-port reads.",
+    "Numeric DAT/CLK/O/I FSM legality; the named dynamic fields are not a universal legal-state table.",
+    "BUS_MASTER deassertion universality; R32 STOP predicate is stricter than vendor BUS_ACTIVE alone.",
+    "Physical final screen, actual touch reports, IRQ/HID delivery and general touch functionality.",
+    "All firmware/daemon/original printf output; saved framed kernel stream has narrower audit scope.",
+    "Permanent MMIO hangs/aborts/SError/XPU faults are outside returning-call time bounds."
+  ]
+}

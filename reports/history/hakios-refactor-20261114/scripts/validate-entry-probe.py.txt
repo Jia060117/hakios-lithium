@@ -1,0 +1,278 @@
+"""WSL/QEMU execution checks for the exact production observer and failure paths.
+
+Run in WSL with python3. Uses semihosting only in the test continuation;
+semihosting instructions are never added to the phone image.
+"""
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import struct
+import subprocess
+import argparse
+
+ROOT = Path(__file__).resolve().parents[1]
+OUT = ROOT / "out/entry-probe"
+spec = importlib.util.spec_from_file_location("stock", ROOT / "scripts/extract-stock.py")
+stock = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(stock)
+BASE, DT = 0x40080000, 0x42800000
+MARKER = b"MIX1ENTRYPROBEv1"
+PROP = "mix1,entry-probe-v1"
+RECORD_SIZE = 512
+
+
+def run(*args, cwd=None, timeout=30):
+    r = subprocess.run(list(map(str, args)), cwd=cwd, capture_output=True, timeout=timeout)
+    if r.returncode:
+        raise RuntimeError(str(args[0]) + ": " + r.stderr.decode(errors="replace"))
+    return r
+
+
+def harness(directory, el, dtptr, fdtlen):
+    seeds = "\n".join(f"mov x{i}, #{0x100+i}" for i in range(19, 31))
+    code = f"""
+.section .boot, "ax"
+.global start
+start:
+    mrs x17, CurrentEL
+    cmp x17, #8
+    b.ne level_ready
+    mov x17, #0x80000000
+    msr hcr_el2, x17
+    msr cptr_el2, xzr
+    mov x17, #3
+    msr cnthctl_el2, x17
+    msr cntvoff_el2, xzr
+    mov x17, #{el}
+    cmp x17, #1
+    b.ne level_ready
+    mov x17, #0x3c5
+    msr spsr_el2, x17
+    adr x17, level_ready
+    msr elr_el2, x17
+    eret
+level_ready:
+    mov x17, #0x40000000
+    add x17, x17, #4, lsl #12
+    mrs x18, CurrentEL
+    cmp x18, #4
+    b.eq 1f
+    msr vbar_el2, x17
+    b 2f
+1:  msr vbar_el1, x17
+2:  mov x17, #0x140
+    msr daif, x17
+    mov x17, #0x47000000
+    mov sp, x17
+    movz x0, #{dtptr & 0xffff}
+    movk x0, #{dtptr >> 16}, lsl #16
+    mov x1, #0x1111
+    mov x2, #0x2222
+    mov x3, #0x3333
+    {seeds}
+    mov x17, #0x40000000
+    add x17, x17, #0x80, lsl #12
+    br x17
+
+.section .continuation, "axw"
+continue_stock:
+    adr x17, state
+    stp x0, x1, [x17]
+    stp x2, x3, [x17, #16]
+    mov x16, sp
+    str x16, [x17, #32]
+    mrs x16, daif
+    str x16, [x17, #40]
+    mrs x16, CurrentEL
+    str x16, [x17, #56]
+    cmp x16, #4
+    b.eq 3f
+    mrs x16, vbar_el2
+    b 4f
+3:  mrs x16, vbar_el1
+4:  str x16, [x17, #48]
+    stp x19, x20, [x17, #64]
+    stp x21, x22, [x17, #80]
+    stp x23, x24, [x17, #96]
+    stp x25, x26, [x17, #112]
+    stp x27, x28, [x17, #128]
+    stp x29, x30, [x17, #144]
+    adr x1, open_state
+    mov x0, #1
+    hlt #0xf000
+    adr x1, write_state
+    str x0, [x1]
+    mov x0, #5
+    hlt #0xf000
+    adr x1, write_state
+    mov x0, #2
+    hlt #0xf000
+    adr x1, open_fdt
+    mov x0, #1
+    hlt #0xf000
+    adr x1, write_fdt
+    str x0, [x1]
+    mov x0, #5
+    hlt #0xf000
+    adr x1, write_fdt
+    mov x0, #2
+    hlt #0xf000
+    adr x1, exit_args
+    mov x0, #0x20
+    hlt #0xf000
+5:  wfe
+    b 5b
+.balign 8
+open_state: .quad state_name, 5, 9
+write_state: .quad 0, state, 160
+open_fdt: .quad fdt_name, 5, 7
+write_fdt: .quad 0, {DT}, {fdtlen}
+exit_args: .quad 0x20026, 0
+state_name: .asciz "state.bin"
+fdt_name: .asciz "fdt.bin"
+.balign 8
+state: .space 160
+"""
+    (directory / "harness.S").write_text(code)
+    (directory / "harness.ld").write_text("ENTRY(start)\nSECTIONS { . = 0x40000000; .boot : { *(.boot) }\n"
+                                         ". = 0x40081000; .continuation : { *(.continuation) } }\n")
+    run("clang", "--target=aarch64-none-elf", "-march=armv8-a", "-c", directory / "harness.S", "-o", directory / "harness.o")
+    run("ld.lld", "-T", directory / "harness.ld", directory / "harness.o", "-o", directory / "harness.elf")
+
+
+def main():
+    global OUT, MARKER, PROP, RECORD_SIZE
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--profile", choices=("entry", "display", "journal"), default="entry")
+    args = parser.parse_args()
+    OUT = ROOT / "out" / (args.profile + "-probe")
+    build_path = ROOT / "reports" / (args.profile + "-probe-build.json")
+    build = json.loads(build_path.read_text())
+    MARKER, PROP, RECORD_SIZE = build["marker"].encode(), build["property"], build["record_bytes"]
+    offset = int(build["probe_offset"], 16)
+    production = (OUT / "Image.probe").read_bytes()
+    assert hashlib.sha256(production[offset:]).hexdigest() == build["probe_sha256"]
+    # The emulator needs only the identical header, linked observer and a
+    # replacement stock entry. It never executes the actual Qualcomm kernel.
+    emulated = bytearray(len(production))
+    emulated[:64] = production[:64]
+    emulated[offset:] = production[offset:]
+    (OUT / "qemu-image.bin").write_bytes(emulated)
+    trap = bytearray(emulated)
+    trap[offset:] = (OUT / "probe-test-trap.bin").read_bytes()
+    (OUT / "qemu-trap-image.bin").write_bytes(trap)
+    # Separate ELF segments avoid loading the unused 32 MiB hole, allowing
+    # the test continuation to occupy the original Linux entry address.
+    (OUT / "qemu-header.bin").write_bytes(production[:64])
+    (OUT / "qemu-payload.ld").write_text(
+        "PHDRS { head PT_LOAD FLAGS(5); shim PT_LOAD FLAGS(5); }\nSECTIONS { "
+        f". = {BASE}; .head : {{ *(.head) }} :head\n"
+        f". = {BASE+offset}; .shim : {{ *(.shim) }} :shim }}\n")
+    for name in ("probe", "probe-test-trap"):
+        source = OUT / ("qemu-payload-" + name + ".S")
+        source.write_text(f'.section .head,"ax"\n.incbin "{OUT / "qemu-header.bin"}"\n'
+                          f'.section .shim,"ax"\n.incbin "{OUT / (name + ".bin")}"\n')
+        run("clang", "--target=aarch64-none-elf", "-c", source, "-o", source.with_suffix(".o"))
+        run("ld.lld", "-T", OUT / "qemu-payload.ld", source.with_suffix(".o"), "-o", source.with_suffix(".elf"))
+    original_fdt = (OUT / "dtb-03.dtb").read_bytes()
+    if args.profile == 'journal':
+        journal_mock=bytes((i*13+7)%256 for i in range(4096))
+        (OUT/'qemu-journal.bin').write_bytes(journal_mock)
+    if args.profile == "display":
+        first = min(x["address"] for x in build["display_registers"])
+        mock = bytearray(max(x["address"] for x in build["display_registers"]) - first + 4)
+        for reg in build["display_registers"]:
+            struct.pack_into("<I", mock, reg["address"] - first, 0xa5000000 | reg["address"])
+        (OUT / "qemu-display-mmio.bin").write_bytes(mock)
+    cases = [("el1", 1, "valid"), ("el2", 2, "valid"),
+             ("el1-recover-trap", 1, "trap"), ("el2-recover-trap", 2, "trap"),
+             ("missing-marker", 1, "marker"), ("bad-magic", 1, "magic"),
+             ("truncated-total", 1, "short"), ("oversized-total", 1, "large"),
+             ("unaligned-fdt", 1, "unaligned"), ("bad-version", 1, "version")]
+    results = []
+    for name, el, variant in cases:
+        directory = OUT / "qemu" / name
+        directory.mkdir(parents=True, exist_ok=True)
+        for generated in ("state.bin", "fdt.bin"):
+            (directory / generated).unlink(missing_ok=True)
+        blob = bytearray(original_fdt)
+        marker_offset = blob.index(MARKER)
+        if variant == "marker":
+            blob[marker_offset] ^= 1
+        elif variant == "magic":
+            blob[0] ^= 1
+        elif variant == "short":
+            struct.pack_into(">I", blob, 4, RECORD_SIZE - 1)
+        elif variant == "large":
+            struct.pack_into(">I", blob, 4, 0x200001)
+        elif variant == "version":
+            struct.pack_into("<I", blob, marker_offset + 16, 2)
+        (directory / "input.dtb").write_bytes(blob)
+        dtptr = DT + (4 if variant == "unaligned" else 0)
+        harness(directory, el, dtptr, len(blob))
+        image = OUT / ("qemu-payload-probe-test-trap.elf" if variant == "trap" else "qemu-payload-probe.elf")
+        loaders = []
+        if args.profile == 'journal':
+            loaders=['-device',f"loader,file={OUT/'qemu-journal.bin'},addr=0x84000000,force-raw=on"]
+        if args.profile == "display":
+            loaders = ["-device", f"loader,file={OUT / 'qemu-display-mmio.bin'},addr={first},force-raw=on"]
+        r = run("qemu-system-aarch64", "-machine", "virt,virtualization=on", "-cpu", "cortex-a53",
+                "-m", "2G" if args.profile=='journal' else "256M", "-smp", "1", "-nic", "none", "-display", "none", "-serial", "none", "-monitor", "none",
+                "-semihosting-config", "enable=on,target=native",
+                "-kernel", directory / "harness.elf",
+                "-device", f"loader,file={image}",
+                "-device", f"loader,file={directory / 'input.dtb'},addr={DT},force-raw=on",
+                *loaders,
+                cwd=directory, timeout=12)
+        (directory / "qemu.log").write_bytes(r.stdout + r.stderr)
+        state = struct.unpack("<20Q", (directory / "state.bin").read_bytes())
+        assert state[:4] == (dtptr, 0x1111, 0x2222, 0x3333), (name, "x0-x3", state[:4])
+        assert state[4:8] == (0x47000000, 0x140, 0x40004000, el * 4), (name, "state", state[4:8])
+        assert state[8:] == tuple(0x100 + i for i in range(19, 31)), (name, "x19-x30")
+        after = (directory / "fdt.bin").read_bytes()
+        assert len(after) == len(blob)
+        if variant in ("valid", "trap"):
+            # Exactly the preallocated property may change, never a byte outside it.
+            assert after[:marker_offset] == blob[:marker_offset]
+            assert after[marker_offset+RECORD_SIZE:] == blob[marker_offset+RECORD_SIZE:]
+            nodes, _ = stock.parse_fdt(after)
+            record = nodes["/chosen"][PROP]
+            if args.profile == 'journal': assert record[512:4608]==journal_mock,(name,'journal copy')
+            version, length, status, exceptions = struct.unpack_from("<4I", record, 16)
+            values = struct.unpack_from("<" + "Q" * len(build["fields"]), record, 64)
+            data = dict(zip(build["fields"], values))
+            assert (version, length, status, exceptions) == (1, RECORD_SIZE, 1, int(variant == "trap"))
+            assert data["entry_pc"] == BASE + offset and data["image_base"] == BASE
+            assert data["continuation_pc"] == BASE + 4096
+            assert data["x0"] == DT and data["fdt_size"] == len(blob)
+            assert data["current_el_raw"] == el * 4
+            assert data["vbar_el1" if el == 1 else "vbar_el2"] == 0x40004000
+            if variant == "trap":
+                assert data["id_aa64mmfr0_el1"] == 0xffffffffffffffff
+                assert struct.unpack_from("<I", record, 32)[0] == 14
+            else:
+                assert data["id_aa64mmfr0_el1"] != 0xffffffffffffffff
+            if args.profile == "display":
+                import display_probe
+                display = display_probe.decode(record, build["display_registers"])
+                assert all(int(x["value"], 16) == (0xa5000000 | int(x["address"], 16)) for x in display["samples"])
+                assert display["raw_fdt_memreserve"]["complete"]
+                _, original_reservations = stock.parse_fdt(bytes(blob))
+                assert display["raw_fdt_memreserve"]["entries"] == [dict(address=hex(a), size_bytes=s) for a, s in original_reservations]
+        else:
+            assert after == blob, (name, "read-only failure path changed FDT")
+        result = dict(case=name, entry_el=el, passed=True,
+                      preserved="x0-x3, x19-x30, SP, DAIF, VBAR", bounded_record_write=True)
+        results.append(result)
+        print(name + ": PASS", flush=True)
+    report = dict(production_probe_sha256=build["probe_sha256"], cases=results,
+                  all_passed=True, validated_cases=len(results),
+                  limitation="QEMU models ARMv8 CPU behavior, not the MIX bootloader or Qualcomm hardware.")
+    (ROOT / "reports" / (args.profile + "-probe-qemu.json")).write_text(json.dumps(report, indent=2) + "\n")
+    build["qemu_validation_status"] = "10 execution cases passed, including EL1/EL2 exception recovery"
+    build_path.write_text(json.dumps(build, indent=2) + "\n")
+
+
+if __name__ == "__main__":
+    main()

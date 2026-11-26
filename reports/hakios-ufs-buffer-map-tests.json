@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "patched_cases": 11,
+  "original_unmapped_destination_reproduced_by_stub": true,
+  "asan_ubsan_passed": true,
+  "source_sha256": "d9e7526ec3c5a1331482caa8f47599d883dee489a806f33fc36b3916c6f3d0db",
+  "patch_sha256": "02820d9df49a235c21831a47a3e62225963c7cb5e9026fc6919653cebce517cd",
+  "test_source_sha256": "15c33d469cdbd2a9a7d951e1ef5aa484357b32962b9ed70af217d7277a3ca3f3",
+  "results": {
+    "original": "Original clustered read passed NULL buf_dataptr to IO",
+    "patched": "PASS 11 patched UFS mapping, read error, bounds, readonly and data-route cases"
+  },
+  "physical_device_used": false,
+  "qemu_used": false,
+  "scope": "Actual ufs_strategy, with host buf_map/IO/error stubs; runtime mapping remains for MIX verification"
+}

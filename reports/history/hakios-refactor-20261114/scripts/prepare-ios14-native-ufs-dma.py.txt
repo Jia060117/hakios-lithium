@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+"""Use the actual XNU7195 contiguous-allocation contract for MIX UFS DMA."""
+import difflib
+import importlib.util
+from pathlib import Path
+
+ROOT=Path(__file__).resolve().parents[1]
+PATCH=ROOT/'ports/lithium/patches/xnu-7195/0019-lithium-native-ufs-dma-flags.patch'
+
+def main():
+    spec=importlib.util.spec_from_file_location('native_alias',ROOT/'scripts/prepare-ios14-native-alias-probe.py')
+    helper=importlib.util.module_from_spec(spec);spec.loader.exec_module(helper)
+    path='bsd/dev/lithium_ufs.c';old=helper.baseline(path,PATCH)
+    start=old.index('\tif (kmem_alloc_contig(kernel_map, &su.dma, DMA_SIZE')
+    end=old.index('\tsu.lun = 0;',start)
+    new=old[:start]+'''    error = ufs_alloc_dma();
+    if (error) return error;
+'''+old[end:]
+    anchor='static int\nlithium_ufs_init(void)'
+    assert new.count(anchor)==1
+    new=new.replace(anchor,'''/* XNU7195 vm_kern.c only accepts KMA_KOBJECT, KMA_LOMEM and
+ * KMA_NOPAGEWAIT here. ZERO/PERMANENT exist for other allocators, but this
+ * API rejects them before looking for pages. kmem_alloc_contig wires its
+ * successful allocation; retain that mapping for this driver's lifetime.
+ */
+static int __attribute__((noinline))
+ufs_alloc_dma(void)
+{
+    kern_return_t kr = kmem_alloc_contig(kernel_map, &su.dma, DMA_SIZE,
+        PAGE_MASK, 0, 0, KMA_NONE, VM_KERN_MEMORY_IOKIT);
+    printf("LITHIUM UFS: kmem_alloc_contig kr=%d bytes=0x%x flags=0\\n", kr, DMA_SIZE);
+    if (kr != KERN_SUCCESS) return ENOMEM;
+    /* This API does not zero its returned pages. Clear all descriptors and
+     * bounce bytes before any host ownership or cache maintenance. */
+    bzero((void *)su.dma, DMA_SIZE);
+    ppnum_t first = pmap_find_phys(kernel_pmap, (addr64_t)su.dma);
+    if (!first) return ENOMEM;
+    su.dma_pa = ptoa_64(first);
+    for (vm_size_t off=0; off<DMA_SIZE; off+=PAGE_SIZE) {
+        ppnum_t pn=pmap_find_phys(kernel_pmap,(addr64_t)(su.dma+off));
+        if (!pn || ptoa_64(pn) != su.dma_pa+off) {
+            printf("LITHIUM UFS: DMA physical continuity failed at 0x%lx\\n", (unsigned long)off);
+            return EIO;
+        }
+    }
+    printf("LITHIUM UFS: DMA zeroed and physical continuity verified at 0x%llx\\n",su.dma_pa);
+    return 0;
+}
+
+'''+anchor)
+    patch='Subject: lithium: honor XNU7195 contiguous DMA allocation flags\n\n'
+    patch+='Round7 reached BSD but rejected KMA_ZERO|KMA_PERMANENT before allocating.\n'
+    patch+='Keep raw Mach result, zero explicitly and verify each physical page before DMA.\n\n'
+    patch+=f'diff --git a/{path} b/{path}\n'
+    patch+=''.join(difflib.unified_diff(old.splitlines(True),new.splitlines(True),fromfile='a/'+path,tofile='b/'+path))
+    PATCH.write_text(patch);print(PATCH)
+
+if __name__=='__main__':main()

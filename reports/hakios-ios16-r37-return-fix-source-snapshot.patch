@@ -1,0 +1,3581 @@
+--- /dev/null
++++ b/ports/hakios-lithium/return-fastboot/kernel.inc
+@@ -0,0 +1,138 @@
++/* SPDX-License-Identifier: MIT
++ * Optional normal-timer handoff. The complete HakiOS return path remains the
++ * owner of driver shutdown and the final branch. New state is static/small.
++ */
++#include <pexpert/arm64/boot.h>
++#include <kern/processor.h>
++#include <kern/sched_prim.h>
++#include "profile.h"
++#include "ram-smp-profile.h"
++
++static uint8_t lithium_fastboot_wire[RFBT_WIRE_SIZE]
++    __attribute__((used, aligned(RFBT_RECORD_ALIGNMENT))) = RFBT_WIRE_INITIALIZER;
++static struct rfbt_config lithium_fastboot_config;
++static struct rfbt_record lithium_fastboot_record;
++static bool lithium_fastboot_pending;
++static bool lithium_fastboot_smp_profile;
++static uint64_t lithium_fastboot_usb_session;
++
++extern bool lithium_return_fastboot_ram_storage_clean(void);
++extern uint64_t lithium_usb_log_delivered(void);
++extern uint64_t lithium_usb_log_session(void);
++extern uint64_t lithium_usb_log_lost_total(void);
++
++static bool
++lithium_fastboot_single_cpu(void)
++{
++    return ml_get_max_cpu_number() == 0 &&
++        (__builtin_arm_rsr64("MPIDR_EL1") & 0xff00ffffffULL) == 1;
++}
++
++static void
++lithium_fastboot_timer_prepare(void)
++{
++    const char *args = PE_boot_args();
++    size_t length = args ? strnlen(args, BOOT_LINE_LENGTH) : 0;
++    uint64_t cookie = 0;
++    int single_profile, smp_profile;
++    uint32_t error = rfbt_parse_args(args, length,
++        args != NULL && length < BOOT_LINE_LENGTH, &lithium_fastboot_config);
++    if (error != RFBT_OK || !lithium_fastboot_config.enabled) return;
++    single_profile = rfbt_ram_profile(args, length, 1);
++    smp_profile = rfbt_ram_smp_profile(args, length, 1);
++    if (single_profile == smp_profile) {
++        printf("LITHIUM FASTBOOT status=blocked phase=prepare contract=%u ram_profile=0 smp_profile=0\n",
++            error);
++        return;
++    }
++    error = rfbt_initial_cookie(lithium_fastboot_wire, RFBT_WIRE_SIZE, &cookie);
++    if (error != RFBT_OK ||
++        (!smp_profile && !lithium_fastboot_single_cpu()) ||
++        (smp_profile && ml_get_max_cpu_number() != 2) ||
++        !lithium_return_fastboot_ram_storage_clean()) {
++        printf("LITHIUM FASTBOOT status=blocked phase=prepare contract=%u ram_profile=%u\n",
++            error, single_profile || smp_profile);
++        return;
++    }
++    lithium_fastboot_smp_profile = smp_profile != 0;
++    if (smp_profile) {
++        /* Terminal timer thread must reach the boot core before stopping the
++         * secondaries. A secondary's emergency loader_return loses the normal
++         * timer provenance, so it is not a substitute for this binding. */
++        processor_t boot = cpu_to_processor(0);
++        if (!boot || !ml_get_interrupts_enabled() || get_preemption_level() != 0)
++            return;
++        (void)thread_bind(boot);
++        thread_block(THREAD_CONTINUE_NULL);
++        if (cpu_number() != 0 ||
++            (__builtin_arm_rsr64("MPIDR_EL1") & 0xff00ffffffULL) != 1)
++            return;
++        printf("LITHIUM FASTBOOT status=return_cpu logical=0 affinity=0x1 normal_timer=1\n");
++    }
++    error = rfbt_record_init(&lithium_fastboot_record, &lithium_fastboot_config, cookie);
++    if (error != RFBT_OK) return;
++    lithium_fastboot_pending = true;
++    lithium_fastboot_usb_session = lithium_usb_log_session();
++    printf("LITHIUM FASTBOOT status=armed mode=isolated_ram delay_seconds=%u firmware_result=unverified\n",
++        lithium_fastboot_config.delay_seconds);
++}
++
++/* Called after the ordinary stop request, before any UEFI context restore.
++ * The old stop routine can return on PSCI error: only the independent strict
++ * readback establishes the SMP_STOPPED assertion used by firmware v2. */
++static bool
++lithium_fastboot_handoff_allowed(void)
++{
++    if (!lithium_fastboot_pending || !lithium_fastboot_smp_profile) return true;
++    return cpu_number() == 0 &&
++        (__builtin_arm_rsr64("MPIDR_EL1") & 0xff00ffffffULL) == 1 &&
++        psci_smp_stopped_strict();
++}
++
++static void
++lithium_fastboot_primary(uint64_t target, bool drained)
++{
++    if (!lithium_fastboot_pending) return;
++    drained = drained && lithium_fastboot_usb_session != 0 &&
++        lithium_fastboot_usb_session == lithium_usb_log_session() &&
++        lithium_usb_log_lost_total() == 0;
++    (void)rfbt_kernel_finish(&lithium_fastboot_record, RFBT_REASON_NORMAL_TIMER,
++        RFBT_STORAGE_RAM_NONE, target,
++        drained ? RFBT_DRAIN_OK : RFBT_DRAIN_FAILED, lithium_usb_log_delivered());
++}
++
++static void
++lithium_fastboot_tail(uint64_t target, bool drained)
++{
++    if (!lithium_fastboot_pending) return;
++    drained = drained && lithium_fastboot_usb_session != 0 &&
++        lithium_fastboot_usb_session == lithium_usb_log_session() &&
++        lithium_usb_log_lost_total() == 0;
++    (void)rfbt_tail_finish(&lithium_fastboot_record, target,
++        drained ? RFBT_DRAIN_OK : RFBT_DRAIN_FAILED, lithium_usb_log_delivered());
++    /* No printf after the final streaming drain. Later retained msgbuf/panic
++     * capture is independent and is not falsely counted as USB-delivered. */
++}
++
++static uint64_t
++lithium_fastboot_return_reason(bool normal_timer)
++{
++    if (!normal_timer || !lithium_fastboot_pending || panic_active() ||
++        ((!lithium_fastboot_smp_profile && !lithium_fastboot_single_cpu()) ||
++        (lithium_fastboot_smp_profile && ml_get_max_cpu_number() != 2)) ||
++        !lithium_fastboot_usb_session ||
++        lithium_fastboot_usb_session != lithium_usb_log_session() ||
++        lithium_usb_log_lost_total() != 0 ||
++        __atomic_load_n(&lithium_log_contention_dropped_bytes, __ATOMIC_RELAXED) != 0 ||
++        !lithium_return_fastboot_ram_storage_clean() ||
++        rfbt_eligible(&lithium_fastboot_record, &lithium_fastboot_config,
++            lithium_fastboot_record.boot_cookie, RFBT_RETURN_REASON, 0) != RFBT_OK)
++        return 0;
++    if (rfbt_encode(&lithium_fastboot_record, lithium_fastboot_wire,
++        RFBT_WIRE_SIZE) != RFBT_OK) return 0;
++    for (uintptr_t p = (uintptr_t)lithium_fastboot_wire;
++         p < (uintptr_t)lithium_fastboot_wire + RFBT_WIRE_SIZE; p += 64)
++        __asm__ volatile ("dc cvac, %0" : : "r"(p) : "memory");
++    __asm__ volatile ("dsb sy" : : : "memory");
++    return RFBT_RETURN_REASON;
++}
+--- /dev/null
++++ b/ports/hakios-lithium/return-fastboot/init.inc
+@@ -0,0 +1,59 @@
++/* SPDX-License-Identifier: MIT
++ * Independent RAM-only software lifecycle test. No touch/peripheral options,
++ * mount, storage access, reboot syscall, local countdown or replacement PID1.
++ */
++#include "profile.h"
++#include "ram-smp-profile.h"
++
++static int
++lithium_fastboot_test_hold(void)
++{
++    const char *hint = boot_arg("fastboot_return_test");
++    char args[1024];
++    size_t bytes = sizeof(args);
++    struct rfbt_config config;
++    unsigned matches = 0, accepted = 0, exact_zero = 0, exact_one = 0, probes = 0;
++    /* CPU-only SMP diagnostics must not fall through to generic selftests or
++     * an early halt. The kernel's timer owns the sole terminal transition. */
++    const char *smp = boot_arg("ram_smp_return");
++    if (smp && strcmp(smp, "1") == 0) {
++        accepted = sysctlbyname("kern.bootargs", args, &bytes, NULL, 0) == 0 &&
++            bytes > 0 && bytes < sizeof(args) && args[bytes - 1] == 0 &&
++            rfbt_ram_smp_profile(args, bytes - 1, 1) &&
++            rfbt_parse_args(args, bytes - 1, 1, &config) == RFBT_OK &&
++            config.enabled;
++        printf("LITHIUM FASTBOOT session=ram_smp accepted=%u pid=%d owner=kernel_timer no_storage=1\n",
++            accepted, getpid());
++        for (;;) (void)usleep(1000000);
++    }
++    /* The old helper is only a fallback hint when the complete snapshot fails.
++     * Its first-value/space-only parser cannot authorize normal routing. */
++    if (sysctlbyname("kern.bootargs", args, &bytes, NULL, 0) != 0 ||
++        !bytes || bytes >= sizeof(args) || args[bytes - 1] != 0) {
++        if (!hint) return 0;
++    } else {
++        size_t pos = 0;
++        while (pos + 1 < bytes) {
++            while (pos + 1 < bytes && rfbt_space((unsigned char)args[pos])) ++pos;
++            size_t begin = pos;
++            while (pos + 1 < bytes && !rfbt_space((unsigned char)args[pos])) ++pos;
++            size_t n = pos - begin, key = 0;
++            while (key < n && args[begin + key] != '=') ++key;
++            if (rfbt_bytes_equal(args + begin, key, "fastboot_return_test", 20)) {
++                ++matches;
++                exact_zero += rfbt_bytes_equal(args + begin, n, "fastboot_return_test=0", 22);
++                exact_one += rfbt_bytes_equal(args + begin, n, "fastboot_return_test=1", 22);
++            }
++            if ((key >= 5 && rfbt_bytes_equal(args + begin, 5, "touch", 5)) ||
++                (key >= 3 && rfbt_bytes_equal(args + begin, 3, "gpu", 3))) probes = 1;
++        }
++        if (!matches && !hint) return 0;
++        if (matches == 1 && exact_zero == 1) return 0;
++        accepted = matches == 1 && exact_one == 1 && !probes &&
++            rfbt_parse_args(args, bytes - 1, 1, &config) == RFBT_OK &&
++            config.enabled && rfbt_ram_profile(args, bytes - 1, 1);
++    }
++    printf("LITHIUM FASTBOOT session=software_test accepted=%u pid=%d no_storage=1 no_touch=1\n",
++        accepted, getpid());
++    for (;;) (void)usleep(1000000);
++}
+--- /dev/null
++++ b/ports/hakios-lithium/return-fastboot/loader.inc
+@@ -0,0 +1,194 @@
++/* SPDX-License-Identifier: MIT
++ * Included by the complete HakiOS loader after its firmware/cache helpers.
++ * No device I/O without the explicit option and a valid returned kernel proof.
++ */
++#include "profile.h"
++#include "ram-smp-profile.h"
++#define LFB_UINT32 uint32_t
++#define LFB_UINT64 uint64_t
++#define LFB_STATUS efi_status
++#define LFB_EFIAPI EFIAPI
++#include "firmware-protocol.h"
++#undef LFB_UINT32
++#undef LFB_UINT64
++#undef LFB_STATUS
++#undef LFB_EFIAPI
++
++static struct rfbt_config lithium_fastboot_requested;
++static struct rfbt_once lithium_fastboot_once;
++static uint8_t *lithium_fastboot_handoff;
++static uint64_t lithium_fastboot_cookie;
++static struct lithium_fastboot_protocol *lithium_fastboot_firmware;
++static unsigned lithium_fastboot_return_smp;
++static uint64_t lithium_fastboot_owner_affinity;
++
++static void
++lithium_fastboot_seed(const char *args, uint32_t bytes, unsigned copies,
++    uint64_t low, uint64_t high, uint64_t checkpoint)
++{
++    static const efi_guid guid = { LFB_PROTOCOL_GUID_VALUES };
++    uint8_t *candidate = NULL;
++    unsigned matches = 0;
++    lithium_fastboot_handoff = NULL;
++    lithium_fastboot_firmware = NULL;
++    lithium_fastboot_cookie = 0;
++    lithium_fastboot_return_smp = 0;
++    lithium_fastboot_owner_affinity = READ_SYSREG(MPIDR_EL1) & 0xff00ffffffULL;
++    rfbt_config_default(&lithium_fastboot_requested);
++    if (!args || !bytes || bytes > RFBT_ARGS_MAX || copies != 1 || args[bytes - 1] != 0)
++        return;
++    if (rfbt_parse_args(args, bytes - 1, 1, &lithium_fastboot_requested) != RFBT_OK ||
++        !lithium_fastboot_requested.enabled) return;
++    int single_profile = rfbt_ram_profile(args, bytes - 1, 0);
++    int smp_profile = rfbt_ram_smp_profile(args, bytes - 1, 0);
++    if (lithium_fastboot_once.used || checkpoint ||
++        (single_profile == smp_profile) ||
++        block_enabled || block_write_requested || hc_requested || high <= low ||
++        high - low < RFBT_WIRE_SIZE) {
++        print("LITHIUM FASTBOOT status=blocked phase=seed reason=profile_or_consumed\n");
++        return;
++    }
++    efi_status status = BS->locate_protocol(&guid, NULL, (void **)&lithium_fastboot_firmware);
++    struct lithium_fastboot_protocol *f = lithium_fastboot_firmware;
++    if (EFI_ERROR(status) || !f || f->revision != LFB_PROTOCOL_REVISION ||
++        f->size != sizeof(*f) || f->profile != LFB_PROFILE_RAM_ISOLATED ||
++        f->capabilities != LFB_CAP_NO_PHYSICAL_UFS || !f->prepare || !f->commit) {
++        lithium_fastboot_firmware = NULL;
++        print("LITHIUM FASTBOOT status=blocked phase=seed reason=firmware_protocol\n");
++        return;
++    }
++    /* Scan only aligned, complete INITIAL candidates. Multiple candidates are
++     * rejected; an instruction literal or a stale encoded record is not one. */
++    for (uint64_t p = (low + RFBT_RECORD_ALIGNMENT - 1) &
++            ~((uint64_t)RFBT_RECORD_ALIGNMENT - 1);
++         p <= high - RFBT_WIRE_SIZE; p += RFBT_RECORD_ALIGNMENT) {
++        if (*(const uint64_t *)(uintptr_t)p == RFBT_MAGIC &&
++            rfbt_initial_check((const void *)(uintptr_t)p, RFBT_WIRE_SIZE, 0) == RFBT_OK) {
++            candidate = (uint8_t *)(uintptr_t)p;
++            if (++matches > 1) break;
++        }
++    }
++    if (matches != 1) {
++        print("LITHIUM FASTBOOT status=blocked phase=seed candidates=%d\n", (uint64_t)matches);
++        return;
++    }
++    uint64_t cookie = READ_SYSREG(CNTVCT_EL0) ^ (uint64_t)(uintptr_t)candidate ^ RFBT_MAGIC;
++    if (!cookie) cookie = 1; /* Per-invocation discriminator, not a security secret. */
++    if (rfbt_seed_initial(candidate, RFBT_WIRE_SIZE, cookie) != RFBT_OK) return;
++    clean_dcache((uint64_t)(uintptr_t)candidate,
++        (uint64_t)(uintptr_t)candidate + RFBT_WIRE_SIZE);
++    lithium_fastboot_handoff = candidate;
++    lithium_fastboot_cookie = cookie;
++    lithium_fastboot_return_smp = (unsigned)smp_profile;
++    print("LITHIUM FASTBOOT status=seeded mode=isolated_ram delay_seconds=%d\n",
++        (uint64_t)lithium_fastboot_requested.delay_seconds);
++}
++
++static void
++lithium_fastboot_after_return(uint64_t reason, uint64_t syndrome)
++{
++    struct rfbt_record result;
++    struct lithium_fastboot_proof proof = {0};
++    struct lithium_fastboot_result hardware = {0};
++    uint8_t *wire = lithium_fastboot_handoff;
++    if (!lithium_fastboot_requested.enabled || !wire || !lithium_fastboot_firmware) return;
++    if (lithium_fastboot_return_smp &&
++        (READ_SYSREG(MPIDR_EL1) & 0xff00ffffffULL) != lithium_fastboot_owner_affinity) {
++        print("LITHIUM FASTBOOT status=retained reason=smp_return_affinity\n");
++        return;
++    }
++    if (lithium_fastboot_return_smp) {
++        /* run_on_other_cpu resumes this original loader core. The XNU boot
++         * core sets other_cpu_done before its CPU_OFF call, so independently
++         * confirm that it and the two secondaries have actually powered off. */
++        static const uint64_t kernel_affinities[3] = {1, 0x100, 0x101};
++        uint64_t hz = READ_SYSREG(CNTFRQ_EL0), begin = READ_SYSREG(CNTVCT_EL0);
++        if (!hz || hz > 0xffffffffULL) return;
++        for (unsigned cpu = 0; cpu < 3; ++cpu) {
++            int off = 0;
++            for (unsigned poll = 0; poll < 1000; ++poll) {
++                int64_t state = psci_call(PSCI_AFFINITY_INFO, kernel_affinities[cpu], 0, 0);
++                if (state == 1) { off = 1; break; }
++                uint64_t now = READ_SYSREG(CNTVCT_EL0);
++                if (state < 0 || now < begin || now - begin >= hz) break;
++                BS->stall(1000);
++            }
++            if (!off) {
++                print("LITHIUM FASTBOOT status=retained reason=kernel_cpu_not_off affinity=%x\n",
++                    kernel_affinities[cpu]);
++                return;
++            }
++        }
++        print("LITHIUM FASTBOOT status=smp_return_verified owner=%x kernel_cpus_off=3\n",
++            lithium_fastboot_owner_affinity);
++    }
++    /* XNU cleaned its final record before branching; invalidate the loader's
++     * view after the independent returned-core/context handshake. */
++    flush_dcache((uint64_t)(uintptr_t)wire, (uint64_t)(uintptr_t)wire + RFBT_WIRE_SIZE);
++    uint32_t error = rfbt_decode(wire, RFBT_WIRE_SIZE, &result);
++    if (error == RFBT_OK) error = rfbt_eligible(&result, &lithium_fastboot_requested,
++        lithium_fastboot_cookie, reason, syndrome);
++    if (error != RFBT_OK) {
++        print("LITHIUM FASTBOOT status=retained reason=kernel_proof error=%d ctx=%x\n",
++            (uint64_t)error, reason);
++        return;
++    }
++    uint64_t freq = READ_SYSREG(CNTFRQ_EL0), start = READ_SYSREG(CNTVCT_EL0), now = start;
++    if (!freq || freq > 0xffffffffULL) {
++        print("LITHIUM FASTBOOT status=retained reason=timer_frequency\n");
++        return;
++    }
++    uint64_t ticks = (uint64_t)result.delay_seconds * freq;
++    unsigned polls = 0, limit = result.delay_seconds * 20u + 20u;
++    print("LITHIUM FASTBOOT status=countdown seconds=%d primary_target=%d primary_tail=%d\n",
++        (uint64_t)result.delay_seconds, result.primary_target, result.kernel_tail);
++    print("LITHIUM FASTBOOT final_target=%d final_tail=%d host_persistence=unverified\n",
++        result.final_target, result.tail_tail);
++    while (now >= start && now - start < ticks && polls++ < limit) {
++        BS->stall(100000);
++        wdt_pet();
++        now = READ_SYSREG(CNTVCT_EL0);
++    }
++    if (now < start || now - start < ticks) {
++        print("LITHIUM FASTBOOT status=retained reason=countdown_clock\n");
++        return;
++    }
++    uint64_t elapsed = now - start;
++    uint64_t waited_ms = (elapsed / freq) * 1000 + ((elapsed % freq) * 1000) / freq;
++    error = rfbt_loader_claim(&lithium_fastboot_once, wire, RFBT_WIRE_SIZE,
++        &lithium_fastboot_requested, lithium_fastboot_cookie, reason, syndrome, waited_ms);
++    clean_dcache((uint64_t)(uintptr_t)wire, (uint64_t)(uintptr_t)wire + RFBT_WIRE_SIZE);
++    if (error != RFBT_OK) {
++        print("LITHIUM FASTBOOT status=retained reason=claim error=%d\n", (uint64_t)error);
++        return;
++    }
++    proof.revision = LFB_PROTOCOL_REVISION;
++    proof.size = sizeof(proof);
++    proof.profile = LFB_PROFILE_RAM_ISOLATED;
++    proof.storage = LFB_STORAGE_RAM;
++    proof.flags = LFB_PROOF_RAM_FLAGS;
++    proof.boot_cookie = result.boot_cookie;
++    proof.generation = result.boot_cookie;
++    proof.primary_target = result.primary_target;
++    proof.final_target = result.final_target;
++    proof.tail_tail = result.tail_tail;
++    hardware.revision = LFB_PROTOCOL_REVISION;
++    hardware.size = sizeof(hardware);
++    efi_status status = lithium_fastboot_firmware->prepare(lithium_fastboot_firmware,
++        &proof, &hardware);
++    print("LITHIUM FASTBOOT phase=firmware_prepare status=%x state=%d flags=%x detail=%x\n",
++        status, (uint64_t)hardware.state, (uint64_t)hardware.flags, hardware.detail);
++    print("LITHIUM FASTBOOT imem_before=%x imem_after=%x pmic_before=%x pmic_after=%x\n",
++        (uint64_t)hardware.imem_before, (uint64_t)hardware.imem_after,
++        (uint64_t)hardware.pmic_before, (uint64_t)hardware.pmic_after);
++    if (!EFI_ERROR(status) && hardware.revision == LFB_PROTOCOL_REVISION &&
++        hardware.size == sizeof(hardware) && hardware.state == LFB_STATE_PREPARED &&
++        hardware.backend == LFB_BACKEND_LITHIUM && hardware.ticket &&
++        hardware.flags == (LFB_FLAG_IMEM_VERIFIED | LFB_FLAG_PMIC_VERIFIED)) {
++        print("LITHIUM FASTBOOT status=commit attempt=1\n");
++        status = lithium_fastboot_firmware->commit(lithium_fastboot_firmware, hardware.ticket);
++    }
++    (void)rfbt_handoff_returned(&lithium_fastboot_once, wire, RFBT_WIRE_SIZE);
++    clean_dcache((uint64_t)(uintptr_t)wire, (uint64_t)(uintptr_t)wire + RFBT_WIRE_SIZE);
++    print("LITHIUM FASTBOOT status=retained reason=firmware_returned status=%x retry=0\n", status);
++}
+--- /dev/null
++++ b/ports/hakios-lithium/patches/0027-lithium-strict-smp-return.patch
+@@ -0,0 +1,56 @@
++--- a/xnu/files/osfmk/arm64/psci_smp.h
+++++ b/xnu/files/osfmk/arm64/psci_smp.h
++@@ -22,6 +22,7 @@
++ extern void             psci_smp_cpu_off(void) __dead2;
++ 
++ extern void             psci_smp_stop_others(void);
+++extern bool             psci_smp_stopped_strict(void);
++ extern void             psci_smp_stop_here(void);
++ 
++ /* osfmk/arm64/gic_v3_irq.c */
++--- a/xnu/files/osfmk/arm64/psci_smp.c
+++++ b/xnu/files/osfmk/arm64/psci_smp.c
++@@ -358,6 +358,28 @@
++ 	}
++ }
++ 
+++
+++/* Only an exact firmware OFF result proves a started secondary has stopped.
+++ * The older stop routine's negative-state shortcut is not such proof. */
+++bool
+++psci_smp_stopped_strict(void)
+++{
+++    int max_cpu = ml_get_max_cpu_number();
+++    uint32_t started = psci_smp_started;
+++    if (cpu_number() != master_cpu || max_cpu < 0 || max_cpu >= 32)
+++        return false;
+++    if (max_cpu < 31 && (started >> (max_cpu + 1)) != 0)
+++        return false;
+++    for (int cpu = 0; cpu <= max_cpu; cpu++) {
+++        if (cpu == master_cpu || !(started & (1u << cpu))) continue;
+++        cpu_data_t *cdp = cpu_datap(cpu);
+++        if (cdp == NULL ||
+++            psci_call(PSCI_AFFINITY_INFO, cdp->cpu_phys_id, 0, 0) != PSCI_AFFINITY_OFF)
+++            return false;
+++    }
+++    return true;
+++}
+++
++ /*
++  * Where a processor learns that the system is ending: the interrupt psci_smp_stop_rest() sends,
++  * and the loop in which the processors wait while another one panics (they have their
++--- a/xnu/files/osfmk/arm64/loader_return.c
+++++ b/xnu/files/osfmk/arm64/loader_return.c
++@@ -448,6 +448,12 @@
++ 	 * on that processor only (on another one it has it call loader_return() in its turn).
++ 	 */
++ 	psci_smp_stop_others();
+++#if defined(LITHIUM_ARMV8_0)
+++	if (!lithium_fastboot_handoff_allowed()) {
+++		loader_log_puts("\nLITHIUM FASTBOOT status=blocked reason=secondary_not_off\n");
+++		for (;;) __builtin_arm_wfi();
+++	}
+++#endif
++ #endif
++ #if HAKIOS_LITHIUM_USB_LOG
++     extern void lithium_usb_quiesce(void);
+--- /dev/null
++++ b/ports/hakios-lithium/diagnostics/cpu-frequency-r37.inc
+@@ -0,0 +1,807 @@
++/*
++ * R37: call lithium_cpu_frequency_r37() once from bsdinit_task, before exec,
++ * with interrupts/preemption enabled. Independent of cpu_sanity.
++ *
++ * Required BSD-visible interfaces are included here, including the generated
++ * <mach/processor.h>. No struct processor/thread layout is required.
++ *
++ * cpu_freq_diag=1 explicitly opts into raw PMU/feature reads WITHOUT a fault
++ * guard. ID_AA64DFR0_EL1 and PMU accesses can trap to EL2/EL3 even at EL1.
++ * Neither CurrentEL nor PMUVer proves the absence of such traps. We cannot
++ * inspect MDCR_EL2/EL3 from EL1. An unhandled trap can terminate this boot.
++ * timer_migrate_diag=1 separately opts into raw CNTPCT reads with the same
++ * absence of an EL2 trap guard. CNTVOFF_EL2 is NEVER accessed from EL1 here.
++ *
++ * cpu_freq_diag=1 also authorizes minimal setup ONLY with a main-agent audited
++ * LITHIUM_R37_ARCH_PMU_UNOWNED=1. Set the latter only for the actual generic
++ * inert osfmk/arm64/kpc.c backend with MONOTONIC disabled and exclusive
++ * architected PMU ownership for this prelaunch interval. The default is 0.
++ * Main enforces the inert KPC source hash and generated NMONOTONIC=0 headers.
++ * This software audit does not prove Secure-world/firmware PMU ownership.
++ * Optional cpu_freq_pmu_setup=0 disables setup; absent defaults to 1. An
++ * explicit value of 1 still cannot bypass the audited/live ownership checks.
++ * Regular setup requires empty enable/interrupt/export masks, not proof of
++ * ownership. No Apple PMCR0/PMC register is accessed by this include.
++ *
++ * cpu_freq_pmu_borrow=1 separately opts into borrowing inherited nonzero
++ * enable/interrupt masks; these masks are NOT proven stale. Borrowing is
++ * allowed ONLY with PMCR.E=0, the same audited/live ownership checks, X=0 and
++ * no pending overflow. It also requires cpu_freq_pmu_setup=1 (the default).
++ * Inherited PMINTEN.C is refused: even far from wrap, IRQ/firmware stalls have no proven
++ * cycle bound, and a new sticky overflow cannot be undone without a forbidden
++ * overflow-clear write. A near-wrap guard is additional caution, not that
++ * missing bound. Only event interrupt bits that were saved can be restored.
++ *
++ * In the regular path only PMCR.E, PMCNTENSET.C and PMCCFILTR.{P,NSK} change.
++ * Borrowing additionally masks/restores inherited enable/interrupt controls,
++ * verifies them disabled BEFORE setting E, and freezes E before restoration.
++ * No counter/reset/overflow-clear writes, clock/voltage/MMIO/timer writes,
++ * PMCR.{P,C,D,LC,DP} changes, or enabling new PMU interrupts. Configuration is
++ * restored/read back on normal completion; counter values and sticky overflow
++ * status naturally advance and are NOT restored. There is no trap recovery.
++ *
++ * ARM DDI0601 2024-12 register entries, archived in measure/:
++ * PMCCNTR_EL0 is 64 bit in AArch64. LC selects overflow detection width, not
++ * the MRS data width. D divides by 64 ONLY if effective LC == 0.
++ * PMCCFILTR.P/NSK are XOR filters in NS EL1; requiring both clear also avoids
++ * assuming this EL1's security state. Newer PMU extensions are rejected here.
++ * CNTVCT is a reference calibrated by CNTFRQ, NOT an external clock reference.
++ *
++ * All software loops have fixed caps. A scheduler block, trapped register
++ * access, interrupt or hardware stall has no hard wall-clock bound here.
++ */
++#ifndef LITHIUM_CPU_FREQUENCY_R37_INC
++#define LITHIUM_CPU_FREQUENCY_R37_INC
++
++#ifndef LITHIUM_R37_TEST
++/* This include is compiled by osfmk/user_exception_trace.c. Its existing
++ * kernel printf/string declarations avoid BSD sys/systm.h type conflicts. */
++#include <stdint.h>
++#include <kern/clock.h>
++#include <kern/cpu_data.h>
++#include <kern/processor.h>
++#include <kern/sched_prim.h>
++#include <mach/mach_time.h>
++#include <mach/processor.h>
++#include <mach/processor_info.h>
++#include <machine/machine_routines.h>
++#include <pexpert/pexpert.h>
++#if KPC
++#include <kern/kpc.h>
++#endif
++#define R37_READ(reg) __builtin_arm_rsr64(#reg)
++#define R37_WRITE(reg, value) __builtin_arm_wsr64(#reg, (uint64_t)(value))
++#define R37_ISB() __asm__ volatile("isb" ::: "memory")
++#endif
++
++#ifndef LITHIUM_R37_ARCH_PMU_UNOWNED
++#define LITHIUM_R37_ARCH_PMU_UNOWNED 0
++#endif
++
++#define R37_CPU_CAP 8u
++#define R37_FREQ_SAMPLES 5u
++#define R37_MIGRATE_SAMPLES 8u
++#define R37_SPIN_CAP 262144u
++#define R37_U64_MAX (~(uint64_t)0)
++#define R37_C ((uint64_t)1 << 31)
++#define R37_RESET_BITS ((uint64_t)6)
++#define R37_FILTER_EL1 (((uint64_t)1 << 31) | ((uint64_t)1 << 29))
++
++struct r37_stats {
++	uint64_t count, sum, min, max;
++	unsigned overflow;
++};
++
++static int
++r37_add(struct r37_stats *s, uint64_t v)
++{
++	if (s->sum > R37_U64_MAX - v || s->count == R37_U64_MAX) {
++		s->overflow = 1;
++		return 0;
++	}
++	if (!s->count || v < s->min) {
++		s->min = v;
++	}
++	if (!s->count || v > s->max) {
++		s->max = v;
++	}
++	s->count++;
++	s->sum += v;
++	return 1;
++}
++
++static uint64_t
++r37_avg(const struct r37_stats *s)
++{
++	return s->count && !s->overflow ? s->sum / s->count : 0;
++}
++
++/* Checked product/quotient: reject overflow rather than link __udivti3 into
++ * the kernel, silently wrap, or invent a plausible frequency. */
++static int
++r37_muldiv(uint64_t a, uint64_t b, uint64_t d, uint64_t *out)
++{
++	if (!d || (b && a > R37_U64_MAX / b)) {
++		return 0;
++	}
++	*out = a * b / d;
++	return 1;
++}
++
++static uint64_t
++r37_counter_delta(uint64_t before, uint64_t after, unsigned bits)
++{
++	return bits == 32 ? (uint64_t)(uint32_t)(after - before) : after - before;
++}
++
++static unsigned
++r37_divisor(uint64_t pmcr)
++{
++	return (pmcr & (1u << 3)) && !(pmcr & (1u << 6)) ? 64u : 1u;
++}
++
++static int
++r37_supported_pmu(unsigned v)
++{
++	/* v3 and v3p1 only: target-era semantics, no EBEP effective-LC override. */
++	return v == 1 || v == 4;
++}
++
++static int
++r37_el1_counted(uint64_t filter)
++{
++	/* Both Secure and Non-secure EL1 included; no inaccessible SCR_EL3 read. */
++	return !(filter & R37_FILTER_EL1);
++}
++
++struct r37_pmu {
++	uint64_t pmcr, enable, filter, interrupt, overflow;
++};
++
++static struct r37_pmu
++r37_pmu_read(void)
++{
++	struct r37_pmu p;
++	p.pmcr = R37_READ(PMCR_EL0);
++	p.enable = R37_READ(PMCNTENSET_EL0);
++	p.filter = R37_READ(PMCCFILTR_EL0);
++	p.interrupt = R37_READ(PMINTENSET_EL1);
++	p.overflow = R37_READ(PMOVSCLR_EL0);
++	return p;
++}
++
++static int
++r37_same_controls(const struct r37_pmu *a, const struct r37_pmu *b)
++{
++	return a->pmcr == b->pmcr && a->enable == b->enable &&
++	       a->filter == b->filter && a->interrupt == b->interrupt;
++}
++
++static int
++r37_pmu_enabled(const struct r37_pmu *p)
++{
++	return (p->pmcr & 1) && (p->enable & R37_C) && r37_el1_counted(p->filter);
++}
++
++static int
++r37_setup_allowed(const struct r37_pmu *p, unsigned request, unsigned unowned)
++{
++	/* Do not take over a disabled-but-reserved cycle/event counter. */
++	return request == 1 && unowned && !p->enable && !p->interrupt &&
++	       !(p->pmcr & (1u << 4));
++}
++
++static unsigned
++r37_backend_unowned(void)
++{
++#if !LITHIUM_R37_ARCH_PMU_UNOWNED || MONOTONIC || (defined(NMONOTONIC) && NMONOTONIC)
++	return 0;
++#else
++#if KPC
++	if (kpc_get_classes() != 0 || kpc_is_running_fixed() ||
++	    kpc_is_running_configurable(R37_U64_MAX)) {
++		return 0;
++	}
++#endif
++	return 1;
++#endif
++}
++
++struct r37_cycle_stamp {
++	uint64_t v0, cycles, v1;
++};
++
++static struct r37_cycle_stamp
++r37_cycle_stamp(void)
++{
++	struct r37_cycle_stamp s;
++	R37_ISB();
++	s.v0 = R37_READ(CNTVCT_EL0);
++	R37_ISB();
++	s.cycles = R37_READ(PMCCNTR_EL0);
++	R37_ISB();
++	s.v1 = R37_READ(CNTVCT_EL0);
++	return s;
++}
++
++struct r37_frequency {
++	struct r37_stats khz, cycles, ticks, bracket;
++	uint64_t lower_khz, upper_khz;
++	unsigned invalid, timeout, wrapped;
++};
++
++static int
++r37_frequency_add(struct r37_frequency *f, struct r37_cycle_stamp a,
++    struct r37_cycle_stamp b, uint64_t hz, unsigned divisor)
++{
++	uint64_t c, midpoint_a, midpoint_b, dt, lo_dt, hi_dt, rate, lo, hi;
++	if (a.v1 < a.v0 || b.v1 < b.v0 || b.v0 <= a.v1 || !hz ||
++	    a.v1 - a.v0 > R37_U64_MAX - (b.v1 - b.v0) ||
++	    (divisor != 1 && divisor != 64)) {
++		f->invalid++;
++		return 0;
++	}
++	/* AArch64 PMCCNTR MRS width is 64 even when LC selects 32-bit overflow. */
++	c = r37_counter_delta(a.cycles, b.cycles, 64);
++	if (!c || c > R37_U64_MAX / divisor) {
++		f->invalid++;
++		return 0;
++	}
++	c *= divisor;
++	midpoint_a = a.v0 + (a.v1 - a.v0) / 2;
++	midpoint_b = b.v0 + (b.v1 - b.v0) / 2;
++	dt = midpoint_b - midpoint_a;
++	lo_dt = b.v0 - a.v1;
++	hi_dt = b.v1 - a.v0;
++	if (!r37_muldiv(c, hz, dt, &rate) ||
++	    !r37_muldiv(c, hz, hi_dt, &lo) ||
++	    !r37_muldiv(c, hz, lo_dt, &hi)) {
++		f->invalid++;
++		return 0;
++	}
++	/* Transactional statistics: no half-added accepted sample on overflow. */
++	struct r37_frequency next = *f;
++	if (!r37_add(&next.khz, rate / 1000) ||
++	    !r37_add(&next.cycles, c) || !r37_add(&next.ticks, dt) ||
++	    !r37_add(&next.bracket, (a.v1 - a.v0) + (b.v1 - b.v0))) {
++		f->invalid++;
++		return 0;
++	}
++	if (next.khz.count == 1 || lo / 1000 < next.lower_khz) {
++		next.lower_khz = lo / 1000;
++	}
++	if (hi / 1000 > next.upper_khz) {
++		next.upper_khz = hi / 1000;
++	}
++	next.wrapped += b.cycles < a.cycles;
++	*f = next;
++	return 1;
++}
++
++/* Headroom in counter increments (also when D=1), not a wall-time guarantee.
++ * LC=0 detects overflow at bit31 even though the counter read is 64 bits. */
++#define R37_BORROW_HEADROOM ((uint64_t)1 << 28)
++
++static int
++r37_borrow_room(uint64_t cycles, uint64_t pmcr)
++{
++	uint64_t limit = (pmcr & (1u << 6)) ? R37_U64_MAX : 0xffffffffULL;
++	return limit - (cycles & limit) >= R37_BORROW_HEADROOM;
++}
++
++static const char *
++r37_borrow_refusal(const struct r37_pmu *p, unsigned setup, unsigned unowned)
++{
++	if (setup != 1) return "setup_disabled";
++	if (!unowned) return "pmu_owned_or_unaudited";
++	if (p->pmcr & 1) return "pmcr_e_active";
++	if (p->pmcr & (1u << 4)) return "export_active";
++	if (p->overflow) return "pending_overflow";
++	/* PMCR.E=0 does not suppress an interrupt from sticky PMOVS.C.
++	 * No finite polling cap proves that re-enabling this bit will be safe. */
++	if (p->interrupt & R37_C) return "cycle_interrupt_unbounded";
++	if ((p->enable | p->interrupt) >> 32) return "unsupported_control_bits";
++	return NULL;
++}
++
++static void
++r37_frequency_borrow(unsigned logical, unsigned setup, unsigned unowned,
++    uint64_t el, unsigned pmuver, uint64_t hz, const struct r37_pmu *saved)
++{
++	struct r37_frequency f = {0};
++	struct r37_pmu expected = *saved, actual = *saved, restored = *saved;
++	unsigned changed = 0, readback_ok = 1, controls_ok = 1, restored_ok;
++	const char *reason = r37_borrow_refusal(saved, setup, unowned);
++	if (reason) goto report;
++
++	/* Keep the thread on this CPU throughout the transaction. IRQs remain
++	 * enabled. This is not arbitration with EL2/EL3 or firmware owners. */
++	disable_preemption();
++	actual = r37_pmu_read();
++	if (!r37_same_controls(saved, &actual) || actual.overflow ||
++	    cpu_number() != (int)logical || !r37_backend_unowned()) {
++		reason = "live_state_or_owner_changed";
++		goto unlock;
++	}
++	if (!r37_borrow_room(R37_READ(PMCCNTR_EL0), saved->pmcr)) {
++		reason = "near_cycle_overflow";
++		goto unlock;
++	}
++	expected.enable = 0;
++	expected.interrupt = 0;
++	expected.filter &= ~R37_FILTER_EL1;
++	changed = 1;
++	R37_WRITE(PMINTENCLR_EL1, saved->interrupt);
++	R37_WRITE(PMCNTENCLR_EL0, saved->enable);
++	R37_WRITE(PMCCFILTR_EL0, expected.filter);
++	R37_ISB();
++	actual = r37_pmu_read();
++	if (!r37_same_controls(&expected, &actual) || actual.overflow) {
++		reason = "mask_readback_failed";
++		readback_ok = controls_ok = 0;
++		goto restore;
++	}
++	expected.enable = R37_C;
++	R37_WRITE(PMCNTENSET_EL0, R37_C);
++	R37_ISB();
++	actual = r37_pmu_read();
++	if (!r37_same_controls(&expected, &actual) || actual.overflow) {
++		reason = "cycle_enable_readback_failed";
++		readback_ok = controls_ok = 0;
++		goto restore;
++	}
++	expected.pmcr = (saved->pmcr | 1) & ~R37_RESET_BITS;
++	R37_WRITE(PMCR_EL0, expected.pmcr);
++	R37_ISB();
++	actual = r37_pmu_read();
++	if (!r37_same_controls(&expected, &actual) || actual.overflow) {
++		reason = "pmcr_readback_failed";
++		readback_ok = controls_ok = 0;
++		goto restore;
++	}
++	for (unsigned s = 0; s < R37_FREQ_SAMPLES; s++) {
++		struct r37_pmu check = r37_pmu_read();
++		struct r37_cycle_stamp a = r37_cycle_stamp();
++		uint64_t now = a.v1;
++		unsigned spin;
++		if (!r37_same_controls(&expected, &check) || check.overflow) {
++			reason = "controls_or_overflow_changed";
++			controls_ok = 0;
++			f.invalid++;
++			break;
++		}
++		if (!r37_borrow_room(a.cycles, saved->pmcr)) {
++			reason = "near_cycle_overflow";
++			break;
++		}
++		for (spin = 0; spin < R37_SPIN_CAP; spin++) {
++			R37_ISB();
++			now = R37_READ(CNTVCT_EL0);
++			if (!r37_borrow_room(R37_READ(PMCCNTR_EL0), saved->pmcr)) {
++				reason = "near_cycle_overflow";
++				break;
++			}
++			if (now < a.v1 || now - a.v1 >= hz / 1000) break;
++		}
++		struct r37_cycle_stamp b = r37_cycle_stamp();
++		struct r37_pmu end = r37_pmu_read();
++		if (!r37_same_controls(&expected, &end) || end.overflow) {
++			reason = "controls_or_overflow_changed";
++			controls_ok = 0;
++			f.invalid++;
++			break;
++		}
++		if (reason) break;
++		if (spin == R37_SPIN_CAP) {
++			f.timeout++;
++			continue;
++		}
++		if (cpu_number() != (int)logical || now < a.v1) {
++			f.invalid++;
++			continue;
++		}
++		r37_frequency_add(&f, a, b, hz, r37_divisor(expected.pmcr));
++	}
++restore:
++	/* Freeze first, then remove our C enable before restoring any inherited
++	 * event controls. Never write a counter, PMOVSCLR or PMOVSSET. */
++	R37_WRITE(PMCR_EL0, saved->pmcr & ~R37_RESET_BITS);
++	R37_ISB();
++	R37_WRITE(PMCNTENCLR_EL0, saved->enable | R37_C);
++	R37_WRITE(PMINTENCLR_EL1, saved->interrupt);
++	R37_WRITE(PMCCFILTR_EL0, saved->filter);
++	R37_ISB();
++	actual = r37_pmu_read();
++	/* Failed writes or an unexpected event overflow must not turn a saved
++	 * interrupt into a new pending interrupt. Leave masks off on failure. */
++	if (actual.pmcr == saved->pmcr && !actual.enable && !actual.interrupt &&
++	    actual.filter == saved->filter && !(actual.overflow & saved->interrupt)) {
++		R37_WRITE(PMCNTENSET_EL0, saved->enable);
++		R37_WRITE(PMINTENSET_EL1, saved->interrupt);
++		R37_ISB();
++	} else {
++		reason = "restore_unsafe";
++		controls_ok = 0;
++	}
++unlock:
++	restored = r37_pmu_read();
++	enable_preemption();
++report:
++	restored_ok = r37_same_controls(saved, &restored);
++	uint64_t calibrated = 0;
++	unsigned valid = !reason && controls_ok && restored_ok && f.khz.count &&
++	    r37_muldiv(f.cycles.sum, hz, f.ticks.sum, &calibrated);
++	printf("LITHIUM CPU FREQ logical=%u actual=%d mpidr=0x%llx currentel=0x%llx pmuver=%u cntfrq=%llu pmcr=0x%llx enable=0x%llx filter=0x%llx interrupt=0x%llx\n",
++	    logical, cpu_number(), R37_READ(MPIDR_EL1), el, pmuver, hz,
++	    saved->pmcr, saved->enable, saved->filter, saved->interrupt);
++	printf("LITHIUM CPU FREQ logical=%u borrow_requested=1 borrow_changed=%u borrow_reason=%s setup_requested=%u unowned_audited=%u setup_readback=%u controls_stable=%u restored=%u used_pmcr=0x%llx used_filter=0x%llx counter_width=64 overflow_width=%u divisor=%u overflow_before=0x%llx overflow_after=0x%llx guard_counts=%llu cycle_irq_borrow_supported=0\n",
++	    logical, changed, reason ? reason : "none", setup, unowned, readback_ok,
++	    controls_ok, restored_ok, expected.pmcr, expected.filter,
++	    (expected.pmcr & (1u << 6)) ? 64 : 32, r37_divisor(expected.pmcr),
++	    saved->overflow, restored.overflow, R37_BORROW_HEADROOM);
++	printf("LITHIUM CPU FREQ logical=%u valid=%u samples=%llu invalid=%u timeout=%u wraps64=%u effective_mhz_milli_min=%llu effective_mhz_milli_avg=%llu effective_mhz_milli_max=%llu calibrated_mhz_milli=%llu bound_min=%llu bound_max=%llu cycles_min=%llu cycles_avg=%llu cycles_max=%llu ticks_min=%llu ticks_avg=%llu ticks_max=%llu bracket_max_ticks=%llu\n",
++	    logical, valid, f.khz.count, f.invalid, f.timeout, f.wrapped,
++	    f.khz.min, r37_avg(&f.khz), f.khz.max, valid ? calibrated / 1000 : 0,
++	    f.lower_khz, f.upper_khz, f.cycles.min, r37_avg(&f.cycles), f.cycles.max,
++	    f.ticks.min, r37_avg(&f.ticks), f.ticks.max, f.bracket.max);
++}
++
++static void
++r37_frequency_cpu(unsigned logical, unsigned setup, unsigned unowned, unsigned borrow)
++{
++	uint64_t el = R37_READ(CurrentEL);
++	if (el != 4) {
++		printf("LITHIUM CPU FREQ logical=%u valid=0 reason=requires_el1 currentel=0x%llx\n",
++		    logical, el);
++		return;
++	}
++	uint64_t dfr = R37_READ(ID_AA64DFR0_EL1);
++	unsigned pmuver = (unsigned)((dfr >> 8) & 15);
++	if (!r37_supported_pmu(pmuver)) {
++		printf("LITHIUM CPU FREQ logical=%u valid=0 reason=unsupported_pmu pmuver=%u dfr=0x%llx\n",
++		    logical, pmuver, dfr);
++		return;
++	}
++	uint64_t hz = R37_READ(CNTFRQ_EL0);
++	if (hz < 1000 || hz > 1000000000ULL) {
++		printf("LITHIUM CPU FREQ logical=%u valid=0 reason=cntfrq_out_of_range cntfrq=%llu\n",
++		    logical, hz);
++		return;
++	}
++	struct r37_pmu saved = r37_pmu_read(), expected = saved;
++	if (borrow == 1 && !r37_pmu_enabled(&saved)) {
++		r37_frequency_borrow(logical, setup, unowned, el, pmuver, hz, &saved);
++		return;
++	}
++	unsigned changed = 0, readback_ok = 1;
++	if (!r37_pmu_enabled(&saved) && r37_setup_allowed(&saved, setup, unowned)) {
++		/* No P/C reset strobes can enter either PMCR write. */
++		disable_preemption();
++		expected.filter &= ~R37_FILTER_EL1;
++		expected.pmcr = (expected.pmcr | 1) & ~R37_RESET_BITS;
++		expected.enable = R37_C;
++		R37_WRITE(PMCCFILTR_EL0, expected.filter);
++		R37_WRITE(PMCR_EL0, expected.pmcr);
++		R37_WRITE(PMCNTENSET_EL0, R37_C);
++		R37_ISB();
++		struct r37_pmu actual = r37_pmu_read();
++		readback_ok = r37_same_controls(&expected, &actual);
++		enable_preemption();
++		changed = 1;
++	}
++	struct r37_frequency f = {0};
++	unsigned controls_ok = readback_ok;
++	if (controls_ok && r37_pmu_enabled(&expected)) {
++		for (unsigned s = 0; s < R37_FREQ_SAMPLES; s++) {
++			disable_preemption(); /* IRQs stay enabled; no printing here. */
++			struct r37_pmu check = r37_pmu_read();
++			struct r37_cycle_stamp a = r37_cycle_stamp();
++			uint64_t now = a.v1;
++			unsigned spin;
++			for (spin = 0; spin < R37_SPIN_CAP; spin++) {
++				R37_ISB();
++				now = R37_READ(CNTVCT_EL0);
++				if (now < a.v1 || now - a.v1 >= hz / 1000) {
++					break; /* nominal 1 ms, or broken reference */
++				}
++			}
++			struct r37_cycle_stamp b = r37_cycle_stamp();
++			struct r37_pmu end = r37_pmu_read();
++			unsigned cpu_match = cpu_number() == (int)logical;
++			enable_preemption();
++			if (!r37_same_controls(&expected, &check) ||
++			    !r37_same_controls(&expected, &end)) {
++				controls_ok = 0;
++				f.invalid++;
++				break;
++			}
++			if (spin == R37_SPIN_CAP) {
++				f.timeout++;
++				continue;
++			}
++			if (!cpu_match || now < a.v1) {
++				f.invalid++;
++				continue;
++			}
++			r37_frequency_add(&f, a, b, hz, r37_divisor(expected.pmcr));
++		}
++	}
++	/* Restoration occurs before any log, even after setup readback failure.
++	 * Exclusive ownership is required: restoration is not a concurrent PMU
++	 * arbitration protocol. Overflow status/cycle contents are not written. */
++	struct r37_pmu used = r37_pmu_read();
++	if (!r37_same_controls(&expected, &used)) {
++		controls_ok = 0;
++	}
++	if (changed) {
++		disable_preemption();
++		R37_WRITE(PMCNTENCLR_EL0, R37_C);
++		R37_WRITE(PMCCFILTR_EL0, saved.filter);
++		R37_WRITE(PMCR_EL0, saved.pmcr & ~R37_RESET_BITS);
++		R37_ISB();
++		enable_preemption();
++	}
++	struct r37_pmu restored = r37_pmu_read();
++	unsigned restored_ok = r37_same_controls(&saved, &restored);
++	uint64_t calibrated = 0;
++	unsigned valid = controls_ok && restored_ok && f.khz.count &&
++	    r37_muldiv(f.cycles.sum, hz, f.ticks.sum, &calibrated);
++	printf("LITHIUM CPU FREQ logical=%u actual=%d mpidr=0x%llx currentel=0x%llx pmuver=%u cntfrq=%llu pmcr=0x%llx enable=0x%llx filter=0x%llx interrupt=0x%llx\n",
++	    logical, cpu_number(), R37_READ(MPIDR_EL1), el, pmuver, hz,
++	    saved.pmcr, saved.enable, saved.filter, saved.interrupt);
++	printf("LITHIUM CPU FREQ logical=%u setup_requested=%u unowned_audited=%u setup_changed=%u setup_readback=%u controls_stable=%u restored=%u used_pmcr=0x%llx used_filter=0x%llx counter_width=64 overflow_width=%u divisor=%u overflow_before=0x%llx overflow_after=0x%llx\n",
++	    logical, setup, unowned, changed, readback_ok, controls_ok, restored_ok,
++	    expected.pmcr, expected.filter, (expected.pmcr & (1u << 6)) ? 64 : 32,
++	    r37_divisor(expected.pmcr), saved.overflow, restored.overflow);
++	printf("LITHIUM CPU FREQ logical=%u valid=%u samples=%llu invalid=%u timeout=%u wraps64=%u effective_mhz_milli_min=%llu effective_mhz_milli_avg=%llu effective_mhz_milli_max=%llu calibrated_mhz_milli=%llu bound_min=%llu bound_max=%llu cycles_min=%llu cycles_avg=%llu cycles_max=%llu ticks_min=%llu ticks_avg=%llu ticks_max=%llu bracket_max_ticks=%llu\n",
++	    logical, valid, f.khz.count, f.invalid, f.timeout, f.wrapped,
++	    f.khz.min, r37_avg(&f.khz), f.khz.max, valid ? calibrated / 1000 : 0,
++	    f.lower_khz, f.upper_khz, f.cycles.min, r37_avg(&f.cycles), f.cycles.max,
++	    f.ticks.min, r37_avg(&f.ticks), f.ticks.max, f.bracket.max);
++}
++
++struct r37_timer_stamp {
++	uint64_t abs0, v0, physical, v1, abs1;
++	int cpu;
++};
++
++struct r37_migration {
++	struct r37_timer_stamp before, after;
++};
++
++static struct r37_timer_stamp
++r37_timer_stamp(void)
++{
++	struct r37_timer_stamp s;
++	s.cpu = cpu_number();
++	s.abs0 = mach_absolute_time();
++	R37_ISB();
++	s.v0 = R37_READ(CNTVCT_EL0);
++	R37_ISB();
++	s.physical = R37_READ(CNTPCT_EL0);
++	R37_ISB();
++	s.v1 = R37_READ(CNTVCT_EL0);
++	s.abs1 = mach_absolute_time();
++	return s;
++}
++
++struct r37_migration_stats {
++	struct r37_stats abs_ticks, virtual_ticks, physical_ticks, latency_ns;
++	uint64_t histogram[5], abs_back_max, virtual_back_max, physical_back_max;
++	unsigned abs_back, virtual_back, physical_back, internal_back, bad_cpu;
++};
++
++static void
++r37_migration_add(struct r37_migration_stats *s, const struct r37_migration *m,
++    unsigned from, unsigned to, mach_timebase_info_data_t tb)
++{
++	const struct r37_timer_stamp *a = &m->before, *b = &m->after;
++	if (a->cpu != (int)from || b->cpu != (int)to) {
++		s->bad_cpu++;
++		return;
++	}
++	if (a->abs1 < a->abs0 || b->abs1 < b->abs0 ||
++	    a->v1 < a->v0 || b->v1 < b->v0) {
++		s->internal_back++;
++	}
++	/* Compare ordered reads BEFORE subtraction: no unsigned underflow and
++	 * no zero-clamping of a backward observation into the latency histogram. */
++	if (b->abs0 < a->abs1) {
++		uint64_t back = a->abs1 - b->abs0;
++		s->abs_back++;
++		if (back > s->abs_back_max) {
++			s->abs_back_max = back;
++		}
++	} else {
++		uint64_t dt = b->abs0 - a->abs1, ns;
++		r37_add(&s->abs_ticks, dt);
++		if (r37_muldiv(dt, tb.numer, tb.denom, &ns) &&
++		    r37_add(&s->latency_ns, ns)) {
++			unsigned bin = ns < 10000 ? 0 : ns < 100000 ? 1 :
++			    ns < 1000000 ? 2 : ns < 10000000 ? 3 : 4;
++			s->histogram[bin]++;
++		}
++	}
++	if (b->v0 < a->v1) {
++		uint64_t back = a->v1 - b->v0;
++		s->virtual_back++;
++		if (back > s->virtual_back_max) {
++			s->virtual_back_max = back;
++		}
++	} else {
++		r37_add(&s->virtual_ticks, b->v0 - a->v1);
++	}
++	if (b->physical < a->physical) {
++		uint64_t back = a->physical - b->physical;
++		s->physical_back++;
++		if (back > s->physical_back_max) {
++			s->physical_back_max = back;
++		}
++	} else {
++		r37_add(&s->physical_ticks, b->physical - a->physical);
++	}
++}
++
++static void
++r37_print_migration(unsigned from, unsigned to, unsigned sample,
++    const struct r37_migration *m, const char *kind)
++{
++	printf("LITHIUM TIMER snapshot from=%u to=%u sample=%u kind=%s before_cpu=%d abs0=%llu v0=%llu p=%llu v1=%llu abs1=%llu after_cpu=%d abs0=%llu v0=%llu p=%llu v1=%llu abs1=%llu\n",
++	    from, to, sample, kind, m->before.cpu, m->before.abs0, m->before.v0,
++	    m->before.physical, m->before.v1, m->before.abs1, m->after.cpu,
++	    m->after.abs0, m->after.v0, m->after.physical, m->after.v1, m->after.abs1);
++}
++
++static void
++r37_timer_pair(processor_t from_p, unsigned from, processor_t to_p, unsigned to,
++    mach_timebase_info_data_t tb)
++{
++	struct r37_migration_stats stats = {0};
++	struct r37_migration first = {0}, worst = {0}, backward = {0};
++	unsigned worst_sample = 0, backward_sample = 0, have_back = 0;
++	uint64_t worst_dt = 0;
++	for (unsigned sample = 0; sample < R37_MIGRATE_SAMPLES; sample++) {
++		thread_bind(from_p);
++		thread_block(THREAD_CONTINUE_NULL);
++		struct r37_migration m;
++		disable_preemption();
++		m.before = r37_timer_stamp();
++		enable_preemption();
++		thread_bind(to_p);
++		thread_block(THREAD_CONTINUE_NULL);
++		disable_preemption();
++		m.after = r37_timer_stamp();
++		enable_preemption();
++		r37_migration_add(&stats, &m, from, to, tb);
++		if (!sample) {
++			first = worst = m;
++		}
++		if (m.after.abs0 >= m.before.abs1) {
++			uint64_t dt = m.after.abs0 - m.before.abs1;
++			if (dt > worst_dt) {
++				worst_dt = dt;
++				worst = m;
++				worst_sample = sample;
++			}
++		}
++		if (!have_back && (m.after.abs0 < m.before.abs1 ||
++		    m.after.v0 < m.before.v1 || m.after.physical < m.before.physical ||
++		    m.before.abs1 < m.before.abs0 || m.after.abs1 < m.after.abs0 ||
++		    m.before.v1 < m.before.v0 || m.after.v1 < m.after.v0)) {
++			backward = m;
++			backward_sample = sample;
++			have_back = 1;
++		}
++	}
++	printf("LITHIUM TIMER migration from=%u to=%u samples=%u bad_cpu=%u internal_back=%u abs_back=%u abs_back_max_ticks=%llu virtual_back=%u virtual_back_max_ticks=%llu physical_back=%u physical_back_max_ticks=%llu\n",
++	    from, to, R37_MIGRATE_SAMPLES, stats.bad_cpu, stats.internal_back,
++	    stats.abs_back, stats.abs_back_max, stats.virtual_back,
++	    stats.virtual_back_max, stats.physical_back, stats.physical_back_max);
++	printf("LITHIUM TIMER migration from=%u to=%u forward=%llu abs_ticks_min=%llu abs_ticks_avg=%llu abs_ticks_max=%llu v_ticks_min=%llu v_ticks_avg=%llu v_ticks_max=%llu p_ticks_min=%llu p_ticks_avg=%llu p_ticks_max=%llu elapsed_ns_min=%llu elapsed_ns_avg=%llu elapsed_ns_max=%llu hist_lt_10us=%llu lt_100us=%llu lt_1ms=%llu lt_10ms=%llu ge_10ms=%llu stats_overflow=%u\n",
++	    from, to, stats.abs_ticks.count, stats.abs_ticks.min,
++	    r37_avg(&stats.abs_ticks), stats.abs_ticks.max, stats.virtual_ticks.min,
++	    r37_avg(&stats.virtual_ticks), stats.virtual_ticks.max, stats.physical_ticks.min,
++	    r37_avg(&stats.physical_ticks), stats.physical_ticks.max, stats.latency_ns.min,
++	    r37_avg(&stats.latency_ns), stats.latency_ns.max, stats.histogram[0],
++	    stats.histogram[1], stats.histogram[2], stats.histogram[3], stats.histogram[4],
++	    stats.abs_ticks.overflow | stats.virtual_ticks.overflow |
++	    stats.physical_ticks.overflow | stats.latency_ns.overflow);
++	r37_print_migration(from, to, 0, &first, "first");
++	if (worst_sample) {
++		r37_print_migration(from, to, worst_sample, &worst, "max_forward");
++	}
++	if (have_back) {
++		r37_print_migration(from, to, backward_sample, &backward, "first_backward");
++	}
++}
++
++void
++lithium_cpu_frequency_r37(void)
++{
++	unsigned freq = 0, timer = 0, setup = 1, borrow = 0;
++	PE_parse_boot_argn("cpu_freq_diag", &freq, sizeof(freq));
++	PE_parse_boot_argn("timer_migrate_diag", &timer, sizeof(timer));
++	if (freq != 1 && timer != 1) {
++		return; /* no register accesses, binding or output by default */
++	}
++	PE_parse_boot_argn("cpu_freq_pmu_setup", &setup, sizeof(setup));
++	PE_parse_boot_argn("cpu_freq_pmu_borrow", &borrow, sizeof(borrow));
++	if (!ml_get_interrupts_enabled() || get_preemption_level() != 0) {
++		printf("LITHIUM CPU FREQ skipped=1 reason=requires_irq_and_preemption_enabled\n");
++		return;
++	}
++	processor_t cpus[R37_CPU_CAP];
++	unsigned ids[R37_CPU_CAP], count = 0;
++	int max_cpu = ml_get_max_cpu_number();
++	unsigned unowned = freq == 1 ? r37_backend_unowned() : 0;
++	for (unsigned i = 0; max_cpu >= 0 && i <= (unsigned)max_cpu && i < R37_CPU_CAP; i++) {
++		processor_t p = cpu_to_processor((int)i);
++		processor_basic_info_data_t info;
++		mach_msg_type_number_t n = PROCESSOR_BASIC_INFO_COUNT;
++		host_t host;
++		if (p && processor_info(p, PROCESSOR_BASIC_INFO, &host,
++		    (processor_info_t)&info, &n) == KERN_SUCCESS && info.running) {
++			cpus[count] = p;
++			ids[count++] = i;
++		}
++	}
++	if (freq == 1) {
++		printf("LITHIUM CPU FREQ begin revision=37 prelaunch=1 raw_pmu_optin=1 fault_guard=0 el2_el3_trap_risk=1 samples=%u nominal_us=1000 spin_cap=%u online=%u max_cpu=%d truncated=%u cntfrq_assumed_correct=1 external_reference=0 active_clock_or_pll_proof=0\n",
++		    R37_FREQ_SAMPLES, R37_SPIN_CAP, count, max_cpu,
++		    max_cpu >= (int)R37_CPU_CAP);
++	}
++	if (timer == 1) {
++		printf("LITHIUM TIMER begin revision=37 raw_physical_read_optin=1 fault_guard=0 el2_trap_risk=1 samples_per_directed_pair=%u online=%u max_cpu=%d truncated=%u cntvoff_el2=unavailable_at_el1_not_read independent_walltime=0 elapsed_is_offset_skew=0\n",
++		    R37_MIGRATE_SAMPLES, count, max_cpu, max_cpu >= (int)R37_CPU_CAP);
++	}
++	if (!count) {
++		printf("LITHIUM CPU FREQ skipped=1 reason=no_online_cpu\n");
++		return;
++	}
++	/* Snapshot the original binding once; intermediate thread_bind return
++	 * values must not overwrite it while visiting different processors. */
++	processor_t original = thread_bind(cpus[0]);
++	thread_block(THREAD_CONTINUE_NULL);
++	for (unsigned c = 0; c < count; c++) {
++		thread_bind(cpus[c]);
++		thread_block(THREAD_CONTINUE_NULL);
++		int actual = cpu_number();
++		if (actual != (int)ids[c]) {
++			printf("LITHIUM CPU FREQ logical=%u actual=%d valid=0 reason=binding_mismatch\n",
++			    ids[c], actual);
++			continue;
++		}
++		if (freq == 1) {
++			r37_frequency_cpu(ids[c], setup, unowned, borrow);
++		}
++		if (timer == 1) {
++			printf("LITHIUM TIMER cpu logical=%u actual=%d mpidr=0x%llx currentel=0x%llx cntfrq=%llu\n",
++			    ids[c], actual, R37_READ(MPIDR_EL1), R37_READ(CurrentEL),
++			    R37_READ(CNTFRQ_EL0));
++		}
++	}
++	if (timer == 1) {
++		mach_timebase_info_data_t tb;
++		clock_timebase_info(&tb);
++		printf("LITHIUM TIMER units timebase_numer=%u timebase_denom=%u raw_ticks=1 snapshot_order=abs_v_p_v_abs snapshot_atomic=0 raw_backwards_compared_before_subtraction=1 positive_delta_is_scheduling_plus_timer=1\n",
++		    tb.numer, tb.denom);
++		for (unsigned from = 0; from < count; from++) {
++			for (unsigned to = 0; to < count; to++) {
++				if (from != to) {
++					r37_timer_pair(cpus[from], ids[from], cpus[to], ids[to], tb);
++				}
++			}
++		}
++		if (count < 2) {
++			printf("LITHIUM TIMER migration skipped=1 reason=less_than_two_online_cpus\n");
++		}
++	}
++	processor_t previous = thread_bind(original);
++	/* Check the restored binding without exposing struct thread to BSD.
++	 * Rebinding to the same value is idempotent and returns that binding. */
++	processor_t readback = thread_bind(original);
++	thread_block(THREAD_CONTINUE_NULL);
++	printf("LITHIUM CPU FREQ end revision=37 original_binding_restored=%u original_unbound=%u previous_was_null=%u clock_voltage_writes=0 counter_resets=0 irq_included=1 preemption_disabled_per_freq_sample=1 hypervisor_or_secure_exclusion_unknown=1\n",
++	    readback == original, original == PROCESSOR_NULL, previous == PROCESSOR_NULL);
++}
++#endif /* LITHIUM_CPU_FREQUENCY_R37_INC */
+--- /dev/null
++++ b/maintenance/hakios-lithium/cpu-frequency-r37-test.c
+@@ -0,0 +1,577 @@
++/* Focused host test of the actual R37 include, with deterministic register and
++ * scheduler mocks. Run from the repository root; output goes under measure/.
++ * clang -std=c11 -O1 -g -Wall -Wextra -Werror -Wno-format -fsanitize=address,undefined \
++ *   maintenance/hakios-lithium/cpu-frequency-r37-test.c -o evidence/.../measure/r37-test
++ *
++ * Linux uint64_t uses unsigned long; XNU ARM64 uses unsigned long long.
++ * The kernel printf format is independently checked by main's real BSD build.
++ */
++#include <assert.h>
++#include <stdint.h>
++#include <stdio.h>
++#include <stdarg.h>
++#include <string.h>
++
++#define LITHIUM_R37_TEST 1
++#ifndef LITHIUM_R37_ARCH_PMU_UNOWNED
++#define LITHIUM_R37_ARCH_PMU_UNOWNED 1
++#endif
++#ifndef MONOTONIC
++#define MONOTONIC 0
++#endif
++#ifndef NMONOTONIC
++#define NMONOTONIC 0
++#endif
++#define TEST_UNOWNED (LITHIUM_R37_ARCH_PMU_UNOWNED && !MONOTONIC && !NMONOTONIC)
++#define KPC 1
++#define THREAD_CONTINUE_NULL NULL
++#define PROCESSOR_NULL NULL
++#define PROCESSOR_BASIC_INFO 1
++#define PROCESSOR_BASIC_INFO_COUNT 5
++#define KERN_SUCCESS 0
++typedef unsigned mach_msg_type_number_t;
++typedef void *host_t;
++typedef int *processor_info_t;
++typedef struct { int running; } processor_basic_info_data_t;
++typedef struct { uint32_t numer, denom; } mach_timebase_info_data_t;
++typedef struct mock_cpu {
++	int id, online;
++	uint64_t pmcr, enable, filter, interrupt, overflow, pmuver, cycles;
++} *processor_t;
++static struct mock_cpu mock_cpus[8];
++static processor_t binding, original_binding;
++static int actual_cpu, max_cpu, irq_enabled, preemption_level;
++static unsigned arg_freq, arg_timer, raw_reads, pmu_reads, writes;
++static int arg_setup, arg_borrow;
++static unsigned blocks, logs, pmcr_reset_writes, counter_writes, bad_bind;
++static unsigned owner_classes, force_bad_readback, freeze_timer;
++static unsigned owner_fixed, owner_configurable, owner_calls, owner_after;
++static unsigned cycle_reads, inject_cycle_at, event_advances, irq_exposures;
++static uint64_t inject_cycles;
++static const char *drop_write_reg;
++static unsigned drop_write_nth, drop_write_seen, inject_restore_event_overflow;
++struct mock_write_record { const char *reg; uint64_t value; };
++static struct mock_write_record write_trace[128];
++static uint64_t tick;
++static char log_buffer[128000];
++static size_t log_used;
++
++static int
++mock_printf(const char *fmt, ...)
++{
++	assert(!preemption_level); /* Never print while borrowing the PMU. */
++	va_list ap;
++	va_start(ap, fmt);
++	int n = vsnprintf(log_buffer + log_used, sizeof(log_buffer) - log_used, fmt, ap);
++	va_end(ap);
++	assert(n >= 0 && (size_t)n < sizeof(log_buffer) - log_used);
++	log_used += (size_t)n;
++	logs++;
++	return n;
++}
++#define printf mock_printf
++
++static void
++PE_parse_boot_argn(const char *name, void *v, unsigned n)
++{
++	assert(n == sizeof(unsigned));
++	if (!strcmp(name, "cpu_freq_diag")) *(unsigned *)v = arg_freq;
++	if (!strcmp(name, "timer_migrate_diag")) *(unsigned *)v = arg_timer;
++	if (!strcmp(name, "cpu_freq_pmu_setup") && arg_setup >= 0) *(unsigned *)v = (unsigned)arg_setup;
++	if (!strcmp(name, "cpu_freq_pmu_borrow") && arg_borrow >= 0) *(unsigned *)v = (unsigned)arg_borrow;
++}
++static int ml_get_interrupts_enabled(void) { return irq_enabled; }
++static int get_preemption_level(void) { return preemption_level; }
++static int ml_get_max_cpu_number(void) { return max_cpu; }
++static int cpu_number(void) { return actual_cpu; }
++static void disable_preemption(void) { preemption_level++; }
++static void enable_preemption(void) { assert(preemption_level > 0); preemption_level--; }
++static __attribute__((unused)) unsigned kpc_get_classes(void)
++{
++	owner_calls++;
++	return owner_classes || (owner_after && owner_calls >= owner_after);
++}
++static __attribute__((unused)) int kpc_is_running_fixed(void) { return owner_fixed; }
++static __attribute__((unused)) int kpc_is_running_configurable(uint64_t m)
++{
++	assert(m == UINT64_MAX);
++	return owner_configurable;
++}
++static processor_t cpu_to_processor(int i)
++{
++	assert(i >= 0 && i <= max_cpu && i < 8);
++	return &mock_cpus[i];
++}
++static int
++processor_info(processor_t p, int flavor, host_t *host, processor_info_t info,
++    mach_msg_type_number_t *count)
++{
++	assert(flavor == PROCESSOR_BASIC_INFO && *count == PROCESSOR_BASIC_INFO_COUNT);
++	((processor_basic_info_data_t *)info)->running = p->online;
++	*host = NULL;
++	return 0;
++}
++static processor_t thread_bind(processor_t p)
++{
++	assert(!preemption_level);
++	processor_t old = binding;
++	binding = p;
++	return old;
++}
++static void thread_block(void *continuation)
++{
++	assert(!continuation && !preemption_level);
++	blocks++;
++	if (binding && !bad_bind) actual_cpu = binding->id;
++	tick += 500;
++}
++static uint64_t mach_absolute_time(void) { return ++tick; }
++static void clock_timebase_info(mach_timebase_info_data_t *tb)
++{
++	tb->numer = 125;
++	tb->denom = 3;
++}
++
++static void
++mock_advance(struct mock_cpu *p, uint64_t increment)
++{
++	if (!(p->pmcr & 1)) return;
++	if (p->enable & ~(1ULL << 31)) event_advances++;
++	if ((p->enable & (1ULL << 31)) &&
++	    !(p->filter & ((1ULL << 31) | (1ULL << 29)))) {
++		uint64_t limit = (p->pmcr & 64) ? UINT64_MAX : UINT32_MAX;
++		if (increment > limit || (p->cycles & limit) > limit - increment) {
++			p->overflow |= 1ULL << 31;
++		}
++		p->cycles += increment;
++	}
++}
++
++static uint64_t
++mock_read(const char *reg)
++{
++	struct mock_cpu *p = &mock_cpus[actual_cpu];
++	raw_reads++;
++	if (!freeze_timer) {
++		tick += 24;
++		mock_advance(p, 2400); /* 2400 MHz / 24 MHz */
++	}
++	if (!strcmp(reg, "PMCCNTR_EL0") && ++cycle_reads == inject_cycle_at) {
++		mock_advance(p, inject_cycles); /* Model an unbounded IRQ/firmware stall. */
++	}
++	irq_exposures += !!(p->overflow & p->interrupt);
++	if (!strcmp(reg, "CurrentEL")) return 4;
++	if (!strcmp(reg, "ID_AA64DFR0_EL1")) return p->pmuver << 8;
++	if (!strcmp(reg, "CNTFRQ_EL0")) return 24000000;
++	if (!strcmp(reg, "CNTVCT_EL0")) return tick;
++	if (!strcmp(reg, "CNTPCT_EL0")) return tick + 999;
++	if (!strcmp(reg, "MPIDR_EL1")) return (uint64_t)actual_cpu;
++	pmu_reads++;
++	if (!strcmp(reg, "PMCR_EL0")) return p->pmcr;
++	if (!strcmp(reg, "PMCNTENSET_EL0")) return p->enable;
++	if (!strcmp(reg, "PMCCFILTR_EL0")) return p->filter;
++	if (!strcmp(reg, "PMINTENSET_EL1")) return p->interrupt;
++	if (!strcmp(reg, "PMOVSCLR_EL0")) return p->overflow;
++	if (!strcmp(reg, "PMCCNTR_EL0")) return p->cycles;
++	assert(!"unexpected system register");
++	return 0;
++}
++static void
++mock_write(const char *reg, uint64_t value)
++{
++	struct mock_cpu *p = &mock_cpus[actual_cpu];
++	assert(writes < sizeof(write_trace) / sizeof(write_trace[0]));
++	write_trace[writes] = (struct mock_write_record){reg, value};
++	writes++;
++	assert(preemption_level);
++	if (drop_write_reg && !strcmp(reg, drop_write_reg) &&
++	    ++drop_write_seen == drop_write_nth) return;
++	if (!strcmp(reg, "PMCR_EL0")) {
++		if (arg_borrow == 1 && (value & 1)) {
++			/* A failed mask/enable write must be detected before E=1. */
++			assert(p->enable == (1ULL << 31) && !p->interrupt);
++		}
++		pmcr_reset_writes += !!(value & 6);
++		p->pmcr = value;
++		if (inject_restore_event_overflow && !(value & 1)) p->overflow |= 1;
++	} else if (!strcmp(reg, "PMCCFILTR_EL0")) {
++		p->filter = force_bad_readback && writes == 1 ? value | (1ULL << 31) : value;
++	} else if (!strcmp(reg, "PMCNTENSET_EL0")) {
++		p->enable |= value;
++	} else if (!strcmp(reg, "PMCNTENCLR_EL0")) {
++		p->enable &= ~value;
++	} else if (!strcmp(reg, "PMINTENSET_EL1")) {
++		p->interrupt |= value;
++	} else if (!strcmp(reg, "PMINTENCLR_EL1")) {
++		p->interrupt &= ~value;
++	} else {
++		counter_writes++;
++		assert(!"unexpected register write");
++	}
++	irq_exposures += !!(p->overflow & p->interrupt);
++}
++#define R37_READ(reg) mock_read(#reg)
++#define R37_WRITE(reg, value) mock_write(#reg, (uint64_t)(value))
++#define R37_ISB() ((void)0)
++#include "../../ports/hakios-lithium/diagnostics/cpu-frequency-r37.inc"
++#undef printf
++
++static unsigned checks;
++#define CHECK(e) do { checks++; assert(e); } while (0)
++
++static void
++reset_mock(void)
++{
++	memset(mock_cpus, 0, sizeof(mock_cpus));
++	for (int i = 0; i < 8; i++) {
++		mock_cpus[i].id = i;
++		mock_cpus[i].online = i < 3;
++		mock_cpus[i].pmuver = 1;
++	}
++	binding = original_binding = NULL;
++	actual_cpu = 0; max_cpu = 2; irq_enabled = 1; preemption_level = 0;
++	arg_freq = arg_timer = raw_reads = pmu_reads = writes = 0;
++	arg_setup = arg_borrow = -1;
++	blocks = logs = pmcr_reset_writes = counter_writes = bad_bind = 0;
++	owner_classes = force_bad_readback = freeze_timer = 0;
++	owner_fixed = owner_configurable = owner_calls = owner_after = 0;
++	cycle_reads = inject_cycle_at = event_advances = irq_exposures = 0;
++	inject_cycles = 0;
++	drop_write_reg = NULL; drop_write_nth = drop_write_seen = 0;
++	inject_restore_event_overflow = 0;
++	tick = 1000; log_used = 0; log_buffer[0] = 0;
++}
++
++static void
++test_math(void)
++{
++	uint64_t out = 123;
++	CHECK(r37_divisor(0) == 1);
++	CHECK(r37_divisor(8) == 64);
++	CHECK(r37_divisor(64) == 1);
++	CHECK(r37_divisor(72) == 1);
++	CHECK(r37_supported_pmu(1) && r37_supported_pmu(4));
++	CHECK(!r37_supported_pmu(0) && !r37_supported_pmu(15) && !r37_supported_pmu(9));
++	CHECK(r37_el1_counted(0));
++	CHECK(!r37_el1_counted(1ULL << 31));
++	CHECK(!r37_el1_counted(1ULL << 29));
++	CHECK(!r37_el1_counted((1ULL << 31) | (1ULL << 29)));
++	CHECK(r37_muldiv(5000000, 24000000, 24000, &out) && out == 5000000000ULL);
++	CHECK(!r37_muldiv(R37_U64_MAX, 2, 1, &out));
++	CHECK(!r37_muldiv(1, 2, 0, &out));
++	CHECK(r37_muldiv(0, R37_U64_MAX, 1, &out) && !out);
++	CHECK(r37_counter_delta(0xfffffff0, 0x20, 32) == 48);
++	CHECK(r37_counter_delta(R37_U64_MAX - 15, 32, 64) == 48);
++	CHECK(r37_counter_delta(0xfffffff0, 0x100000020ULL, 64) == 48);
++	for (uint64_t i = 0; i < 1024; i++) {
++		CHECK(r37_counter_delta(R37_U64_MAX - i, i, 64) == 2 * i + 1);
++		CHECK(r37_counter_delta(0xffffffffULL - i, i, 32) == 2 * i + 1);
++	}
++	struct r37_stats s = {0};
++	CHECK(r37_avg(&s) == 0);
++	CHECK(r37_add(&s, 0) && r37_add(&s, 10) && r37_add(&s, 5));
++	CHECK(s.count == 3 && s.min == 0 && s.max == 10 && r37_avg(&s) == 5);
++	s.sum = R37_U64_MAX;
++	CHECK(!r37_add(&s, 1) && s.overflow && !r37_avg(&s));
++}
++
++static void
++test_frequency(void)
++{
++	struct r37_cycle_stamp a = {100, 1000, 102};
++	struct r37_cycle_stamp b = {24100, 2401000, 24102};
++	struct r37_frequency f = {0};
++	CHECK(r37_frequency_add(&f, a, b, 24000000, 1));
++	CHECK(f.khz.min == 2400000 && f.khz.max == 2400000 && f.khz.count == 1);
++	CHECK(f.lower_khz < 2400000 && f.upper_khz > 2400000 && f.bracket.max == 4);
++	f = (struct r37_frequency){0};
++	b.cycles = 38500;
++	CHECK(r37_frequency_add(&f, a, b, 24000000, 64) && f.khz.sum == 2400000);
++	f = (struct r37_frequency){0};
++	a.cycles = R37_U64_MAX - 999;
++	b.cycles = 2399000;
++	CHECK(r37_frequency_add(&f, a, b, 24000000, 1));
++	CHECK(f.wrapped == 1 && f.khz.sum == 2400000);
++	a.cycles = b.cycles;
++	CHECK(!r37_frequency_add(&f, a, b, 24000000, 1)); /* stopped PMU */
++	b.v0 = 90;
++	CHECK(!r37_frequency_add(&f, a, b, 24000000, 1)); /* backwards reference */
++	b = (struct r37_cycle_stamp){24100, R37_U64_MAX / 2, 24102};
++	a = (struct r37_cycle_stamp){100, 0, 102};
++	CHECK(!r37_frequency_add(&f, a, b, 24000000, 64)); /* scaled overflow */
++	CHECK(!r37_frequency_add(&f, a, b, 24000000, 1)); /* product overflow */
++	b.cycles = 2400000;
++	CHECK(!r37_frequency_add(&f, a, b, 0, 1));
++}
++
++static struct r37_migration
++forward_migration(uint64_t ns)
++{
++	struct r37_migration m = {{100, 100, 100, 101, 101, 0},
++	    {101 + ns, 102 + ns, 102 + ns, 103 + ns, 104 + ns, 1}};
++	return m;
++}
++
++static void
++test_migration(void)
++{
++	struct r37_migration_stats s = {0};
++	mach_timebase_info_data_t tb = {1, 1};
++	uint64_t values[] = {0, 9999, 10000, 99999, 100000, 999999,
++	    1000000, 9999999, 10000000};
++	for (unsigned i = 0; i < sizeof(values) / sizeof(values[0]); i++) {
++		struct r37_migration m = forward_migration(values[i]);
++		r37_migration_add(&s, &m, 0, 1, tb);
++	}
++	CHECK(s.abs_ticks.count == 9 && s.latency_ns.min == 0 && s.latency_ns.max == 10000000);
++	CHECK(s.histogram[0] == 2 && s.histogram[1] == 2 && s.histogram[2] == 2 &&
++	    s.histogram[3] == 2 && s.histogram[4] == 1);
++	struct r37_migration b = forward_migration(1);
++	b.after.abs0 = 90; b.after.v0 = 90; b.after.physical = 90;
++	r37_migration_add(&s, &b, 0, 1, tb);
++	CHECK(s.abs_back == 1 && s.abs_back_max == 11 && s.virtual_back == 1 &&
++	    s.physical_back == 1 && s.abs_ticks.count == 9);
++	b.after.cpu = 7;
++	r37_migration_add(&s, &b, 0, 1, tb);
++	CHECK(s.bad_cpu == 1 && s.abs_back == 1);
++	b = forward_migration(1);
++	b.before.abs1 = 99; b.before.v1 = 99;
++	r37_migration_add(&s, &b, 0, 1, tb);
++	CHECK(s.internal_back == 1);
++}
++
++static void
++test_mock_execution(void)
++{
++	reset_mock();
++	lithium_cpu_frequency_r37();
++	CHECK(!raw_reads && !writes && !blocks && !logs);
++	arg_freq = 2; arg_timer = 99;
++	lithium_cpu_frequency_r37();
++	CHECK(!raw_reads && !writes && !blocks);
++	reset_mock(); arg_timer = 1; binding = original_binding = &mock_cpus[2];
++	lithium_cpu_frequency_r37();
++	CHECK(!pmu_reads && !writes && blocks > 90 && binding == original_binding);
++	CHECK(strstr(log_buffer, "abs_back=0") && !strstr(log_buffer, "abs_back=1"));
++	CHECK(strstr(log_buffer, "original_binding_restored=1") && logs < 40);
++	reset_mock(); arg_freq = 1;
++	lithium_cpu_frequency_r37();
++#if TEST_UNOWNED
++	CHECK(writes == 18 && !counter_writes && !pmcr_reset_writes);
++	CHECK(strstr(log_buffer, "valid=1 samples=5") && strstr(log_buffer, "restored=1"));
++	for (unsigned i = 0; i < 3; i++) {
++		CHECK(mock_cpus[i].pmcr == 0 && mock_cpus[i].enable == 0 &&
++		    mock_cpus[i].filter == 0 && mock_cpus[i].cycles > 0);
++	}
++#else
++	CHECK(!writes && strstr(log_buffer, "unowned_audited=0"));
++#endif
++	CHECK(!preemption_level && binding == NULL);
++	reset_mock(); arg_freq = 1; arg_setup = 0;
++	lithium_cpu_frequency_r37();
++	CHECK(!writes && strstr(log_buffer, "setup_requested=0"));
++	reset_mock(); arg_freq = 1; owner_classes = 1;
++	lithium_cpu_frequency_r37();
++	CHECK(!writes);
++	reset_mock(); arg_freq = 1;
++	for (unsigned i = 0; i < 3; i++) mock_cpus[i].interrupt = 1;
++	lithium_cpu_frequency_r37();
++	CHECK(!writes);
++	reset_mock(); arg_freq = 1;
++	for (unsigned i = 0; i < 3; i++) mock_cpus[i].enable = 1; /* reserved event */
++	lithium_cpu_frequency_r37();
++	CHECK(!writes);
++	reset_mock(); arg_freq = 1;
++	for (unsigned i = 0; i < 3; i++) {
++		mock_cpus[i].pmcr = 1 | 64 | 8; /* D ignored with LC */
++		mock_cpus[i].enable = R37_C;
++	}
++	lithium_cpu_frequency_r37();
++	CHECK(!writes && strstr(log_buffer, "divisor=1") && strstr(log_buffer, "valid=1 samples=5"));
++	reset_mock(); arg_freq = 1;
++	for (unsigned i = 0; i < 3; i++) mock_cpus[i].pmuver = 0;
++	lithium_cpu_frequency_r37();
++	CHECK(!pmu_reads && !writes);
++	reset_mock(); arg_freq = 1; irq_enabled = 0;
++	lithium_cpu_frequency_r37();
++	CHECK(!raw_reads && !blocks);
++	reset_mock(); arg_freq = 1; bad_bind = 1;
++	lithium_cpu_frequency_r37();
++	CHECK(strstr(log_buffer, "reason=binding_mismatch") && binding == NULL);
++	reset_mock(); arg_freq = 1; freeze_timer = 1; max_cpu = 0;
++	lithium_cpu_frequency_r37();
++#if TEST_UNOWNED
++	CHECK(strstr(log_buffer, "timeout=5") && writes == 6);
++#else
++	CHECK(!writes);
++#endif
++	reset_mock(); arg_freq = 1; force_bad_readback = 1; max_cpu = 0;
++	lithium_cpu_frequency_r37();
++#if TEST_UNOWNED
++	CHECK(writes == 6 && !mock_cpus[0].pmcr && !mock_cpus[0].filter &&
++	    !mock_cpus[0].enable && strstr(log_buffer, "valid=0"));
++#else
++	CHECK(!writes);
++#endif
++	reset_mock(); arg_timer = 1; max_cpu = 0;
++	lithium_cpu_frequency_r37();
++	CHECK(strstr(log_buffer, "less_than_two_online_cpus") && binding == NULL);
++}
++
++static void
++borrow_mock(void)
++{
++	reset_mock();
++	arg_freq = arg_borrow = 1;
++	max_cpu = 0;
++	mock_cpus[0].pmcr = 0x51004020;
++	mock_cpus[0].enable = 0x2a;
++	mock_cpus[0].interrupt = 0x31;
++	mock_cpus[0].filter = R37_FILTER_EL1 | 0x4000000;
++	mock_cpus[0].cycles = 4096;
++}
++
++static void
++check_borrow_restored(void)
++{
++	CHECK(mock_cpus[0].pmcr == 0x51004020);
++	CHECK(mock_cpus[0].enable == 0x2a && mock_cpus[0].interrupt == 0x31);
++	CHECK(mock_cpus[0].filter == (R37_FILTER_EL1 | 0x4000000));
++	CHECK(!preemption_level && !binding && !event_advances && !irq_exposures);
++	CHECK(!pmcr_reset_writes && !counter_writes);
++	CHECK(strstr(log_buffer, "restored=1"));
++}
++
++static void
++test_borrow(void)
++{
++	struct r37_pmu p = {0};
++	CHECK(!r37_borrow_refusal(&p, 1, 1));
++	CHECK(r37_borrow_refusal(&p, 0, 1) && r37_borrow_refusal(&p, 2, 1));
++	CHECK(r37_borrow_refusal(&p, 1, 0));
++	p.pmcr = 1; CHECK(r37_borrow_refusal(&p, 1, 1));
++	p.pmcr = 16; CHECK(r37_borrow_refusal(&p, 1, 1));
++	p.pmcr = 0;
++	for (unsigned bit = 0; bit < 32; bit++) {
++		p.overflow = 1ULL << bit;
++		CHECK(r37_borrow_refusal(&p, 1, 1));
++	}
++	p.overflow = 0; p.interrupt = R37_C;
++	CHECK(r37_borrow_refusal(&p, 1, 1)); /* Even far from wrap / LC=1. */
++	p.pmcr = 64; CHECK(r37_borrow_refusal(&p, 1, 1));
++	p.interrupt = 0; p.enable = 1ULL << 32;
++	CHECK(r37_borrow_refusal(&p, 1, 1));
++	p.enable = 0; p.interrupt = 1ULL << 32;
++	CHECK(r37_borrow_refusal(&p, 1, 1));
++	for (unsigned lc = 0; lc < 2; lc++) {
++		uint64_t limit = lc ? UINT64_MAX : UINT32_MAX;
++		CHECK(r37_borrow_room(limit - R37_BORROW_HEADROOM, lc * 64));
++		CHECK(!r37_borrow_room(limit - R37_BORROW_HEADROOM + 1, lc * 64));
++		CHECK(!r37_borrow_room(limit, lc * 64));
++	}
++	CHECK(!r37_borrow_room(0x12345678ffffffffULL, 0));
++	reset_mock(); arg_borrow = 1;
++	lithium_cpu_frequency_r37();
++	CHECK(!raw_reads && !writes && !blocks && !logs);
++	/* Absent, zero and non-1 opt-ins preserve the inherited-mask refusal. */
++	for (int opt = -1; opt <= 2; opt++) {
++		if (opt == 1) continue;
++		borrow_mock(); arg_borrow = opt;
++		lithium_cpu_frequency_r37();
++		CHECK(!writes && !strstr(log_buffer, "borrow_requested=1"));
++	}
++	borrow_mock();
++	lithium_cpu_frequency_r37();
++#if TEST_UNOWNED
++	CHECK(writes == 11 && strstr(log_buffer, "valid=1 samples=5"));
++	CHECK(strstr(log_buffer, "borrow_changed=1 borrow_reason=none"));
++	CHECK(!strcmp(write_trace[0].reg, "PMINTENCLR_EL1") && write_trace[0].value == 0x31);
++	CHECK(!strcmp(write_trace[1].reg, "PMCNTENCLR_EL0") && write_trace[1].value == 0x2a);
++	CHECK(!strcmp(write_trace[4].reg, "PMCR_EL0") && (write_trace[4].value & 1));
++	CHECK(!strcmp(write_trace[5].reg, "PMCR_EL0") && !(write_trace[5].value & 1));
++	CHECK(!strcmp(write_trace[10].reg, "PMINTENSET_EL1") && write_trace[10].value == 0x31);
++	check_borrow_restored();
++#else
++	CHECK(!writes && strstr(log_buffer, "pmu_owned_or_unaudited"));
++#endif
++	/* Every admission failure is write-free, including the observed phys100 mask. */
++	for (unsigned scenario = 0; scenario < 10; scenario++) {
++		borrow_mock();
++		switch (scenario) {
++		case 0: arg_setup = 0; break;
++		case 1: owner_classes = 1; break;
++		case 2: owner_fixed = 1; break;
++		case 3: owner_configurable = 1; break;
++		case 4: mock_cpus[0].pmcr |= 1; break;
++		case 5: mock_cpus[0].pmcr |= 16; break;
++		case 6: mock_cpus[0].overflow = 1; break;
++		case 7: mock_cpus[0].enable = 4; mock_cpus[0].interrupt = 0x8000007f; break;
++		case 8: mock_cpus[0].overflow = R37_C; break;
++		case 9: mock_cpus[0].cycles = UINT32_MAX - R37_BORROW_HEADROOM + 1; break;
++		}
++		lithium_cpu_frequency_r37();
++		CHECK(!writes && strstr(log_buffer, "valid=0 samples=0"));
++#if TEST_UNOWNED
++		if (scenario == 7) CHECK(strstr(log_buffer, "cycle_interrupt_unbounded"));
++#endif
++		CHECK(!preemption_level && !binding);
++	}
++#if TEST_UNOWNED
++	borrow_mock(); owner_after = 2;
++	lithium_cpu_frequency_r37();
++	CHECK(!writes && strstr(log_buffer, "live_state_or_owner_changed"));
++	borrow_mock(); freeze_timer = 1;
++	lithium_cpu_frequency_r37();
++	CHECK(strstr(log_buffer, "valid=0 samples=0") && strstr(log_buffer, "timeout=5"));
++	check_borrow_restored();
++	/* Fail each preparation write: inherited events never start counting. */
++	const char *fail_regs[] = {"PMINTENCLR_EL1", "PMCNTENCLR_EL0",
++	    "PMCCFILTR_EL0", "PMCNTENSET_EL0", "PMCR_EL0"};
++	for (unsigned i = 0; i < sizeof(fail_regs) / sizeof(fail_regs[0]); i++) {
++		borrow_mock(); drop_write_reg = fail_regs[i]; drop_write_nth = 1;
++		lithium_cpu_frequency_r37();
++		CHECK(strstr(log_buffer, "readback_failed") && strstr(log_buffer, "valid=0 samples=0"));
++		check_borrow_restored();
++	}
++	for (unsigned lc = 0; lc < 2; lc++) {
++		borrow_mock();
++		uint64_t limit = lc ? UINT64_MAX : UINT32_MAX;
++		mock_cpus[0].pmcr |= lc * 64;
++		mock_cpus[0].cycles = limit - R37_BORROW_HEADROOM - 200000;
++		lithium_cpu_frequency_r37();
++		CHECK(strstr(log_buffer, "near_cycle_overflow") && writes == 11);
++		CHECK(!mock_cpus[0].overflow && !irq_exposures && !event_advances);
++		CHECK(mock_cpus[0].pmcr == (0x51004020 | lc * 64));
++		CHECK(mock_cpus[0].enable == 0x2a && mock_cpus[0].interrupt == 0x31);
++	}
++	/* A stall can overrun any headroom: C IRQ must stay off even after restore. */
++	borrow_mock(); inject_cycle_at = 4; inject_cycles = 1ULL << 32;
++	lithium_cpu_frequency_r37();
++	CHECK(strstr(log_buffer, "controls_or_overflow_changed") &&
++	    strstr(log_buffer, "valid=0 samples=0") && mock_cpus[0].overflow == R37_C);
++	check_borrow_restored();
++	/* If freezing fails, do not restart events or restore interrupt masks. */
++	borrow_mock(); drop_write_reg = "PMCR_EL0"; drop_write_nth = 2;
++	lithium_cpu_frequency_r37();
++	CHECK(strstr(log_buffer, "restore_unsafe") && strstr(log_buffer, "restored=0"));
++	CHECK(!mock_cpus[0].enable && !mock_cpus[0].interrupt && !event_advances && !irq_exposures);
++	borrow_mock(); inject_restore_event_overflow = 1;
++	lithium_cpu_frequency_r37();
++	CHECK(strstr(log_buffer, "restore_unsafe") && strstr(log_buffer, "restored=0"));
++	CHECK(!mock_cpus[0].enable && !mock_cpus[0].interrupt && !irq_exposures);
++	CHECK(mock_cpus[0].overflow == 1 && !counter_writes && !pmcr_reset_writes);
++#endif
++}
++
++int
++main(void)
++{
++	test_math();
++	test_frequency();
++	test_migration();
++	test_mock_execution();
++	test_borrow();
++	printf("R37 PASS checks=%u audited_setup=%u math rollover statistics frequency migration mock_default_off restore bounded_timeout pmu_borrow ownership masks readback_faults overflow_guard cycle_irq_refusal\n",
++	    checks, (unsigned)LITHIUM_R37_ARCH_PMU_UNOWNED);
++	return 0;
++}
+--- /dev/null
++++ b/scripts/build-hakios-cpu-r37.py
+@@ -0,0 +1,88 @@
++#!/usr/bin/env python3
++"""Build the opt-in R37 measurement/scheduling candidate; no device access."""
++import argparse
++import hashlib
++import json
++import os
++from pathlib import Path
++import shutil
++import subprocess
++import sys
++import time
++
++sys.dont_write_bytecode = True
++import hakios
++
++ROOT = Path(__file__).resolve().parents[1]
++WORK = Path("/home/jia/ios-mix1-build/hakios-lithium-ios16")
++EVIDENCE = ROOT / "evidence/cpu-r37-20261120/main"
++
++
++def verify_pmu_backend():
++    tree = WORK / "xnu-src/xnu-8796.121.2"
++    kpc = tree / "osfmk/arm64/kpc.c"
++    assert hashlib.sha256(kpc.read_bytes()).hexdigest() == \
++        "31cd51ee78b5cc06eb5787ee18bf22b75a9592c1dbff758c461ab445521f1365", \
++        "PMU backend changed; re-evaluate diagnostic ownership before enabling setup"
++    for sub in ("bsd", "osfmk"):
++        header = tree / f"BUILD/obj/DEVELOPMENT_ARM64_BCM2837/{sub}/DEVELOPMENT/monotonic.h"
++        assert header.read_text().strip() == "#define NMONOTONIC 0", \
++            "Monotonic configuration changed; do not claim exclusive PMU ownership"
++
++
++def run(label, argv, *, env=None, cwd=WORK):
++    path = EVIDENCE / (label + "-" + str(time.time_ns()) + ".log")
++    with path.open("x") as log:
++        proc = subprocess.run(argv, cwd=cwd, env=env, stdout=log, stderr=subprocess.STDOUT)
++    if proc.returncode:
++        print(path.read_text(errors="replace")[-6000:])
++        raise RuntimeError(f"{label} failed ({proc.returncode}); retained {path}")
++    print("PASS " + label, flush=True)
++    return path
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("phase", choices=("prepare", "kernel"))
++    parser.add_argument("--revision", choices=("final", "strict-return01", "strict-return02"), default="final")
++    opts = parser.parse_args()
++    hakios.resource_check()
++    spec = hakios.read(hakios.MANIFEST)
++    verify_pmu_backend()
++    if opts.phase == "prepare":
++        hakios.prepare(spec, hakios.policy(spec))
++        tree = WORK / "xnu-src/xnu-8796.121.2"
++        source = tree / "osfmk/kern/sched_prim.c"
++        if "lithium_sched_r37_switch" not in source.read_text():
++            patch = WORK / "xnu/lithium-cpu-r37.patch"
++            run("apply-actual-check", ["git", "apply", "--check", str(patch)], cwd=tree)
++            run("apply-actual", ["git", "apply", str(patch)], cwd=tree)
++        # The existing quiet policy was compiled in R35/R36 and is preserved.
++        assert "exec_applog_ui_quiet" in (tree / "bsd/kern/kern_exec.c").read_text()
++        assert source.read_text().count("lithium_sched_r37_switch(self,") == 2
++        assert "lithium_sched_r37_expiry(thread," in source.read_text()
++        print("R37 observations prepared; unchanged firmware and userland reused.")
++        return
++    hakios.verify_workspace(spec)
++    deps = hakios.read(ROOT / "reports/hakios-ios16-dependencies.json")
++    env = dict(os.environ, HAKIOS_SOC="msm8996", JOBS="12",
++               MAKEFLAGS="-j12", MAKEJOBS="--jobs=12", THEOS=deps["theos_linux_path"])
++    env["PATH"] = "/home/jia/ios-mix1-build/venv/bin:" + env["PATH"]
++    log = run("kernel", ["make", "kernel", "SHELL=/bin/bash",
++                        "MAKEJOBS=--jobs=12", "DEVICE=lithium", "JOBS=12"], env=env)
++    kernel = WORK / "hakios-kernel"
++    data = kernel.read_bytes()
++    for marker in (b"cpu_freq_diag", b"timer_migrate_diag", b"ui_sched_diag",
++                   b"slowcores_idle", b"LITHIUM TOUCH smp context=poll"):
++        assert marker in data, marker
++    frozen = WORK / ("hakios-kernel.r37-" + opts.revision)
++    assert not frozen.exists(), "Frozen R37 kernel exists; inspect, never overwrite"
++    shutil.copyfile(kernel, frozen)
++    hakios.write(EVIDENCE / ("kernel-result-" + opts.revision + ".json"),
++        dict(passed=True, kernel=str(frozen), sha256=hakios.sha(frozen), bytes=len(data),
++             inputs=hakios.inputs(spec), command_log=str(log), device_operations=0,
++             unchanged_userspace_firmware_reused=True))
++
++
++if __name__ == "__main__":
++    main()
+--- /dev/null
++++ b/scripts/build-hakios-r37-ram-root.py
+@@ -0,0 +1,56 @@
++#!/usr/bin/env python3
++"""Rebuild only PID1 and its isolated RAM volume, preserving old volumes."""
++from pathlib import Path
++import hashlib
++import json
++import os
++import shutil
++import subprocess
++import sys
++sys.dont_write_bytecode = True
++import hakios
++
++ROOT = Path(__file__).resolve().parents[1]
++WORK = Path("/home/jia/ios-mix1-build/hakios-lithium-ios16")
++EVIDENCE = ROOT / "evidence/cpu-r37-20261120/return-fix"
++
++
++def main():
++    spec = hakios.read(hakios.MANIFEST)
++    hakios.prepare(spec, hakios.policy(spec))
++    stage = WORK / "userland/root.r37-smp01"
++    output = WORK / "userland/root.r37-smp01.apfs"
++    init = WORK / "userland/obj/init.r37-smp01"
++    assert not stage.exists() and not output.exists()
++    env = dict(os.environ, HAKIOS_SOC="msm8996")
++    env["PATH"] = str(WORK / "xnu-deps/host/bin") + ":" + env["PATH"]
++    command = (
++        "source ./xnu-env.sh\n"
++        "xnu-clang -arch arm64 -Os -static -nostdlib -ffreestanding "
++        "-fno-stack-protector -fno-builtin -Wall -Wextra -Iuserland/libmini "
++        "-Wl,-e,_start -Wl,-pagezero_size,0x100000000 "
++        "-o userland/obj/init.r37-smp01 userland/src/init.c "
++        "userland/obj/mini.o userland/obj/start.o\n")
++    with (EVIDENCE / "ram-root-build.log").open("x") as log:
++        subprocess.run(["bash", "-e", "-c", command], cwd=WORK, env=env,
++                       stdout=log, stderr=subprocess.STDOUT, check=True)
++        assert b"LITHIUM FASTBOOT session=ram_smp" in init.read_bytes()
++        shutil.copytree(WORK / "userland/root", stage, symlinks=True)
++        shutil.copyfile(init, stage / "sbin/init")
++        os.chmod(stage / "sbin/init", 0o755)
++        subprocess.run([sys.executable, str(WORK / "tools/apfs/mkapfs.py"),
++                        "-z", "--plain", "fw", "-o", str(output),
++                        "redwood=" + str(stage)], cwd=WORK, env=env,
++                       stdout=log, stderr=subprocess.STDOUT, check=True)
++        subprocess.run([str(WORK / "tools/apfs/check-image.sh"), str(output),
++                        "redwood=" + str(stage)], cwd=WORK, env=env,
++                       stdout=log, stderr=subprocess.STDOUT, check=True)
++    result = {"passed": True, "root": str(output),
++              "sha256": hakios.sha(output), "init_sha256": hakios.sha(init),
++              "device_operations": 0, "unchanged_libs_jobs_reused": True}
++    hakios.write(EVIDENCE / "ram-root.json", result)
++    print(json.dumps(result, indent=2))
++
++
++if __name__ == "__main__":
++    main()
+--- /dev/null
++++ b/scripts/build-hakios-r37-ram-support.py
+@@ -0,0 +1,166 @@
++#!/usr/bin/env python3
++"""Build the isolated RAM support used by the R37 three-CPU measurement.
++
++This is host-only. It creates a new build tree under the R37 evidence/output
++area and never invokes Fastboot, ADB, partition access, or a phone reset.
++"""
++from __future__ import annotations
++
++import hashlib
++import json
++import os
++from pathlib import Path
++import shutil
++import subprocess
++import sys
++
++sys.dont_write_bytecode = True
++import hakios
++
++ROOT = Path(__file__).resolve().parents[1]
++WORK = Path("/home/jia/ios-mix1-build/hakios-lithium-ios16")
++BUILD = Path("/home/jia/ios-mix1-build/r37-ram-smp-support")
++EVIDENCE = ROOT / "evidence/cpu-r37-20261120/ram-support"
++
++
++def digest(path: Path) -> str:
++    return hashlib.sha256(path.read_bytes()).hexdigest()
++
++
++def run(label: str, argv: list[str], *, cwd: Path, env: dict[str, str]) -> None:
++    attempt = 1
++    log = EVIDENCE / (label + ".log")
++    while log.exists():
++        attempt += 1
++        log = EVIDENCE / f"{label}-attempt{attempt}.log"
++    with log.open("x", encoding="utf-8") as stream:
++        result = subprocess.run(argv, cwd=cwd, env=env, stdout=stream,
++                                stderr=subprocess.STDOUT)
++    if result.returncode:
++        raise RuntimeError(f"{label} failed; see {log}")
++
++
++def main(revision: str = "return02") -> int:
++    global BUILD, EVIDENCE
++    if revision != "return02":
++        raise RuntimeError("only the new return02 support build is accepted")
++    BUILD = Path("/home/jia/ios-mix1-build/r37-ram-smp-support-return02")
++    EVIDENCE = ROOT / "evidence/cpu-r37-20261120/ram-support-return02"
++    spec = hakios.read(hakios.MANIFEST)
++    hakios.resource_check()
++    hakios.prepare(spec, hakios.policy(spec))
++    work = hakios.verify_workspace(spec)
++    support = hakios.read(ROOT / "reports/hakios-support-build.json")
++    # The support report predates this additive R37 handoff source. Its Mu
++    # workspace is used only as a pinned dependency base; the current headers,
++    # loader and firmware source are copied below and the resulting FV is
++    # independently checked.
++    hakios.require(Path(support["firmware_workspace"]).is_dir(),
++                   "support firmware workspace is missing")
++    resume = BUILD.exists()
++    if resume and not ((BUILD / "loader/xnuloader").is_dir() and
++                       (BUILD / "mu/lithiumPkg").is_dir() and
++                       (EVIDENCE / "ram-loader.log").is_file()):
++        raise RuntimeError(f"existing build tree is not an owned R37 partial build: {BUILD}")
++    BUILD.mkdir(parents=True, exist_ok=True)
++    EVIDENCE.mkdir(parents=True, exist_ok=True)
++
++    loader_tree = BUILD / "loader"
++    if not resume:
++        shutil.copytree(work / "xnuloader", loader_tree / "xnuloader")
++        shutil.copytree(work / "devices/lithium", loader_tree / "devices/lithium")
++    else:
++        # A resumed owned build must compile current return glue, not retain
++        # a stale loader include while reporting the new source hashes.
++        for name in ("contract.h", "profile.h", "ram-smp-profile.h",
++                     "firmware-protocol.h", "loader.inc"):
++            shutil.copyfile(work / "devices/lithium/return-fastboot" / name,
++                            loader_tree / "devices/lithium/return-fastboot" / name)
++    loader_env = dict(os.environ,
++        LOADER_CFLAGS="-DHAKIOS_LITHIUM=1 -DHAKIOS_LITHIUM_RAM_DIAGNOSTIC=1",
++        LOADER_IMAGE_BASE="0x40400000")
++    run("ram-loader", ["bash", "build.sh"], cwd=loader_tree / "xnuloader",
++        env=loader_env)
++    loader = loader_tree / "xnuloader/loader.efi"
++    data = loader.read_bytes()
++    if not data.startswith(b"MZ"):
++        raise RuntimeError("RAM loader is not a PE image")
++
++    mu = BUILD / "mu"
++    if not resume:
++        shutil.copytree(Path(support["firmware_workspace"]) / "lithiumPkg",
++                        mu / "lithiumPkg")
++    headers = work / "devices/lithium/return-fastboot"
++    include = mu / "lithiumPkg/Include/ReturnFastboot"
++    include.mkdir(parents=True, exist_ok=True)
++    for name in ("firmware-protocol.h", "reset-core.h"):
++        shutil.copyfile(headers / name, include / name)
++    shutil.copyfile(ROOT / "ports/hakios-lithium/firmware/lithiumPkg/Drivers/"
++                    "LithiumFastbootDxe/LithiumFastbootDxe.c",
++                    mu / "lithiumPkg/Drivers/LithiumFastbootDxe/LithiumFastbootDxe.c")
++    physical = "lithiumPkg/Drivers/LithiumUfsDxe/LithiumUfsDxe.inf"
++    for name in ("lithium.dsc", "lithium.fdf") if not resume else ():
++        path = mu / "lithiumPkg" / name
++        lines = path.read_text(encoding="utf-8").splitlines(True)
++        path.write_text("".join(line for line in lines if physical not in line),
++                        encoding="utf-8")
++
++    fnv = 0xcbf29ce484222325
++    for byte in data:
++        fnv = ((fnv ^ byte) * 0x100000001b3) & ((1 << 64) - 1)
++    (mu / "lithiumPkg/Include/PayloadGenerated.h").write_text(
++        f"#define LITHIUM_LOADER_BYTES {len(data)}U\n"
++        f"#define LITHIUM_LOADER_FNV64 0x{fnv:016x}ULL\n"
++        "#define LITHIUM_LOADER_BASE 0x40400000ULL\n"
++        f"#define LITHIUM_LOADER_IMAGE_SIZE 0x{len(data):x}ULL\n",
++        encoding="ascii")
++
++    source = Path("/home/jia/ios-mix1-build/Mu-Silicium")
++    conf = mu / "Conf"
++    conf.mkdir(exist_ok=True)
++    for name in ("target", "tools_def", "build_rule"):
++        destination = conf / (name + ".txt")
++        if not destination.exists():
++            shutil.copyfile(source / f"Mu_Basecore/BaseTools/Conf/{name}.template",
++                            destination)
++    packages = ":".join(map(str, (mu, source / "Mu_Basecore", source / "Common/Mu",
++                                    source / "Common/Mu_OEM_Sample",
++                                    source / "Silicon/Silicium")))
++    mu_env = dict(os.environ, WORKSPACE=str(mu), PACKAGES_PATH=packages,
++        EDK_TOOLS_PATH=str(source / "Mu_Basecore/BaseTools"), CONF_PATH=str(conf),
++        PYTHON_COMMAND="/home/jia/ios-mix1-build/venv/bin/python",
++        CLANG_BIN="/usr/bin/", JOBS=hakios.build_jobs(),
++        MAKEFLAGS="-j" + hakios.build_jobs())
++    mu_env["PATH"] = ":".join(("/home/jia/ios-mix1-build/venv/bin",
++        str(source / "Mu_Basecore/BaseTools/BinWrappers/PosixLike"),
++        str(source / "Mu_Basecore/BaseTools/Source/C/bin"), mu_env["PATH"]))
++    run("ram-mu", ["build", "-p", "lithiumPkg/lithium.dsc", "-a", "AARCH64",
++        "-t", "CLANGPDB", "-b", "RELEASE", "-n", hakios.build_jobs(),
++        "-D", "LITHIUM_BUILD_TAG=0x" + digest(loader)[:16],
++        "-D", "LITHIUM_RAM_DIAGNOSTIC=1", "-y", str(BUILD / "ram-mu-report.txt")],
++        cwd=mu, env=mu_env)
++    built = mu / "Build/lithiumPkg/RELEASE_CLANGPDB"
++    maps = list((built / "FV").glob("*.Fv.map"))
++    if not maps or any("lithiumufsdxe" in path.read_text(errors="ignore").lower()
++                       for path in maps):
++        raise RuntimeError("physical UFS provider is present in RAM firmware")
++    fd = built / "FV/SILICIUM_UEFI.fd"
++    fastboot = built / "AARCH64/LithiumFastbootDxe.efi"
++    if not fd.is_file() or fd.stat().st_size != 0x300000 or not fastboot.is_file():
++        raise RuntimeError("RAM Mu artifacts are incomplete")
++    report = {
++        "passed": True, "inputs": hakios.inputs(spec), "device_operations": 0,
++        "physical_ufs_provider_absent": True, "loader": str(loader),
++        "loader_sha256": digest(loader), "ram_fd": str(fd),
++        "ram_fd_sha256": digest(fd), "fastboot_dxe": str(fastboot),
++        "fastboot_dxe_sha256": digest(fastboot), "mu": str(mu),
++        "fv_maps": [{"path": str(path), "sha256": digest(path)} for path in maps],
++    }
++    (EVIDENCE / "ram-support.json").write_text(json.dumps(report, indent=2) + "\n",
++        encoding="utf-8")
++    print(json.dumps(report, indent=2))
++    return 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+--- /dev/null
++++ b/scripts/package-hakios-cpu-r37-ram.py
+@@ -0,0 +1,242 @@
++#!/usr/bin/env python3
++"""Assemble the isolated R37 three-CPU measurement image.
++
++This is host-only. It combines the linked R37 kernel with the independently
++built RAM loader/Mu support and the frozen R34 RAM volumes. It never invokes
++Fastboot or changes a partition.
++"""
++from __future__ import annotations
++
++import hashlib
++import importlib.util
++import argparse
++import json
++from pathlib import Path
++import struct
++import tempfile
++
++
++ROOT = Path(__file__).resolve().parents[1]
++BASE = ROOT / "artifacts/hakios/lithium-ios16"
++R34 = BASE / "phase4-r34-touch-live-ram-final"
++R34_IMAGE = R34 / "lithium-hakios-ios16-r34-touch-live-ram.img"
++R34_SHA = "d1bbc6bf94defeacacf3ffbbae32bd3e227b70ef74bb1ceda2fb5539f8ad0d3b"
++SUPPORT = ROOT / "evidence/cpu-r37-20261120/ram-support-return02/ram-support.json"
++BUILD = ROOT / "evidence/cpu-r37-20261120/main/kernel-result-strict-return02.json"
++RAM_ROOT = ROOT / "evidence/cpu-r37-20261120/return-fix/ram-root.json"
++FD_AT = 0x1000
++XNUP_AT = 0x301000
++IMAGE_LIMIT = 0x2433000
++PAYLOAD_LIMIT = 0x3F00000
++NOP = struct.pack("<I", 0xD503201F)
++BASE_ARGS = (
++    "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 "
++    "lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 "
++    "fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 "
++    "epoch=1794940756 "
++    "return_fastboot=1 return_fastboot_delay=10"
++)
++
++
++def module(name: str, filename: str):
++    spec = importlib.util.spec_from_file_location(name, ROOT / "scripts" / filename)
++    loaded = importlib.util.module_from_spec(spec)
++    assert spec.loader is not None
++    spec.loader.exec_module(loaded)
++    return loaded
++
++
++def sha(data: bytes) -> str:
++    return hashlib.sha256(data).hexdigest()
++
++
++def metadata(data: bytes) -> dict:
++    return {"bytes": len(data), "sha256": sha(data)}
++
++
++def require(condition: bool, message: str) -> None:
++    if not condition:
++        raise RuntimeError(message)
++
++
++def main(profile: str = "frequency", attempt: str = "03", borrow: bool = False) -> int:
++    import re
++    require(profile in {"frequency", "timer"}, "profile must be frequency or timer")
++    require(re.fullmatch(r"[0-9]{2,}", attempt) is not None, "invalid attempt suffix")
++    out = BASE / f"phase4-r37-ram-{profile}-{attempt}"
++    image_name = f"lithium-hakios-ios16-r37-ram-{profile}-{attempt}.img"
++    args = BASE_ARGS + (" cpu_freq_diag=1" if profile == "frequency"
++                        else " timer_migrate_diag=1")
++    require(not borrow or profile == "frequency", "PMU borrowing is frequency-only")
++    if borrow:
++        args += " cpu_freq_pmu_borrow=1"
++    require(not out.exists(), f"output already exists: {out}")
++    require(R34_IMAGE.is_file() and sha(R34_IMAGE.read_bytes()) == R34_SHA,
++            "frozen R34 RAM image changed")
++    build = json.loads(BUILD.read_text(encoding="utf-8"))
++    support = json.loads(SUPPORT.read_text(encoding="utf-8"))
++    root_report = json.loads(RAM_ROOT.read_text(encoding="utf-8"))
++    root_image = Path(root_report["root"])
++    require(root_report["passed"] is True and
++            sha(root_image.read_bytes()) == root_report["sha256"],
++            "R37 RAM PID1 image differs")
++    require(build.get("passed") is True and len(build.get("sha256", "")) == 64,
++            "R37 kernel build report is not accepted")
++    require(support.get("passed") is True and
++            support.get("physical_ufs_provider_absent") is True,
++            "R37 RAM support report is not accepted")
++
++    kernel = Path(build["kernel"])
++    loader = Path(support["loader"])
++    fd = Path(support["ram_fd"])
++    for path, expected in ((kernel, build["sha256"]),
++                           (loader, support["loader_sha256"]),
++                           (fd, support["ram_fd_sha256"])):
++        require(path.is_file() and sha(path.read_bytes()) == expected,
++                f"input changed: {path}")
++    require(fd.stat().st_size == 0x300000, "RAM FV size differs")
++    require(b"LITHIUM FASTBOOT status=smp_return_verified" in loader.read_bytes(),
++            "RAM loader lacks the corrected original-UEFI-owner return path")
++
++    codec = module("r37_ram_codec", "package-hakios-ios16-touch-r21.py")
++    production = module("r37_ram_boot", "package-hakios-ios16.py")
++    touch_live = module("r37_ram_android", "package-hakios-touch-live.py")
++    old_blob = R34_IMAGE.read_bytes()
++    old_raw, dtbs, old_fat, header = codec.decode_android(old_blob)
++    require(old_raw[XNUP_AT:XNUP_AT + 4] == b"XNUP",
++            "frozen R34 XNUP marker differs")
++    old_payload_size = struct.unpack_from("<I", old_raw, XNUP_AT + 4)[0] + 8
++    old_payload = old_raw[XNUP_AT:XNUP_AT + old_payload_size]
++    old_entries = codec.parse_payload(old_payload)
++    require(set(old_entries) == {"kernel", "ramdisk", "resident", "cmdline", "kernel.ver"},
++            "frozen R34 payload entries changed")
++    require(len(old_entries["ramdisk"]) == len(old_entries["resident"]) == 0x400000,
++            "RAM APFS volume size differs")
++
++    entries = [
++        ("kernel", kernel.read_bytes()),
++        ("ramdisk", root_image.read_bytes()),
++        ("resident", old_entries["resident"]),
++        ("cmdline", args.encode("ascii") + b"\0"),
++        ("kernel.ver", old_entries["kernel.ver"]),
++    ]
++    payload = codec.encode_payload(entries)
++    require(len(payload) < PAYLOAD_LIMIT, "XNUP payload exceeds reviewed bound")
++    shim, literal_at = touch_live.replace_copy_length(
++        old_raw[:FD_AT], old_payload_size, len(payload))
++    raw = (shim + fd.read_bytes() + payload +
++           NOP * (((-len(payload)) % 16) // len(NOP)))
++    require(len(raw) <= IMAGE_LIMIT and len(raw) % 16 == 0,
++            "Image extent exceeds reviewed bound")
++    with tempfile.TemporaryDirectory(prefix="r37-fat-") as tempdir:
++        fat = Path(tempdir) / "loader.fat"
++        codec.make_fat(fat, loader)
++        fat_data = fat.read_bytes()
++        returned_loader = Path(tempdir) / "HAKIOS.EFI"
++        import subprocess
++        subprocess.run(["mcopy", "-i", str(fat), "::HAKIOS.EFI",
++                        str(returned_loader)], check=True)
++        require(returned_loader.read_bytes() == loader.read_bytes(),
++                "FAT loader readback differs")
++
++    image = touch_live.make_android(raw, dtbs, fat_data, header)
++    production.check_boot(image, raw, dtbs, fat_data, header)
++    reread_raw, reread_dtbs, reread_fat, reread_header = codec.decode_android(image)
++    require(reread_raw == raw and reread_dtbs == dtbs and reread_fat == fat_data,
++            "final Android layers differ after readback")
++    require(reread_header[576:596] == header_digest(image),
++            "final Android header digest differs")
++    copy_bytes = struct.unpack_from("<Q", reread_raw, literal_at)[0]
++    require(copy_bytes == (len(payload) + 15) & ~15,
++            "BootShim does not copy the entire new payload")
++    relocated = reread_raw[XNUP_AT:XNUP_AT + copy_bytes]
++    require(codec.parse_payload(relocated[:len(payload)]) == dict(entries),
++            "payload differs after modeled BootShim relocation")
++
++    out.mkdir()
++    components = {
++        "hakios-kernel": kernel.read_bytes(),
++        "root.apfs": root_image.read_bytes(),
++        "flashboot.apfs": old_entries["resident"],
++        "loader.efi": loader.read_bytes(),
++        "lithium.fd": fd.read_bytes(),
++        "loader.fat": fat_data,
++        "payload.bin": payload,
++        "Image": raw,
++        image_name: image,
++        "boot-args.txt": (args + "\n").encode("ascii"),
++    }
++    for name, data in components.items():
++        (out / name).write_bytes(data)
++    contract = {
++        "schema": "hakios-cpu-r37-ram-package-v1",
++        "candidate": f"R37-{profile}-{attempt}",
++        "passed": True,
++        "package_host_ready": True,
++        "profile": f"r37-{profile}",
++        "pmu_borrow": borrow,
++        "cmdline": args,
++        "boot_args": args,
++        "ram_smp_return": True,
++        "return_fastboot": True,
++        "return_fastboot_delay": 10,
++        "loader_return_after": 180,
++        "normal_boot_may_write_userdata": False,
++        "partition_operations": False,
++        "physical_ufs_provider_absent": True,
++        "ufs_bridge_disabled": True,
++        "root_data_storage_arguments_absent": True,
++        "persistent_log_disabled": True,
++        "device_operations": 0,
++        "qemu_used": False,
++        "boot_topology": {"bootcpu": 1, "cpus": 3,
++                          "expected_physical_affinity": "0x1",
++                          "ram_only": True},
++        "inputs": {"kernel": str(kernel), "kernel_sha256": build["sha256"],
++                   "loader_sha256": support["loader_sha256"],
++                   "ram_fd_sha256": support["ram_fd_sha256"],
++                   "ram_root_sha256": root_report["sha256"],
++                   "frozen_r34_ram_sha256": R34_SHA},
++        "image": {"path": image_name, **metadata(image)},
++        "components": {name: metadata(data) for name, data in components.items()},
++        "readback": {"android_header_and_sha1": True, "xnup_exact_entries": True,
++                      "fat_loader": True, "mu_fd": True,
++                      "resident_ram_volume_unchanged": True,
++                      "smp_pid1_hold": True,
++                      "seeded_uefi_owner": True,
++                      "shim_copy_length": True,
++                      "modeled_relocation_exact": True},
++        "shim_copy_length": {"literal_offset": literal_at,
++                             "bytes": copy_bytes, "payload_bytes": len(payload)},
++    }
++    (out / "contract.json").write_text(json.dumps(contract, indent=2) + "\n",
++                                        encoding="utf-8")
++    print(json.dumps({"passed": True, "profile": profile, "image": str(out / image_name),
++                      "sha256": sha(image), "bytes": len(image),
++                      "cmdline": args}, indent=2))
++    return 0
++
++
++def header_digest(image: bytes) -> bytes:
++    import hashlib
++    import struct
++    page = struct.unpack_from("<I", image, 36)[0]
++    kernel_size = struct.unpack_from("<I", image, 8)[0]
++    ram_size = struct.unpack_from("<I", image, 16)[0]
++    packed = image[page:page + kernel_size]
++    fat_at = page + ((kernel_size + page - 1) // page) * page
++    fat = image[fat_at:fat_at + ram_size]
++    digest = hashlib.sha1()
++    for part in (packed, fat, b""):
++        digest.update(part)
++        digest.update(struct.pack("<I", len(part)))
++    return digest.digest()
++
++
++if __name__ == "__main__":
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--profile", choices=("frequency", "timer"), default="frequency")
++    parser.add_argument("--attempt", default="03")
++    parser.add_argument("--borrow", action="store_true")
++    options = parser.parse_args()
++    raise SystemExit(main(options.profile, options.attempt, options.borrow))
+--- /dev/null
++++ b/scripts/prepare-hakios-r37-strict-return.py
+@@ -0,0 +1,83 @@
++#!/usr/bin/env python3
++"""Add the strict R37 SMP return observation; host-only, reversible patch."""
++from pathlib import Path
++import difflib
++import json
++import hashlib
++import shutil
++
++ROOT = Path(__file__).resolve().parents[1]
++WORK = Path("/home/jia/ios-mix1-build/hakios-lithium-ios16")
++EVIDENCE = ROOT / "evidence/cpu-r37-20261120/return-fix"
++PORT = ROOT / "ports/hakios-lithium"
++
++STRICT = """
++/* Only an exact firmware OFF result proves a started secondary has stopped.
++ * The older stop routine's negative-state shortcut is not such proof. */
++bool
++psci_smp_stopped_strict(void)
++{
++    int max_cpu = ml_get_max_cpu_number();
++    uint32_t started = psci_smp_started;
++    if (cpu_number() != master_cpu || max_cpu < 0 || max_cpu >= 32)
++        return false;
++    if (max_cpu < 31 && (started >> (max_cpu + 1)) != 0)
++        return false;
++    for (int cpu = 0; cpu <= max_cpu; cpu++) {
++        if (cpu == master_cpu || !(started & (1u << cpu))) continue;
++        cpu_data_t *cdp = cpu_datap(cpu);
++        if (cdp == NULL ||
++            psci_call(PSCI_AFFINITY_INFO, cdp->cpu_phys_id, 0, 0) != PSCI_AFFINITY_OFF)
++            return false;
++    }
++    return true;
++}
++
++"""
++
++
++def main():
++    EVIDENCE.mkdir(parents=True, exist_ok=True)
++    sources = {
++        "osfmk/arm64/psci_smp.h": ("extern void             psci_smp_stop_here(void);",
++            "extern bool             psci_smp_stopped_strict(void);\nextern void             psci_smp_stop_here(void);"),
++        "osfmk/arm64/psci_smp.c": ("/*\n * Where a processor learns that the system is ending:",
++            STRICT + "/*\n * Where a processor learns that the system is ending:"),
++        "osfmk/arm64/loader_return.c": ("\tpsci_smp_stop_others();\n#endif",
++            "\tpsci_smp_stop_others();\n"
++            "#if defined(LITHIUM_ARMV8_0)\n"
++            "\tif (!lithium_fastboot_handoff_allowed()) {\n"
++            '\t\tloader_log_puts("\\nLITHIUM FASTBOOT status=blocked reason=secondary_not_off\\n");\n'
++            "\t\tfor (;;) __builtin_arm_wfi();\n\t}\n#endif\n#endif"),
++    }
++    patch = []
++    hashes = {}
++    for name, (before, after) in sources.items():
++        template = WORK / "xnu/files" / name
++        actual = WORK / "xnu-src/xnu-8796.121.2" / name
++        old = template.read_text()
++        assert old.count(before) == 1 and after not in old, name
++        assert actual.read_text() == old, f"actual source differs: {name}"
++        backup = EVIDENCE / ("before-" + Path(name).name)
++        assert not backup.exists(), f"backup exists: {backup}"
++        backup.write_bytes(template.read_bytes())
++        new = old.replace(before, after)
++        patch.extend(difflib.unified_diff(old.splitlines(True), new.splitlines(True),
++            fromfile="a/xnu/files/" + name, tofile="b/xnu/files/" + name))
++        template.write_text(new)
++        actual.write_text(new)
++        hashes[name] = hashlib.sha256(new.encode()).hexdigest()
++    (PORT / "patches/0027-lithium-strict-smp-return.patch").write_text("".join(patch))
++    for name in ("kernel.inc",):
++        shutil.copyfile(PORT / "return-fastboot" / name,
++                        WORK / "devices/lithium/return-fastboot" / name)
++    # Reproducible prepared tree and its input map. This is not a device proof.
++    for name in ("0023-lithium-return-fastboot.patch", "0027-lithium-strict-smp-return.patch"):
++        shutil.copyfile(PORT / "patches" / name, WORK / "devices/lithium/patches" / name)
++    (EVIDENCE / "prepared.json").write_text(json.dumps(
++        {"passed": True, "source_sha256": hashes, "device_operations": 0}, indent=2) + "\n")
++    print(json.dumps(hashes, indent=2))
++
++
++if __name__ == "__main__":
++    main()
+--- /dev/null
++++ b/scripts/tests/test-r37-strict-return.py
+@@ -0,0 +1,66 @@
++#!/usr/bin/env python3
++"""Compile the actual strict-stop observer against bounded PSCI mocks."""
++from pathlib import Path
++import subprocess
++import tempfile
++
++WORK = Path("/home/jia/ios-mix1-build/hakios-lithium-ios16")
++ROOT = Path(__file__).resolve().parents[2]
++source = WORK / "xnu-src/xnu-8796.121.2/osfmk/arm64/psci_smp.c"
++text = source.read_text()
++begin = text.index("bool\npsci_smp_stopped_strict(void)")
++end = text.index("\n/*\n * Where a processor", begin)
++function = text[begin:end]
++loader = (WORK / "xnu-src/xnu-8796.121.2/osfmk/arm64/loader_return.c").read_text()
++assert loader.index("psci_smp_stop_others();") < loader.index(
++    "lithium_fastboot_handoff_allowed()") < loader.index("lithium_usb_quiesce();")
++assert "psci_smp_stopped_strict()" in (
++    ROOT / "ports/hakios-lithium/return-fastboot/kernel.inc").read_text()
++harness = r"""
++#include <stdbool.h>
++#include <stdint.h>
++#include <stdio.h>
++#include <assert.h>
++#define PSCI_AFFINITY_INFO 0xc4000004
++#define PSCI_AFFINITY_OFF 1
++typedef struct { unsigned cpu_phys_id; } cpu_data_t;
++static int max_cpu=2, me=0, master_cpu=0;
++static uint32_t psci_smp_started=7;
++static cpu_data_t cpus[3]={{1},{0x100},{0x101}};
++static int missing=-1, calls;
++static int64_t states[3]={0,1,1};
++static int ml_get_max_cpu_number(void){return max_cpu;}
++static int cpu_number(void){return me;}
++static cpu_data_t *cpu_datap(int c){return c==missing?0:&cpus[c];}
++static int64_t psci_call(unsigned cmd,unsigned phys,int a,int b){
++  (void)a;(void)b;assert(cmd==PSCI_AFFINITY_INFO);calls++;
++  for(int c=0;c<3;c++) if(cpus[c].cpu_phys_id==phys)return states[c];
++  assert(0);return -1;
++}
++"""
++cases = r"""
++int main(void){
++  unsigned tested=0;
++  for(int a=-9;a<=3;a++)for(int b=-9;b<=3;b++){
++    states[1]=a;states[2]=b;
++    assert(psci_smp_stopped_strict()==(a==1&&b==1));tested++;
++  }
++  states[1]=states[2]=1;
++  missing=1;assert(!psci_smp_stopped_strict());tested++;
++  missing=-1;me=1;assert(!psci_smp_stopped_strict());tested++;
++  me=0;max_cpu=32;assert(!psci_smp_stopped_strict());tested++;
++  max_cpu=2;psci_smp_started=15;assert(!psci_smp_stopped_strict());tested++;
++  psci_smp_started=1;calls=0;assert(psci_smp_stopped_strict()&&calls==0);tested++;
++  psci_smp_started=7;assert(psci_smp_stopped_strict());tested++;
++  printf("PASS strict-stop cases=%u negative_psci_never_off=1 device_operations=0\n",tested);
++}
++"""
++with tempfile.TemporaryDirectory(prefix="r37-strict-") as name:
++    path = Path(name)
++    c = path / "strict.c"
++    c.write_text(harness + function + cases)
++    executable = path / "strict"
++    subprocess.run(["clang", "-std=c11", "-Wall", "-Wextra", "-Werror",
++                    "-fsanitize=address,undefined", str(c), "-o", str(executable)],
++                   check=True)
++    subprocess.run([str(executable)], check=True)
+--- /dev/null
++++ b/scripts/tests/test-r37-loader-owner.py
+@@ -0,0 +1,88 @@
++#!/usr/bin/env python3
++"""Exercise actual loader return function with mock register/PSCI services."""
++from pathlib import Path
++import subprocess
++import tempfile
++
++ROOT = Path(__file__).resolve().parents[2]
++src = (ROOT / "ports/hakios-lithium/return-fastboot/loader.inc").read_text()
++function = src[src.index("static void\nlithium_fastboot_after_return("):]
++harness = r"""
++#include <stdint.h>
++#include <stddef.h>
++#include <assert.h>
++#include <stdio.h>
++#include <stdarg.h>
++#include "contract.h"
++typedef uint64_t efi_status;
++#define EFI_ERROR(s) ((s)!=0)
++#define EFIAPI
++#define LFB_UINT32 uint32_t
++#define LFB_UINT64 uint64_t
++#define LFB_STATUS efi_status
++#define LFB_EFIAPI
++#include "firmware-protocol.h"
++#define PSCI_AFFINITY_INFO 0xc4000004
++#define MPIDR_EL1 1
++#define CNTFRQ_EL0 2
++#define CNTVCT_EL0 3
++static unsigned query_count, flush_count;
++static uint64_t current_affinity,ticks;
++static int64_t states[3];
++static uint64_t read_reg(int reg){
++ if(reg==MPIDR_EL1)return current_affinity;
++ if(reg==CNTFRQ_EL0)return 19200000;
++ ticks+=19200;return ticks;
++}
++#define READ_SYSREG(x) read_reg(x)
++static void print(const char *format,...){(void)format;}
++static void clean_dcache(uint64_t a,uint64_t b){(void)a;(void)b;}
++static void flush_dcache(uint64_t a,uint64_t b){(void)a;(void)b;flush_count++;}
++static int64_t psci_call(unsigned cmd,uint64_t affinity,int a,int b){
++ (void)a;(void)b;assert(cmd==PSCI_AFFINITY_INFO);query_count++;
++ unsigned c=affinity==1?0:affinity==0x100?1:2;return states[c];
++}
++static void stall(uint64_t us){(void)us;}
++static void wdt_pet(void){}
++static struct {void (*stall)(uint64_t);} services={stall},*BS=&services;
++static struct rfbt_config lithium_fastboot_requested;
++static struct rfbt_once lithium_fastboot_once;
++static uint8_t *lithium_fastboot_handoff;
++static uint64_t lithium_fastboot_cookie;
++static struct lithium_fastboot_protocol *lithium_fastboot_firmware;
++static unsigned lithium_fastboot_return_smp;
++static uint64_t lithium_fastboot_owner_affinity;
++"""
++tests = r"""
++static void setup(void){
++ static uint8_t invalid_wire[RFBT_WIRE_SIZE];
++ static struct lithium_fastboot_protocol firmware;
++ lithium_fastboot_handoff=invalid_wire;
++ lithium_fastboot_firmware=&firmware;
++ lithium_fastboot_requested.enabled=1;
++ lithium_fastboot_return_smp=1;
++ lithium_fastboot_owner_affinity=0;
++ current_affinity=0;ticks=0;query_count=flush_count=0;
++ for(unsigned i=0;i<3;i++)states[i]=1;
++}
++int main(void){
++ setup();lithium_fastboot_after_return(0,0);assert(query_count==3&&flush_count==1);
++ setup();current_affinity=1;lithium_fastboot_after_return(0,0);assert(!query_count&&!flush_count);
++ for(int s=-9;s<=3;s++)if(s!=1){
++   setup();states[1]=s;lithium_fastboot_after_return(0,0);assert(flush_count==0);
++ }
++ setup();lithium_fastboot_return_smp=0;lithium_fastboot_after_return(0,0);
++ assert(query_count==0&&flush_count==1);
++ puts("PASS actual-loader owner=seeded-UEFI-core kernel-off=exact-only single-profile-preserved cases=15");
++}
++"""
++with tempfile.TemporaryDirectory(prefix="r37-owner-") as name:
++    d = Path(name)
++    c = d / "test.c"
++    c.write_text(harness + function + tests)
++    exe = d / "test"
++    subprocess.run(["clang", "-std=c11", "-Wall", "-Wextra", "-Werror",
++                    "-fsanitize=address,undefined", "-I",
++                    str(ROOT / "ports/hakios-lithium/return-fastboot"),
++                    str(c), "-o", str(exe)], check=True)
++    subprocess.run([str(exe)], check=True)
+--- /dev/null
++++ b/scripts/tests/test-r37-ram-runner.py
+@@ -0,0 +1,348 @@
++#!/usr/bin/env python3
++"""Focused host-only mocks for run-cpu-r37-ram-measure.py."""
++
++from __future__ import annotations
++
++from datetime import datetime, timedelta
++import hashlib
++import importlib.util
++import json
++from pathlib import Path
++import subprocess
++import tempfile
++import unittest
++
++
++ROOT = Path(__file__).resolve().parents[2]
++RUNNER_PATH = ROOT / "reports/local/run-cpu-r37-ram-measure.py"
++SPEC = importlib.util.spec_from_file_location("r37_ram_runner", RUNNER_PATH)
++RUNNER = importlib.util.module_from_spec(SPEC)
++assert SPEC.loader is not None
++SPEC.loader.exec_module(RUNNER)
++
++
++class FakeProcess:
++    def __init__(self, argv):
++        self.argv = argv
++        self.pid = 7317
++        self.running = True
++        status = Path(argv[argv.index("--status") + 1])
++        status.write_text(json.dumps({"status": "capturing"}) + "\n", encoding="utf-8")
++
++    def poll(self):
++        return None if self.running else 0
++
++    def wait(self, timeout=None):
++        self.running = False
++        return 0
++
++    def terminate(self):
++        self.running = False
++
++
++class FakeFastboot:
++    def __init__(self, serial, product):
++        self.serial = serial
++        self.product = product
++        self.calls = []
++
++    def __call__(self, argv, **kwargs):
++        self.calls.append(tuple(map(str, argv)))
++        tail = tuple(map(str, argv[1:]))
++        if tail == ("devices",):
++            return subprocess.CompletedProcess(argv, 0, f"{self.serial}\tfastboot\n", "")
++        if tail[-2:] == ("oem", "device-info"):
++            return subprocess.CompletedProcess(argv, 0, "Device unlocked: true\n", "")
++        if len(tail) >= 4 and tail[-2] == "getvar":
++            key = tail[-1]
++            values = {
++                "product": f"product: {self.product}\n",
++                "battery-soc-ok": "battery-soc-ok: yes\n",
++                "max-download-size": "max-download-size: 0x4000000\n",
++            }
++            return subprocess.CompletedProcess(argv, 0, values[key], "")
++        if len(tail) >= 4 and tail[-2] == "boot":
++            return subprocess.CompletedProcess(argv, 0, "", "Booting                                            OKAY\n")
++        raise AssertionError(f"unexpected fake Fastboot command: {argv}")
++
++
++class Clock:
++    def __init__(self):
++        self.value = 0.0
++
++    def monotonic(self):
++        return self.value
++
++    def sleep(self, seconds):
++        self.value += seconds
++
++
++class RamRunnerTest(unittest.TestCase):
++    def make_fixture(self, root: Path, phase: str = "frequency"):
++        package = root / f"phase4-r37-ram-{phase}-01"
++        package.mkdir()
++        image = package / "ram-measure.img"
++        image.write_bytes(b"RAM-MEASURE-FIXTURE")
++        receiver = root / "capture-hakios-usb.py"
++        receiver.write_text("# mock receiver\n", encoding="ascii")
++        receiver_sha = hashlib.sha256(receiver.read_bytes()).hexdigest()
++        component_sha = hashlib.sha256(image.read_bytes()).hexdigest()
++        diagnostic = "cpu_freq_diag=1" if phase == "frequency" else "timer_migrate_diag=1"
++        args = " ".join([
++            "ufs=0", "bootcpu=1", "cpus=3", "ram_smp_return=1",
++            diagnostic,
++            "loader_return_after=180", "return_fastboot=1",
++            "return_fastboot_delay=10",
++        ])
++        contract = {
++            "passed": True, "candidate": f"R37-{phase}-01",
++            "profile": f"r37-{phase}",
++            "diagnostic_phase": phase,
++            "ram_smp_return": True, "return_fastboot": True,
++            "normal_boot_may_write_userdata": False,
++            "partition_operations": False,
++            "physical_ufs_provider_absent": True,
++            "ufs_bridge_disabled": True,
++            "root_data_storage_arguments_absent": True,
++            "persistent_log_disabled": True,
++            "cmdline": args,
++            "readback": {"shim_copy_length": True,
++                         "modeled_relocation_exact": True,
++                         "smp_pid1_hold": True, "seeded_uefi_owner": True},
++            "image": {"path": image.name, "bytes": image.stat().st_size,
++                      "sha256": component_sha},
++            "components": {image.name: {"sha256": component_sha}},
++        }
++        contract_path = package / "contract.json"
++        contract_path.write_text(json.dumps(contract, indent=2) + "\n", encoding="utf-8")
++        fastboot = root / "fastboot.exe"
++        fastboot.write_bytes(b"mock")
++        usb_python = root / "python.exe"
++        usb_python.write_bytes(b"mock")
++        target = root / "target.json"
++        target.write_text(json.dumps({"serial": "mock123", "product": "MSM8996_A8"}) + "\n",
++                          encoding="utf-8")
++        return contract_path, receiver, receiver_sha, fastboot, usb_python, target
++
++    def test_boot_is_one_shot_and_allowlisted(self):
++        with tempfile.TemporaryDirectory(prefix="r37-ram-runner-") as name:
++            root = Path(name)
++            contract, receiver, receiver_sha, fastboot, usb_python, target = self.make_fixture(root)
++            local = root / "run"
++            guard = root / "boot-intent.json"
++            fake = FakeFastboot("mock123", "MSM8996_A8")
++            clock = Clock()
++            popen_calls = []
++
++            def fake_popen(argv, **kwargs):
++                popen_calls.append(list(map(str, argv)))
++                return FakeProcess(argv)
++
++            result = RUNNER.boot(
++                phase="frequency", attempt_id="r37-frequency-01",
++                package=contract.parent, contract_path=contract, local=local,
++                boot_guard=guard, target_path=target, fastboot=fastboot,
++                artifacts_root=root,
++                usb_python=usb_python, usb_source=receiver,
++                usb_source_sha=receiver_sha, command_invoke=fake,
++                popen=fake_popen)
++            self.assertTrue(result["command_accepted"])
++            self.assertEqual(len(fake.calls), 6)
++            self.assertEqual(fake.calls[-1][1:3], ("-s", "mock123"))
++            self.assertEqual(fake.calls[-1][3], "boot")
++            self.assertTrue(guard.is_file())
++            self.assertTrue((local / "capture-host.py").is_file())
++            self.assertEqual(json.loads((local / "usb-process.json").read_text())["device_commands_sent"], False)
++            self.assertEqual(
++                popen_calls[0][popen_calls[0].index("--duration") + 1],
++                str(RUNNER.USB_CAPTURE_SECONDS),
++            )
++            with self.assertRaises(RUNNER.RunnerError):
++                RUNNER.boot(
++                    phase="frequency", attempt_id="r37-frequency-01",
++                    package=contract.parent, contract_path=contract, local=local,
++                    boot_guard=guard, target_path=target, fastboot=fastboot,
++                    artifacts_root=root,
++                    usb_python=usb_python, usb_source=receiver,
++                    usb_source_sha=receiver_sha, command_invoke=fake,
++                    popen=fake_popen)
++
++    def test_return_is_one_shot_and_issues_only_two_queries(self):
++        with tempfile.TemporaryDirectory(prefix="r37-ram-return-") as name:
++            root = Path(name)
++            self.make_fixture(root)
++            target = root / "target.json"
++            target.write_text(json.dumps({"serial": "mock123", "product": "MSM8996_A8"}) + "\n",
++                              encoding="utf-8")
++            fastboot = root / "fastboot.exe"
++            fastboot.write_bytes(b"mock")
++            local = root / "run"
++            local.mkdir()
++            accepted = (datetime.now().astimezone() - timedelta(seconds=300)).isoformat()
++            (local / "result.json").write_text(json.dumps({
++                "command_accepted": True, "accepted_at": accepted,
++                "attempt_id": "r37-frequency-01", "phase": "frequency",
++                "package": str(root / "phase4-r37-ram-frequency-01"),
++                "candidate": "R37-frequency-01", "profile": "r37-frequency",
++                "image_sha256": hashlib.sha256(b"RAM-MEASURE-FIXTURE").hexdigest(),
++            }) + "\n", encoding="utf-8")
++            history = []
++            for phase, argv in [
++                ("preflight", [str(fastboot), "devices"]),
++                ("preflight", [str(fastboot), "-s", "mock123", "getvar", "product"]),
++                ("preflight", [str(fastboot), "-s", "mock123", "oem", "device-info"]),
++                ("preflight", [str(fastboot), "-s", "mock123", "getvar", "battery-soc-ok"]),
++                ("preflight", [str(fastboot), "-s", "mock123", "getvar", "max-download-size"]),
++                ("boot", [str(fastboot), "-s", "mock123", "boot", "ram-measure.img"]),
++            ]:
++                history.append({"phase": phase, "argv": argv, "retry": False,
++                                "launched": True, "returncode": 0,
++                                "stdout": "Booting OKAY\n" if phase == "boot" else "",
++                                "stderr": ""})
++            (local / "commands.json").write_text(json.dumps(history) + "\n", encoding="utf-8")
++            guard = local / "return-verification-intent.json"
++            fake = FakeFastboot("mock123", "MSM8996_A8")
++            result = RUNNER.verify_return(
++                phase="frequency", attempt_id="r37-frequency-01",
++                local=local, return_guard=guard, target_path=target,
++                fastboot=fastboot, artifacts_root=root, command_invoke=fake)
++            self.assertTrue(result["passed"])
++            self.assertEqual(result["devices_query_count"], 1)
++            self.assertEqual(result["product_query_count"], 1)
++            self.assertEqual(len(fake.calls), 2)
++            self.assertTrue(result["capture_stop_requested"])
++            self.assertTrue((local / "stop-usb").is_file())
++            commands = json.loads((local / "commands.json").read_text(encoding="utf-8"))
++            self.assertEqual(len(commands), 8)
++            self.assertEqual([row["phase"] for row in commands[-2:]],
++                             ["post_run_verify", "post_run_verify"])
++            with self.assertRaises(RUNNER.RunnerError):
++                RUNNER.verify_return(
++                    phase="frequency", attempt_id="r37-frequency-01",
++                    local=local, return_guard=guard, target_path=target,
++                    fastboot=fastboot, command_invoke=fake)
++
++    def test_return_without_history_fails_closed_without_queries(self):
++        with tempfile.TemporaryDirectory(prefix="r37-ram-return-history-") as name:
++            root = Path(name)
++            self.make_fixture(root)
++            target = root / "target.json"
++            target.write_text(json.dumps({"serial": "mock123", "product": "MSM8996_A8"}) + "\n",
++                              encoding="utf-8")
++            fastboot = root / "fastboot.exe"
++            fastboot.write_bytes(b"mock")
++            local = root / "run"
++            local.mkdir()
++            accepted = (datetime.now().astimezone() - timedelta(seconds=300)).isoformat()
++            (local / "result.json").write_text(json.dumps({
++                "command_accepted": True, "accepted_at": accepted,
++                "attempt_id": "r37-frequency-01", "phase": "frequency",
++                "package": str(root / "phase4-r37-ram-frequency-01"),
++                "candidate": "R37-frequency-01", "profile": "r37-frequency",
++                "image_sha256": hashlib.sha256(b"RAM-MEASURE-FIXTURE").hexdigest(),
++            }) + "\n", encoding="utf-8")
++            guard = local / "return-verification-intent.json"
++            fake = FakeFastboot("mock123", "MSM8996_A8")
++
++            result = RUNNER.verify_return(
++                phase="frequency", attempt_id="r37-frequency-01",
++                local=local, return_guard=guard, target_path=target,
++                fastboot=fastboot, artifacts_root=root, command_invoke=fake)
++
++            self.assertFalse(result["passed"])
++            self.assertIn("command history", result["failure"])
++            self.assertEqual(fake.calls, [])
++            self.assertTrue(guard.is_file())
++            self.assertTrue((local / "stop-usb").is_file())
++
++    def test_return_skips_product_query_when_serial_is_not_present(self):
++        with tempfile.TemporaryDirectory(prefix="r37-ram-return-mismatch-") as name:
++            root = Path(name)
++            self.make_fixture(root)
++            target = root / "target.json"
++            target.write_text(json.dumps({"serial": "mock123", "product": "MSM8996_A8"}) + "\n",
++                              encoding="utf-8")
++            fastboot = root / "fastboot.exe"
++            fastboot.write_bytes(b"mock")
++            local = root / "run"
++            local.mkdir()
++            accepted = (datetime.now().astimezone() - timedelta(seconds=300)).isoformat()
++            (local / "result.json").write_text(json.dumps({
++                "command_accepted": True, "accepted_at": accepted,
++                "attempt_id": "r37-frequency-01", "phase": "frequency",
++                "package": str(root / "phase4-r37-ram-frequency-01"),
++                "candidate": "R37-frequency-01", "profile": "r37-frequency",
++                "image_sha256": hashlib.sha256(b"RAM-MEASURE-FIXTURE").hexdigest(),
++            }) + "\n", encoding="utf-8")
++            history = [{"phase": phase, "argv": [], "retry": False,
++                        "launched": True, "returncode": 0,
++                        "stdout": "Booting OKAY\n" if phase == "boot" else "",
++                        "stderr": ""}
++                       for phase in ["preflight"] * 5 + ["boot"]]
++            (local / "commands.json").write_text(json.dumps(history) + "\n", encoding="utf-8")
++            guard = local / "return-verification-intent.json"
++            fake = FakeFastboot("other-device", "MSM8996_A8")
++
++            result = RUNNER.verify_return(
++                phase="frequency", attempt_id="r37-frequency-01",
++                local=local, return_guard=guard, target_path=target,
++                fastboot=fastboot, artifacts_root=root, command_invoke=fake)
++
++            self.assertFalse(result["passed"])
++            self.assertEqual(result["devices_query_count"], 1)
++            self.assertEqual(result["product_query_count"], 0)
++            self.assertEqual(len(fake.calls), 1)
++            self.assertEqual(len(json.loads((local / "commands.json").read_text())), 7)
++
++    def test_manifest_rejects_physical_ufs_and_wrong_args(self):
++        with tempfile.TemporaryDirectory(prefix="r37-ram-admission-") as name:
++            root = Path(name)
++            contract, receiver, receiver_sha, fastboot, usb_python, target = self.make_fixture(Path(name))
++            value = json.loads(contract.read_text(encoding="utf-8"))
++            value["physical_ufs_provider_absent"] = False
++            contract.write_text(json.dumps(value) + "\n", encoding="utf-8")
++            with self.assertRaises(RUNNER.RunnerError):
++                RUNNER.validate_package(contract.parent, contract,
++                                        phase="frequency", attempt_id="r37-frequency-01")
++
++    def test_manifest_rejects_combined_frequency_and_timer_diagnostics(self):
++        with tempfile.TemporaryDirectory(prefix="r37-ram-runner-phases-") as name:
++            root = Path(name)
++            contract, receiver, receiver_sha, fastboot, usb_python, target = self.make_fixture(root)
++            value = json.loads(contract.read_text(encoding="utf-8"))
++            value["cmdline"] += " timer_migrate_diag=1"
++            contract.write_text(json.dumps(value) + "\n", encoding="utf-8")
++            with self.assertRaisesRegex(RUNNER.RunnerError, "must omit timer_migrate_diag"):
++                RUNNER.validate_package(contract.parent, contract,
++                                        phase="frequency", attempt_id="r37-frequency-01")
++            timer_contract, *_ = self.make_fixture(root, phase="timer")
++            self.assertEqual(
++                RUNNER.validate_package(timer_contract.parent, timer_contract,
++                                        phase="timer", attempt_id="r37-timer-01")[
++                    "profile"],
++                "r37-timer",
++            )
++
++    def test_attempt_id_is_phase_scoped_and_reused_directory_is_rejected(self):
++        with tempfile.TemporaryDirectory(prefix="r37-ram-attempt-") as name:
++            root = Path(name)
++            with self.assertRaises(RUNNER.RunnerError):
++                RUNNER.attempt_paths("r37-ram-measure", "frequency", root)
++            local, boot_guard, return_guard = RUNNER.attempt_paths(
++                "r37-frequency-01", "frequency", root)
++            self.assertEqual(local, root / "r37-frequency-01")
++            self.assertEqual(boot_guard, local / "boot-intent.json")
++            self.assertEqual(return_guard, local / "return-verification-intent.json")
++            local.mkdir(parents=True)
++            contract, receiver, receiver_sha, fastboot, usb_python, target = self.make_fixture(root)
++            with self.assertRaises(RUNNER.RunnerError):
++                RUNNER.boot(
++                    package=contract.parent, contract_path=contract,
++                    phase="frequency", attempt_id="r37-frequency-01",
++                    attempts_root=root, fastboot=fastboot, target_path=target,
++                    usb_python=usb_python, usb_source=receiver,
++                    usb_source_sha=receiver_sha, popen=lambda *args, **kwargs: None)
++
++
++if __name__ == "__main__":
++    unittest.main(verbosity=2)
+--- /dev/null
++++ b/reports/local/run-cpu-r37-ram-measure.py
+@@ -0,0 +1,568 @@
++#!/usr/bin/env python3
++"""Run one R37 RAM SMP frequency/timer measurement package.
++
++The module is host-only until invoked with --boot or --verify-return.  It
++never flashes, erases, accesses partitions, uses ADB, or boots Android or
++Recovery.  The package manifest must prove that its loader and Mu have no
++physical UFS provider before any device command is allowed.
++"""
++
++from __future__ import annotations
++
++import argparse
++from datetime import datetime, timedelta
++import hashlib
++import json
++from pathlib import Path
++import re
++import shutil
++import subprocess
++import sys
++import time
++from typing import Callable, Sequence
++
++
++ROOT = Path(__file__).resolve().parents[2]
++ARTIFACTS_ROOT = ROOT / "artifacts/hakios/lithium-ios16"
++ATTEMPTS_ROOT = ROOT / "reports/local/r37-attempts"
++DEFAULT_PHASE = "frequency"
++DEFAULT_ATTEMPT_ID = "r37-frequency-03"
++TARGET = ROOT / "reports/local/hakios-device-target.json"
++FASTBOOT = Path(r"C:\platform-tools\fastboot.exe")
++USB_PYTHON = Path(r"E:\IOS-MIX1-artifacts\host-usb-venv\Scripts\python.exe")
++USB_SOURCE = ROOT / "scripts/capture-hakios-usb.py"
++USB_SOURCE_SHA256 = "d5a9aecdd3c5ac728b233628d9ae810a598a35ba05d9068d0db3ed70fde3791c"
++
++EXPECTED_ARGS = {
++    "ufs": "0",
++    "bootcpu": "1",
++    "cpus": "3",
++    "ram_smp_return": "1",
++    "loader_return_after": "180",
++    "return_fastboot": "1",
++    "return_fastboot_delay": "10",
++}
++RETURN_MIN_SECONDS = 240
++RETURN_MAX_SECONDS = 900
++USB_WAIT_SECONDS = 180
++# The receiver's duration starts after log-device enumeration. Cover the
++# latest return window, both return-query timeouts, and a scheduling margin if
++# verification is delayed until the deadline. Accepted runs stop it only after
++# the one-shot return verifier completes; this is the hard upper bound.
++USB_CAPTURE_MARGIN_SECONDS = 90 + 2 * 20 + 60
++USB_CAPTURE_SECONDS = RETURN_MAX_SECONDS + USB_CAPTURE_MARGIN_SECONDS
++
++
++class RunnerError(RuntimeError):
++    pass
++
++
++def now() -> str:
++    return datetime.now().astimezone().isoformat()
++
++
++def sha256(path: Path) -> str:
++    digest = hashlib.sha256()
++    with path.open("rb") as stream:
++        for block in iter(lambda: stream.read(1024 * 1024), b""):
++            digest.update(block)
++    return digest.hexdigest()
++
++
++def load_json(path: Path):
++    with path.open(encoding="utf-8") as stream:
++        return json.load(stream)
++
++
++def save_json(path: Path, value) -> None:
++    path.parent.mkdir(parents=True, exist_ok=True)
++    temporary = path.with_name(path.name + ".tmp")
++    temporary.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n",
++                         encoding="utf-8")
++    temporary.replace(path)
++
++
++def require(condition: bool, message: str) -> None:
++    if not condition:
++        raise RunnerError(message)
++
++
++def validate_attempt_id(attempt_id: str, phase: str) -> None:
++    require(phase in {"frequency", "timer"}, "phase must be frequency or timer")
++    require(re.fullmatch(r"r37-(frequency|timer)-[0-9]{2,}", attempt_id) is not None,
++            "attempt id must be phase-scoped, e.g. r37-frequency-01")
++    require(attempt_id.startswith(f"r37-{phase}-"),
++            "attempt id phase does not match the selected diagnostic phase")
++
++
++def attempt_suffix(attempt_id: str, phase: str) -> str:
++    validate_attempt_id(attempt_id, phase)
++    return attempt_id.rsplit("-", 1)[1]
++
++
++def attempt_paths(attempt_id: str, phase: str,
++                  attempts_root: Path = ATTEMPTS_ROOT) -> tuple[Path, Path, Path]:
++    validate_attempt_id(attempt_id, phase)
++    local = attempts_root / attempt_id
++    return local, local / "boot-intent.json", local / "return-verification-intent.json"
++
++
++def package_for_attempt(attempt_id: str, phase: str,
++                       artifacts_root: Path = ARTIFACTS_ROOT) -> Path:
++    suffix = attempt_suffix(attempt_id, phase)
++    return artifacts_root / f"phase4-r37-ram-{phase}-{suffix}"
++
++
++def resolve_package(phase: str, attempt_id: str, package: Path | None,
++                    contract_path: Path | None,
++                    artifacts_root: Path = ARTIFACTS_ROOT) -> tuple[Path, Path]:
++    expected = package_for_attempt(attempt_id, phase, artifacts_root)
++    selected = expected if package is None else package
++    require(selected.name == expected.name,
++            f"package must be the phase-scoped package {expected.name}")
++    selected_contract = selected / "contract.json" if contract_path is None else contract_path
++    require(selected_contract.name == "contract.json" and
++            selected_contract.parent == selected,
++            "contract must be the selected package's contract.json")
++    return selected, selected_contract
++
++
++def unique_arg(tokens: list[str], name: str) -> str:
++    values = [token.split("=", 1)[1] for token in tokens
++              if token.startswith(name + "=")]
++    require(len(values) == 1, f"boot arguments must contain one {name}= token")
++    return values[0]
++
++
++def validate_no_physical_ufs_proof(contract: dict) -> None:
++    """Require the explicit RAM loader/Mu proof used by prior RAM packages."""
++    required = (
++        "physical_ufs_provider_absent",
++        "ufs_bridge_disabled",
++        "root_data_storage_arguments_absent",
++        "persistent_log_disabled",
++    )
++    missing = [name for name in required if contract.get(name) is not True]
++    require(not missing,
++            "manifest lacks explicit no-physical-UFS loader/Mu proof: " +
++            ", ".join(missing))
++    require(contract.get("normal_boot_may_write_userdata") is False,
++            "RAM package must declare that normal boot does not write userdata")
++    require(contract.get("partition_operations") is False,
++            "RAM package must declare partition operations disabled")
++
++
++def validate_package(package: Path, contract_path: Path, phase: str,
++                     attempt_id: str) -> dict:
++    require(phase in {"frequency", "timer"}, "phase must be frequency or timer")
++    validate_attempt_id(attempt_id, phase)
++    require(contract_path.is_file(), "R37 RAM measurement contract is missing")
++    contract = load_json(contract_path)
++    require(contract.get("passed") is True, "RAM measurement package did not pass")
++    require(contract.get("profile") == f"r37-{phase}",
++            f"manifest profile must be r37-{phase}")
++    require(contract.get("candidate") == f"R37-{phase}-{attempt_suffix(attempt_id, phase)}",
++            "manifest candidate does not match the unique phase-scoped attempt")
++    require(contract.get("ram_smp_return") is True,
++            "manifest does not explicitly enable ram_smp_return")
++    require(contract.get("return_fastboot") is True,
++            "manifest does not explicitly enable return_fastboot")
++    validate_no_physical_ufs_proof(contract)
++
++    args = contract.get("cmdline")
++    require(isinstance(args, str) and args.strip(), "manifest boot arguments are missing")
++    tokens = args.split()
++    for name, expected in EXPECTED_ARGS.items():
++        require(unique_arg(tokens, name) == expected,
++                f"boot argument {name} must equal {expected}")
++    required_diag = "cpu_freq_diag" if phase == "frequency" else "timer_migrate_diag"
++    excluded_diag = "timer_migrate_diag" if phase == "frequency" else "cpu_freq_diag"
++    require(unique_arg(tokens, required_diag) == "1",
++            f"{phase} contract requires {required_diag}=1")
++    require(not any(token.startswith(excluded_diag + "=") for token in tokens),
++            f"{phase} package must omit {excluded_diag}; diagnostics run separately")
++
++    image_info = contract.get("image")
++    require(isinstance(image_info, dict), "manifest image metadata is missing")
++    image_name = image_info.get("path")
++    require(isinstance(image_name, str) and image_name == Path(image_name).name,
++            "manifest image path must be package-local")
++    image = package / image_name
++    require(image.is_file(), "RAM measurement image is missing")
++    image_sha = image_info.get("sha256")
++    image_bytes = image_info.get("bytes")
++    require(isinstance(image_sha, str) and re.fullmatch(r"[0-9a-f]{64}", image_sha) is not None,
++            "manifest image SHA256 is invalid")
++    require(isinstance(image_bytes, int) and image_bytes > 0,
++            "manifest image size is invalid")
++    require(sha256(image) == image_sha and image.stat().st_size == image_bytes,
++            "RAM measurement image SHA256 or size differs from manifest")
++
++    components = contract.get("components")
++    require(isinstance(components, dict) and components,
++            "manifest component SHA256 map is missing")
++    for name, entry in components.items():
++        require(isinstance(name, str) and name == Path(name).name,
++                f"component path is not package-local: {name!r}")
++        component = package / name
++        require(component.is_file(), f"manifest component is missing: {name}")
++        expected = entry.get("sha256") if isinstance(entry, dict) else None
++        require(isinstance(expected, str) and re.fullmatch(r"[0-9a-f]{64}", expected) is not None,
++                f"component SHA256 is invalid: {name}")
++        require(sha256(component) == expected,
++                f"component SHA256 differs: {name}")
++
++    return {"contract": contract, "image": image, "image_sha256": image_sha,
++            "image_bytes": image_bytes, "cmdline": args,
++            "component_count": len(components), "profile": contract["profile"],
++            "candidate": contract["candidate"]}
++
++
++def validate_fastboot_command(argv: Sequence[str], fastboot: Path = FASTBOOT) -> None:
++    """Keep all device commands within the R34-style read/temporary-boot set."""
++    values = tuple(str(value) for value in argv)
++    require(values and Path(values[0]).resolve() == fastboot.resolve(),
++            "unexpected executable in device command")
++    tail = values[1:]
++    if tail == ("devices",):
++        return
++    if len(tail) == 4 and tail[0] == "-s" and tail[2] == "getvar" and \
++            tail[3] in {"product", "battery-soc-ok", "max-download-size"}:
++        return
++    if len(tail) == 4 and tail[0] == "-s" and tail[2:] == ("oem", "device-info"):
++        return
++    if len(tail) == 4 and tail[0] == "-s" and tail[2] == "boot":
++        return
++    raise RunnerError("Fastboot command is outside the runner allowlist")
++
++
++class CommandLog:
++    def __init__(self, path: Path, fastboot: Path = FASTBOOT,
++                 invoke: Callable = subprocess.run, *, require_existing: bool = False):
++        self.path = path
++        self.fastboot = fastboot
++        self.invoke = invoke
++        if path.exists():
++            rows = load_json(path)
++            require(isinstance(rows, list) and all(isinstance(row, dict) for row in rows),
++                    "device command history is malformed")
++            self.rows = rows
++        else:
++            require(not require_existing, "device command history is missing; no return query")
++            self.rows: list[dict] = []
++
++    def call(self, argv: Sequence[str], *, phase: str, timeout: int = 20):
++        validate_fastboot_command(argv, self.fastboot)
++        row = {"started_at": now(), "phase": phase,
++               "argv": list(map(str, argv)), "retry": False}
++        self.rows.append(row)
++        save_json(self.path, self.rows)
++        try:
++            result = self.invoke(list(map(str, argv)), capture_output=True, text=True,
++                                 encoding="utf-8", errors="replace", timeout=timeout)
++            row.update(returncode=result.returncode, stdout=result.stdout or "",
++                       stderr=result.stderr or "", launched=True)
++        except Exception as error:
++            row.update(returncode=None, stdout="", stderr="",
++                       exception=str(error), launched=False)
++            save_json(self.path, self.rows)
++            raise RunnerError(f"device command failed without retry: {error}") from error
++        row["finished_at"] = now()
++        save_json(self.path, self.rows)
++        return result
++
++
++def output(result) -> str:
++    return (result.stdout or "") + (result.stderr or "")
++
++
++def getvar(commands: CommandLog, serial: str, key: str, phase: str) -> str:
++    result = commands.call([commands.fastboot, "-s", serial, "getvar", key],
++                           phase=phase)
++    require(result.returncode == 0, f"getvar {key} failed")
++    match = re.search(re.escape(key) + r":\s*([^\r\n]+)", output(result), re.IGNORECASE)
++    require(match is not None, f"getvar {key} returned no value")
++    return match.group(1).strip()
++
++
++def preflight(commands: CommandLog, target: dict, image_bytes: int) -> dict:
++    serial = target["serial"]
++    result = commands.call([commands.fastboot, "devices"], phase="preflight")
++    require(result.returncode == 0, "fastboot devices failed")
++    rows = [line.split() for line in output(result).splitlines() if line.strip()]
++    require(rows == [[serial, "fastboot"]], "configured Fastboot target is not the sole device")
++    require(getvar(commands, serial, "product", "preflight") == target["product"],
++            "Fastboot product mismatch")
++    unlocked = commands.call([commands.fastboot, "-s", serial, "oem", "device-info"],
++                             phase="preflight")
++    require(unlocked.returncode == 0 and
++            re.search(r"Device unlocked:\s*true", output(unlocked), re.IGNORECASE),
++            "bootloader is not confirmed unlocked")
++    require(getvar(commands, serial, "battery-soc-ok", "preflight").lower() == "yes",
++            "battery-soc-ok is not yes")
++    download = getvar(commands, serial, "max-download-size", "preflight")
++    require(re.fullmatch(r"(?:0[xX])?[0-9a-fA-F]+", download) is not None,
++            "max-download-size is malformed")
++    require(int(download, 16) >= image_bytes, "Fastboot download window is too small")
++    return {"passed": True, "finished_at": now(), "device_commands": 5,
++            "retry": False}
++
++
++def start_capture(run_dir: Path, image_name: str, usb_python: Path,
++                  usb_source: Path, usb_source_sha: str, popen: Callable,
++                  *, duration: int = USB_CAPTURE_SECONDS):
++    require(usb_python.is_file(), "USB capture Python environment is missing")
++    require(sha256(usb_source) == usb_source_sha, "USB receiver source SHA256 differs")
++    receiver = run_dir / "capture-host.py"
++    shutil.copyfile(usb_source, receiver)
++    require(sha256(receiver) == usb_source_sha, "private USB receiver copy differs")
++    with (run_dir / "usb-host.txt").open("x", encoding="utf-8") as host_log:
++        process = popen(
++            [str(usb_python), "-B", "-u", str(receiver),
++             "--output", str(run_dir / "console.log"),
++             "--status", str(run_dir / "usb-status.json"),
++             "--wait", str(USB_WAIT_SECONDS), "--duration", str(duration),
++             "--stop-file", str(run_dir / "stop-usb")],
++            stdout=host_log, stderr=subprocess.STDOUT,
++            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
++    save_json(run_dir / "usb-process.json", {
++        "pid": process.pid, "started_at": now(),
++        "receiver_sha256": usb_source_sha, "duration_seconds": duration,
++        "device_commands_sent": False})
++    status = run_dir / "usb-status.json"
++    deadline = time.monotonic() + 30
++    while time.monotonic() < deadline:
++        if status.is_file() or process.poll() is not None:
++            break
++        time.sleep(0.1)
++    require(status.is_file() and process.poll() is None,
++            "USB capture did not initialize; no boot issued")
++    return process
++
++
++def stop_capture(run_dir: Path, process) -> None:
++    if process is None or process.poll() is not None:
++        return
++    (run_dir / "stop-usb").touch()
++    try:
++        process.wait(timeout=10)
++    except subprocess.TimeoutExpired:
++        process.terminate()
++        process.wait(timeout=10)
++
++
++def validate_boot_history(rows: list[dict]) -> None:
++    """Require the complete successful preflight and one accepted boot record."""
++    require(len(rows) == 6, "device command history is incomplete; no return query")
++    require(sum(row.get("phase") == "preflight" for row in rows) == 5 and
++            sum(row.get("phase") == "boot" for row in rows) == 1,
++            "device command history lacks the five preflight rows and one boot row")
++    require(all(row.get("launched") is True and row.get("returncode") == 0 and
++                row.get("retry") is False for row in rows),
++            "device command history contains an incomplete or failed command")
++    boot_rows = [row for row in rows if row.get("phase") == "boot"]
++    require(re.search(r"Booting\s+OKAY", boot_rows[0].get("stdout", "") +
++                      boot_rows[0].get("stderr", ""), re.IGNORECASE) is not None,
++            "device command history does not prove the accepted temporary boot")
++
++
++def boot(*, package: Path | None = None, contract_path: Path | None = None,
++         phase: str = DEFAULT_PHASE, attempt_id: str = DEFAULT_ATTEMPT_ID,
++         local: Path | None = None, boot_guard: Path | None = None,
++         attempts_root: Path = ATTEMPTS_ROOT,
++         artifacts_root: Path = ARTIFACTS_ROOT,
++         target_path: Path = TARGET, fastboot: Path = FASTBOOT,
++         usb_python: Path = USB_PYTHON, usb_source: Path = USB_SOURCE,
++         usb_source_sha: str = USB_SOURCE_SHA256,
++         command_invoke: Callable = subprocess.run,
++         popen: Callable = subprocess.Popen) -> dict:
++    validate_attempt_id(attempt_id, phase)
++    default_local, default_boot_guard, _ = attempt_paths(attempt_id, phase, attempts_root)
++    local = local or default_local
++    boot_guard = boot_guard or (local / "boot-intent.json" if local != default_local
++                                else default_boot_guard)
++    package, contract_path = resolve_package(phase, attempt_id, package,
++                                             contract_path, artifacts_root)
++    admission = validate_package(package, contract_path, phase, attempt_id)
++    readback = admission["contract"].get("readback", {})
++    require(readback.get("shim_copy_length") is True and
++            readback.get("modeled_relocation_exact") is True and
++            readback.get("smp_pid1_hold") is True and
++            readback.get("seeded_uefi_owner") is True,
++            "new boot requires complete BootShim relocation and SMP PID1 hold readback")
++    require(fastboot.is_file(), "Fastboot executable is missing")
++    require(target_path.is_file(), "device target record is missing")
++    target = load_json(target_path)
++    require(isinstance(target.get("serial"), str) and target["serial"],
++            "device serial is missing")
++    require(isinstance(target.get("product"), str) and target["product"],
++            "device product is missing")
++    require(not boot_guard.exists(), "RAM measurement boot guard already exists; no retry")
++    require(not local.exists(), "RAM measurement run directory already exists; no retry")
++    local.mkdir(parents=True, exist_ok=False)
++    with boot_guard.open("x", encoding="utf-8") as stream:
++        json.dump({"attempt_id": attempt_id, "phase": phase,
++                   "started_at": now(), "accepted": False, "retry": False,
++                   "image_sha256": admission["image_sha256"]}, stream, indent=2)
++
++    commands = CommandLog(local / "commands.json", fastboot, command_invoke)
++    state = {
++        "schema": 1, "revision": "R37-ram-measure", "phase": phase,
++        "attempt_id": attempt_id, "started_at": now(),
++        "package": str(package), "candidate": admission["candidate"],
++        "profile": admission["profile"],
++        "image_sha256": admission["image_sha256"],
++        "image_bytes": admission["image_bytes"], "boot_args": admission["cmdline"],
++        "preflight_passed": False, "boot_attempted": False,
++        "command_accepted": False, "automatic_retry": False,
++        "partition_commands": 0, "flash_commands": 0, "erase_commands": 0,
++        "adb_commands": 0, "android_recovery_boots": 0, "qemu": False,
++    }
++    save_json(local / "authorization.json", state)
++    save_json(local / "result.json", state)
++    process = None
++    try:
++        state["preflight"] = preflight(commands, target, admission["image_bytes"])
++        state["preflight_passed"] = True
++        private = local / admission["image"].name
++        shutil.copyfile(admission["image"], private)
++        require(sha256(private) == admission["image_sha256"] and
++                private.stat().st_size == admission["image_bytes"],
++                "private image copy differs")
++        state["private_image"] = str(private)
++        save_json(local / "result.json", state)
++
++        # USB capture is live before the one and only boot command.
++        process = start_capture(local, private.name, usb_python, usb_source,
++                                usb_source_sha, popen)
++        state["usb_capture_started_at"] = now()
++        state["boot_attempted"] = True
++        save_json(local / "result.json", state)
++        result = commands.call([fastboot, "-s", target["serial"], "boot", private],
++                               phase="boot", timeout=90)
++        state["boot_output"] = output(result)
++        state["boot_returncode"] = result.returncode
++        accepted = result.returncode == 0 and re.search(
++            r"Booting\s+OKAY", output(result), re.IGNORECASE) is not None
++        require(accepted, "temporary boot was not accepted; no retry")
++        accepted_at = now()
++        state.update(command_accepted=True, accepted_at=accepted_at,
++                     outcome="boot_accepted_observation_pending")
++        save_json(local / "result.json", state)
++        guard = load_json(boot_guard)
++        guard.update(accepted=True, accepted_at=accepted_at)
++        save_json(boot_guard, guard)
++        print("R37 RAM measurement image accepted once; USB capture is running.")
++        return state
++    except Exception as error:
++        state.update(outcome="stopped_no_retry", failure=str(error), stopped_at=now())
++        save_json(local / "result.json", state)
++        if process is not None:
++            stop_capture(local, process)
++        raise
++
++
++def verify_return(*, phase: str = DEFAULT_PHASE, attempt_id: str = DEFAULT_ATTEMPT_ID,
++                  local: Path | None = None, return_guard: Path | None = None,
++                  attempts_root: Path = ATTEMPTS_ROOT,
++                  artifacts_root: Path = ARTIFACTS_ROOT,
++                  target_path: Path = TARGET, fastboot: Path = FASTBOOT,
++                  command_invoke: Callable = subprocess.run) -> dict:
++    validate_attempt_id(attempt_id, phase)
++    default_local, _, default_return_guard = attempt_paths(attempt_id, phase, attempts_root)
++    local = local or default_local
++    return_guard = return_guard or (local / "return-verification-intent.json"
++                                    if local != default_local else default_return_guard)
++    require(local.is_dir(), "RAM measurement run directory is missing")
++    require(not return_guard.exists(), "return verification guard already exists; no retry")
++    state = load_json(local / "result.json")
++    require(state.get("command_accepted") is True, "accepted RAM boot is required")
++    require(state.get("attempt_id") == attempt_id and state.get("phase") == phase,
++            "run result does not belong to this phase-scoped attempt")
++    accepted_at = datetime.fromisoformat(state["accepted_at"])
++    elapsed = (datetime.now().astimezone() - accepted_at).total_seconds()
++    require(RETURN_MIN_SECONDS <= elapsed <= RETURN_MAX_SECONDS,
++            "return verification is outside the one-shot 240..900 second window")
++    require(fastboot.is_file(), "Fastboot executable is missing")
++    target = load_json(target_path)
++    require(isinstance(target.get("serial"), str) and target["serial"] and
++            isinstance(target.get("product"), str) and target["product"],
++            "Fastboot target identity is incomplete; no return query")
++    with return_guard.open("x", encoding="utf-8") as stream:
++        json.dump({"started_at": now(), "elapsed_seconds": elapsed,
++                   "retry": False}, stream, indent=2)
++    serial = target["serial"]
++    result = {"started_at": now(), "elapsed_seconds": elapsed,
++              "devices_query_count": 0, "product_query_count": 0,
++              "device_rows": [], "same_serial_fastboot": False,
++              "observed_product": None, "product_verified": False,
++              "passed": False, "retry": False,
++              "attempt_id": attempt_id, "phase": phase}
++    try:
++        package, contract_path = resolve_package(phase, attempt_id, None, None,
++                                                 artifacts_root)
++        admission = validate_package(package, contract_path, phase, attempt_id)
++        require(state.get("package") == str(package) and
++                state.get("candidate") == admission["candidate"] and
++                state.get("profile") == admission["profile"] and
++                state.get("image_sha256") == admission["image_sha256"],
++                "selected package differs from the accepted phase-scoped attempt")
++        commands = CommandLog(local / "commands.json", fastboot, command_invoke,
++                              require_existing=True)
++        validate_boot_history(commands.rows)
++        result["devices_query_count"] = 1
++        devices = commands.call([fastboot, "devices"], phase="post_run_verify")
++        rows = [line.split() for line in output(devices).splitlines() if line.strip()]
++        devices_ok = devices.returncode == 0 and rows == [[serial, "fastboot"]]
++        result.update(device_rows=rows, same_serial_fastboot=devices_ok)
++        if not devices_ok:
++            result["failure"] = "expected sole Fastboot target not found; product query skipped"
++        else:
++            result["product_query_count"] = 1
++            product = commands.call([fastboot, "-s", serial, "getvar", "product"],
++                                    phase="post_run_verify")
++            match = re.search(r"product:\s*([^\r\n]+)", output(product), re.IGNORECASE)
++            observed = match.group(1).strip() if match else None
++            product_ok = product.returncode == 0 and observed == target["product"]
++            result.update(observed_product=observed, product_verified=product_ok,
++                          passed=product_ok)
++            if not product_ok:
++                result["failure"] = "Fastboot product did not match the configured target"
++    except Exception as error:
++        result["failure"] = str(error)
++    finally:
++        try:
++            (local / "stop-usb").touch(exist_ok=True)
++            result["capture_stop_requested"] = True
++        except Exception as error:
++            result["capture_stop_requested"] = False
++            result["capture_stop_error"] = str(error)
++        result["finished_at"] = now()
++        save_json(local / "return-verification.json", result)
++    print(json.dumps(result, ensure_ascii=False, indent=2))
++    return result
++
++
++def main(argv: Sequence[str] | None = None) -> int:
++    parser = argparse.ArgumentParser(description=__doc__)
++    actions = parser.add_mutually_exclusive_group(required=True)
++    actions.add_argument("--boot", action="store_true")
++    actions.add_argument("--verify-return", action="store_true")
++    parser.add_argument("--phase", choices=("frequency", "timer"), default=DEFAULT_PHASE)
++    parser.add_argument("--attempt-id", default=DEFAULT_ATTEMPT_ID)
++    args = parser.parse_args(argv)
++    try:
++        if args.boot:
++            boot(phase=args.phase, attempt_id=args.attempt_id)
++        else:
++            result = verify_return(phase=args.phase, attempt_id=args.attempt_id)
++            if result.get("passed") is not True:
++                return 1
++    except Exception as error:
++        print(f"STOPPED WITHOUT RETRY: {error}", file=sys.stderr)
++        return 1
++    return 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())

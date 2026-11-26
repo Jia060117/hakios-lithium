@@ -1,0 +1,302 @@
+{
+  "schema": 1,
+  "revision": "R38-thermal01",
+  "attempt": {
+    "schema": 1,
+    "revision": "R37-ram-measure",
+    "phase": "frequency",
+    "attempt_id": "r37-frequency-15",
+    "started_at": "2026-11-21T14:16:14.987045+08:00",
+    "package": "F:\\IOS-MIX1\\artifacts\\hakios\\lithium-ios16\\phase4-r37-ram-frequency-15",
+    "candidate": "R37-frequency-15",
+    "profile": "r37-frequency",
+    "image_sha256": "50d19aa239ff0b396d2e44acfaec6af8f1db19f050e2d33fe3daa0b3ed8cab39",
+    "image_bytes": 16338944,
+    "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_clock_diag=1 cpu_power_diag=1 cpu_freq_pmu_setup=0 cpu_sanity=1 cpu_spmi_diag=1 cpu_perf_fixed=1 cpu_thermal_diag=1 cpu_freq_diag=1",
+    "preflight_passed": true,
+    "boot_attempted": true,
+    "command_accepted": true,
+    "automatic_retry": false,
+    "partition_commands": 0,
+    "flash_commands": 0,
+    "erase_commands": 0,
+    "adb_commands": 0,
+    "android_recovery_boots": 0,
+    "qemu": false,
+    "preflight": {
+      "passed": true,
+      "finished_at": "2026-11-21T14:16:15.183494+08:00",
+      "device_commands": 5,
+      "retry": false
+    },
+    "private_image": "F:\\IOS-MIX1\\reports\\local\\r37-attempts\\r37-frequency-15\\lithium-hakios-ios16-r37-ram-frequency-15.img",
+    "usb_capture_started_at": "2026-11-21T14:16:15.544419+08:00",
+    "boot_output": "Sending 'boot.img' (15956 KB)                      OKAY [  0.389s]\nBooting                                            OKAY [  0.835s]\nFinished. Total time: 1.230s\n",
+    "boot_returncode": 0,
+    "accepted_at": "2026-11-21T14:16:16.798809+08:00",
+    "outcome": "thermal_observation_passed_fastboot_endpoint_verified_stop_missing_fixed_host",
+    "runtime_report": "reports/hakios-ios16-device-r38-thermal01.md",
+    "boot_counts": {
+      "hakios": 79,
+      "ios16": 48
+    },
+    "thermal_stop_seen": false,
+    "usb_transport_verified": true,
+    "normal_timer_drain": true,
+    "fastboot_endpoint_verified": true,
+    "hardware_keys_confirmed_absent": null
+  },
+  "usb_receiver": {
+    "started_at": "2026-11-21T14:16:15.536401+08:00",
+    "enumerated": true,
+    "frames": 319,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "status": "capture_failed",
+    "output": "F:\\IOS-MIX1\\reports\\local\\r37-attempts\\r37-frequency-15\\console.log",
+    "device_commands_sent": false,
+    "candidate_seen": true,
+    "identity_verified": true,
+    "descriptor_errors": 0,
+    "descriptor_error_samples": [],
+    "configuration_verified": true,
+    "console_bytes": 79137,
+    "failure_stage": "capturing",
+    "failure": "[Errno 32] Pipe error",
+    "finished_at": "2026-11-21T14:19:49.466432+08:00"
+  },
+  "fastboot_return": {
+    "started_at": "2026-11-21T14:20:26.521195+08:00",
+    "elapsed_seconds": 249.721382,
+    "devices_query_count": 1,
+    "product_query_count": 1,
+    "device_rows": [
+      [
+        "54223ce9",
+        "fastboot"
+      ]
+    ],
+    "same_serial_fastboot": true,
+    "observed_product": "MSM8996_A8",
+    "product_verified": true,
+    "passed": true,
+    "retry": false,
+    "attempt_id": "r37-frequency-15",
+    "phase": "frequency",
+    "capture_stop_requested": true,
+    "finished_at": "2026-11-21T14:20:26.658783+08:00"
+  },
+  "temperature": {
+    "before_pll_low": {
+      "0x0": {
+        "n": 1,
+        "min_mC": 56300,
+        "max_mC": 56300
+      },
+      "0x1": {
+        "n": 1,
+        "min_mC": 48300,
+        "max_mC": 48300
+      },
+      "0x100": {
+        "n": 1,
+        "min_mC": 45800,
+        "max_mC": 45800
+      },
+      "0x101": {
+        "n": 1,
+        "min_mC": 46100,
+        "max_mC": 46100
+      }
+    },
+    "after_pll_low": {
+      "0x0": {
+        "n": 1,
+        "min_mC": 56300,
+        "max_mC": 56300
+      },
+      "0x1": {
+        "n": 1,
+        "min_mC": 48600,
+        "max_mC": 48600
+      },
+      "0x100": {
+        "n": 1,
+        "min_mC": 46100,
+        "max_mC": 46100
+      },
+      "0x101": {
+        "n": 1,
+        "min_mC": 46400,
+        "max_mC": 46400
+      }
+    },
+    "start": {
+      "0x0": {
+        "n": 1,
+        "min_mC": 51800,
+        "max_mC": 51800
+      },
+      "0x1": {
+        "n": 1,
+        "min_mC": 51200,
+        "max_mC": 51200
+      },
+      "0x100": {
+        "n": 1,
+        "min_mC": 47400,
+        "max_mC": 47400
+      },
+      "0x101": {
+        "n": 1,
+        "min_mC": 48000,
+        "max_mC": 48000
+      }
+    },
+    "cpu_bench_mid": {
+      "0x0": {
+        "n": 3,
+        "min_mC": 51800,
+        "max_mC": 53100
+      },
+      "0x1": {
+        "n": 3,
+        "min_mC": 48600,
+        "max_mC": 57900
+      },
+      "0x100": {
+        "n": 3,
+        "min_mC": 47400,
+        "max_mC": 50600
+      },
+      "0x101": {
+        "n": 3,
+        "min_mC": 47400,
+        "max_mC": 50900
+      }
+    },
+    "after_cpu_bench": {
+      "0x0": {
+        "n": 1,
+        "min_mC": 51800,
+        "max_mC": 51800
+      },
+      "0x1": {
+        "n": 1,
+        "min_mC": 49000,
+        "max_mC": 49000
+      },
+      "0x100": {
+        "n": 1,
+        "min_mC": 48600,
+        "max_mC": 48600
+      },
+      "0x101": {
+        "n": 1,
+        "min_mC": 50200,
+        "max_mC": 50200
+      }
+    },
+    "periodic": {
+      "0x0": {
+        "n": 35,
+        "min_mC": 50900,
+        "max_mC": 52500
+      },
+      "0x1": {
+        "n": 35,
+        "min_mC": 48000,
+        "max_mC": 49600
+      },
+      "0x100": {
+        "n": 35,
+        "min_mC": 47000,
+        "max_mC": 48600
+      },
+      "0x101": {
+        "n": 35,
+        "min_mC": 47400,
+        "max_mC": 48600
+      }
+    }
+  },
+  "full_temperature_records": 167,
+  "partial_temperature_records": 1,
+  "temperature_calibration_verified": false,
+  "log_audit": {
+    "raw_bytes": 89345,
+    "console_bytes": 79137,
+    "frames": 319,
+    "raw_sha256": "d7b9b28d3ba76bbd170da5c6c543ec62c5e3096d0862fc13b9f54612dc3017da",
+    "console_sha256": "0d9c1fdcaa94b837bd57affb3b80ab2d5cf47c600acf6db868c395a5abddc7f7",
+    "first_offset": 0,
+    "final_offset": 79137,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "incomplete_frame_bytes": 0,
+    "device_lost_max": 0,
+    "frames_reporting_device_loss": 0,
+    "independent_parser_agrees_with_frozen_receiver": true,
+    "frozen_redecode_equals_complete_console": true,
+    "transport_verified": true,
+    "kernel_banner_offset": 0,
+    "timer_offset": 78645,
+    "normal_return_offset": 79021,
+    "drain_success": true,
+    "drain_records": [
+      {
+        "offset": 79088,
+        "drained": 1,
+        "target": 79088
+      }
+    ],
+    "emitted_kernel_stream_through_timer_verified": true,
+    "all_firmware_daemon_and_original_printf_logs_complete": false,
+    "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
+  },
+  "clock_target_model_hz": 307200000,
+  "measured_cpu_mhz": null,
+  "S11_digital_uv": 905000,
+  "S11_valid_stable_reads": 12,
+  "analog_voltage_and_settle_verified": false,
+  "kernel_cpu_count": 3,
+  "bench_affinities": [
+    "0x1",
+    "0x100",
+    "0x101"
+  ],
+  "avg_integer_us": [
+    2448,
+    9795,
+    9807
+  ],
+  "avg_memcpy_MBps": [
+    3510,
+    1960,
+    1946
+  ],
+  "repair": {
+    "package": "artifacts/hakios/lithium-ios16/phase4-r37-ram-frequency-16",
+    "sha256": "cb0c0a22e55dbdfda2f2850757d9de2d6fedd9f623928ecde5d60af13dcbd22e",
+    "kernel_sha256": "62da183fb2afc23a05e6dc966cc770f5e8f93f6df719114e38494e9b80545c45",
+    "linked_return_calls": [
+      [
+        "fffffff00743ab44",
+        "_lithium_cpu_thermal_stop"
+      ],
+      [
+        "fffffff00743ab48",
+        "_hakios_lithium_touch_stop"
+      ],
+      [
+        "fffffff00743ab4c",
+        "_lithium_lsdb_finalize"
+      ]
+    ],
+    "host_verified": true,
+    "device_verified": false
+  },
+  "next_stock_hz": 384000000,
+  "next_stock_tested": false,
+  "fb_threads2_tested": false
+}

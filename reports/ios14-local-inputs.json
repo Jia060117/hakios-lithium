@@ -1,0 +1,86 @@
+{
+  "inspected_at": "2026-11-13T01:09:24.186728+08:00",
+  "ipsw_path": "E:\\i4Tools9\\Firmware\\iPhone_4.7_P3_14.8_18H17_Restore.ipsw",
+  "ipsw_bytes": 5042962813,
+  "device_operations": false,
+  "root_filesystem_extracted": true,
+  "version": "14.8",
+  "build": "18H17",
+  "supported_products": [
+    "iPhone10,4",
+    "iPhone9,1",
+    "iPhone9,3",
+    "iPhone10,1"
+  ],
+  "selected_identity": "iPhone10,1 / D20AP",
+  "selected_chip": "0x8015",
+  "manifest_sha256": "bccabec682b7fbc080cf4e853b125b4f3c38228bef7dfbf6c87c4da6c5bec65e",
+  "components": {
+    "KernelCache": "kernelcache.release.iphone10",
+    "DeviceTree": "Firmware/all_flash/DeviceTree.d20ap.im4p",
+    "OS": "018-62062-016.dmg",
+    "RestoreRamDisk": "018-61747-017.dmg",
+    "StaticTrustCache": "Firmware/018-62062-016.dmg.trustcache"
+  },
+  "extracted": [
+    {
+      "component": "KernelCache",
+      "member": "kernelcache.release.iphone10",
+      "bytes": 14572280,
+      "sha256": "a71bc29bf075321a23ca8fcc702c4d48e46e07cd9e9613ecd81b1e410e08c8b3",
+      "path": "artifacts/research/ios14-local-d20ap/kernelcache.release.iphone10",
+      "zip_crc_verified": true
+    },
+    {
+      "component": "DeviceTree",
+      "member": "Firmware/all_flash/DeviceTree.d20ap.im4p",
+      "bytes": 33645,
+      "sha256": "edcc3f09a1df878b0d062f10b60017616c0b573a4868e40f1d78bdf0b95efa7c",
+      "path": "artifacts/research/ios14-local-d20ap/DeviceTree.d20ap.im4p",
+      "zip_crc_verified": true
+    },
+    {
+      "component": "StaticTrustCache",
+      "member": "Firmware/018-62062-016.dmg.trustcache",
+      "bytes": 48029,
+      "sha256": "38cfec2c89fa5c186aee2c02e143b9ac449cf18f9e925d60a03c4db45c4b7118",
+      "path": "artifacts/research/ios14-local-d20ap/018-62062-016.dmg.trustcache",
+      "zip_crc_verified": true
+    }
+  ],
+  "kernel": {
+    "bytes": 38950720,
+    "sha256": "6b4c84d872c98de2af4a05f3f3750b75733761f058243b82465b8623d0419a4f",
+    "version": "Darwin Kernel Version 20.6.0: Tue Aug 24 21:10:39 PDT 2021; root:xnu-7195.140.44~1/RELEASE_ARM64_T8015",
+    "cpu_type": "0x100000c",
+    "cpu_subtype": "0x0",
+    "prelinked_kext_count": 237,
+    "compression": "lzfse",
+    "adler32_verified": false,
+    "path": "artifacts/research/ios14-local-d20ap/kernelcache.decompressed"
+  },
+  "device_tree": {
+    "bytes": 182472,
+    "parsed_bytes": 182472,
+    "sha256": "1827dfc68e87b822c43e86781872caa6a5d490efc5145a2a60feba0e2bd54b93",
+    "model": "iPhone10,1",
+    "compatible": [
+      "D20AP",
+      "iPhone10,1",
+      "AppleARM",
+      ""
+    ]
+  },
+  "root_image_member": {
+    "path": "018-62062-016.dmg",
+    "bytes": 4681242228,
+    "status": "extracted with ZIP CRC; APFS System volume read-only mounted on host; see ios14-root-inputs.json and ios14-root-files.json"
+  },
+  "ipsw_sha256": "a6159fafbc7c0bf7a51a00c07e1ef646bcc3f3b1af7e486bb8d6f215f6003850",
+  "lzfse_decoder": {
+    "repository": "https://github.com/lzfse/lzfse",
+    "commit": "e634ca58b4821d9f3d560cdc6df5dec02ffc93fd",
+    "binary": "/home/jia/ios-mix1-build/lzfse-src/build/bin/lzfse",
+    "build": "upstream make; isolated WSL build"
+  }
+}

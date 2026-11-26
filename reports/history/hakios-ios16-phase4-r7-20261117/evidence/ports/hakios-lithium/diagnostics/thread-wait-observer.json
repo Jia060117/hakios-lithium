@@ -1,0 +1,35 @@
+{
+  "revision": 7,
+  "base_revision": 6,
+  "before_sha256": {
+    "xnu/files/osfmk/arm64/user_exception_trace.c": "4b5fc3fea5b0319ac30fb153de0461c0cd22cfe6345dfeda8678ff3021baf1c1",
+    "xnu/files/iokit/Kernel/MiniIOMobileFramebuffer.cpp": "3f6f288ddb581d844a6be9dd85cc25f9f3f7732efb0f1a04ffccab92f4bdc3d9"
+  },
+  "after_sha256": {
+    "xnu/files/osfmk/arm64/user_exception_trace.c": "b27ccd62b12e72f5f6985401b5dd856206e9cbd3ae6d3decbe01d5d0c51ad1ae",
+    "xnu/files/iokit/Kernel/MiniIOMobileFramebuffer.cpp": "924e652b58e39b7acee4164ff598b5b439a202743ad021f5fbace4ff064c9753"
+  },
+  "process": "SpringBoard",
+  "related_processes": [
+    "backboardd",
+    "lsd",
+    "containermanagerd",
+    "runningboardd"
+  ],
+  "first_kernel_seconds": 180,
+  "interval_ms": 360000,
+  "max_samples": 8,
+  "max_threads_per_process": 96,
+  "max_processes_per_sample": 8,
+  "frames_per_thread": 14,
+  "top_enabled": true,
+  "framebuffer_profile_swaps": 8,
+  "framebuffer_max_bands": 8,
+  "framebuffer_band_rows": 512,
+  "raw_saved_registers": true,
+  "unfair_lock_owner_lookup": "read-only normal IPC/thread-read conversion; sampled value may change",
+  "scheduling_time_separated": true,
+  "kernel_memory_mib": 2880,
+  "xnu_cpus": 1,
+  "lock_owner_or_desktop_hardware_verified": false
+}

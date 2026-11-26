@@ -1,0 +1,253 @@
+#include "../touch-stage.h"
+
+#include <assert.h>
+#include <stdio.h>
+#include <string.h>
+
+struct fake_touch {
+    struct lithium_touch_stage stage;
+    uint64_t now;
+    uint64_t deadline;
+    uint64_t delivery_advance;
+    enum lithium_touch_stage_submit submission;
+    enum lithium_touch_stage_submit diagnostic_submission;
+    enum lithium_touch_stage_status cleanup_reason;
+    bool cleanup_acknowledged;
+    bool expire_during_read;
+    unsigned deliveries;
+    unsigned cleanups;
+    unsigned diagnostics;
+    uint32_t cleanup_through;
+};
+
+static bool
+resources(void *context)
+{
+    (void)context;
+    return true;
+}
+
+static uint64_t
+now(void *context)
+{
+    return ((struct fake_touch *)context)->now;
+}
+
+static bool
+probe_id(void *context, uint64_t deadline, uint8_t *id)
+{
+    struct fake_touch *f = context;
+    assert(deadline == f->deadline);
+    assert(f->now < deadline);
+    *id = 0x54;
+    return true;
+}
+
+static bool
+sample_gpio(void *context, uint64_t deadline, unsigned gpio, bool *high)
+{
+    struct fake_touch *f = context;
+    assert(deadline == f->deadline);
+    assert(f->now < deadline);
+    assert(gpio == 105 || gpio == 125);
+    *high = false;
+    return true;
+}
+
+static bool
+read_frame(void *context, uint64_t deadline, uint8_t *bytes,
+    size_t capacity, size_t *length)
+{
+    struct fake_touch *f = context;
+    assert(deadline == f->deadline);
+    assert(f->now < deadline);
+    assert(capacity == LITHIUM_FT5X46_FRAME_BYTES);
+    memset(bytes, 0, capacity);
+    bytes[2] = 1;
+    bytes[4] = 42;
+    bytes[6] = 80;
+    bytes[11] = 0xf0;
+    *length = capacity;
+    if (f->expire_during_read) f->now = deadline;
+    return true;
+}
+
+static void
+diagnostic(void *context, const struct lithium_touch_stage_sample *sample)
+{
+    struct fake_touch *f = context;
+    ++f->diagnostics;
+    assert(sample->sequence == f->diagnostics);
+    assert(sample->frame == LITHIUM_STAGE_FRAME_VALID);
+    assert(sample->submission == f->diagnostic_submission);
+}
+
+static enum lithium_touch_stage_submit
+deliver(void *context, uint64_t deadline,
+    const struct lithium_touch_stage_sample *sample)
+{
+    struct fake_touch *f = context;
+    assert(deadline == f->deadline);
+    assert(f->now < deadline);
+    assert(sample->sequence == f->deliveries + 1);
+    assert(sample->frame == LITHIUM_STAGE_FRAME_VALID);
+    assert(sample->submission == LITHIUM_STAGE_NOT_SUBMITTED);
+    ++f->deliveries;
+    f->now = f->delivery_advance ? f->now + f->delivery_advance : deadline;
+    return f->submission;
+}
+
+static bool
+cleanup(void *context, uint32_t through, enum lithium_touch_stage_status reason)
+{
+    struct fake_touch *f = context;
+    ++f->cleanups;
+    f->cleanup_through = through;
+    f->cleanup_reason = reason;
+    return f->cleanup_acknowledged;
+}
+
+static const struct lithium_touch_stage_ops ops = {
+    .resources = resources,
+    .now = now,
+    .probe_id = probe_id,
+    .sample_gpio = sample_gpio,
+    .read_frame = read_frame,
+    .diagnostic = diagnostic,
+    .deliver = deliver,
+    .cleanup = cleanup
+};
+
+static void
+run_submission_case(enum lithium_touch_stage_submit submission,
+    enum lithium_touch_stage_status expected, bool cleanup_acknowledged,
+    enum lithium_touch_stage_cleanup expected_cleanup)
+{
+    struct fake_touch f = {
+        .deadline = 100,
+        .submission = submission,
+        .diagnostic_submission = submission == LITHIUM_STAGE_UNCERTAIN ?
+            LITHIUM_STAGE_UNCERTAIN : submission,
+        .cleanup_acknowledged = cleanup_acknowledged,
+        .cleanup_reason = LITHIUM_STAGE_UNINITIALIZED
+    };
+    const struct lithium_touch_stage_config config = {
+        .present = true,
+        .stage = 3,
+        .deadline = f.deadline,
+        .period = 10,
+        .max_polls = 2
+    };
+
+    assert(submission != LITHIUM_STAGE_NOT_SUBMITTED);
+    assert(lithium_touch_stage_init(&f.stage, &config, &ops, &f) ==
+        LITHIUM_STAGE_RUNNING);
+    assert(lithium_touch_stage_step(&f.stage) == LITHIUM_STAGE_RUNNING);
+    assert(f.deliveries == 0 && f.cleanups == 0);
+
+    f.now = 10;
+    assert(lithium_touch_stage_step(&f.stage) == expected);
+    assert(f.deliveries == 1 && f.diagnostics == 1);
+    if (submission == LITHIUM_STAGE_REJECTED) {
+        assert(f.cleanups == 0);
+        assert(f.stage.cleanup_through == 0);
+        assert(f.stage.cleanup_status == LITHIUM_STAGE_CLEANUP_NOT_RUN);
+    } else {
+        assert(f.cleanups == 1);
+        assert(f.cleanup_through == 1);
+        assert(f.cleanup_reason == expected);
+        assert(f.stage.cleanup_through == 1);
+        assert(f.stage.cleanup_status == expected_cleanup);
+    }
+    assert(f.stage.accepted == (submission == LITHIUM_STAGE_ACCEPTED ? 1u : 0u));
+    assert(lithium_touch_stage_step(&f.stage) == expected);
+    assert(f.deliveries == 1 && f.cleanups ==
+        (submission == LITHIUM_STAGE_REJECTED ? 0u : 1u));
+}
+
+static void
+run_pre_delivery_deadline_case(void)
+{
+    struct fake_touch f = {
+        .deadline = 100,
+        .diagnostic_submission = LITHIUM_STAGE_NOT_SUBMITTED,
+        .expire_during_read = true
+    };
+    const struct lithium_touch_stage_config config = {
+        .present = true,
+        .stage = 3,
+        .deadline = f.deadline,
+        .period = 10,
+        .max_polls = 2
+    };
+
+    assert(lithium_touch_stage_init(&f.stage, &config, &ops, &f) ==
+        LITHIUM_STAGE_RUNNING);
+    assert(lithium_touch_stage_step(&f.stage) == LITHIUM_STAGE_RUNNING);
+    f.now = 10;
+    assert(lithium_touch_stage_step(&f.stage) == LITHIUM_STAGE_DEADLINE);
+    assert(f.deliveries == 0 && f.diagnostics == 1 && f.cleanups == 0);
+    assert(f.stage.cleanup_through == 0);
+    assert(f.stage.cleanup_status == LITHIUM_STAGE_CLEANUP_NOT_RUN);
+}
+
+static void
+run_latest_sequence_cleanup_case(void)
+{
+    struct fake_touch f = {
+        .deadline = 100,
+        .delivery_advance = 35,
+        .submission = LITHIUM_STAGE_ACCEPTED,
+        .diagnostic_submission = LITHIUM_STAGE_ACCEPTED,
+        .cleanup_acknowledged = true,
+        .cleanup_reason = LITHIUM_STAGE_UNINITIALIZED
+    };
+    const struct lithium_touch_stage_config config = {
+        .present = true,
+        .stage = 3,
+        .deadline = f.deadline,
+        .period = 10,
+        .max_polls = 4
+    };
+
+    assert(lithium_touch_stage_init(&f.stage, &config, &ops, &f) ==
+        LITHIUM_STAGE_RUNNING);
+    assert(lithium_touch_stage_step(&f.stage) == LITHIUM_STAGE_RUNNING);
+    f.now = f.stage.next_at;
+    assert(lithium_touch_stage_step(&f.stage) == LITHIUM_STAGE_RUNNING);
+    assert(f.deliveries == 1 && f.diagnostics == 1);
+    assert(f.stage.cleanup_through == 1 && f.cleanups == 0);
+
+    f.now = f.stage.next_at;
+    assert(lithium_touch_stage_step(&f.stage) == LITHIUM_STAGE_RUNNING);
+    assert(f.deliveries == 2 && f.diagnostics == 2);
+    assert(f.stage.cleanup_through == 2 && f.cleanups == 0);
+
+    f.now = f.stage.next_at;
+    assert(lithium_touch_stage_step(&f.stage) == LITHIUM_STAGE_DEADLINE);
+    assert(f.deliveries == 2 && f.cleanups == 1);
+    assert(f.cleanup_through == 2);
+    assert(f.cleanup_reason == LITHIUM_STAGE_DEADLINE);
+    assert(f.stage.cleanup_status == LITHIUM_STAGE_CLEANUP_ACKNOWLEDGED);
+    assert(lithium_touch_stage_step(&f.stage) == LITHIUM_STAGE_DEADLINE);
+    assert(f.deliveries == 2 && f.cleanups == 1);
+}
+
+int
+main(void)
+{
+    run_pre_delivery_deadline_case();
+    run_latest_sequence_cleanup_case();
+    run_submission_case(LITHIUM_STAGE_ACCEPTED, LITHIUM_STAGE_DEADLINE, true,
+        LITHIUM_STAGE_CLEANUP_ACKNOWLEDGED);
+    run_submission_case(LITHIUM_STAGE_ACCEPTED, LITHIUM_STAGE_DEADLINE, false,
+        LITHIUM_STAGE_CLEANUP_UNCONFIRMED);
+    run_submission_case(LITHIUM_STAGE_UNCERTAIN, LITHIUM_STAGE_DELIVERY_UNCERTAIN,
+        true, LITHIUM_STAGE_CLEANUP_ACKNOWLEDGED);
+    run_submission_case(LITHIUM_STAGE_UNCERTAIN, LITHIUM_STAGE_DELIVERY_UNCERTAIN,
+        false, LITHIUM_STAGE_CLEANUP_UNCONFIRMED);
+    run_submission_case(LITHIUM_STAGE_REJECTED, LITHIUM_STAGE_DELIVERY_REJECTED,
+        true, LITHIUM_STAGE_CLEANUP_NOT_RUN);
+    puts("touch-submit-deadline: pre-submit expiry, latest-sequence fencing, accepted/uncertain cleanup PASS");
+    return 0;
+}

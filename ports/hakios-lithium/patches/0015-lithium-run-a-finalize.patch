@@ -1,0 +1,733 @@
+--- a/xnu/hakios.patch
++++ b/xnu/hakios.patch
+@@ -1302,100 +1302,6 @@
+  	char *rbuf = NULL;
+  	void *dir_pos;
+  	void *dir_end;
+-diff --git a/bsd/vfs/vfs_syscalls.c b/bsd/vfs/vfs_syscalls.c
+-index 2bbba037c2dd..ee65d5943196 100644
+---- a/bsd/vfs/vfs_syscalls.c
+-+++ b/bsd/vfs/vfs_syscalls.c
+-@@ -7261,7 +7261,7 @@ readlinkat_internal(vfs_context_t ctx, int fd, vnode_t lnk_vp, user_addr_t path,
+- 	uio_t auio;
+- 	int error;
+- 	struct nameidata nd;
+--	uio_stackbuf_t uio_buf[UIO_SIZEOF(1)];
+-+	uio_stackbuf_t uio_buf[(UIO_SIZEOF(1) + sizeof(uio_stackbuf_t) - 1) / sizeof(uio_stackbuf_t)];
+- 	bool put_vnode;
+- 
+- 	if (bufsize > INT32_MAX) {
+-@@ -10314,7 +10314,7 @@ getdirentries_common(int fd, user_addr_t bufp, user_size_t bufsize, ssize_t *byt
+- 	int spacetype = proc_is64bit(vfs_context_proc(&context)) ? UIO_USERSPACE64 : UIO_USERSPACE32;
+- 	off_t loff;
+- 	int error, numdirent;
+--	uio_stackbuf_t uio_buf[UIO_SIZEOF(1)];
+-+	uio_stackbuf_t uio_buf[(UIO_SIZEOF(1) + sizeof(uio_stackbuf_t) - 1) / sizeof(uio_stackbuf_t)];
+- 
+- get_from_fd:
+- 	error = fp_getfvp(vfs_context_proc(&context), fd, &fp, &vp);
+-@@ -10613,7 +10613,7 @@ getdirentriesattr(proc_t p, struct getdirentriesattr_args *uap, int32_t *retval)
+- 	struct attrlist attributelist;
+- 	vfs_context_t ctx = vfs_context_current();
+- 	int fd = uap->fd;
+--	uio_stackbuf_t uio_buf[UIO_SIZEOF(1)];
+-+	uio_stackbuf_t uio_buf[(UIO_SIZEOF(1) + sizeof(uio_stackbuf_t) - 1) / sizeof(uio_stackbuf_t)];
+- 	kauth_action_t action;
+- 
+- 	AUDIT_ARG(fd, fd);
+-@@ -10954,7 +10954,7 @@ searchfs(proc_t p, struct searchfs_args *uap, __unused int32_t *retval)
+- 	size_t mallocsize;
+- 	uint32_t nameiflags;
+- 	vfs_context_t ctx = vfs_context_current();
+--	uio_stackbuf_t uio_buf[UIO_SIZEOF(1)];
+-+	uio_stackbuf_t uio_buf[(UIO_SIZEOF(1) + sizeof(uio_stackbuf_t) - 1) / sizeof(uio_stackbuf_t)];
+- 
+- 	/* Start by copying in fsearchblock parameter list */
+- 	if (IS_64BIT_PROCESS(p)) {
+-@@ -12906,7 +12906,7 @@ getxattr(proc_t p, struct getxattr_args *uap, user_ssize_t *retval)
+- 	size_t namelen;
+- 	u_int32_t nameiflags;
+- 	int error;
+--	uio_stackbuf_t uio_buf[UIO_SIZEOF(1)];
+-+	uio_stackbuf_t uio_buf[(UIO_SIZEOF(1) + sizeof(uio_stackbuf_t) - 1) / sizeof(uio_stackbuf_t)];
+- 
+- 	if (uap->options & (XATTR_NOSECURITY | XATTR_NODEFAULT)) {
+- 		return EINVAL;
+-@@ -12990,7 +12990,7 @@ fgetxattr(proc_t p, struct fgetxattr_args *uap, user_ssize_t *retval)
+- 	size_t attrsize = 0;
+- 	size_t namelen;
+- 	int error;
+--	uio_stackbuf_t uio_buf[UIO_SIZEOF(1)];
+-+	uio_stackbuf_t uio_buf[(UIO_SIZEOF(1) + sizeof(uio_stackbuf_t) - 1) / sizeof(uio_stackbuf_t)];
+- 
+- 	if (uap->options & (XATTR_NOFOLLOW | XATTR_NOSECURITY | XATTR_NODEFAULT)) {
+- 		return EINVAL;
+-@@ -13038,7 +13038,7 @@ out:
+- struct setxattr_ctx {
+- 	struct nameidata nd;
+- 	char attrname[XATTR_MAXNAMELEN + 1];
+--	uio_stackbuf_t uio_buf[UIO_SIZEOF(1)];
+-+	uio_stackbuf_t uio_buf[(UIO_SIZEOF(1) + sizeof(uio_stackbuf_t) - 1) / sizeof(uio_stackbuf_t)];
+- };
+- 
+- /*
+-@@ -13134,7 +13134,7 @@ fsetxattr(proc_t p, struct fsetxattr_args *uap, int *retval)
+- 	int spacetype = IS_64BIT_PROCESS(p) ? UIO_USERSPACE64 : UIO_USERSPACE32;
+- 	size_t namelen;
+- 	int error;
+--	uio_stackbuf_t uio_buf[UIO_SIZEOF(1)];
+-+	uio_stackbuf_t uio_buf[(UIO_SIZEOF(1) + sizeof(uio_stackbuf_t) - 1) / sizeof(uio_stackbuf_t)];
+- 
+- 	if (uap->options & (XATTR_NOFOLLOW | XATTR_NOSECURITY | XATTR_NODEFAULT)) {
+- 		return EINVAL;
+-@@ -13311,7 +13311,7 @@ listxattr(proc_t p, struct listxattr_args *uap, user_ssize_t *retval)
+- 	size_t attrsize = 0;
+- 	u_int32_t nameiflags;
+- 	int error;
+--	uio_stackbuf_t uio_buf[UIO_SIZEOF(1)];
+-+	uio_stackbuf_t uio_buf[(UIO_SIZEOF(1) + sizeof(uio_stackbuf_t) - 1) / sizeof(uio_stackbuf_t)];
+- 
+- 	if (uap->options & (XATTR_NOSECURITY | XATTR_NODEFAULT)) {
+- 		return EINVAL;
+-@@ -13353,7 +13353,7 @@ flistxattr(proc_t p, struct flistxattr_args *uap, user_ssize_t *retval)
+- 	int spacetype = proc_is64bit(p) ? UIO_USERSPACE64 : UIO_USERSPACE32;
+- 	size_t attrsize = 0;
+- 	int error;
+--	uio_stackbuf_t uio_buf[UIO_SIZEOF(1)];
+-+	uio_stackbuf_t uio_buf[(UIO_SIZEOF(1) + sizeof(uio_stackbuf_t) - 1) / sizeof(uio_stackbuf_t)];
+- 
+- 	if (uap->options & (XATTR_NOFOLLOW | XATTR_NOSECURITY | XATTR_NODEFAULT)) {
+- 		return EINVAL;
+ diff --git a/bsd/vfs/vfs_vnops.c b/bsd/vfs/vfs_vnops.c
+ index 5b51e9c46a8d..6872b94631c9 100644
+ --- a/bsd/vfs/vfs_vnops.c
+@@ -3667,6 +3573,250 @@
+  	arm_prepare_syscall_return(callp, regs, uthread, error);
+  
+  	uthread->uu_flag &= ~UT_NOTCANCELPT;
++diff --git a/bsd/kern/kern_synch.c b/bsd/kern/kern_synch.c
++--- a/bsd/kern/kern_synch.c
+++++ b/bsd/kern/kern_synch.c
++@@ -1,3 +1,6 @@
+++#if defined(LITHIUM_ARMV8_0)
+++#include "../../bsd/sys/hakios.fsdiag.h"
+++#endif
++ /*
++  * Copyright (c) 2000-2020 Apple Inc. All rights reserved.
++  *
++@@ -161,6 +164,10 @@
++ 	int             (*continuation)(int),
++ 	lck_mtx_t       *mtx)
++ {
+++#if defined(LITHIUM_ARMV8_0)
+++	lithium_fsdiag_wait((uintptr_t)chan,abstime,wmsg);
+++#endif
+++
++ 	struct proc *p;
++ 	thread_t self = current_thread();
++ 	struct uthread * ut;
++diff --git a/osfmk/kern/sched_prim.c b/osfmk/kern/sched_prim.c
++--- a/osfmk/kern/sched_prim.c
+++++ b/osfmk/kern/sched_prim.c
++@@ -1,3 +1,6 @@
+++#if defined(LITHIUM_ARMV8_0)
+++#include "../../bsd/sys/hakios.fsdiag.h"
+++#endif
++ /*
++  * Copyright (c) 2000-2016 Apple Inc. All rights reserved.
++  *
++@@ -840,6 +843,10 @@
++ 	thread_t                thread,
++ 	wait_result_t   wresult)
++ {
+++#if defined(LITHIUM_ARMV8_0)
+++	lithium_fsdiag_wake(thread,wresult);
+++#endif
+++
++ 	boolean_t               ready_for_runq = FALSE;
++ 	thread_t                cthread = current_thread();
++ 	uint32_t                new_run_count;
++@@ -1177,6 +1184,10 @@
++ 	event_t                         event,
++ 	wait_interrupt_t        interruptible)
++ {
+++#if defined(LITHIUM_ARMV8_0)
+++	lithium_fsdiag_wait((uintptr_t)event,0,NULL);
+++#endif
+++
++ 	if (__improbable(event == NO_EVENT)) {
++ 		panic("%s() called with NO_EVENT", __func__);
++ 	}
++@@ -1225,6 +1236,9 @@
++ 	waitq_lock(waitq);
++ 
++ 	clock_interval_to_deadline(interval, scale_factor, &deadline);
+++#if defined(LITHIUM_ARMV8_0)
+++	lithium_fsdiag_wait((uintptr_t)event,deadline,"assert_wait_timeout");
+++#endif
++ 
++ 	KERNEL_DEBUG_CONSTANT_IST(KDEBUG_TRACE,
++ 	    MACHDBG_CODE(DBG_MACH_SCHED, MACH_WAIT) | DBG_FUNC_NONE,
++@@ -1272,6 +1286,9 @@
++ 	waitq = global_eventq(event);
++ 
++ 	s = splsched();
+++#if defined(LITHIUM_ARMV8_0)
+++	lithium_fsdiag_wait((uintptr_t)event,deadline,"assert_wait_timeout_with_leeway");
+++#endif
++ 	waitq_lock(waitq);
++ 
++ 	KERNEL_DEBUG_CONSTANT_IST(KDEBUG_TRACE,
++@@ -1306,6 +1323,9 @@
++ 	waitq = global_eventq(event);
++ 
++ 	s = splsched();
+++#if defined(LITHIUM_ARMV8_0)
+++	lithium_fsdiag_wait((uintptr_t)event,deadline,"assert_wait_deadline");
+++#endif
++ 	waitq_lock(waitq);
++ 
++ 	KERNEL_DEBUG_CONSTANT_IST(KDEBUG_TRACE,
++@@ -1341,6 +1361,9 @@
++ 	waitq = global_eventq(event);
++ 
++ 	s = splsched();
+++#if defined(LITHIUM_ARMV8_0)
+++	lithium_fsdiag_wait((uintptr_t)event,deadline,"assert_wait_deadline_with_leeway");
+++#endif
++ 	waitq_lock(waitq);
++ 
++ 	KERNEL_DEBUG_CONSTANT_IST(KDEBUG_TRACE,
++@@ -2042,6 +2065,7 @@
++ #endif
++ 
++ int sched_allow_rt_smt = 1;
+++bool sched_slow_secondaries = false;
++ int sched_avoid_cpu0 = SCHED_AVOID_CPU0;
++ int sched_allow_rt_steal = 1;
++ int sched_backup_cpu_timeout_count = 5; /* The maximum number of 10us delays to wait before using a backup cpu */
++@@ -2097,6 +2121,7 @@
++ sched_SMT_balance(processor_t cprocessor, processor_set_t cpset)
++ {
++ 	processor_t ast_processor = NULL;
+++	sched_ipi_type_t ipi_type = SCHED_IPI_NONE;
++ 
++ #if (DEVELOPMENT || DEBUG)
++ 	if (__improbable(sched_smt_balance == 0)) {
++@@ -2105,7 +2130,39 @@
++ #endif
++ 
++ 	assert(cprocessor == current_processor());
++-	if (cprocessor->is_SMT == FALSE) {
+++	if (cprocessor->is_SMT == FALSE && !sched_slow_secondaries) {
+++		goto smt_balance_exit;
+++	}
+++
+++	if (sched_slow_secondaries) {
+++		/*
+++		 * A faster core is going idle: the thread of highest priority that runs on a slower one
+++		 * (not a real-time one: those stay where they are) is sent here. Its core is made to
+++		 * reschedule; a thread on a secondary goes back to the run queue then, and an idle
+++		 * primary is where it is put.
+++		 */
+++		integer_t highest = -1;
+++
+++		if (cprocessor->processor_primary != cprocessor) {
+++			goto smt_balance_exit;
+++		}
+++		uint64_t running_secondaries = (cpset->cpu_state_map[PROCESSOR_RUNNING] & ~cpset->primary_map &
+++		    ~cpset->pending_AST_URGENT_cpu_mask);
+++		for (int cpuid = lsb_first(running_secondaries); cpuid >= 0; cpuid = lsb_next(running_secondaries, cpuid)) {
+++			processor_t sprocessor = processor_array[cpuid];
+++
+++			if (sprocessor->current_pri < BASEPRI_RTQUEUES && sprocessor->current_pri > highest &&
+++			    sprocessor->current_pri > MINPRI) {
+++				highest = sprocessor->current_pri;
+++				ast_processor = sprocessor;
+++			}
+++		}
+++		if (ast_processor != PROCESSOR_NULL) {
+++			ipi_type = sched_ipi_action(ast_processor, NULL, SCHED_IPI_EVENT_SMT_REBAL);
+++			if (ipi_type == SCHED_IPI_NONE) {
+++				ast_processor = PROCESSOR_NULL;
+++			}
+++		}
++ 		goto smt_balance_exit;
++ 	}
++ 
++@@ -2120,7 +2177,6 @@
++ 
++ 	processor_t sprocessor;
++ 
++-	sched_ipi_type_t ipi_type = SCHED_IPI_NONE;
++ 	uint64_t running_secondary_map = (cpset->cpu_state_map[PROCESSOR_RUNNING] &
++ 	    ~cpset->primary_map);
++ 	for (int cpuid = lsb_first(running_secondary_map); cpuid >= 0; cpuid = lsb_next(running_secondary_map, cpuid)) {
++@@ -2581,6 +2637,10 @@
++ 		bool is_yielding         = (*reason & AST_YIELD) == AST_YIELD;
++ 
++ 		bool needs_smt_rebalance = !is_yielding && thread->sched_pri < BASEPRI_RTQUEUES && processor->processor_primary != processor;
+++		if (needs_smt_rebalance && sched_slow_secondaries) {
+++			/* (a slower core of its own: worth leaving only for a faster one that is idle) */
+++			needs_smt_rebalance = (pset->recommended_bitmask & pset->primary_map & pset->cpu_state_map[PROCESSOR_IDLE]) != 0;
+++		}
++ 
++ 		bool affinity_mismatch   = thread->affinity_set != AFFINITY_SET_NULL && thread->affinity_set->aset_pset != pset;
++ 
++@@ -2705,7 +2765,7 @@
++ 
++ 				clear_pending_AST_bits(pset, processor, 3);
++ 
++-				if (processor->processor_secondary != NULL) {
+++				if (processor->processor_secondary != NULL && !sched_slow_secondaries) {
++ 					processor_t sprocessor = processor->processor_secondary;
++ 					if ((sprocessor->state == PROCESSOR_RUNNING) || (sprocessor->state == PROCESSOR_DISPATCHING)) {
++ 						ipi_type = sched_ipi_action(sprocessor, NULL, SCHED_IPI_EVENT_SMT_REBAL);
++@@ -2774,7 +2834,8 @@
++ 				goto restart;
++ 			}
++ 
++-			if ((processor->processor_primary != processor) && (processor->processor_primary->current_pri >= BASEPRI_RTQUEUES)) {
+++			if ((processor->processor_primary != processor) && (processor->processor_primary->current_pri >= BASEPRI_RTQUEUES) &&
+++			    !sched_slow_secondaries) {
++ 				/* secondary can only run realtime thread */
++ 				if (idle_reason == 0) {
++ 					idle_reason = 4;
++diff --git a/bsd/vfs/vfs_bio.c b/bsd/vfs/vfs_bio.c
++--- a/bsd/vfs/vfs_bio.c
+++++ b/bsd/vfs/vfs_bio.c
++@@ -1,3 +1,6 @@
+++#if defined(LITHIUM_ARMV8_0)
+++#include "../../bsd/sys/hakios.fsdiag.h"
+++#endif
++ /*
++  * Copyright (c) 2000-2020 Apple Inc. All rights reserved.
++  *
++@@ -1857,8 +1860,22 @@
++ 	return 0;
++ }
++ 
+++
+++static void buf_flushdirtyblks_r13_impl(vnode_t vp, int wait, int flags, const char *msg);
++ void
++ buf_flushdirtyblks(vnode_t vp, int wait, int flags, const char *msg)
+++{
+++#if defined(LITHIUM_ARMV8_0)
+++    uint64_t token=lithium_fsdiag_stage_begin("buf.flushdirty",(uintptr_t)(vp),(uintptr_t)(0));
+++#endif
+++    buf_flushdirtyblks_r13_impl(vp,wait,flags,msg);
+++#if defined(LITHIUM_ARMV8_0)
+++    lithium_fsdiag_stage_end(token,0);
+++#endif
+++    
+++}
+++static void
+++buf_flushdirtyblks_r13_impl(vnode_t vp, int wait, int flags, const char *msg)
++ {
++ 	(void) buf_flushdirtyblks_skipinfo(vp, wait, flags, msg);
++ 	return;
++@@ -4111,8 +4128,22 @@
++  * Wait for operations on the buffer to complete.
++  * When they do, extract and return the I/O's error value.
++  */
+++
+++static errno_t buf_biowait_r13_impl(buf_t bp);
++ errno_t
++ buf_biowait(buf_t bp)
+++{
+++#if defined(LITHIUM_ARMV8_0)
+++    uint64_t token=lithium_fsdiag_stage_begin("buf.biowait",(uintptr_t)(bp),(uintptr_t)(0));
+++#endif
+++    errno_t value=buf_biowait_r13_impl(bp);
+++#if defined(LITHIUM_ARMV8_0)
+++    lithium_fsdiag_stage_end(token,value);
+++#endif
+++    return value;
+++}
+++static errno_t
+++buf_biowait_r13_impl(buf_t bp)
++ {
++ 	while (!ISSET(bp->b_flags, B_DONE)) {
++ 		lck_mtx_lock_spin(&buf_mtx);
+ diff --git a/bsd/kern/bsd_init.c b/bsd/kern/bsd_init.c
+ --- a/bsd/kern/bsd_init.c
+ +++ b/bsd/kern/bsd_init.c
+@@ -3717,258 +3867,121 @@
+  	}
+  #endif /* DEVFS */
+  
+-@@ -1075,6 +1095,10 @@
++@@ -1075,6 +1095,12 @@
+  
+  	bsd_init_kprintf("bsd_do_post - done");
+  
+ +#if defined(LITHIUM_ARMV8_0)
+ +	lithium_cpu_sanity();
+++	extern void lithium_run_a_cpu(void);
+++	lithium_run_a_cpu();
+ +	lithium_fsdiag_init();
+ +#endif
+  	load_init_program(p);
+  	lock_trace = 1;
+  }
+-diff --git a/bsd/kern/kern_synch.c b/bsd/kern/kern_synch.c
+---- a/bsd/kern/kern_synch.c
+-+++ b/bsd/kern/kern_synch.c
+-@@ -1,3 +1,6 @@
++diff --git a/bsd/vfs/vfs_syscalls.c b/bsd/vfs/vfs_syscalls.c
++--- a/bsd/vfs/vfs_syscalls.c
+++++ b/bsd/vfs/vfs_syscalls.c
++@@ -7261,7 +7261,7 @@
++ 	uio_t auio;
++ 	int error;
++ 	struct nameidata nd;
++-	uio_stackbuf_t uio_buf[UIO_SIZEOF(1)];
+++	uio_stackbuf_t uio_buf[(UIO_SIZEOF(1) + sizeof(uio_stackbuf_t) - 1) / sizeof(uio_stackbuf_t)];
++ 	bool put_vnode;
++ 
++ 	if (bufsize > INT32_MAX) {
++@@ -10314,7 +10314,7 @@
++ 	int spacetype = proc_is64bit(vfs_context_proc(&context)) ? UIO_USERSPACE64 : UIO_USERSPACE32;
++ 	off_t loff;
++ 	int error, numdirent;
++-	uio_stackbuf_t uio_buf[UIO_SIZEOF(1)];
+++	uio_stackbuf_t uio_buf[(UIO_SIZEOF(1) + sizeof(uio_stackbuf_t) - 1) / sizeof(uio_stackbuf_t)];
++ 
++ get_from_fd:
++ 	error = fp_getfvp(vfs_context_proc(&context), fd, &fp, &vp);
++@@ -10613,7 +10613,7 @@
++ 	struct attrlist attributelist;
++ 	vfs_context_t ctx = vfs_context_current();
++ 	int fd = uap->fd;
++-	uio_stackbuf_t uio_buf[UIO_SIZEOF(1)];
+++	uio_stackbuf_t uio_buf[(UIO_SIZEOF(1) + sizeof(uio_stackbuf_t) - 1) / sizeof(uio_stackbuf_t)];
++ 	kauth_action_t action;
++ 
++ 	AUDIT_ARG(fd, fd);
++@@ -10954,7 +10954,7 @@
++ 	size_t mallocsize;
++ 	uint32_t nameiflags;
++ 	vfs_context_t ctx = vfs_context_current();
++-	uio_stackbuf_t uio_buf[UIO_SIZEOF(1)];
+++	uio_stackbuf_t uio_buf[(UIO_SIZEOF(1) + sizeof(uio_stackbuf_t) - 1) / sizeof(uio_stackbuf_t)];
++ 
++ 	/* Start by copying in fsearchblock parameter list */
++ 	if (IS_64BIT_PROCESS(p)) {
++@@ -12906,7 +12906,7 @@
++ 	size_t namelen;
++ 	u_int32_t nameiflags;
++ 	int error;
++-	uio_stackbuf_t uio_buf[UIO_SIZEOF(1)];
+++	uio_stackbuf_t uio_buf[(UIO_SIZEOF(1) + sizeof(uio_stackbuf_t) - 1) / sizeof(uio_stackbuf_t)];
++ 
++ 	if (uap->options & (XATTR_NOSECURITY | XATTR_NODEFAULT)) {
++ 		return EINVAL;
++@@ -12990,7 +12990,7 @@
++ 	size_t attrsize = 0;
++ 	size_t namelen;
++ 	int error;
++-	uio_stackbuf_t uio_buf[UIO_SIZEOF(1)];
+++	uio_stackbuf_t uio_buf[(UIO_SIZEOF(1) + sizeof(uio_stackbuf_t) - 1) / sizeof(uio_stackbuf_t)];
++ 
++ 	if (uap->options & (XATTR_NOFOLLOW | XATTR_NOSECURITY | XATTR_NODEFAULT)) {
++ 		return EINVAL;
++@@ -13038,7 +13038,7 @@
++ struct setxattr_ctx {
++ 	struct nameidata nd;
++ 	char attrname[XATTR_MAXNAMELEN + 1];
++-	uio_stackbuf_t uio_buf[UIO_SIZEOF(1)];
+++	uio_stackbuf_t uio_buf[(UIO_SIZEOF(1) + sizeof(uio_stackbuf_t) - 1) / sizeof(uio_stackbuf_t)];
++ };
++ 
++ /*
++@@ -13134,7 +13134,7 @@
++ 	int spacetype = IS_64BIT_PROCESS(p) ? UIO_USERSPACE64 : UIO_USERSPACE32;
++ 	size_t namelen;
++ 	int error;
++-	uio_stackbuf_t uio_buf[UIO_SIZEOF(1)];
+++	uio_stackbuf_t uio_buf[(UIO_SIZEOF(1) + sizeof(uio_stackbuf_t) - 1) / sizeof(uio_stackbuf_t)];
++ 
++ 	if (uap->options & (XATTR_NOFOLLOW | XATTR_NOSECURITY | XATTR_NODEFAULT)) {
++ 		return EINVAL;
++@@ -13311,7 +13311,7 @@
++ 	size_t attrsize = 0;
++ 	u_int32_t nameiflags;
++ 	int error;
++-	uio_stackbuf_t uio_buf[UIO_SIZEOF(1)];
+++	uio_stackbuf_t uio_buf[(UIO_SIZEOF(1) + sizeof(uio_stackbuf_t) - 1) / sizeof(uio_stackbuf_t)];
++ 
++ 	if (uap->options & (XATTR_NOSECURITY | XATTR_NODEFAULT)) {
++ 		return EINVAL;
++@@ -13353,7 +13353,7 @@
++ 	int spacetype = proc_is64bit(p) ? UIO_USERSPACE64 : UIO_USERSPACE32;
++ 	size_t attrsize = 0;
++ 	int error;
++-	uio_stackbuf_t uio_buf[UIO_SIZEOF(1)];
+++	uio_stackbuf_t uio_buf[(UIO_SIZEOF(1) + sizeof(uio_stackbuf_t) - 1) / sizeof(uio_stackbuf_t)];
++ 
++ 	if (uap->options & (XATTR_NOFOLLOW | XATTR_NOSECURITY | XATTR_NODEFAULT)) {
++ 		return EINVAL;
++@@ -14568,3 +14568,11 @@
++ 
++ 	return error;
++ }
+++
+ +#if defined(LITHIUM_ARMV8_0)
+-+#include "../../bsd/sys/hakios.fsdiag.h"
+-+#endif
+- /*
+-  * Copyright (c) 2000-2020 Apple Inc. All rights reserved.
+-  *
+-@@ -161,6 +164,10 @@
+- 	int             (*continuation)(int),
+- 	lck_mtx_t       *mtx)
+- {
+-+#if defined(LITHIUM_ARMV8_0)
+-+	lithium_fsdiag_wait((uintptr_t)chan,abstime,wmsg);
+-+#endif
+-+
+- 	struct proc *p;
+- 	thread_t self = current_thread();
+- 	struct uthread * ut;
+-diff --git a/osfmk/kern/sched_prim.c b/osfmk/kern/sched_prim.c
+---- a/osfmk/kern/sched_prim.c
+-+++ b/osfmk/kern/sched_prim.c
+-@@ -1,3 +1,6 @@
+-+#if defined(LITHIUM_ARMV8_0)
+-+#include "../../bsd/sys/hakios.fsdiag.h"
+-+#endif
+- /*
+-  * Copyright (c) 2000-2016 Apple Inc. All rights reserved.
+-  *
+-@@ -840,6 +843,10 @@
+- 	thread_t                thread,
+- 	wait_result_t   wresult)
+- {
+-+#if defined(LITHIUM_ARMV8_0)
+-+	lithium_fsdiag_wake(thread,wresult);
+-+#endif
+-+
+- 	boolean_t               ready_for_runq = FALSE;
+- 	thread_t                cthread = current_thread();
+- 	uint32_t                new_run_count;
+-@@ -1177,6 +1184,10 @@
+- 	event_t                         event,
+- 	wait_interrupt_t        interruptible)
+- {
+-+#if defined(LITHIUM_ARMV8_0)
+-+	lithium_fsdiag_wait((uintptr_t)event,0,NULL);
+-+#endif
+-+
+- 	if (__improbable(event == NO_EVENT)) {
+- 		panic("%s() called with NO_EVENT", __func__);
+- 	}
+-@@ -1225,6 +1236,9 @@
+- 	waitq_lock(waitq);
+- 
+- 	clock_interval_to_deadline(interval, scale_factor, &deadline);
+-+#if defined(LITHIUM_ARMV8_0)
+-+	lithium_fsdiag_wait((uintptr_t)event,deadline,"assert_wait_timeout");
+-+#endif
+- 
+- 	KERNEL_DEBUG_CONSTANT_IST(KDEBUG_TRACE,
+- 	    MACHDBG_CODE(DBG_MACH_SCHED, MACH_WAIT) | DBG_FUNC_NONE,
+-@@ -1272,6 +1286,9 @@
+- 	waitq = global_eventq(event);
+- 
+- 	s = splsched();
+-+#if defined(LITHIUM_ARMV8_0)
+-+	lithium_fsdiag_wait((uintptr_t)event,deadline,"assert_wait_timeout_with_leeway");
+-+#endif
+- 	waitq_lock(waitq);
+- 
+- 	KERNEL_DEBUG_CONSTANT_IST(KDEBUG_TRACE,
+-@@ -1306,6 +1323,9 @@
+- 	waitq = global_eventq(event);
+- 
+- 	s = splsched();
+-+#if defined(LITHIUM_ARMV8_0)
+-+	lithium_fsdiag_wait((uintptr_t)event,deadline,"assert_wait_deadline");
+-+#endif
+- 	waitq_lock(waitq);
+- 
+- 	KERNEL_DEBUG_CONSTANT_IST(KDEBUG_TRACE,
+-@@ -1341,6 +1361,9 @@
+- 	waitq = global_eventq(event);
+- 
+- 	s = splsched();
+-+#if defined(LITHIUM_ARMV8_0)
+-+	lithium_fsdiag_wait((uintptr_t)event,deadline,"assert_wait_deadline_with_leeway");
+-+#endif
+- 	waitq_lock(waitq);
+- 
+- 	KERNEL_DEBUG_CONSTANT_IST(KDEBUG_TRACE,
+-@@ -2042,6 +2065,7 @@
+- #endif
+- 
+- int sched_allow_rt_smt = 1;
+-+bool sched_slow_secondaries = false;
+- int sched_avoid_cpu0 = SCHED_AVOID_CPU0;
+- int sched_allow_rt_steal = 1;
+- int sched_backup_cpu_timeout_count = 5; /* The maximum number of 10us delays to wait before using a backup cpu */
+-@@ -2097,6 +2121,7 @@
+- sched_SMT_balance(processor_t cprocessor, processor_set_t cpset)
+- {
+- 	processor_t ast_processor = NULL;
+-+	sched_ipi_type_t ipi_type = SCHED_IPI_NONE;
+- 
+- #if (DEVELOPMENT || DEBUG)
+- 	if (__improbable(sched_smt_balance == 0)) {
+-@@ -2105,7 +2130,39 @@
+- #endif
+- 
+- 	assert(cprocessor == current_processor());
+--	if (cprocessor->is_SMT == FALSE) {
+-+	if (cprocessor->is_SMT == FALSE && !sched_slow_secondaries) {
+-+		goto smt_balance_exit;
+-+	}
+-+
+-+	if (sched_slow_secondaries) {
+-+		/*
+-+		 * A faster core is going idle: the thread of highest priority that runs on a slower one
+-+		 * (not a real-time one: those stay where they are) is sent here. Its core is made to
+-+		 * reschedule; a thread on a secondary goes back to the run queue then, and an idle
+-+		 * primary is where it is put.
+-+		 */
+-+		integer_t highest = -1;
+-+
+-+		if (cprocessor->processor_primary != cprocessor) {
+-+			goto smt_balance_exit;
+-+		}
+-+		uint64_t running_secondaries = (cpset->cpu_state_map[PROCESSOR_RUNNING] & ~cpset->primary_map &
+-+		    ~cpset->pending_AST_URGENT_cpu_mask);
+-+		for (int cpuid = lsb_first(running_secondaries); cpuid >= 0; cpuid = lsb_next(running_secondaries, cpuid)) {
+-+			processor_t sprocessor = processor_array[cpuid];
+-+
+-+			if (sprocessor->current_pri < BASEPRI_RTQUEUES && sprocessor->current_pri > highest &&
+-+			    sprocessor->current_pri > MINPRI) {
+-+				highest = sprocessor->current_pri;
+-+				ast_processor = sprocessor;
+-+			}
+-+		}
+-+		if (ast_processor != PROCESSOR_NULL) {
+-+			ipi_type = sched_ipi_action(ast_processor, NULL, SCHED_IPI_EVENT_SMT_REBAL);
+-+			if (ipi_type == SCHED_IPI_NONE) {
+-+				ast_processor = PROCESSOR_NULL;
+-+			}
+-+		}
+- 		goto smt_balance_exit;
+- 	}
+- 
+-@@ -2120,7 +2177,6 @@
+- 
+- 	processor_t sprocessor;
+- 
+--	sched_ipi_type_t ipi_type = SCHED_IPI_NONE;
+- 	uint64_t running_secondary_map = (cpset->cpu_state_map[PROCESSOR_RUNNING] &
+- 	    ~cpset->primary_map);
+- 	for (int cpuid = lsb_first(running_secondary_map); cpuid >= 0; cpuid = lsb_next(running_secondary_map, cpuid)) {
+-@@ -2581,6 +2637,10 @@
+- 		bool is_yielding         = (*reason & AST_YIELD) == AST_YIELD;
+- 
+- 		bool needs_smt_rebalance = !is_yielding && thread->sched_pri < BASEPRI_RTQUEUES && processor->processor_primary != processor;
+-+		if (needs_smt_rebalance && sched_slow_secondaries) {
+-+			/* (a slower core of its own: worth leaving only for a faster one that is idle) */
+-+			needs_smt_rebalance = (pset->recommended_bitmask & pset->primary_map & pset->cpu_state_map[PROCESSOR_IDLE]) != 0;
+-+		}
+- 
+- 		bool affinity_mismatch   = thread->affinity_set != AFFINITY_SET_NULL && thread->affinity_set->aset_pset != pset;
+- 
+-@@ -2705,7 +2765,7 @@
+- 
+- 				clear_pending_AST_bits(pset, processor, 3);
+- 
+--				if (processor->processor_secondary != NULL) {
+-+				if (processor->processor_secondary != NULL && !sched_slow_secondaries) {
+- 					processor_t sprocessor = processor->processor_secondary;
+- 					if ((sprocessor->state == PROCESSOR_RUNNING) || (sprocessor->state == PROCESSOR_DISPATCHING)) {
+- 						ipi_type = sched_ipi_action(sprocessor, NULL, SCHED_IPI_EVENT_SMT_REBAL);
+-@@ -2774,7 +2834,8 @@
+- 				goto restart;
+- 			}
+- 
+--			if ((processor->processor_primary != processor) && (processor->processor_primary->current_pri >= BASEPRI_RTQUEUES)) {
+-+			if ((processor->processor_primary != processor) && (processor->processor_primary->current_pri >= BASEPRI_RTQUEUES) &&
+-+			    !sched_slow_secondaries) {
+- 				/* secondary can only run realtime thread */
+- 				if (idle_reason == 0) {
+- 					idle_reason = 4;
+-diff --git a/bsd/vfs/vfs_bio.c b/bsd/vfs/vfs_bio.c
+---- a/bsd/vfs/vfs_bio.c
+-+++ b/bsd/vfs/vfs_bio.c
+-@@ -1,3 +1,6 @@
+-+#if defined(LITHIUM_ARMV8_0)
+-+#include "../../bsd/sys/hakios.fsdiag.h"
+-+#endif
+- /*
+-  * Copyright (c) 2000-2020 Apple Inc. All rights reserved.
+-  *
+-@@ -1857,8 +1860,22 @@
+- 	return 0;
+- }
+- 
+-+
+-+static void buf_flushdirtyblks_r13_impl(vnode_t vp, int wait, int flags, const char *msg);
+- void
+- buf_flushdirtyblks(vnode_t vp, int wait, int flags, const char *msg)
+-+{
+-+#if defined(LITHIUM_ARMV8_0)
+-+    uint64_t token=lithium_fsdiag_stage_begin("buf.flushdirty",(uintptr_t)(vp),(uintptr_t)(0));
+-+#endif
+-+    buf_flushdirtyblks_r13_impl(vp,wait,flags,msg);
+-+#if defined(LITHIUM_ARMV8_0)
+-+    lithium_fsdiag_stage_end(token,0);
+-+#endif
+-+    
+-+}
+-+static void
+-+buf_flushdirtyblks_r13_impl(vnode_t vp, int wait, int flags, const char *msg)
+- {
+- 	(void) buf_flushdirtyblks_skipinfo(vp, wait, flags, msg);
+- 	return;
+-@@ -4111,8 +4128,22 @@
+-  * Wait for operations on the buffer to complete.
+-  * When they do, extract and return the I/O's error value.
+-  */
+-+
+-+static errno_t buf_biowait_r13_impl(buf_t bp);
+- errno_t
+- buf_biowait(buf_t bp)
+-+{
+-+#if defined(LITHIUM_ARMV8_0)
+-+    uint64_t token=lithium_fsdiag_stage_begin("buf.biowait",(uintptr_t)(bp),(uintptr_t)(0));
+-+#endif
+-+    errno_t value=buf_biowait_r13_impl(bp);
+-+#if defined(LITHIUM_ARMV8_0)
+-+    lithium_fsdiag_stage_end(token,value);
+-+#endif
+-+    return value;
+-+}
+-+static errno_t
+-+buf_biowait_r13_impl(buf_t bp)
+- {
+- 	while (!ISSET(bp->b_flags, B_DONE)) {
+- 		lck_mtx_lock_spin(&buf_mtx);
+++#include <kern/clock.h>
+++#include <machine/machine_routines.h>
+++#include <machine/cpu_number.h>
+++#include <pexpert/pexpert.h>
+++#include "../../../../devices/lithium/diagnostics/lsdb-finalize.inc"
+++#endif
+--- a/xnu/files/osfmk/arm64/loader_return.c
++++ b/xnu/files/osfmk/arm64/loader_return.c
+@@ -567,6 +567,10 @@
+ 	}
+ 	PE_parse_boot_argn("return_panic", &as_panic, sizeof(as_panic));
+ 	if (!as_panic) {
++#if defined(LITHIUM_ARMV8_0)
++		extern void lithium_lsdb_finalize(void);
++		lithium_lsdb_finalize();
++#endif
+ 		hakios_var_save_on_return();   /* the data volume kept, while the system is still whole */
+ 		hakios_adreno_stop();          /* a GPU kept for the system is given back while there is a thread to wait in */
+ 		hakios_wifi_stop();            /* and the Wi-Fi DSP, if it runs, shut down */

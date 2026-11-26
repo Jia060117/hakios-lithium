@@ -1,0 +1,124 @@
+--- a/drivers/storage/hakios.ufs.c
++++ b/drivers/storage/hakios.ufs.c
+@@ -88,6 +88,13 @@
+  * that is): at least the layout's 20 GiB.
+  */
+ #define UFS_WRITE_FIRST    2042368ULL                  /* darwin's blocks of 4096 */
++#if defined(LITHIUM_ARMV8_0)
++#define UFS_DARWIN_NAME "userdata"
++#define UFS_LITHIUM_BLOCKS 61208543ULL
++#define UFS_LITHIUM_END 5242880ULL
++#else
++#define UFS_DARWIN_NAME "darwin"
++#endif
+ #define UFS_DARWIN_MIN     5242875ULL                  /* the first phone's darwin, in blocks of 4096 */
+ 
+ struct loader_block_part {
+@@ -619,6 +626,12 @@
+ 		return EROFS;
+ 	}
+ 	per = ufs_buffer_size / nbs;
++	#if defined(LITHIUM_ARMV8_0)
++	if (offset / 4096 >= UFS_LITHIUM_END || len / 4096 > UFS_LITHIUM_END - offset / 4096) {
++		ufs_write_refused++;
++		return EROFS;
++	}
++#endif
+ 	lck_mtx_lock(&ufs_write_mtx);
+ 	/*
+ 	 * The list goes out once, at the first write, and comes back when the device is closed: a
+@@ -688,7 +701,11 @@
+ static uint64_t
+ ufs_data_bytes(void)
+ {
++	#if defined(LITHIUM_ARMV8_0)
++	return (UFS_LITHIUM_END - UFS_WRITE_FIRST) * 4096;
++#else
+ 	return ufs_part_bytes((uint32_t)ufs_write_part) - UFS_WRITE_FIRST * 4096;
++#endif
+ }
+ 
+ /*
+@@ -1786,7 +1803,7 @@
+ 		for (uint32_t i = 0; offered != 0 && i < ufs_parts; i++) {
+ 			const char *why = NULL;
+ 
+-			if (strncmp((const char *)ufs_page->part[i].name, "darwin", 7) != 0) {
++			if (strncmp((const char *)ufs_page->part[i].name, UFS_DARWIN_NAME, sizeof(UFS_DARWIN_NAME)) != 0) {
+ 				continue;
+ 			}
+ 			if (i != offered - 1) {
+@@ -1798,6 +1815,10 @@
+ 				 * has compared with the loader's reads; the device path this firmware gives
+ 				 * says no logical unit number at all, so part[].lun is 0xff for every unit */
+ 				why = "it is not on the first logical unit";
++			#if defined(LITHIUM_ARMV8_0)
++			} else if (ufs_page->part[i].blocks != UFS_LITHIUM_BLOCKS || ufs_page->part[i].start_lba != 98304ULL) {
++				why = "MIX userdata geometry differs from the installed contract";
++#endif
+ 			} else if (ufs_page->part[i].blocks < UFS_DARWIN_MIN) {
+ 				why = "it is smaller than the layout's 20 GiB";
+ 			} else if (ufs_page->part[i].block_size != 4096) {
+--- a/sysimage/mkvarskel.py
++++ b/sysimage/mkvarskel.py
+@@ -26,6 +26,8 @@
+     ('/private/var/containers', 0o755, 0, 0),                           # containermanagerd
+     ('/private/var/containers/Data', 0o755, 0, 0),
+     ('/private/var/containers/Shared', 0o755, 0, 0),
++    ('/private/var/containers/Shared/SystemGroup', 0o755, 0, 0),
++    ('/private/var/containers/Shared/AppGroup', 0o755, 0, 0),
+     ('/private/var/containers/Bundle', 0o755, 0, 0),
+     ('/private/var/mobile/Containers', 0o755, 501, 501),
+     ('/private/var/mobile/Containers/Data', 0o755, 501, 501),
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -1598,7 +1598,16 @@
+  */
+ #define BLOCK_WRITE_FIRST  2042368ULL                  /* darwin's blocks of 4096: past both cryptexes */
+ #define BLOCK_DARWIN_MIN   5242875ULL                  /* blocks of 4096: the first phone's darwin, the layout's */
++#if defined(HAKIOS_LITHIUM)
++#define BLOCK_DARWIN_NAME "userdata"
++#define BLOCK_DARWIN_TYPE { 0x1b81e7e6, 0xf50d, 0x419b, { 0xa7, 0x39, 0x2a, 0xee, 0xf8, 0xda, 0x33, 0x35 } }
++#define BLOCK_LITHIUM_FIRST 98304ULL
++#define BLOCK_LITHIUM_BLOCKS 61208543ULL
++#define BLOCK_LITHIUM_END 5242880ULL
++#else
++#define BLOCK_DARWIN_NAME "darwin"
+ #define BLOCK_DARWIN_TYPE  { 0x7c3457ef, 0x0000, 0x11aa, { 0xaa, 0x11, 0x00, 0x30, 0x65, 0x43, 0xec, 0xac } }
++#endif
+ 
+ /*
+  * The partitions first, then the logical units they are on (BLOCK_PART_UNIT, named unit0, unit1,
+@@ -1940,7 +1949,7 @@
+ {
+ 	static const efi_guid type = BLOCK_DARWIN_TYPE;
+ 	const uint8_t *u = (const uint8_t *)&info->unique_guid;
+-	static const char name[] = "darwin";
++	static const char name[] = BLOCK_DARWIN_NAME;
+ 	const char *why = NULL;
+ 
+ 	for (unsigned i = 0; i < sizeof(name); i++) {
+@@ -1957,6 +1966,10 @@
+ 	} else if (bp->block_size != 4096 || bp->blocks < BLOCK_DARWIN_MIN ||
+ 	    info->end_lba - info->start_lba + 1 != bp->blocks) {
+ 		why = "it is not 20 GiB in blocks of 4096";
++	#if defined(HAKIOS_LITHIUM)
++	} else if (info->start_lba != BLOCK_LITHIUM_FIRST || bp->blocks != BLOCK_LITHIUM_BLOCKS) {
++		why = "MIX userdata geometry differs from the installed contract";
++#endif
+ 	} else if (bio->media->read_only) {
+ 		why = "UEFI gives it out read only";
+ 	}
+@@ -2220,7 +2233,11 @@
+ 			s = 0x800000000000000FULL;      /* EFI_ACCESS_DENIED */
+ 			bytes = 0;
+ 		} else if (op == BLOCK_OP_WRITE || op == BLOCK_OP_WRITE_FAST || op == BLOCK_OP_FLUSH) {
+-			if (block_write_part < 0 || part != (uint32_t)block_write_part || lba < BLOCK_WRITE_FIRST) {
++			if (block_write_part < 0 || part != (uint32_t)block_write_part || lba < BLOCK_WRITE_FIRST
++#if defined(HAKIOS_LITHIUM)
++			    || lba >= BLOCK_LITHIUM_END || count > BLOCK_LITHIUM_END - lba
++#endif
++			) {
+ 				/* not darwin, or not past what the build writes from the computer: never */
+ 				if (block_writes_refused++ < 8) {
+ 					print("ufs: a write of %d blocks from %d of %s: REFUSED\n", count, lba,

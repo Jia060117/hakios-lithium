@@ -1,0 +1,261 @@
+"""Temporarily start the hash-bound lithium UEFI and collect its RAM journal.
+
+No flash, erase, root or partition writes. Requires --boot; hardware inputs and
+QEMU source parity are checked first. USB identity stays under reports/local.
+"""
+import argparse
+from datetime import datetime
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import re
+import shutil
+import subprocess
+import sys
+import time
+
+ROOT=Path(__file__).resolve().parents[1]
+OUT=ROOT/'out/uefi/lithium'
+def read(p): return json.loads(p.read_text())
+def write(p,v): p.write_text(json.dumps(v,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+
+def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--boot',action='store_true'); args=parser.parse_args()
+    if not args.boot: parser.error('--boot required')
+    package=read(OUT/'package.json'); inputs=read(OUT/'inputs.json')
+    qinputs=read(ROOT/'out/uefi/qemu/inputs.json'); qpackage=read(ROOT/'out/uefi/qemu/package.json')
+    validation=read(ROOT/'reports/uefi-qemu.json')
+    strict_validation=read(ROOT/'reports/uefi-qemu-strict-align.json')
+    reject_validation=read(ROOT/'reports/uefi-qemu-payload-reject.json')
+    assert package['phone_boot_allowed'] and not package['qemu_variant']
+    assert package['static_occupancy_check_passed'] and package['fd_sha256']==inputs['fd_sha256']
+    assert validation['all_passed'] and validation['fd_sha256']==qinputs['fd_sha256']
+    assert validation['image_sha256']==qpackage['image_sha256']
+    assert strict_validation['all_passed'] and strict_validation['strict_alignment']
+    assert strict_validation['record_alignment_mod8']==4
+    assert strict_validation['fd_sha256']==qinputs['fd_sha256']
+    assert strict_validation['image_sha256']==qpackage['image_sha256']
+    assert reject_validation['all_passed'] and reject_validation['invalid_payload_rejected']
+    assert reject_validation['fd_sha256']==qinputs['fd_sha256']
+    assert reject_validation['image_sha256']==qpackage['image_sha256']
+    for case in ('uefi-qemu-linux-early','uefi-qemu-linux-early-trap','uefi-qemu-linux-post-mmu'):
+        early=read(ROOT/f'reports/{case}.json')
+        assert early['all_passed'] and early['linux_early_case_passed'],case
+        assert early['fd_sha256']==qinputs['fd_sha256'],case
+        assert early['image_sha256']==qpackage['image_sha256'],case
+    assert read(ROOT/'reports/uefi-qemu-linux-early.json')['linux_early_checkpoint']==8
+    assert read(ROOT/'reports/uefi-qemu-linux-early-trap.json')['linux_exception_rendered']
+    assert read(ROOT/'reports/uefi-qemu-linux-early-trap.json')['linux_exception_pixels_verified']
+    post_validation=read(ROOT/'reports/uefi-qemu-linux-post-mmu.json')
+    assert post_validation['linux_early_checkpoint']==9
+    assert post_validation['linux_post_mmu_execution_verified']
+    assert post_validation['linux_post_mmu_green_pixels_verified']
+    assert inputs['sources']==qinputs['sources'],'Hardware and tested sources differ'
+    assert inputs['journal_build_tag']==qinputs['journal_build_tag']
+    assert inputs['payload']==qinputs['payload']
+    assert hashlib.sha256((OUT/'payload.fat').read_bytes()).hexdigest()==inputs['payload']['sha256']
+    for name,digest in inputs['sources'].items():
+        assert hashlib.sha256((ROOT/name).read_bytes()).hexdigest()==digest,name
+    image=ROOT/package['image_path']
+    assert hashlib.sha256(image.read_bytes()).hexdigest()==package['image_sha256']
+    adb=Path('C:/platform-tools/adb.exe'); fastboot=Path('C:/platform-tools/fastboot.exe')
+    local=ROOT/'reports/local'/(datetime.now().strftime('%Y%m%d-%H%M%S-%f')+'-uefi')
+    local.mkdir(parents=True)
+    frozen=local/'inputs'; frozen.mkdir()
+    for src in (image,OUT/'lithium.fd',OUT/'inputs.json',OUT/'package.json',OUT/'handoff-ramdisk.bin',OUT/'payload.fat'):
+        if src.exists(): shutil.copy2(src,frozen/src.name)
+    for name in inputs['sources']:
+        dst=frozen/name; dst.parent.mkdir(parents=True,exist_ok=True); shutil.copy2(ROOT/name,dst)
+    for name in (
+        'scripts/build-lithium-uefi.py','scripts/package-lithium-uefi.py',
+        'scripts/prepare-uefi-payload.py','scripts/validate-lithium-uefi.py',
+        'scripts/boot-lithium-uefi.py','out/uefi/qemu/inputs.json',
+        'out/uefi/qemu/package.json','reports/uefi-qemu.json',
+        'reports/uefi-qemu-strict-align.json','reports/uefi-qemu-payload-reject.json',
+        'reports/uefi-qemu-linux-early.json','reports/uefi-qemu-linux-early-trap.json',
+        'reports/uefi-qemu-linux-post-mmu.json'):
+        dst=frozen/name; dst.parent.mkdir(parents=True,exist_ok=True)
+        shutil.copy2(ROOT/name,dst)
+    # Keep the decisive QEMU binary records with this exact hardware attempt.
+    # Framebuffer captures are meaningful only in the two pixel-check cases.
+    for case in ('uefi-qemu-linux-post-mmu','uefi-qemu-linux-early-trap'):
+        src=ROOT/'out/uefi/qemu/cases'/case
+        if src.exists():
+            dst=local/'validation'/case; dst.mkdir(parents=True)
+            for name in ('result.json','handoff-fdt.bin','handoff-registers.txt','handoff-framebuffer.bgr'):
+                shutil.copy2(src/name,dst/name)
+    events=[]
+    def cmd(argv,timeout=20):
+        p=subprocess.run(list(map(str,argv)),capture_output=True,timeout=timeout)
+        events.append(dict(command=list(map(str,argv)),returncode=p.returncode,
+            stdout=p.stdout.decode(errors='replace'),stderr=p.stderr.decode(errors='replace')))
+        write(local/'commands.json',events)
+        return p
+    devices=cmd([adb,'devices']).stdout.decode().splitlines()
+    serials=[s.split()[0] for s in devices if s.strip().endswith('\tdevice')]
+    assert len(serials)==1,'One authorized phone required'
+    serial=serials[0]
+    def prop(k):
+        p=cmd([adb,'-s',serial,'shell','getprop',k]); assert p.returncode==0
+        return p.stdout.decode().strip()
+    assert prop('ro.product.device')=='lithium'
+    assert prop('ro.build.version.incremental')=='V9.5.2.0.NAHCNFA'
+    assert prop('sys.boot_completed')=='1'
+    report=dict(schema=1,started_at=datetime.now().astimezone().isoformat(),
+        image_sha256=package['image_sha256'],fd_sha256=package['fd_sha256'],
+        journal_build_tag=inputs['journal_build_tag'],local_log_path=local.relative_to(ROOT).as_posix(),
+        partition_writes_performed=False,root_operations_performed=False,data_wipe_operations_performed=False,
+        status='entering fastboot',uefi_execution_verified=False,return_method=package['return_method'])
+    public=ROOT/'reports/uefi-device.json'; write(public,report)
+    print('Entering fastboot for the validated lithium firmware...',flush=True)
+    assert cmd([adb,'-s',serial,'reboot','bootloader']).returncode==0
+    deadline=time.monotonic()+40
+    while time.monotonic()<deadline:
+        if serial.encode() in cmd([fastboot,'devices']).stdout: break
+        time.sleep(1)
+    else: raise RuntimeError('Fastboot not detected')
+    product=cmd([fastboot,'-s',serial,'getvar','product'])
+    assert b'MSM8996_A8' in product.stdout+product.stderr
+    unlocked=cmd([fastboot,'-s',serial,'oem','device-info'])
+    assert re.search(rb'Device unlocked:\s*true',unlocked.stdout+unlocked.stderr,re.I)
+    print('Starting temporary UEFI; expected stock-kernel restoration after 20 timer ticks.',flush=True)
+    started=time.monotonic()
+    boot=cmd([fastboot,'-s',serial,'boot',image],timeout=50)
+    report.update(fastboot_boot_accepted=boot.returncode==0,
+        fastboot_boot_message=boot.stderr.decode(errors='replace'),status='waiting for stock Android after UEFI')
+    write(public,report)
+    if boot.returncode:
+        cmd([fastboot,'-s',serial,'reboot']); raise RuntimeError('Temporary boot rejected; stock reboot requested')
+    deadline=time.monotonic()+140; last=0; direct_fastboot=False
+    while time.monotonic()<deadline:
+        if serial.encode() in cmd([fastboot,'devices']).stdout:
+            direct_fastboot=True; break
+        if serial.encode() in cmd([adb,'devices']).stdout:
+            try:
+                if prop('sys.boot_completed')=='1': break
+            except AssertionError: pass
+        if time.monotonic()-last>20:
+            print('Waiting for restored Android USB...',flush=True); last=time.monotonic()
+        time.sleep(2)
+    else:
+        report['status']='temporary boot accepted; Android return not observed; physical reset needed'
+        write(public,report); raise SystemExit(2)
+    if not direct_fastboot: assert prop('ro.product.device')=='lithium'
+    report.update(stock_android_return_verified=not direct_fastboot,direct_fastboot_after_uefi=direct_fastboot,
+        seconds_to_usb_return=round(time.monotonic()-started,2),
+        status='collecting RAM journal; retention is not presumed')
+    write(public,report)
+    if package['return_method']=='restore-stock-observer':
+        assert not direct_fastboot,'Unexpected fastboot instead of the restored kernel'
+        spec=importlib.util.spec_from_file_location('probe',ROOT/'scripts/boot-entry-probe.py')
+        probe=importlib.util.module_from_spec(spec); spec.loader.exec_module(probe)
+        collector=read(ROOT/'reports/journal-probe-build.json')
+        propname='/sys/firmware/devicetree/base/chosen/'+collector['property']
+        record=cmd([adb,'-s',serial,'exec-out','cat',propname]).stdout
+        (local/'handoff-record.bin').write_bytes(record)
+        if len(record)!=collector['record_bytes'] or record[:16]!=collector['marker'].encode():
+            report.update(status='Android detected but same-boot diagnostic record absent; handoff not verified',
+                stock_android_return_verified=False,android_adb_detected=True,
+                same_boot_record_present=False,reset_origin='unknown; may include manual recovery')
+            write(public,report); write(local/'result.json',report)
+            print(report['status'],flush=True)
+            raise SystemExit(4)
+        decoded=probe.decode(record,collector['fields'],collector['record_bytes'],collector['marker'].encode())
+        journal=record[512:4608]; (local/'uefi-journal.bin').write_bytes(journal)
+        import struct
+        assert journal[:16]==b'MIX1UEFIJOURNAL!','No firmware journal in same-boot collector'
+        tag,=struct.unpack_from('<Q',journal,16); stage,=struct.unpack_from('<I',journal,24)
+        ticks,=struct.unpack_from('<Q',journal,32); count,=struct.unpack_from('<I',journal,64)
+        ring=journal[128:]; pos=count%len(ring)
+        log=ring[:count] if count<=len(ring) else ring[pos:]+ring[:pos]
+        (local/'uefi-journal.txt').write_bytes(log)
+        data=dict(build_tag=hex(tag),stage=stage,timer_ticks=ticks,
+            gop_selftest_passed=struct.unpack_from('<Q',journal,72)[0]==1,
+            restore_checkpoint=struct.unpack_from('<I',journal,80)[0],
+            exit_boot_services_verified=struct.unpack_from('<I',journal,84)[0]==1,
+            timer_control_after_exit=hex(struct.unpack_from('<Q',journal,88)[0]),
+            interrupt_group_after_exit=hex(struct.unpack_from('<Q',journal,96)[0]),
+            distributor_control_after_exit=hex(struct.unpack_from('<Q',journal,104)[0]),
+            total_log_bytes=count,log_tail=log.decode(errors='replace'))
+        bound=tag==int(inputs['journal_build_tag'],16)
+        report.update(journal_matches_this_build=bound,uefi_journal=data,handoff_entry=decoded,
+            handoff_record_sha256=hashlib.sha256(record).hexdigest())
+        shutdown_ok=all(int(data[key],16)&mask==0 for key,mask in (
+            ('timer_control_after_exit',1),('interrupt_group_after_exit',1),('distributor_control_after_exit',3)))
+        baseline=read(ROOT/'reports/handoff-probe-device.json')['handoff_entry']['registers']
+        restored_keys=('sctlr_el1','tcr_el1','mair_el1','ttbr0_el1','ttbr1_el1','vbar_el1','sp','daif','cpacr_el1')
+        assert record[4608:4624]==b'MIX1EL1ENTRYv001','Missing same-boot original EL1 state'
+        saved_entry=dict(zip(restored_keys,(hex(v) for v in struct.unpack_from('<9Q',record,4624))))
+        entry_state_ok=all(decoded['registers'][key]==saved_entry[key] for key in restored_keys)
+        entry_state_ok=entry_state_ok and [decoded['registers'][f'x{i}'] for i in range(4)]==['0x42800000','0x0','0x0','0x0']
+        report['saved_el1_entry']=saved_entry
+        report['entry_state_comparison_source']='same-boot BootShim snapshot preserved in FDT record tail'
+        report['entry_state_matches_previous_baseline']=all(saved_entry[key]==baseline[key] for key in restored_keys)
+        data['original_el1_state_restored']=entry_state_ok
+        payload_flags,payload_hash=struct.unpack_from('<QQ',record,4624+9*8)
+        copy_compare_ok=bool(payload_flags&8)
+        payload_ok=payload_flags&7==7 and payload_hash==int(inputs['payload']['loader_fnv64'],16)
+        report.update(ram_payload_flags=payload_flags&7,ram_payload_read_hash=hex(payload_hash),
+            executing_cpu_stock_copy_comparison_passed=copy_compare_ok,
+            fat_file_read_and_darwinboot_started=payload_ok)
+        early_checkpoint,early_vector=struct.unpack_from('<II',record,4712)
+        post_sctlr,post_pc=struct.unpack_from('<QQ',record,4752)
+        post_ok=early_checkpoint==9 and early_vector==0 and bool(post_sctlr&1) and post_pc==int(package['linux_post_mmu_hook_virtual_address'],16)
+        report.update(linux_early_checkpoint=early_checkpoint,linux_early_vector_slot=early_vector,
+            linux_body_execution_verified=early_checkpoint>0,
+            linux_pre_mmu_checkpoint_verified=early_checkpoint>=8 and early_vector==0,
+            linux_post_mmu_sctlr_el1=hex(post_sctlr),linux_post_mmu_pc=hex(post_pc),
+            post_mmu_execution_verified=post_ok)
+        report['uefi_execution_verified']=bound and stage==7 and ticks==20 and data['gop_selftest_passed'] and data['restore_checkpoint']==10 and data['exit_boot_services_verified'] and shutdown_ok and entry_state_ok and payload_ok and copy_compare_ok
+        report['uefi_execution_verified']=report['uefi_execution_verified'] and post_ok
+        report['status']='Same-boot journal verifies UEFI BDS, GOP and twenty timer events' if report['uefi_execution_verified'] else 'Handoff record received; firmware checks incomplete'
+        write(public,report)
+        print(json.dumps({k:report[k] for k in ('status','uefi_execution_verified','journal_matches_this_build')},ensure_ascii=False),flush=True)
+        # A normal reboot proves the restored Android and diagnostic property
+        # were transient. Keep binary capture through exec-out.
+        before=cmd([adb,'-s',serial,'exec-out','cat','/proc/sys/kernel/random/boot_id']).stdout
+        assert cmd([adb,'-s',serial,'reboot']).returncode==0
+        time.sleep(4)
+        deadline=time.monotonic()+180
+        while time.monotonic()<deadline:
+            if serial.encode() in cmd([adb,'devices']).stdout:
+                try:
+                    if prop('sys.boot_completed')=='1': break
+                except AssertionError: pass
+            time.sleep(2)
+        else: raise RuntimeError('Ordinary stock reboot did not return')
+        after=cmd([adb,'-s',serial,'exec-out','cat','/proc/sys/kernel/random/boot_id']).stdout
+        absent=cmd([adb,'-s',serial,'shell',
+            'if test -d /sys/firmware/devicetree/base/chosen && test ! -e '+propname+
+            '; then echo MIX1_PROBE_ABSENT; fi']).stdout
+        assert before!=after and absent.strip()==b'MIX1_PROBE_ABSENT'
+        assert prop('ro.product.device')=='lithium' and prop('ro.build.version.incremental')=='V9.5.2.0.NAHCNFA'
+        report.update(final_stock_boot_verified=True,final_stock_probe_property_absent=True)
+        write(public,report); write(local/'result.json',report)
+        if not report['uefi_execution_verified']: raise SystemExit(3)
+        print('PASS: hardware UEFI journal verified; ordinary stock Android restored.',flush=True)
+        return
+    print('USB returned. Collecting the pre-Linux journal on a diagnostic boot...',flush=True)
+    collect=[sys.executable,str(ROOT/'scripts/boot-entry-probe.py'),'--boot','--profile','journal']
+    if direct_fastboot: collect+=['--from-fastboot']
+    result=subprocess.run(collect)
+    if result.returncode:
+        report['status']='Android returned; journal collection failed'; write(public,report)
+        raise SystemExit(result.returncode)
+    journal=read(ROOT/'reports/journal-state.json')
+    run=journal['runs'][-1]
+    retained=run.get('journal_valid_magic',False)
+    data=run.get('uefi_journal',{})
+    bound=retained and int(data.get('build_tag','0'),16)==int(inputs['journal_build_tag'],16)
+    report.update(journal_magic_retained=retained,journal_matches_this_build=bound,
+        uefi_journal=data,final_stock_boot_verified=journal['final_stock_boot_verified'],
+        journal_collection_log=journal['local_log_path'])
+    report['uefi_execution_verified']=bound and data['stage']>=5 and data['timer_ticks']>=1
+    report['status']='UEFI BDS and timer verified from retained journal' if report['uefi_execution_verified'] else 'UEFI boot attempted; execution not established by retained journal'
+    write(public,report)
+    print(json.dumps({k:v for k,v in report.items() if k!='uefi_journal'},ensure_ascii=False,indent=2))
+    if not report['uefi_execution_verified']: raise SystemExit(3)
+
+if __name__=='__main__': main()

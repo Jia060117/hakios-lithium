@@ -1,0 +1,63 @@
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -393,6 +393,43 @@
+ }
+ 
+ static void
++lithium_show_launchd_diagnostics(const char *log, uint64_t bytes)
++{
++	/* Read existing HakiOS logs only. No new abort or syscall implementation. */
++	const char *lines[3];
++	unsigned count = 0;
++	uint64_t remaining = bytes;
++	while (count < 3) {
++		const char *line = lithium_last_line(log, remaining, "systrace: launchd[");
++		if (line == NULL) break;
++		const char *end = line;
++		while (end < log + remaining && *end != '\n') end++;
++		if (end < log + remaining) lines[count++] = line;
++		remaining = (uint64_t)(line - log);
++	}
++	while (count != 0) lithium_show_line(lines[--count], log + bytes);
++	lithium_show_line(lithium_last_line(log, bytes, "userabort: launchd["), log + bytes);
++	/* launchd's own messages need not have a fixed prefix. Keep the last
++	 * complete matching line, with bounds independent of NUL termination. */
++	static const char *errors[] = {"cannot be run directly", "boot task failure:",
++	    "Boot task failed:", "Panicking in 3 seconds", "could not", "Could not"};
++	const char *last = NULL;
++	for (uint64_t start = 0; start < bytes;) {
++		uint64_t end = start;
++		while (end < bytes && log[end] != '\n') end++;
++		if (end == bytes) break;
++		for (unsigned k = 0; k < sizeof(errors)/sizeof(errors[0]); k++) {
++			uint64_t width = str_len(errors[k]);
++			for (uint64_t at = start; at + width <= end; at++) {
++				if (memcmp(log + at, errors[k], width) == 0) { last = log + start; break; }
++			}
++		}
++		start = end + 1;
++	}
++	lithium_show_line(last, log + bytes);
++}
++
++static void
+ lithium_return_screen(const char *log, uint64_t bytes)
+ {
+ 	((efi_status (EFIAPI *)(efi_text_output *, uint8_t))ST->con_out->reset)(ST->con_out, 0);
+@@ -408,7 +445,7 @@
+ 	if (log == NULL) { print("KERNEL NOT STARTED; STORAGE/PSCI STOP\n"); return; }
+ 	print("P2 STORAGE KERNEL:\n");
+ 	static const char *launch[] = {"LITHIUM P2 LAUNCHSTART ", "LITHIUM P2 LAUNCHROOT ",
+-	    "LITHIUM P2 DYNFILE LAUNCHD ", "LITHIUM P2 LAUNCHMOUNTS ", "LITHIUM P2 LAUNCHHANDOFF ",
++	    "LITHIUM P2 DYNFILE LAUNCHD ", "LITHIUM P2 LAUNCHMOUNTS ", "LITHIUM P2 LAUNCHHANDOFF ", "LITHIUM P2 LAUNCHBOOT ", "LITHIUM P2 LAUNCHSTDIO ",
+ 	    "LITHIUM P2 LAUNCHJOB ", "LITHIUM P2 LAUNCHPROC PID1 ",
+ 	    "LITHIUM P2 LAUNCHPROC NOTIFYD ", "LITHIUM P2 LAUNCHPROC CFPREFSD ", "LITHIUM P2 LAUNCHRESULT "};
+ 	for (unsigned i=0; i<sizeof(launch)/sizeof(launch[0]); i++)
+@@ -438,6 +475,7 @@
+ 	print(panic_line != NULL ? "KERNEL PANIC CAUSE:\n" :
+ 	    timed != NULL ? "KERNEL TIMED RETURN OBSERVED\n" : "RETURN CAUSE NOT CAPTURED\n");
+ 	lithium_show_line(panic_line, log + bytes);
++	lithium_show_launchd_diagnostics(log, bytes);
+ 	print("FINAL HARDWARE MEASUREMENTS:\n");
+ 	lithium_show_line(lithium_last_line(log, bytes, "LITHIUM CLOCK "), log + bytes);
+ 	lithium_show_line(lithium_last_line(log, bytes, "LITHIUM FINAL "), log + bytes);

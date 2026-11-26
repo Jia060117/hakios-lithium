@@ -1,0 +1,20 @@
+{
+  "baseline": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+  "patch_sha256": "22245261cde767e38855ee01f1e97e8631b2406e1c9dfb5a72ad28d2887e5dcb",
+  "before_files": {
+    "bsd/kern/kern_proc.c": "a202868fdd945367b1d100e4846c010d9e3826338bfb237fec949ae6e553891d",
+    "bsd/kern/bsd_init.c": "9dc806908842f3b5c77fff17e1b080f19a1b2a6b1182fc9c9f92adbcde80d769",
+    "bsd/kern/sys_persona.c": "7f510639d4c4f11c6f416952c7b12b46ad073f303dc52c83fc6a155e8a61fda5"
+  },
+  "preserved": [
+    "audit-token pid/version validation",
+    "code-signature flags",
+    "original XML special-slot hash verification",
+    "native OSEntitlements path",
+    "DER path",
+    "full persona syscall/lookup/spawn implementation"
+  ],
+  "XML_policy": "existing validated original XML only; no assertion bypass or grant-all",
+  "persona_policy": "one boot-scoped type6 list entry with allocated ID and KAUTH_UID_NONE; caller credentials follow upstream spawn",
+  "hardware_verified": false
+}

@@ -1,0 +1,92 @@
+{
+  "prepared_at": "2026-11-17T03:21:11.828482+08:00",
+  "revision": 7,
+  "status": "prepared_live_fastboot_verified",
+  "image_sha256": "013cdeb8b2ba6c1e72a51f8a41df539c3b28d95838e1f1ad567183cdacaa822d",
+  "kernel_sha256": "40c90b07a0bdf79810fc6cad47f24f2c5cf13259e9d78bbe96817f45c528146e",
+  "image_bytes": 16232448,
+  "readiness_report": "reports/hakios-ios16-boot-ready.json",
+  "backup_branch": "archive/ios16-r6-20261117",
+  "previous_evidence_archive": "reports/history/hakios-ios16-phase4-r6-20261117",
+  "source_baseline": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+  "changes": [
+    "reuse complete upstream ustacks/top for SpringBoard and related service threads",
+    "read saved syscall registers and sampled unfair-lock owner using normal read-only IPC conversion",
+    "separate wall/CPU/non-CPU drawing time; finite row bands; preserve rendering algorithm",
+    "retain R6 early sampler, runloop milestones and bounded USB return drain"
+  ],
+  "fixes_explained": {
+    "r6_source_gate": "Accept exactly the reviewed R6 independent usertraps fatal-trace gate on fixed upstream; no arbitrary trace differences.",
+    "ipc_unlock": "Use XNU8796 ip_mq_unlock after taking a port reference; retain normal thread-read conversion and release both references.",
+    "host_row_warning": "Unchanged upstream drawRows has an unused px1 local. The extracted-function harness disables only unused-variable warnings, retaining ASan/UBSan and all other warning errors; production pixels are unchanged."
+  },
+  "validation": {
+    "full_hakios_kernel": true,
+    "full_upstream_userspace": true,
+    "launchd_jobs": 413,
+    "real_d22ap_loader_and_mu": true,
+    "instruction_scans": 46,
+    "real_package_checks": 16,
+    "actual_code_asan_ubsan": true,
+    "actual_row_comparisons": 50,
+    "dependency_handoff_regression": true,
+    "usb_host_checks": true
+  },
+  "thread_observation": {
+    "revision": 7,
+    "base_revision": 6,
+    "before_sha256": {
+      "xnu/files/osfmk/arm64/user_exception_trace.c": "4b5fc3fea5b0319ac30fb153de0461c0cd22cfe6345dfeda8678ff3021baf1c1",
+      "xnu/files/iokit/Kernel/MiniIOMobileFramebuffer.cpp": "3f6f288ddb581d844a6be9dd85cc25f9f3f7732efb0f1a04ffccab92f4bdc3d9"
+    },
+    "after_sha256": {
+      "xnu/files/osfmk/arm64/user_exception_trace.c": "b27ccd62b12e72f5f6985401b5dd856206e9cbd3ae6d3decbe01d5d0c51ad1ae",
+      "xnu/files/iokit/Kernel/MiniIOMobileFramebuffer.cpp": "924e652b58e39b7acee4164ff598b5b439a202743ad021f5fbace4ff064c9753"
+    },
+    "process": "SpringBoard",
+    "related_processes": [
+      "backboardd",
+      "lsd",
+      "containermanagerd",
+      "runningboardd"
+    ],
+    "first_kernel_seconds": 180,
+    "interval_ms": 360000,
+    "max_samples": 8,
+    "max_threads_per_process": 96,
+    "max_processes_per_sample": 8,
+    "frames_per_thread": 14,
+    "top_enabled": true,
+    "framebuffer_profile_swaps": 8,
+    "framebuffer_max_bands": 8,
+    "framebuffer_band_rows": 512,
+    "raw_saved_registers": true,
+    "unfair_lock_owner_lookup": "read-only normal IPC/thread-read conversion; sampled value may change",
+    "scheduling_time_separated": true,
+    "kernel_memory_mib": 2880,
+    "xnu_cpus": 1,
+    "lock_owner_or_desktop_hardware_verified": false
+  },
+  "observation": {
+    "initial_seconds": 1800,
+    "after_first_frame_seconds": 1800,
+    "maximum_kernel_seconds": 3600,
+    "first_frame_is_desktop_evidence": false,
+    "first_frame_rearms_once_only": true
+  },
+  "limitations": {
+    "desktop_verified": false,
+    "lock_owner_hardware_verified": false,
+    "physical_touch_verified": false,
+    "a530_verified": false,
+    "all_6gb_exposed": false,
+    "xnu_cpus": 1,
+    "kernel_memory_mib": 2880,
+    "noncpu_time_includes_scheduling_wait_interruptions_and_measurement_overhead": true
+  },
+  "live_fastboot_identity_verified": true,
+  "boot_issued": false,
+  "userdata_reflash_issued": false,
+  "qemu_used": false,
+  "legacy_7195_used": false
+}

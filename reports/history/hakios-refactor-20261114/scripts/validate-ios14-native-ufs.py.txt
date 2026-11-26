@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+"""Host-side bounds/corruption tests of the exact GPT parser built into XNU.
+
+Synthetic GPT data tests parsing, not hardware or boot success. No emulation.
+"""
+import ctypes as c
+import hashlib
+import json
+from pathlib import Path
+import struct
+import subprocess
+import tempfile
+import zlib
+
+ROOT=Path(__file__).resolve().parents[1]
+HEADER=ROOT/'ports/lithium/native/ufs_gpt.h'
+STAGED=Path.home()/'ios-mix1-build/xnu7195-lithium/src/bsd/dev/lithium_ufs_gpt.h'
+
+def main():
+    assert HEADER.read_bytes()==STAGED.read_bytes()
+    with tempfile.TemporaryDirectory(prefix='lithium-gpt-') as tmp:
+        tmp=Path(tmp)
+        (tmp/'gpt.c').write_text('#include <stdint.h>\n#include "'+str(HEADER)+'"\n'+'''
+int check(const uint8_t *h, const uint8_t *e, uint64_t blocks, uint64_t *out) {
+    struct lithium_gpt g;
+    int r=lg_header(h,blocks,&g);
+    if(r) return r;
+    return lg_partition(e,&g,"userdata",out,out+1);
+}
+uint32_t crc(const uint8_t *b,uint32_t n) {return lg_crc(b,n,0);}
+''')
+        subprocess.run(['cc','-shared','-fPIC','-O2','-Wall','-Wextra','-Werror',tmp/'gpt.c','-o',tmp/'gpt.so'],check=True)
+        lib=c.CDLL(str(tmp/'gpt.so')); lib.check.argtypes=[c.c_void_p,c.c_void_p,c.c_uint64,c.c_void_p]
+        lib.crc.argtypes=[c.c_void_p,c.c_uint32]; lib.crc.restype=c.c_uint32
+        assert lib.crc(b'123456789',9)==0xcbf43926
+        blocks=251112980480//4096; first=402653184//4096; count=250710192128//4096
+        h=bytearray(4096); e=bytearray(1<<20)
+        h[:8]=b'EFI PART'; struct.pack_into('<III',h,8,0x10000,92,0)
+        struct.pack_into('<QQQQ',h,24,1,blocks-1,6,blocks-6)
+        struct.pack_into('<QII',h,72,2,128,128)
+        e[:16]=b'\x01'*16; struct.pack_into('<QQ',e,32,first,first+count-1)
+        e[56:74]='userdata\0'.encode('utf-16le')
+        def fix(h,e):
+            struct.pack_into('<I',h,88,zlib.crc32(e[:16384]))
+            struct.pack_into('<I',h,16,0); struct.pack_into('<I',h,16,zlib.crc32(h[:92]))
+        fix(h,e)
+        cases=[]
+        def run(name,hh,ee,valid=False,repair=False):
+            if repair: fix(hh,ee)
+            out=(c.c_uint64*2)()
+            rc=lib.check(bytes(hh),bytes(ee),blocks,out)
+            assert (rc==0)==valid,(name,rc)
+            if valid: assert tuple(out)==(first,count)
+            cases.append(dict(name=name,accepted=rc==0,result=rc))
+        run('valid measured geometry',h,e,True)
+        def hdr(name,offset,fmt,value,repair=True):
+            hh=bytearray(h); struct.pack_into(fmt,hh,offset,value);run(name,hh,e,repair=repair)
+        hdr('bad header CRC',16,'<I',0,False)
+        hdr('entry count overflow',80,'<I',0x80000000)
+        hdr('entry size unsupported',84,'<I',256)
+        hdr('entry table outside disk',72,'<Q',blocks-1)
+        hdr('header size out of buffer',12,'<I',4097)
+        hdr('primary at wrong LBA',24,'<Q',2)
+        hdr('backup beyond disk',32,'<Q',blocks)
+        ee=bytearray(e);ee[0]^=1;run('bad entry CRC',h,ee)
+        for name,off,val in [('partition beyond usable',40,blocks),('reversed extent',40,first-1),('partition inside GPT',32,2)]:
+            ee=bytearray(e);struct.pack_into('<Q',ee,off,val);run(name,bytearray(h),ee,repair=True)
+        ee=bytearray(e);ee[128:256]=ee[:128];run('duplicate userdata',bytearray(h),ee,repair=True)
+        ee=bytearray(e);ee[128:256]=ee[:128];ee[184:202]='overlap\0\0'.encode('utf-16le');run('overlapping extent',bytearray(h),ee,repair=True)
+        ee=bytearray(e);ee[56:76]='userdataX\0'.encode('utf-16le');run('prefix is not exact name',bytearray(h),ee,repair=True)
+        ee=bytearray(e);ee[57]=1;run('non ASCII UTF16 name',bytearray(h),ee,repair=True)
+        report=dict(passed=True,cases=cases,crc32_known_answer=True,
+            parser_sha256=hashlib.sha256(HEADER.read_bytes()).hexdigest(),
+            staged_source_identical=True,hardware_read_verified=False,qemu_used=False)
+        (ROOT/'reports/ios14-native-ufs-validation.json').write_text(json.dumps(report,indent=2)+'\n')
+        print(f'{len(cases)} GPT acceptance/rejection checks and CRC32 known answer passed; no hardware claims.')
+
+if __name__=='__main__': main()

@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+"""Generate a board-only MAC policy adapter for the verified dyld query ABI."""
+import difflib
+import importlib.util
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+PATCH = ROOT / 'ports/lithium/patches/xnu-7195/0024-lithium-dyld-policy.patch'
+
+
+def main():
+    spec = importlib.util.spec_from_file_location('baseline', ROOT / 'scripts/prepare-ios14-native-alias-probe.py')
+    helper = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(helper)
+    edits = {}
+    path = 'bsd/conf/files'
+    old = helper.baseline(path, PATCH)
+    edits[path] = (old, old + '\nbsd/kern/lithium_amfi.c\t\tstandard\n')
+    path = 'bsd/conf/Makefile.template'
+    old = helper.baseline(path, PATCH)
+    edits[path] = (old, old + '\n# Board-gated dyld query adapter; no SIMD in kernel copies.\nlithium_amfi.o_CFLAGS_ADD += -mgeneral-regs-only\n')
+    path = 'security/mac_base.c'
+    old = helper.baseline(path, PATCH)
+    anchor = '\tmac_late = 1;'
+    assert old.count(anchor) == 1
+    new = old.replace(anchor, '''
+#if defined(ARM64_BOARD_CONFIG_LITHIUM) && CONFIG_MACF
+    /* Mobile MAC tables become read-only at machine_lockdown(), before
+     * bsd_init. Register with other early security policies while writable. */
+    extern void lithium_amfi_register(void);
+    lithium_amfi_register();
+#endif
+''' + anchor)
+    edits[path] = (old, new)
+    edits['bsd/kern/lithium_amfi.c'] = ('', (ROOT / 'ports/lithium/native/lithium_amfi.c').read_text())
+    patch = 'Subject: lithium: restrictive ARM64 dyld AMFI policy query\n\n'
+    patch += 'ABI checked against iOS 14.8 dyld-851.31; reference sailfish 0139.\n'
+    patch += 'Only op 0x5a; zero optional permissions; normal copyin/copyout and errno.\n\n'
+    patch += 'Register from mac_policy_initmach before MAC late state and machine lockdown.\n\n'
+    for path, (old, new) in edits.items():
+        patch += f'diff --git a/{path} b/{path}\n'
+        if not old:
+            patch += 'new file mode 100644\n'
+        patch += ''.join(difflib.unified_diff(old.splitlines(True), new.splitlines(True),
+            fromfile='a/' + path if old else '/dev/null', tofile='b/' + path))
+    PATCH.write_text(patch)
+    print(PATCH)
+
+
+if __name__ == '__main__':
+    main()

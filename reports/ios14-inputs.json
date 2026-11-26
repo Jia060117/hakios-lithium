@@ -1,0 +1,4819 @@
+{
+  "source_url": "https://updates.cdn-apple.com/2021FallFCS/fullrestores/071-97932/2C2C8127-289D-44D6-93D6-2BA03D0D6E0D/iPhone_4.7_14.8_18H17_Restore.ipsw",
+  "locator_source": "ipsw.me; used only to locate the Apple CDN asset",
+  "version": "14.8",
+  "build": "18H17",
+  "product_types": [
+    "iPhone8,1"
+  ],
+  "manifest_sha256": "2d4cf7cdcc549afe2b80d310850ad469acab6b956d301a217eac77608dd765d7",
+  "selected_device_class": "n71ap",
+  "identities": [
+    {
+      "device_class": "n71ap",
+      "chip_id": "0x8000",
+      "board_id": "0x04",
+      "variant": "Customer Erase Install (IPSW)",
+      "components": {
+        "DeviceTree": {
+          "Digest": "cc61586690e558812ea8ff695786cf2984457fce",
+          "Info": {
+            "IsFTAB": false,
+            "IsFirmwarePayload": true,
+            "IsLoadedByiBoot": false,
+            "IsLoadedByiBootStage1": false,
+            "IsiBootEANFirmware": false,
+            "IsiBootNonEssentialFirmware": false,
+            "Path": "Firmware/all_flash/DeviceTree.n71ap.im4p",
+            "Personalize": true,
+            "RestoreRequestRules": [
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApRawProductionMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": true
+                },
+                "Conditions": {
+                  "ApRawProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApDemotionPolicyOverride": "Demote",
+                  "ApRawProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": false
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": true
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": true,
+                  "ApRequiresImage4": true
+                }
+              }
+            ]
+          },
+          "Trusted": true
+        },
+        "KernelCache": {
+          "Digest": "c9ebf599aaab346517416396aa1cf0c60c9c2219",
+          "Info": {
+            "IsFTAB": false,
+            "IsLoadedByiBoot": false,
+            "IsLoadedByiBootStage1": false,
+            "IsiBootEANFirmware": false,
+            "IsiBootNonEssentialFirmware": false,
+            "Path": "kernelcache.release.n71",
+            "Personalize": true,
+            "RestoreRequestRules": [
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApRawProductionMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": true
+                },
+                "Conditions": {
+                  "ApRawProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApDemotionPolicyOverride": "Demote",
+                  "ApRawProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": false
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": true
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": true,
+                  "ApRequiresImage4": true
+                }
+              }
+            ]
+          },
+          "Trusted": true
+        },
+        "OS": {
+          "Digest": "6fed00494fd0e1e8a4cb5cbbd7d30c497b46baa4",
+          "Info": {
+            "HashMethod": "sha1",
+            "IsFTAB": false,
+            "IsLoadedByiBoot": false,
+            "IsLoadedByiBootStage1": false,
+            "IsiBootEANFirmware": false,
+            "IsiBootNonEssentialFirmware": false,
+            "Path": "018-62051-016.dmg",
+            "Personalize": false,
+            "RestoreRequestRules": [
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": true
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApDemotionPolicyOverride": "Demote",
+                  "ApInRomDFU": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": false
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": true
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": true,
+                  "ApRequiresImage4": true
+                }
+              }
+            ]
+          },
+          "Trusted": true
+        },
+        "RestoreRamDisk": {
+          "Digest": "f2157a4085ba14a9b737768f11ab3189417ffd4f",
+          "Info": {
+            "IsFTAB": false,
+            "IsLoadedByiBoot": false,
+            "IsLoadedByiBootStage1": false,
+            "IsiBootEANFirmware": false,
+            "IsiBootNonEssentialFirmware": false,
+            "Path": "018-61747-017.dmg",
+            "Personalize": true,
+            "RestoreRequestRules": [
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": true
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApDemotionPolicyOverride": "Demote",
+                  "ApInRomDFU": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": false
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": true
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": true,
+                  "ApRequiresImage4": true
+                }
+              }
+            ]
+          },
+          "Trusted": true
+        },
+        "StaticTrustCache": {
+          "Digest": "925326c9eafc2ee234d08ba29477526559255bbc",
+          "Info": {
+            "IsFTAB": false,
+            "IsFUDFirmware": true,
+            "IsLoadedByiBoot": false,
+            "IsLoadedByiBootStage1": false,
+            "IsiBootEANFirmware": false,
+            "IsiBootNonEssentialFirmware": false,
+            "Path": "Firmware/018-62051-016.dmg.trustcache",
+            "Personalize": true,
+            "RestoreRequestRules": [
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": true
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApDemotionPolicyOverride": "Demote",
+                  "ApInRomDFU": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": false
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": true
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": true,
+                  "ApRequiresImage4": true
+                }
+              }
+            ]
+          },
+          "Trusted": true
+        }
+      }
+    },
+    {
+      "device_class": "n71map",
+      "chip_id": "0x8003",
+      "board_id": "0x04",
+      "variant": "Customer Erase Install (IPSW)",
+      "components": {
+        "DeviceTree": {
+          "Digest": "cec17f3c56ab61ec284c171ec1ee1897cdd0c963",
+          "Info": {
+            "IsFTAB": false,
+            "IsFirmwarePayload": true,
+            "IsLoadedByiBoot": false,
+            "IsLoadedByiBootStage1": false,
+            "IsiBootEANFirmware": false,
+            "IsiBootNonEssentialFirmware": false,
+            "Path": "Firmware/all_flash/DeviceTree.n71map.im4p",
+            "Personalize": true,
+            "RestoreRequestRules": [
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApRawProductionMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": true
+                },
+                "Conditions": {
+                  "ApRawProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApDemotionPolicyOverride": "Demote",
+                  "ApRawProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": false
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": true
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": true,
+                  "ApRequiresImage4": true
+                }
+              }
+            ]
+          },
+          "Trusted": true
+        },
+        "KernelCache": {
+          "Digest": "c9ebf599aaab346517416396aa1cf0c60c9c2219",
+          "Info": {
+            "IsFTAB": false,
+            "IsLoadedByiBoot": false,
+            "IsLoadedByiBootStage1": false,
+            "IsiBootEANFirmware": false,
+            "IsiBootNonEssentialFirmware": false,
+            "Path": "kernelcache.release.n71",
+            "Personalize": true,
+            "RestoreRequestRules": [
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApRawProductionMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": true
+                },
+                "Conditions": {
+                  "ApRawProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApDemotionPolicyOverride": "Demote",
+                  "ApRawProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": false
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": true
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": true,
+                  "ApRequiresImage4": true
+                }
+              }
+            ]
+          },
+          "Trusted": true
+        },
+        "OS": {
+          "Digest": "6fed00494fd0e1e8a4cb5cbbd7d30c497b46baa4",
+          "Info": {
+            "HashMethod": "sha1",
+            "IsFTAB": false,
+            "IsLoadedByiBoot": false,
+            "IsLoadedByiBootStage1": false,
+            "IsiBootEANFirmware": false,
+            "IsiBootNonEssentialFirmware": false,
+            "Path": "018-62051-016.dmg",
+            "Personalize": false,
+            "RestoreRequestRules": [
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": true
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApDemotionPolicyOverride": "Demote",
+                  "ApInRomDFU": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": false
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": true
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": true,
+                  "ApRequiresImage4": true
+                }
+              }
+            ]
+          },
+          "Trusted": true
+        },
+        "RestoreRamDisk": {
+          "Digest": "f2157a4085ba14a9b737768f11ab3189417ffd4f",
+          "Info": {
+            "IsFTAB": false,
+            "IsLoadedByiBoot": false,
+            "IsLoadedByiBootStage1": false,
+            "IsiBootEANFirmware": false,
+            "IsiBootNonEssentialFirmware": false,
+            "Path": "018-61747-017.dmg",
+            "Personalize": true,
+            "RestoreRequestRules": [
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": true
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApDemotionPolicyOverride": "Demote",
+                  "ApInRomDFU": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": false
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": true
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": true,
+                  "ApRequiresImage4": true
+                }
+              }
+            ]
+          },
+          "Trusted": true
+        },
+        "StaticTrustCache": {
+          "Digest": "925326c9eafc2ee234d08ba29477526559255bbc",
+          "Info": {
+            "IsFTAB": false,
+            "IsFUDFirmware": true,
+            "IsLoadedByiBoot": false,
+            "IsLoadedByiBootStage1": false,
+            "IsiBootEANFirmware": false,
+            "IsiBootNonEssentialFirmware": false,
+            "Path": "Firmware/018-62051-016.dmg.trustcache",
+            "Personalize": true,
+            "RestoreRequestRules": [
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": true
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApDemotionPolicyOverride": "Demote",
+                  "ApInRomDFU": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": false
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": true
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": true,
+                  "ApRequiresImage4": true
+                }
+              }
+            ]
+          },
+          "Trusted": true
+        }
+      }
+    },
+    {
+      "device_class": "n71ap",
+      "chip_id": "0x8000",
+      "board_id": "0x04",
+      "variant": "Customer Upgrade Install (IPSW)",
+      "components": {
+        "DeviceTree": {
+          "Digest": "cc61586690e558812ea8ff695786cf2984457fce",
+          "Info": {
+            "IsFTAB": false,
+            "IsFirmwarePayload": true,
+            "IsLoadedByiBoot": false,
+            "IsLoadedByiBootStage1": false,
+            "IsiBootEANFirmware": false,
+            "IsiBootNonEssentialFirmware": false,
+            "Path": "Firmware/all_flash/DeviceTree.n71ap.im4p",
+            "Personalize": true,
+            "RestoreRequestRules": [
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApRawProductionMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": true
+                },
+                "Conditions": {
+                  "ApRawProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApDemotionPolicyOverride": "Demote",
+                  "ApRawProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": false
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": true
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": true,
+                  "ApRequiresImage4": true
+                }
+              }
+            ]
+          },
+          "Trusted": true
+        },
+        "KernelCache": {
+          "Digest": "c9ebf599aaab346517416396aa1cf0c60c9c2219",
+          "Info": {
+            "IsFTAB": false,
+            "IsLoadedByiBoot": false,
+            "IsLoadedByiBootStage1": false,
+            "IsiBootEANFirmware": false,
+            "IsiBootNonEssentialFirmware": false,
+            "Path": "kernelcache.release.n71",
+            "Personalize": true,
+            "RestoreRequestRules": [
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApRawProductionMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": true
+                },
+                "Conditions": {
+                  "ApRawProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApDemotionPolicyOverride": "Demote",
+                  "ApRawProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": false
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": true
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": true,
+                  "ApRequiresImage4": true
+                }
+              }
+            ]
+          },
+          "Trusted": true
+        },
+        "OS": {
+          "Digest": "6fed00494fd0e1e8a4cb5cbbd7d30c497b46baa4",
+          "Info": {
+            "HashMethod": "sha1",
+            "IsFTAB": false,
+            "IsLoadedByiBoot": false,
+            "IsLoadedByiBootStage1": false,
+            "IsiBootEANFirmware": false,
+            "IsiBootNonEssentialFirmware": false,
+            "Path": "018-62051-016.dmg",
+            "Personalize": false,
+            "RestoreRequestRules": [
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": true
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApDemotionPolicyOverride": "Demote",
+                  "ApInRomDFU": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": false
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": true
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": true,
+                  "ApRequiresImage4": true
+                }
+              }
+            ]
+          },
+          "Trusted": true
+        },
+        "RestoreRamDisk": {
+          "Digest": "207b3abf48d864dca5fbfdb83a90b3f31afb78d7",
+          "Info": {
+            "IsFTAB": false,
+            "IsLoadedByiBoot": false,
+            "IsLoadedByiBootStage1": false,
+            "IsiBootEANFirmware": false,
+            "IsiBootNonEssentialFirmware": false,
+            "Path": "018-61899-017.dmg",
+            "Personalize": true,
+            "RestoreRequestRules": [
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": true
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApDemotionPolicyOverride": "Demote",
+                  "ApInRomDFU": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": false
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": true
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": true,
+                  "ApRequiresImage4": true
+                }
+              }
+            ]
+          },
+          "Trusted": true
+        },
+        "StaticTrustCache": {
+          "Digest": "925326c9eafc2ee234d08ba29477526559255bbc",
+          "Info": {
+            "IsFTAB": false,
+            "IsFUDFirmware": true,
+            "IsLoadedByiBoot": false,
+            "IsLoadedByiBootStage1": false,
+            "IsiBootEANFirmware": false,
+            "IsiBootNonEssentialFirmware": false,
+            "Path": "Firmware/018-62051-016.dmg.trustcache",
+            "Personalize": true,
+            "RestoreRequestRules": [
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": true
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApDemotionPolicyOverride": "Demote",
+                  "ApInRomDFU": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": false
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": true
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": true,
+                  "ApRequiresImage4": true
+                }
+              }
+            ]
+          },
+          "Trusted": true
+        }
+      }
+    },
+    {
+      "device_class": "n71map",
+      "chip_id": "0x8003",
+      "board_id": "0x04",
+      "variant": "Customer Upgrade Install (IPSW)",
+      "components": {
+        "DeviceTree": {
+          "Digest": "cec17f3c56ab61ec284c171ec1ee1897cdd0c963",
+          "Info": {
+            "IsFTAB": false,
+            "IsFirmwarePayload": true,
+            "IsLoadedByiBoot": false,
+            "IsLoadedByiBootStage1": false,
+            "IsiBootEANFirmware": false,
+            "IsiBootNonEssentialFirmware": false,
+            "Path": "Firmware/all_flash/DeviceTree.n71map.im4p",
+            "Personalize": true,
+            "RestoreRequestRules": [
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApRawProductionMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": true
+                },
+                "Conditions": {
+                  "ApRawProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApDemotionPolicyOverride": "Demote",
+                  "ApRawProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": false
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": true
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": true,
+                  "ApRequiresImage4": true
+                }
+              }
+            ]
+          },
+          "Trusted": true
+        },
+        "KernelCache": {
+          "Digest": "c9ebf599aaab346517416396aa1cf0c60c9c2219",
+          "Info": {
+            "IsFTAB": false,
+            "IsLoadedByiBoot": false,
+            "IsLoadedByiBootStage1": false,
+            "IsiBootEANFirmware": false,
+            "IsiBootNonEssentialFirmware": false,
+            "Path": "kernelcache.release.n71",
+            "Personalize": true,
+            "RestoreRequestRules": [
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApRawProductionMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": true
+                },
+                "Conditions": {
+                  "ApRawProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApDemotionPolicyOverride": "Demote",
+                  "ApRawProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": false
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": true
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": true,
+                  "ApRequiresImage4": true
+                }
+              }
+            ]
+          },
+          "Trusted": true
+        },
+        "OS": {
+          "Digest": "6fed00494fd0e1e8a4cb5cbbd7d30c497b46baa4",
+          "Info": {
+            "HashMethod": "sha1",
+            "IsFTAB": false,
+            "IsLoadedByiBoot": false,
+            "IsLoadedByiBootStage1": false,
+            "IsiBootEANFirmware": false,
+            "IsiBootNonEssentialFirmware": false,
+            "Path": "018-62051-016.dmg",
+            "Personalize": false,
+            "RestoreRequestRules": [
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": true
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApDemotionPolicyOverride": "Demote",
+                  "ApInRomDFU": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": false
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": true
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": true,
+                  "ApRequiresImage4": true
+                }
+              }
+            ]
+          },
+          "Trusted": true
+        },
+        "RestoreRamDisk": {
+          "Digest": "207b3abf48d864dca5fbfdb83a90b3f31afb78d7",
+          "Info": {
+            "IsFTAB": false,
+            "IsLoadedByiBoot": false,
+            "IsLoadedByiBootStage1": false,
+            "IsiBootEANFirmware": false,
+            "IsiBootNonEssentialFirmware": false,
+            "Path": "018-61899-017.dmg",
+            "Personalize": true,
+            "RestoreRequestRules": [
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": true
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApDemotionPolicyOverride": "Demote",
+                  "ApInRomDFU": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": false
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": true
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": true,
+                  "ApRequiresImage4": true
+                }
+              }
+            ]
+          },
+          "Trusted": true
+        },
+        "StaticTrustCache": {
+          "Digest": "925326c9eafc2ee234d08ba29477526559255bbc",
+          "Info": {
+            "IsFTAB": false,
+            "IsFUDFirmware": true,
+            "IsLoadedByiBoot": false,
+            "IsLoadedByiBootStage1": false,
+            "IsiBootEANFirmware": false,
+            "IsiBootNonEssentialFirmware": false,
+            "Path": "Firmware/018-62051-016.dmg.trustcache",
+            "Personalize": true,
+            "RestoreRequestRules": [
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": true
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "EPRO": false
+                },
+                "Conditions": {
+                  "ApCurrentProductionMode": true,
+                  "ApDemotionPolicyOverride": "Demote",
+                  "ApInRomDFU": true,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": false
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": false,
+                  "ApRequiresImage4": true
+                }
+              },
+              {
+                "Actions": {
+                  "ESEC": true
+                },
+                "Conditions": {
+                  "ApRawSecurityMode": true,
+                  "ApRequiresImage4": true
+                }
+              }
+            ]
+          },
+          "Trusted": true
+        }
+      }
+    }
+  ],
+  "full_ipsw_downloaded": false,
+  "kernelcache_downloaded": true,
+  "exact_kernel_version": "Darwin Kernel Version 20.6.0: Tue Aug 24 21:10:33 PDT 2021; root:xnu-7195.140.44~1/RELEASE_ARM64_S8000",
+  "kernelcache_member": "kernelcache.release.n71",
+  "kernelcache_im4p_sha256": "5224c2a98277136e101d1a58b07b37ff3a98c24d6cdcb5965b74b852ddbd414d",
+  "kernelcache_im4p_bytes": 19112973,
+  "range_bytes_transferred": 17967124,
+  "range_requests": [
+    {
+      "offset": 4741257770,
+      "size": 22
+    },
+    {
+      "offset": 4741257750,
+      "size": 20
+    },
+    {
+      "offset": 4741257694,
+      "size": 56
+    },
+    {
+      "offset": 4741252444,
+      "size": 5250
+    },
+    {
+      "offset": 4650661767,
+      "size": 30
+    },
+    {
+      "offset": 4650661797,
+      "size": 19
+    },
+    {
+      "offset": 4650661816,
+      "size": 20
+    },
+    {
+      "offset": 4650661836,
+      "size": 15200
+    },
+    {
+      "offset": 4723305937,
+      "size": 30
+    },
+    {
+      "offset": 4723305967,
+      "size": 23
+    },
+    {
+      "offset": 4723305990,
+      "size": 20
+    },
+    {
+      "offset": 4723306010,
+      "size": 17946434
+    }
+  ],
+  "decompression": {
+    "format": "complzss",
+    "im4p_payload_offset": 63,
+    "header_bytes": 384,
+    "compressed_bytes": 19063374,
+    "decompressed_bytes": 38764544,
+    "header_field": 1,
+    "adler32": "0x811d440e",
+    "adler32_verified": true,
+    "compressed_stream_consumed_exactly": true,
+    "payload_tail_bytes": 49152,
+    "payload_tail_sha256": "7638aa86ea3f2bdb3ed710823c0ec9d2ce28e080256ad542c975a59cee5cf06d",
+    "payload_tail_interpretation": "preserved; not interpreted"
+  },
+  "decompressed_sha256": "f2fe5f5e0684989ae2c3d37dbf641c207fa67d09273bba45e10f8376fc9d4fba",
+  "macho": {
+    "cpu_type": "0x100000c",
+    "cpu_subtype": "0x0",
+    "file_type": 2,
+    "darwin_version_string": "Darwin Kernel Version 20.6.0: Tue Aug 24 21:10:33 PDT 2021; root:xnu-7195.140.44~1/RELEASE_ARM64_S8000",
+    "segments": [
+      {
+        "name": "__TEXT",
+        "vmaddr": "0xfffffff007004000",
+        "vmsize": 638976,
+        "fileoff": 0,
+        "filesize": 638976
+      },
+      {
+        "name": "__DATA_CONST",
+        "vmaddr": "0xfffffff0070a0000",
+        "vmsize": 491520,
+        "fileoff": 638976,
+        "filesize": 491520
+      },
+      {
+        "name": "__TEXT_EXEC",
+        "vmaddr": "0xfffffff007118000",
+        "vmsize": 6651904,
+        "fileoff": 1130496,
+        "filesize": 6651904
+      },
+      {
+        "name": "__KLD",
+        "vmaddr": "0xfffffff007770000",
+        "vmsize": 16384,
+        "fileoff": 7782400,
+        "filesize": 16384
+      },
+      {
+        "name": "__LASTDATA_CONST",
+        "vmaddr": "0xfffffff007774000",
+        "vmsize": 16384,
+        "fileoff": 7798784,
+        "filesize": 16384
+      },
+      {
+        "name": "__LAST",
+        "vmaddr": "0xfffffff007778000",
+        "vmsize": 0,
+        "fileoff": 0,
+        "filesize": 0
+      },
+      {
+        "name": "__KLDDATA",
+        "vmaddr": "0xfffffff007778000",
+        "vmsize": 16384,
+        "fileoff": 7815168,
+        "filesize": 16384
+      },
+      {
+        "name": "__DATA",
+        "vmaddr": "0xfffffff00777c000",
+        "vmsize": 622592,
+        "fileoff": 7831552,
+        "filesize": 147456
+      },
+      {
+        "name": "__BOOTDATA",
+        "vmaddr": "0xfffffff007814000",
+        "vmsize": 245760,
+        "fileoff": 7979008,
+        "filesize": 245760
+      },
+      {
+        "name": "__PRELINK_TEXT",
+        "vmaddr": "0xfffffff005790000",
+        "vmsize": 5603328,
+        "fileoff": 9011200,
+        "filesize": 5603328
+      },
+      {
+        "name": "__PRELINK_INFO",
+        "vmaddr": "0xfffffff007a58000",
+        "vmsize": 2768896,
+        "fileoff": 35995648,
+        "filesize": 2768896
+      },
+      {
+        "name": "__PLK_TEXT_EXEC",
+        "vmaddr": "0xfffffff005ce8000",
+        "vmsize": 17350656,
+        "fileoff": 14614528,
+        "filesize": 17350656
+      },
+      {
+        "name": "__PRELINK_DATA",
+        "vmaddr": "0xfffffff007910000",
+        "vmsize": 1343488,
+        "fileoff": 34652160,
+        "filesize": 1343488
+      },
+      {
+        "name": "__PLK_DATA_CONST",
+        "vmaddr": "0xfffffff006d74000",
+        "vmsize": 2686976,
+        "fileoff": 31965184,
+        "filesize": 2686976
+      },
+      {
+        "name": "__PLK_LLVM_COV",
+        "vmaddr": "0xfffffff007a58000",
+        "vmsize": 0,
+        "fileoff": 35995648,
+        "filesize": 0
+      },
+      {
+        "name": "__PLK_LINKEDIT",
+        "vmaddr": "0xfffffff007a58000",
+        "vmsize": 0,
+        "fileoff": 35995648,
+        "filesize": 0
+      },
+      {
+        "name": "__LINKINFO",
+        "vmaddr": "0xfffffff007850000",
+        "vmsize": 262144,
+        "fileoff": 8224768,
+        "filesize": 262144
+      },
+      {
+        "name": "__LINKEDIT",
+        "vmaddr": "0xfffffff007890000",
+        "vmsize": 519768,
+        "fileoff": 8486912,
+        "filesize": 519768
+      }
+    ],
+    "prelink_parser_sha256": "a2da7ea8a4431f6c26418ecab9be718c0fbd2f0aa2334ba8d32c2270d2ac81dc",
+    "prelinked_kext_count": 217,
+    "prelinked_kexts": [
+      {
+        "bundle_id": "com.apple.kpi.iokit",
+        "version": "20.6.0",
+        "dependencies": {},
+        "executable_address": 18446744005081890816,
+        "executable_size": 127708
+      },
+      {
+        "bundle_id": "com.apple.kpi.libkern",
+        "version": "20.6.0",
+        "dependencies": {},
+        "executable_address": 18446744005081890944,
+        "executable_size": 42912
+      },
+      {
+        "bundle_id": "com.apple.kpi.mach",
+        "version": "20.6.0",
+        "dependencies": {},
+        "executable_address": 18446744005081891072,
+        "executable_size": 6868
+      },
+      {
+        "bundle_id": "com.apple.kpi.private",
+        "version": "20.6.0",
+        "dependencies": {},
+        "executable_address": 18446744005081891200,
+        "executable_size": 58384
+      },
+      {
+        "bundle_id": "com.apple.kpi.unsupported",
+        "version": "20.6.0",
+        "dependencies": {},
+        "executable_address": 18446744005081891328,
+        "executable_size": 13988
+      },
+      {
+        "bundle_id": "com.apple.kpi.bsd",
+        "version": "20.6.0",
+        "dependencies": {},
+        "executable_address": 18446744005081891456,
+        "executable_size": 31660
+      },
+      {
+        "bundle_id": "com.apple.driver.corecapture",
+        "version": "1.0.4",
+        "dependencies": {
+          "com.apple.kpi.mach": "8.0.0",
+          "com.apple.kpi.private": "8.0.0",
+          "com.apple.kpi.unsupported": "8.0.0",
+          "com.apple.kpi.iokit": "8.0.0",
+          "com.apple.kpi.libkern": "8.0.0",
+          "com.apple.kpi.bsd": "8.0.0"
+        },
+        "executable_address": 18446744005081891584,
+        "executable_size": 14221
+      },
+      {
+        "bundle_id": "com.apple.kec.corecrypto",
+        "version": "11.1",
+        "dependencies": {
+          "com.apple.kpi.mach": "11.2",
+          "com.apple.kpi.private": "11.2",
+          "com.apple.kpi.unsupported": "11.2",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.libkern": "11.2",
+          "com.apple.kpi.bsd": "12.0"
+        },
+        "executable_address": 18446744005081905856,
+        "executable_size": 107900
+      },
+      {
+        "bundle_id": "com.apple.driver.IOImageLoader",
+        "version": "1.0.0",
+        "dependencies": {
+          "com.apple.driver.corecapture": "1.0.0",
+          "com.apple.kpi.bsd": "13.0.0",
+          "com.apple.kec.corecrypto": "1.0",
+          "com.apple.kpi.libkern": "13.0.0",
+          "com.apple.kpi.iokit": "13.0.0",
+          "com.apple.kpi.mach": "13.0.0",
+          "com.apple.kpi.unsupported": "13.0.0",
+          "com.apple.kpi.private": "14.0.0"
+        },
+        "executable_address": 18446744005082013760,
+        "executable_size": 8990
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleBCMWLANFirmware.Hashstore",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.iokit": "13.0",
+          "com.apple.kpi.libkern": "13.0",
+          "com.apple.kpi.mach": "13.0.0",
+          "com.apple.driver.corecapture": "1.0.0",
+          "com.apple.driver.IOImageLoader": "1.0",
+          "com.apple.kpi.bsd": "13.0.0"
+        },
+        "executable_address": 18446744005082022784,
+        "executable_size": 37499
+      },
+      {
+        "bundle_id": "com.apple.iokit.IONetworkingFamily",
+        "version": "3.4",
+        "dependencies": {
+          "com.apple.kpi.mach": "10.0.0d1",
+          "com.apple.kpi.private": "10.0.0d1",
+          "com.apple.kpi.unsupported": "10.0.0d1",
+          "com.apple.kpi.iokit": "10.0.0d1",
+          "com.apple.kpi.libkern": "10.0.0d1",
+          "com.apple.kpi.bsd": "10.0.0d1"
+        },
+        "executable_address": 18446744005082060288,
+        "executable_size": 6800
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOTimeSyncFamily",
+        "version": "900.11",
+        "dependencies": {
+          "com.apple.kpi.mach": "10.0.0d1",
+          "com.apple.iokit.IONetworkingFamily": "2.0",
+          "com.apple.kpi.iokit": "10.0.0d1",
+          "com.apple.kpi.libkern": "10.0.0d1",
+          "com.apple.kpi.bsd": "10.0.0d1"
+        },
+        "executable_address": 18446744005082067136,
+        "executable_size": 20971
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOSlowAdaptiveClockingFamily",
+        "version": "1.0.0",
+        "dependencies": {
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.bsd": "8.0"
+        },
+        "executable_address": 18446744005082088128,
+        "executable_size": 1363
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOStorageFamily",
+        "version": "2.1",
+        "dependencies": {
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.bsd": "8.0"
+        },
+        "executable_address": 18446744005082089536,
+        "executable_size": 4344
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOReportFamily",
+        "version": "47",
+        "dependencies": {
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.libkern": "8.0"
+        },
+        "executable_address": 18446744005082093888,
+        "executable_size": 2586
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleARMPlatform",
+        "version": "1.0.2",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.iokit.IOSlowAdaptiveClockingFamily": "1.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.iokit.IOStorageFamily": "1.5",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.iokit.IOReportFamily": "1.0"
+        },
+        "executable_address": 18446744005082096512,
+        "executable_size": 44724
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleSamsungSPI",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.bsd": "8.0"
+        },
+        "executable_address": 18446744005082141248,
+        "executable_size": 3697
+      },
+      {
+        "bundle_id": "com.apple.kpi.dsep",
+        "version": "20.6.0",
+        "dependencies": {},
+        "executable_address": 18446744005082144960,
+        "executable_size": 4416
+      },
+      {
+        "bundle_id": "com.apple.kext.CoreTrust",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kec.corecrypto": "1.0.0",
+          "com.apple.kpi.libkern": "17.5"
+        },
+        "executable_address": 18446744005082145088,
+        "executable_size": 4522
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleMobileFileIntegrity",
+        "version": "1.0.5",
+        "dependencies": {
+          "com.apple.kpi.bsd": "15.0.0",
+          "com.apple.kpi.dsep": "9.0.0d8",
+          "com.apple.kec.corecrypto": "1.0.0",
+          "com.apple.kpi.libkern": "8.0.0",
+          "com.apple.kpi.iokit": "15.0",
+          "com.apple.kpi.mach": "8.0.0",
+          "com.apple.kext.CoreTrust": "1.0.0",
+          "com.apple.kpi.unsupported": "8.0.0",
+          "com.apple.kpi.private": "8.0.0"
+        },
+        "executable_address": 18446744005082149632,
+        "executable_size": 19936
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOHIDFamily",
+        "version": "2.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0.0b2",
+          "com.apple.driver.AppleMobileFileIntegrity": "1.0.2",
+          "com.apple.kpi.libkern": "8.0.0b2",
+          "com.apple.kpi.mach": "8.0.0b2",
+          "com.apple.kpi.iokit": "8.0.0b2",
+          "com.apple.kpi.unsupported": "8.0.0b2",
+          "com.apple.kpi.private": "8.0.0"
+        },
+        "executable_address": 18446744005082169600,
+        "executable_size": 17712
+      },
+      {
+        "bundle_id": "com.apple.driver.IOSlaveProcessor",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.libkern": "8.0"
+        },
+        "executable_address": 18446744005082187328,
+        "executable_size": 1398
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleA7IOP",
+        "version": "1.0.2",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.IOSlaveProcessor": "1.0.0"
+        },
+        "executable_address": 18446744005082188736,
+        "executable_size": 7864
+      },
+      {
+        "bundle_id": "com.apple.driver.RTBuddy",
+        "version": "1.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kec.corecrypto": "1.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleA7IOP": "1.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.IOSlaveProcessor": "1.0.0",
+          "com.apple.iokit.IOReportFamily": "1.0"
+        },
+        "executable_address": 18446744005082196608,
+        "executable_size": 24750
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOCryptoAcceleratorFamily",
+        "version": "1.0.1",
+        "dependencies": {
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.bsd": "8.0"
+        },
+        "executable_address": 18446744005082221376,
+        "executable_size": 3184
+      },
+      {
+        "bundle_id": "com.apple.security.AppleImage4",
+        "version": "3.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "18.0.0",
+          "com.apple.kpi.libkern": "18.0.0",
+          "com.apple.kec.corecrypto": "1.0.0",
+          "com.apple.kpi.mach": "18.0.0",
+          "com.apple.iokit.IOCryptoAcceleratorFamily": "1.0.0",
+          "com.apple.kpi.iokit": "18.0.0",
+          "com.apple.kpi.unsupported": "18.0.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "18.0.0"
+        },
+        "executable_address": 18446744005082224576,
+        "executable_size": 25748
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleFirmwareUpdateKext",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kec.corecrypto": "1.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.security.AppleImage4": "3.0.0"
+        },
+        "executable_address": 18446744005082250368,
+        "executable_size": 3415
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleSPU",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "14.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.IOSlaveProcessor": "1.0.0",
+          "com.apple.driver.RTBuddy": "1.0.0",
+          "com.apple.kpi.iokit": "14.0",
+          "com.apple.iokit.IOReportFamily": "1.0",
+          "com.apple.kpi.mach": "14.0",
+          "com.apple.driver.AppleA7IOP": "1.0.0",
+          "com.apple.driver.AppleFirmwareUpdateKext": "1.0.0",
+          "com.apple.iokit.IOHIDFamily": "2.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.kpi.libkern": "14.0"
+        },
+        "executable_address": 18446744005082253824,
+        "executable_size": 15520
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleEmbeddedLightSensor",
+        "version": "1.0.0d1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "14.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.iokit.IOHIDFamily": "1.4",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.AppleSPU": "1.0.0"
+        },
+        "executable_address": 18446744005082269376,
+        "executable_size": 23049
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleS5L8920XPWM",
+        "version": "1.0.0d1",
+        "dependencies": {
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.libkern": "8.0"
+        },
+        "executable_address": 18446744005082292480,
+        "executable_size": 1619
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleEmbeddedTempSensor",
+        "version": "1.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.iokit.IOHIDFamily": "1.4",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.iokit.IOReportFamily": "1.0"
+        },
+        "executable_address": 18446744005082294144,
+        "executable_size": 11744
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOSerialFamily",
+        "version": "11",
+        "dependencies": {
+          "com.apple.kpi.mach": "10.0.0d2",
+          "com.apple.kpi.private": "10.0.0d2",
+          "com.apple.kpi.unsupported": "10.0.0d2",
+          "com.apple.kpi.iokit": "10.0.0d2",
+          "com.apple.kpi.libkern": "10.0.0d2",
+          "com.apple.kpi.bsd": "10.0.0d2"
+        },
+        "executable_address": 18446744005082305920,
+        "executable_size": 2367
+      },
+      {
+        "bundle_id": "com.apple.driver.mDNSOffloadUserClient-Embedded",
+        "version": "1.0.1b8",
+        "dependencies": {
+          "com.apple.iokit.IONetworkingFamily": "3.1",
+          "com.apple.kpi.iokit": "13.0",
+          "com.apple.kpi.libkern": "13.0",
+          "com.apple.kpi.bsd": "13.0"
+        },
+        "executable_address": 18446744005082308288,
+        "executable_size": 4644
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOSkywalkFamily",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "15.0.0",
+          "com.apple.kpi.libkern": "15.0.0",
+          "com.apple.kpi.mach": "15.0.0",
+          "com.apple.kpi.iokit": "15.0.0",
+          "com.apple.driver.mDNSOffloadUserClient-Embedded": "1.0.0d6",
+          "com.apple.kpi.unsupported": "15.0.0",
+          "com.apple.kpi.private": "15.0.0",
+          "com.apple.iokit.IONetworkingFamily": "3.2"
+        },
+        "executable_address": 18446744005082312960,
+        "executable_size": 4680
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleOnboardSerial",
+        "version": "1.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.iokit.IOSerialFamily": "1.0.4",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.iokit.IOSkywalkFamily": "1.0",
+          "com.apple.kpi.unsupported": "8.0"
+        },
+        "executable_address": 18446744005082317696,
+        "executable_size": 7320
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOAccessoryManager",
+        "version": "1.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.iokit.IOSerialFamily": "1.0.4",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.iokit.IOHIDFamily": "2.0.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.driver.AppleOnboardSerial": "1.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "8.0.0b1"
+        },
+        "executable_address": 18446744005082325056,
+        "executable_size": 81907
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleARMPMU",
+        "version": "1.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.iokit.IOAccessoryManager": "1.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.iokit.IOReportFamily": "1.0"
+        },
+        "executable_address": 18446744005082406976,
+        "executable_size": 12101
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleSN2400Charger",
+        "version": "1.0.1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.iokit.IOHIDFamily": "1.4",
+          "com.apple.driver.AppleEmbeddedTempSensor": "1.0.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.AppleARMPMU": "1.0.0"
+        },
+        "executable_address": 18446744005082419136,
+        "executable_size": 4108
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOSurface",
+        "version": "290.7",
+        "dependencies": {
+          "com.apple.kpi.mach": "9.0.0b1",
+          "com.apple.kpi.private": "9.0.0b1",
+          "com.apple.kpi.unsupported": "9.0.0b1",
+          "com.apple.kpi.iokit": "9.0.0b1",
+          "com.apple.kpi.libkern": "9.0.0b1",
+          "com.apple.kpi.bsd": "9.0.0b1"
+        },
+        "executable_address": 18446744005082423296,
+        "executable_size": 16902
+      },
+      {
+        "bundle_id": "com.apple.driver.IODARTFamily",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.bsd": "8.0"
+        },
+        "executable_address": 18446744005082440256,
+        "executable_size": 7771
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleM2ScalerCSCDriver",
+        "version": "265.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.4.1",
+          "com.apple.kpi.libkern": "8.4.1",
+          "com.apple.kpi.mach": "8.4.1",
+          "com.apple.iokit.IOSurface": "52.7.0",
+          "com.apple.kpi.iokit": "8.4.1",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.IODARTFamily": "1.0"
+        },
+        "executable_address": 18446744005082448064,
+        "executable_size": 178544
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOHDCPFamily",
+        "version": "1.0.0",
+        "dependencies": {
+          "com.apple.kpi.mach": "8.0.0b2",
+          "com.apple.kpi.iokit": "8.0.0b2",
+          "com.apple.kpi.libkern": "8.0.0b2"
+        },
+        "executable_address": 18446744005082626624,
+        "executable_size": 22431
+      },
+      {
+        "bundle_id": "com.apple.kec.Libm",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.libkern": "8.0.0d0"
+        },
+        "executable_address": 18446744005082649088,
+        "executable_size": 25736
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOAudio2Family",
+        "version": "1.0",
+        "dependencies": {
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.bsd": "8.0"
+        },
+        "executable_address": 18446744005082674880,
+        "executable_size": 2808
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleEmbeddedAudioLibs",
+        "version": "1.17",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleFirmwareUpdateKext": "1.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.unsupported": "8.0"
+        },
+        "executable_address": 18446744005082677696,
+        "executable_size": 21205
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOCECFamily",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.iokit": "14.0",
+          "com.apple.kpi.libkern": "14.0"
+        },
+        "executable_address": 18446744005082698944,
+        "executable_size": 2275
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOAVFamily",
+        "version": "1.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0.0b2",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.unsupported": "8.0.0b2",
+          "com.apple.iokit.IOHDCPFamily": "1.0.0",
+          "com.apple.kec.Libm": "1.0",
+          "com.apple.kpi.iokit": "8.0.0b2",
+          "com.apple.iokit.IOAudio2Family": "1.0",
+          "com.apple.driver.AppleEmbeddedAudioLibs": "1.0",
+          "com.apple.kpi.mach": "8.0.0b2",
+          "com.apple.iokit.IOCECFamily": "1.0",
+          "com.apple.kpi.private": "8.0.0",
+          "com.apple.kpi.libkern": "8.0.0b2"
+        },
+        "executable_address": 18446744005082701248,
+        "executable_size": 137228
+      },
+      {
+        "bundle_id": "com.apple.AUC",
+        "version": "1.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.4.1",
+          "com.apple.driver.AppleMobileFileIntegrity": "1.0.1",
+          "com.apple.kpi.libkern": "9.0.0d1",
+          "com.apple.iokit.IOSurface": "52.7.0",
+          "com.apple.driver.AppleM2ScalerCSCDriver": "1.0.0",
+          "com.apple.kpi.iokit": "9.0.0d1",
+          "com.apple.kpi.mach": "9.0.0d1",
+          "com.apple.kpi.unsupported": "9.0.0d1",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.iokit.IOAVFamily": "1.0.0",
+          "com.apple.kpi.private": "10.0.0d3"
+        },
+        "executable_address": 18446744005082838528,
+        "executable_size": 3808
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOMobileGraphicsFamily",
+        "version": "343.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.4.1",
+          "com.apple.driver.AppleMobileFileIntegrity": "1.0.1",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.iokit.IOSurface": "52.7.0",
+          "com.apple.driver.AppleM2ScalerCSCDriver": "1.0.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.iokit.IOAVFamily": "1.0.0",
+          "com.apple.kpi.private": "10.0.0d3"
+        },
+        "executable_address": 18446744005082842368,
+        "executable_size": 26976
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleH8ADBE0",
+        "version": "140.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.4.1",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.AUC": "1.0",
+          "com.apple.iokit.IOAVFamily": "1.0.0",
+          "com.apple.iokit.IOMobileGraphicsFamily": "1.0",
+          "com.apple.driver.AppleMobileFileIntegrity": "1.0.1",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.iokit.IOSurface": "52.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.driver.AppleM2ScalerCSCDriver": "1.0.0"
+        },
+        "executable_address": 18446744005082869376,
+        "executable_size": 66644
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleAVEH8",
+        "version": "400.4.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.4.1",
+          "com.apple.kpi.libkern": "8.4.1",
+          "com.apple.kpi.mach": "8.4.1",
+          "com.apple.iokit.IOSurface": "52.6.0",
+          "com.apple.kpi.iokit": "8.4.1",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0"
+        },
+        "executable_address": 18446744005082936064,
+        "executable_size": 604924
+      },
+      {
+        "bundle_id": "com.apple.driver.ApplePMGR",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.iokit.IOReportFamily": "1.0"
+        },
+        "executable_address": 18446744005083540992,
+        "executable_size": 43036
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleS8000PMGR",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kec.Libm": "1.0.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.driver.ApplePMGR": "1.0"
+        },
+        "executable_address": 18446744005083584064,
+        "executable_size": 3571
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleIPAppender",
+        "version": "1.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.iokit.IOSkywalkFamily": "1.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.iokit.IONetworkingFamily": "1.4.3"
+        },
+        "executable_address": 18446744005083587648,
+        "executable_size": 2688
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleMultitouchSPI",
+        "version": "4140.7",
+        "dependencies": {
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.bsd": "8.0"
+        },
+        "executable_address": 18446744005083590336,
+        "executable_size": 18164
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOPCIFamily",
+        "version": "2.9",
+        "dependencies": {
+          "com.apple.kpi.private": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0"
+        },
+        "executable_address": 18446744005083608512,
+        "executable_size": 6480
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleEmbeddedPCIE",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.iokit.IOPCIFamily": "2.7",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.IODARTFamily": "1.0",
+          "com.apple.iokit.IOReportFamily": "1.0"
+        },
+        "executable_address": 18446744005083615040,
+        "executable_size": 20594
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleS800xPCIe",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.iokit.IOPCIFamily": "2.7",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleEmbeddedPCIE": "1.0.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.iokit.IOReportFamily": "1.0"
+        },
+        "executable_address": 18446744005083635648,
+        "executable_size": 5227
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleS8000PCIe",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.iokit.IOPCIFamily": "2.7",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleEmbeddedPCIE": "1.0.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.AppleS800xPCIe": "1.0.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.iokit.IOReportFamily": "1.0"
+        },
+        "executable_address": 18446744005083640896,
+        "executable_size": 2187
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleBiometricSensor",
+        "version": "2",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.iokit.IOHIDFamily": "1.4",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.iokit.IOReportFamily": "1.0"
+        },
+        "executable_address": 18446744005083643136,
+        "executable_size": 31280
+      },
+      {
+        "bundle_id": "com.apple.driver.ProvInfoIOKit",
+        "version": "11.21.0",
+        "dependencies": {
+          "com.apple.kpi.mach": "8.0.0",
+          "com.apple.kpi.private": "8.0.0",
+          "com.apple.kpi.unsupported": "9.3.1",
+          "com.apple.kpi.iokit": "8.0.0",
+          "com.apple.kpi.libkern": "8.0.0",
+          "com.apple.kpi.bsd": "8.0.0"
+        },
+        "executable_address": 18446744005083674432,
+        "executable_size": 17597
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleUSBHostMergeProperties",
+        "version": "1.2",
+        "dependencies": {
+          "com.apple.kpi.libkern": "16.0.0",
+          "com.apple.kpi.bsd": "16.0.0",
+          "com.apple.kpi.iokit": "16.0.0"
+        },
+        "executable_address": 18446744005083692032,
+        "executable_size": 1470
+      },
+      {
+        "bundle_id": "com.apple.driver.usb.AppleUSBHostPlatformProperties",
+        "version": "1.2",
+        "dependencies": {
+          "com.apple.kpi.iokit": "16.0.0",
+          "com.apple.driver.AppleUSBHostMergeProperties": "1.2"
+        },
+        "executable_address": null,
+        "executable_size": null
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleSMC",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "13.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.IOSlaveProcessor": "1.0.0",
+          "com.apple.driver.RTBuddy": "1.0.0",
+          "com.apple.iokit.IOAccessoryManager": "1.0.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleARMPMU": "1.0.0",
+          "com.apple.driver.AppleEmbeddedTempSensor": "1.0.0",
+          "com.apple.driver.AppleA7IOP": "1.0.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.iokit.IOHIDFamily": "2.0",
+          "com.apple.kpi.private": "14.0.0",
+          "com.apple.kpi.libkern": "8.0"
+        },
+        "executable_address": 18446744005083693504,
+        "executable_size": 35485
+      },
+      {
+        "bundle_id": "com.apple.driver.usb.AppleUSBCommon",
+        "version": "1.0",
+        "dependencies": {
+          "com.apple.kpi.mach": "16.0.0",
+          "com.apple.kpi.iokit": "16.0.0",
+          "com.apple.kpi.libkern": "16.0.0",
+          "com.apple.kpi.bsd": "16.0.0"
+        },
+        "executable_address": 18446744005083729024,
+        "executable_size": 2090
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOUSBHostFamily",
+        "version": "1.2",
+        "dependencies": {
+          "com.apple.driver.usb.AppleUSBHostPlatformProperties": "1.2",
+          "com.apple.kpi.bsd": "16.0.0",
+          "com.apple.kpi.libkern": "16.0.0",
+          "com.apple.kpi.mach": "16.0.0",
+          "com.apple.kpi.iokit": "16.0.0",
+          "com.apple.kpi.unsupported": "16.0.0",
+          "com.apple.kpi.private": "16.0.0",
+          "com.apple.driver.AppleSMC": "1.0.0",
+          "com.apple.driver.usb.AppleUSBCommon": "1.0"
+        },
+        "executable_address": 18446744005083731136,
+        "executable_size": 67032
+      },
+      {
+        "bundle_id": "com.apple.driver.usb.AppleUSBHostPacketFilter",
+        "version": "1.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "16.0.0",
+          "com.apple.kpi.libkern": "16.0.0",
+          "com.apple.kpi.mach": "16.0.0",
+          "com.apple.kpi.iokit": "16.0.0",
+          "com.apple.iokit.IOUSBHostFamily": "1.2",
+          "com.apple.kpi.unsupported": "16.0.0",
+          "com.apple.kpi.private": "16.0.0",
+          "com.apple.driver.usb.AppleUSBCommon": "1.0"
+        },
+        "executable_address": 18446744005083798208,
+        "executable_size": 2196
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleS5L8960XDART",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.4.1",
+          "com.apple.kpi.libkern": "8.4.1",
+          "com.apple.kpi.mach": "8.4.1",
+          "com.apple.kpi.iokit": "8.4.1",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.IODARTFamily": "1.0.0"
+        },
+        "executable_address": 18446744005083800448,
+        "executable_size": 3554
+      },
+      {
+        "bundle_id": "com.apple.driver.DiskImages",
+        "version": "493.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0.0b2",
+          "com.apple.kpi.libkern": "8.0.0b2",
+          "com.apple.kpi.mach": "8.0.0b2",
+          "com.apple.kpi.iokit": "8.0.0b2",
+          "com.apple.kpi.unsupported": "8.0.0b2",
+          "com.apple.iokit.IOStorageFamily": "1.0.0",
+          "com.apple.kpi.private": "10.0.0d1"
+        },
+        "executable_address": 18446744005083804032,
+        "executable_size": 3896
+      },
+      {
+        "bundle_id": "com.apple.driver.DiskImages.KernelBacked",
+        "version": "493.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0.0b2",
+          "com.apple.kpi.libkern": "8.0.0b2",
+          "com.apple.kpi.mach": "8.0.0b2",
+          "com.apple.kpi.iokit": "8.0.0b2",
+          "com.apple.driver.DiskImages": "128",
+          "com.apple.kpi.unsupported": "8.0.0b2",
+          "com.apple.iokit.IOStorageFamily": "1.0.0"
+        },
+        "executable_address": 18446744005083807936,
+        "executable_size": 1946
+      },
+      {
+        "bundle_id": "com.apple.driver.DiskImages.RAMBackingStore",
+        "version": "493.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0.0b2",
+          "com.apple.kpi.libkern": "8.0.0b2",
+          "com.apple.kpi.mach": "8.0.0b2",
+          "com.apple.driver.DiskImages.KernelBacked": "128",
+          "com.apple.kpi.iokit": "8.0.0b2",
+          "com.apple.driver.DiskImages": "128",
+          "com.apple.kpi.unsupported": "8.0.0b2",
+          "com.apple.iokit.IOStorageFamily": "1.0.0"
+        },
+        "executable_address": 18446744005083809920,
+        "executable_size": 1455
+      },
+      {
+        "bundle_id": "com.apple.iokit.CoreAnalyticsFamily",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.mach": "15.0.0",
+          "com.apple.kpi.private": "15.0.0",
+          "com.apple.kpi.unsupported": "15.0.0",
+          "com.apple.kpi.iokit": "15.0.0",
+          "com.apple.kpi.libkern": "15.0.0",
+          "com.apple.kpi.bsd": "15.0.0"
+        },
+        "executable_address": 18446744005083811392,
+        "executable_size": 9422
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleJPEGDriver",
+        "version": "4.6.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.4.1",
+          "com.apple.kpi.libkern": "8.4.1",
+          "com.apple.kpi.mach": "8.4.1",
+          "com.apple.iokit.IOSurface": "52.6.0",
+          "com.apple.kpi.iokit": "8.4.1",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0"
+        },
+        "executable_address": 18446744005083820864,
+        "executable_size": 30464
+      },
+      {
+        "bundle_id": "com.apple.iokit.AppleARMIISAudio",
+        "version": "80.34.1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.driver.AppleEmbeddedAudioLibs": "1.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.iokit.IOAudio2Family": "1.0"
+        },
+        "executable_address": 18446744005083851328,
+        "executable_size": 20856
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleEmbeddedAudio",
+        "version": "442.27",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.driver.AppleEmbeddedAudioLibs": "1.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.iokit.IOHIDFamily": "1.5",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.iokit.AppleARMIISAudio": "1.0",
+          "com.apple.iokit.IOAudio2Family": "1.0",
+          "com.apple.kpi.private": "8.0"
+        },
+        "executable_address": 18446744005083872192,
+        "executable_size": 26944
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleCSEmbeddedAudio",
+        "version": "442.27",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.iokit.IOHIDFamily": "1.5",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.iokit.AppleARMIISAudio": "1.0",
+          "com.apple.driver.AppleEmbeddedAudio": "1.1",
+          "com.apple.iokit.IOAudio2Family": "1.0"
+        },
+        "executable_address": 18446744005083899136,
+        "executable_size": 3068
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOMikeyBusFamily",
+        "version": "1.0.0",
+        "dependencies": {
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.iokit.IOAccessoryManager": "1.0.0",
+          "com.apple.iokit.IOHIDFamily": "2.0.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0"
+        },
+        "executable_address": 18446744005083902208,
+        "executable_size": 6083
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleTriStar",
+        "version": "1.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.iokit.IOAccessoryManager": "1.0.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.iokit.IOReportFamily": "1.0"
+        },
+        "executable_address": 18446744005083908352,
+        "executable_size": 13058
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleEmbeddedMikeyBus",
+        "version": "1.0.0d1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.AppleTriStar": "1.0.0",
+          "com.apple.iokit.IOAccessoryManager": "1.0.0",
+          "com.apple.driver.AppleCSEmbeddedAudio": "1.1",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.iokit.IOAudio2Family": "1.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.iokit.IOHIDFamily": "2.0.0",
+          "com.apple.iokit.IOMikeyBusFamily": "1.0.0",
+          "com.apple.kpi.libkern": "8.0"
+        },
+        "executable_address": 18446744005083921472,
+        "executable_size": 7792
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleMikeyBusAudio",
+        "version": "2.40",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.iokit.IOAccessoryManager": "1.0.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleCSEmbeddedAudio": "1.1",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.iokit.IOAudio2Family": "1.0",
+          "com.apple.driver.AppleEmbeddedAudio": "1.1",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.iokit.IOHIDFamily": "2.0.0",
+          "com.apple.iokit.IOMikeyBusFamily": "1.0.0",
+          "com.apple.driver.AppleEmbeddedMikeyBus": "1.0.0d1",
+          "com.apple.kpi.libkern": "8.0"
+        },
+        "executable_address": 18446744005083929280,
+        "executable_size": 16407
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleMultitouchSPIN71",
+        "version": "4140.7",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleMultitouchSPI": "1.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0"
+        },
+        "executable_address": null,
+        "executable_size": null
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleHIDKeyboardEmbedded",
+        "version": "1.2.0a3",
+        "dependencies": {
+          "com.apple.kpi.libkern": "10.0.0d2",
+          "com.apple.kpi.iokit": "10.0.0d2",
+          "com.apple.iokit.IOHIDFamily": "1.4"
+        },
+        "executable_address": null,
+        "executable_size": null
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleGPIOICController",
+        "version": "1.0.2",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.iokit.IOReportFamily": "1.0"
+        },
+        "executable_address": 18446744005083945728,
+        "executable_size": 4313
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleS5L8940XI2C",
+        "version": "1.0.0d2",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.AppleGPIOICController": "1.0.0"
+        },
+        "executable_address": 18446744005083950080,
+        "executable_size": 2886
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleEmbeddedUSB",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0.0b1",
+          "com.apple.kpi.libkern": "8.0.0b2",
+          "com.apple.kpi.mach": "8.0.0b2",
+          "com.apple.kpi.iokit": "8.0.0b2",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "16.5.0"
+        },
+        "executable_address": 18446744005083953024,
+        "executable_size": 5298
+      },
+      {
+        "bundle_id": "com.apple.iokit.EncryptedBlockStorage",
+        "version": "1.0.0",
+        "dependencies": {
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.iokit.IOStorageFamily": "1.5",
+          "com.apple.iokit.IOCryptoAcceleratorFamily": "1.0.1",
+          "com.apple.kpi.bsd": "8.0"
+        },
+        "executable_address": 18446744005083958336,
+        "executable_size": 1680
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleEffaceableStorage",
+        "version": "1.0",
+        "dependencies": {
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.bsd": "8.0"
+        },
+        "executable_address": 18446744005083960064,
+        "executable_size": 6449
+      },
+      {
+        "bundle_id": "com.apple.driver.LightweightVolumeManager",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.iokit.EncryptedBlockStorage": "1.0.0",
+          "com.apple.iokit.IOCryptoAcceleratorFamily": "1.0.1",
+          "com.apple.driver.AppleEffaceableStorage": "1.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.iokit.IOStorageFamily": "1.5",
+          "com.apple.kpi.private": "8.0"
+        },
+        "executable_address": 18446744005083966528,
+        "executable_size": 10744
+      },
+      {
+        "bundle_id": "com.apple.driver.usb.networking",
+        "version": "5.0.0",
+        "dependencies": {
+          "com.apple.kpi.mach": "14.0.0",
+          "com.apple.kpi.private": "14.0.0",
+          "com.apple.iokit.IOUSBHostFamily": "1.0.1",
+          "com.apple.kpi.iokit": "14.0.0",
+          "com.apple.kpi.libkern": "14.0.0",
+          "com.apple.kpi.bsd": "14.0.0"
+        },
+        "executable_address": 18446744005083977280,
+        "executable_size": 1628
+      },
+      {
+        "bundle_id": "com.apple.driver.usb.AppleUSBHostCompositeDevice",
+        "version": "1.2",
+        "dependencies": {
+          "com.apple.kpi.bsd": "16.0.0",
+          "com.apple.kpi.libkern": "16.0.0",
+          "com.apple.kpi.mach": "16.0.0",
+          "com.apple.kpi.iokit": "16.0.0",
+          "com.apple.iokit.IOUSBHostFamily": "1.2",
+          "com.apple.kpi.private": "16.0.0",
+          "com.apple.driver.usb.AppleUSBCommon": "1.0"
+        },
+        "executable_address": 18446744005083978944,
+        "executable_size": 3066
+      },
+      {
+        "bundle_id": "com.apple.driver.usb.cdc",
+        "version": "5.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "14.0.0",
+          "com.apple.driver.usb.networking": "5.0",
+          "com.apple.kpi.libkern": "14.0.0",
+          "com.apple.kpi.mach": "14.0.0",
+          "com.apple.kpi.iokit": "14.0.0",
+          "com.apple.driver.usb.AppleUSBHostCompositeDevice": "1.0",
+          "com.apple.iokit.IOUSBHostFamily": "1.0.1"
+        },
+        "executable_address": 18446744005083982016,
+        "executable_size": 1709
+      },
+      {
+        "bundle_id": "com.apple.driver.usb.cdc.ncm",
+        "version": "5.0.0",
+        "dependencies": {
+          "com.apple.driver.usb.cdc": "5.0",
+          "com.apple.driver.usb.networking": "5.0",
+          "com.apple.iokit.IOReportFamily": "1.0",
+          "com.apple.kpi.bsd": "14.0.0",
+          "com.apple.kpi.iokit": "14.0.0",
+          "com.apple.kpi.libkern": "14.0.0",
+          "com.apple.kpi.mach": "14.0.0",
+          "com.apple.driver.usb.AppleUSBHostCompositeDevice": "1.0",
+          "com.apple.iokit.IOUSBHostFamily": "1.0.1",
+          "com.apple.kpi.private": "14.0.0",
+          "com.apple.iokit.IONetworkingFamily": "3.3"
+        },
+        "executable_address": 18446744005083983744,
+        "executable_size": 4256
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOUSBDeviceFamily",
+        "version": "2.0.0",
+        "dependencies": {
+          "com.apple.driver.usb.AppleUSBCommon": "1.0",
+          "com.apple.kpi.mach": "20.0",
+          "com.apple.kpi.iokit": "20.0",
+          "com.apple.kpi.libkern": "20.0",
+          "com.apple.kpi.bsd": "20.0"
+        },
+        "executable_address": 18446744005083988032,
+        "executable_size": 17758
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleUSBEthernetDevice",
+        "version": "7.0",
+        "dependencies": {
+          "com.apple.iokit.IOUSBDeviceFamily": "2.0.0",
+          "com.apple.kpi.bsd": "8.0.0b2",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0.0",
+          "com.apple.kpi.iokit": "8.0.0b2",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "10.0.0d1",
+          "com.apple.iokit.IONetworkingFamily": "1.7.0"
+        },
+        "executable_address": 18446744005084005824,
+        "executable_size": 4314
+      },
+      {
+        "bundle_id": "com.apple.iokit.IO80211Family",
+        "version": "1200.12.2b1",
+        "dependencies": {
+          "com.apple.driver.corecapture": "1.0.0",
+          "com.apple.driver.AppleMobileFileIntegrity": "1.0.1",
+          "com.apple.kec.corecrypto": "1.0",
+          "com.apple.kpi.bsd": "15.0.0",
+          "com.apple.kpi.iokit": "15.0.0",
+          "com.apple.iokit.IOSkywalkFamily": "1.0",
+          "com.apple.kpi.libkern": "15.0.0",
+          "com.apple.kpi.mach": "15.0.0",
+          "com.apple.kpi.unsupported": "15.0.0",
+          "com.apple.kpi.private": "8.0.0",
+          "com.apple.iokit.IONetworkingFamily": "3.0"
+        },
+        "executable_address": 18446744005084010176,
+        "executable_size": 374601
+      },
+      {
+        "bundle_id": "com.apple.plugin.IOgPTPPlugin",
+        "version": "900.11",
+        "dependencies": {
+          "com.apple.kpi.bsd": "10.0.0d1",
+          "com.apple.kpi.libkern": "10.0.0d1",
+          "com.apple.kpi.mach": "10.0.0d1",
+          "com.apple.iokit.IOHIDFamily": "1.4",
+          "com.apple.iokit.IO80211Family": "1.0",
+          "com.apple.iokit.IOSkywalkFamily": "1.0",
+          "com.apple.kec.Libm": "1.0",
+          "com.apple.kpi.iokit": "10.0.0d1",
+          "com.apple.iokit.IOTimeSyncFamily": "500.10",
+          "com.apple.kpi.private": "16.0",
+          "com.apple.iokit.IONetworkingFamily": "2.0"
+        },
+        "executable_address": 18446744005084384832,
+        "executable_size": 105654
+      },
+      {
+        "bundle_id": "com.apple.driver.FairPlayIOKit",
+        "version": "69.13.0",
+        "dependencies": {
+          "com.apple.kpi.mach": "8.0.0",
+          "com.apple.kpi.private": "8.0.0",
+          "com.apple.kpi.unsupported": "9.3.1",
+          "com.apple.kpi.iokit": "8.0.0",
+          "com.apple.kpi.libkern": "8.0.0",
+          "com.apple.kpi.bsd": "8.0.0"
+        },
+        "executable_address": 18446744005084490496,
+        "executable_size": 96640
+      },
+      {
+        "bundle_id": "com.apple.driver.LSKDIOKit",
+        "version": "17.4.5",
+        "dependencies": {
+          "com.apple.kpi.mach": "8.0.0",
+          "com.apple.kpi.private": "8.0.0",
+          "com.apple.kpi.unsupported": "9.3.1",
+          "com.apple.kpi.iokit": "8.0.0",
+          "com.apple.kpi.libkern": "8.0.0",
+          "com.apple.kpi.bsd": "8.0.0"
+        },
+        "executable_address": 18446744005084587136,
+        "executable_size": 145399
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleD5500",
+        "version": "202.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "9.0.0d1",
+          "com.apple.kpi.libkern": "9.0.0d1",
+          "com.apple.kpi.mach": "9.0.0d1",
+          "com.apple.driver.FairPlayIOKit": "3.3.0d1",
+          "com.apple.driver.LSKDIOKit": "1.0.0",
+          "com.apple.iokit.IOSurface": "52.6.0",
+          "com.apple.kpi.iokit": "9.0.0d1",
+          "com.apple.kpi.unsupported": "9.0.0d1",
+          "com.apple.driver.AppleARMPlatform": "1.0.0"
+        },
+        "executable_address": 18446744005084732544,
+        "executable_size": 169401
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleSEPManager",
+        "version": "1.0.1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kec.corecrypto": "1.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleA7IOP": "1.0.1",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.IOSlaveProcessor": "1.0.0",
+          "com.apple.kpi.private": "8.0"
+        },
+        "executable_address": 18446744005084901952,
+        "executable_size": 69732
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleSSE",
+        "version": "1.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.driver.AppleSEPManager": "1.0.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.IOSlaveProcessor": "1.0.0"
+        },
+        "executable_address": 18446744005084971712,
+        "executable_size": 4288
+      },
+      {
+        "bundle_id": "com.apple.driver.ASIOKit",
+        "version": "8.61",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0.0",
+          "com.apple.kpi.libkern": "8.0.0",
+          "com.apple.kec.corecrypto": "1",
+          "com.apple.kpi.mach": "8.0.0",
+          "com.apple.kpi.iokit": "8.0.0",
+          "com.apple.kpi.unsupported": "9.3.1",
+          "com.apple.kpi.private": "8.0.0"
+        },
+        "executable_address": 18446744005084976000,
+        "executable_size": 38704
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleS8000DWI",
+        "version": "1.0.0d1",
+        "dependencies": {
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.bsd": "8.0"
+        },
+        "executable_address": 18446744005085014720,
+        "executable_size": 1749
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleCS35L19Amp",
+        "version": "442.27",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.iokit.IOHIDFamily": "1.5",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0",
+          "com.apple.iokit.AppleARMIISAudio": "1.0",
+          "com.apple.driver.AppleEmbeddedAudio": "1.1.0",
+          "com.apple.iokit.IOAudio2Family": "1.0"
+        },
+        "executable_address": 18446744005085016512,
+        "executable_size": 2152
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleUSBADC2AudioController",
+        "version": "405.40",
+        "dependencies": {
+          "com.apple.iokit.IOUSBDeviceFamily": "2.0.0",
+          "com.apple.kpi.bsd": "14.0.0",
+          "com.apple.kpi.libkern": "14.0.0",
+          "com.apple.kpi.mach": "14.0.0",
+          "com.apple.kpi.iokit": "14.0.0",
+          "com.apple.iokit.IOUSBHostFamily": "1.0.1",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.iokit.IOAudio2Family": "1.0"
+        },
+        "executable_address": 18446744005085018688,
+        "executable_size": 4297
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleUSBDeviceAudioController",
+        "version": "405.40",
+        "dependencies": {
+          "com.apple.iokit.IOUSBDeviceFamily": "2.0.0",
+          "com.apple.kpi.bsd": "14.0.0",
+          "com.apple.kpi.libkern": "14.0.0",
+          "com.apple.kpi.mach": "14.0.0",
+          "com.apple.kpi.iokit": "14.0.0",
+          "com.apple.iokit.IOUSBHostFamily": "1.0.1",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.iokit.IOAudio2Family": "1.0"
+        },
+        "executable_address": 18446744005085023040,
+        "executable_size": 2176
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleUSBAudio",
+        "version": "405.40",
+        "dependencies": {
+          "com.apple.driver.AppleUSBADC2AudioController": "400.0",
+          "com.apple.iokit.IOUSBDeviceFamily": "2.0.0",
+          "com.apple.kpi.bsd": "14.0.0",
+          "com.apple.kpi.libkern": "14.0.0",
+          "com.apple.kpi.iokit": "14.0.0",
+          "com.apple.kpi.mach": "14.0.0",
+          "com.apple.driver.usb.AppleUSBHostCompositeDevice": "1.1",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.AppleUSBDeviceAudioController": "300.0",
+          "com.apple.iokit.IOAudio2Family": "1.0",
+          "com.apple.iokit.IOUSBHostFamily": "1.0.1"
+        },
+        "executable_address": 18446744005085025216,
+        "executable_size": 11312
+      },
+      {
+        "bundle_id": "com.apple.driver.DiskImages.UDIFDiskImage",
+        "version": "493.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0.0b2",
+          "com.apple.kpi.libkern": "8.0.0b2",
+          "com.apple.kpi.mach": "8.0.0b2",
+          "com.apple.driver.DiskImages.KernelBacked": "128",
+          "com.apple.kpi.iokit": "8.0.0b2",
+          "com.apple.driver.DiskImages": "128",
+          "com.apple.kpi.unsupported": "8.0.0b2",
+          "com.apple.iokit.IOStorageFamily": "1.0.0"
+        },
+        "executable_address": 18446744005085036544,
+        "executable_size": 14257
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleLMBacklight",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "8.0"
+        },
+        "executable_address": 18446744005085050816,
+        "executable_size": 2365
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOUserEthernet",
+        "version": "1.0.1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0.0",
+          "com.apple.driver.AppleMobileFileIntegrity": "1.0.2",
+          "com.apple.kpi.libkern": "8.0.0",
+          "com.apple.kpi.mach": "8.0.0",
+          "com.apple.kpi.iokit": "8.0.0",
+          "com.apple.kpi.private": "8.0.0",
+          "com.apple.iokit.IONetworkingFamily": "1.6.1"
+        },
+        "executable_address": 18446744005085053184,
+        "executable_size": 2408
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOSCSIArchitectureModelFamily",
+        "version": "436.140.1",
+        "dependencies": {
+          "com.apple.kpi.mach": "8.9.9",
+          "com.apple.kpi.private": "8.9.9",
+          "com.apple.kpi.iokit": "8.9.9",
+          "com.apple.kpi.libkern": "8.9.9",
+          "com.apple.kpi.bsd": "8.9.9"
+        },
+        "executable_address": 18446744005085055616,
+        "executable_size": 5541
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOSCSIBlockCommandsDevice",
+        "version": "436.140.1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.9.9",
+          "com.apple.kpi.libkern": "8.9.9",
+          "com.apple.kpi.mach": "8.9.9",
+          "com.apple.kpi.iokit": "8.9.9",
+          "com.apple.iokit.IOStorageFamily": "1.0.0",
+          "com.apple.iokit.IOSCSIArchitectureModelFamily": "1.0.0",
+          "com.apple.kpi.private": "8.9.9"
+        },
+        "executable_address": 18446744005085061184,
+        "executable_size": 2535
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOUSBMassStorageDriver",
+        "version": "184.140.2",
+        "dependencies": {
+          "com.apple.kpi.bsd": "9.0.0",
+          "com.apple.kpi.libkern": "9.0.0",
+          "com.apple.kpi.mach": "9.0.0",
+          "com.apple.iokit.IOPCIFamily": "1.0.1",
+          "com.apple.kpi.iokit": "9.0.0",
+          "com.apple.iokit.IOUSBHostFamily": "1.0.1",
+          "com.apple.iokit.IOStorageFamily": "1.0.0",
+          "com.apple.iokit.IOSCSIArchitectureModelFamily": "1.0.0",
+          "com.apple.kpi.private": "9.0.0"
+        },
+        "executable_address": 18446744005085063744,
+        "executable_size": 8326
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleUSBCardReader",
+        "version": "511.140.1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "9.0.0",
+          "com.apple.kpi.libkern": "9.0.0",
+          "com.apple.iokit.IOSCSIBlockCommandsDevice": "2.1.0",
+          "com.apple.kpi.mach": "9.0.0",
+          "com.apple.kpi.iokit": "9.0.0",
+          "com.apple.iokit.IOUSBHostFamily": "1.0.1",
+          "com.apple.iokit.IOStorageFamily": "1.5.6",
+          "com.apple.iokit.IOSCSIArchitectureModelFamily": "2.1.0",
+          "com.apple.iokit.IOUSBMassStorageDriver": "1.0.0"
+        },
+        "executable_address": 18446744005085072128,
+        "executable_size": 5648
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleS8000SOCTuner",
+        "version": "1",
+        "dependencies": {
+          "com.apple.iokit.IOReportFamily": "1.0",
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.driver.ApplePMGR": "1.0"
+        },
+        "executable_address": 18446744005085077824,
+        "executable_size": 2310
+      },
+      {
+        "bundle_id": "com.apple.driver.usb.IOUSBHostHIDDevice",
+        "version": "1.2",
+        "dependencies": {
+          "com.apple.kpi.bsd": "16.0.0",
+          "com.apple.kpi.libkern": "16.0.0",
+          "com.apple.kpi.mach": "16.0.0",
+          "com.apple.iokit.IOHIDFamily": "2.0",
+          "com.apple.kpi.iokit": "16.0.0",
+          "com.apple.iokit.IOUSBHostFamily": "1.2",
+          "com.apple.driver.usb.AppleUSBCommon": "1.0"
+        },
+        "executable_address": 18446744005085080192,
+        "executable_size": 7149
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleSynopsysMIPIDSI",
+        "version": "1.0.0",
+        "dependencies": {
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.bsd": "8.0"
+        },
+        "executable_address": 18446744005085087360,
+        "executable_size": 7541
+      },
+      {
+        "bundle_id": "com.apple.nke.ppp",
+        "version": "1.9",
+        "dependencies": {
+          "com.apple.kpi.mach": "8.0.0b1",
+          "com.apple.kpi.private": "10.0.0d1",
+          "com.apple.kpi.unsupported": "8.0.0b1",
+          "com.apple.kpi.iokit": "8.0.0b1",
+          "com.apple.kpi.libkern": "8.0.0b1",
+          "com.apple.kpi.bsd": "8.0.0b1"
+        },
+        "executable_address": 18446744005085094912,
+        "executable_size": 7196
+      },
+      {
+        "bundle_id": "com.apple.nke.l2tp",
+        "version": "1.9",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0.0b1",
+          "com.apple.kpi.libkern": "8.0.0b1",
+          "com.apple.kpi.mach": "8.0.0b1",
+          "com.apple.nke.ppp": "1.8",
+          "com.apple.kpi.iokit": "8.0.0b1",
+          "com.apple.kpi.unsupported": "8.0.0b1",
+          "com.apple.kpi.private": "10.0.0d1"
+        },
+        "executable_address": 18446744005085102144,
+        "executable_size": 4158
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleSynopsysOTGDevice",
+        "version": "1.0.0d1",
+        "dependencies": {
+          "com.apple.iokit.IOUSBDeviceFamily": "2.0",
+          "com.apple.kpi.bsd": "20.0",
+          "com.apple.kpi.libkern": "20.0",
+          "com.apple.kpi.mach": "20.0",
+          "com.apple.kpi.iokit": "20.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.2",
+          "com.apple.driver.AppleEmbeddedUSB": "1.0"
+        },
+        "executable_address": 18446744005085106304,
+        "executable_size": 21244
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleUSBTopCaseDriver",
+        "version": "4050.1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "9.0.0",
+          "com.apple.driver.AppleUSBHostMergeProperties": "1.0",
+          "com.apple.kpi.libkern": "9.0.0",
+          "com.apple.iokit.IOHIDFamily": "1.5",
+          "com.apple.kpi.iokit": "9.0.0",
+          "com.apple.kpi.mach": "9.0.0",
+          "com.apple.iokit.IOUSBHostFamily": "1.0.1",
+          "com.apple.driver.usb.IOUSBHostHIDDevice": "1.0",
+          "com.apple.kpi.private": "8.0.0"
+        },
+        "executable_address": 18446744005085127552,
+        "executable_size": 1734
+      },
+      {
+        "bundle_id": "com.apple.AGXFirmwareKextG5P",
+        "version": "173.26.4",
+        "dependencies": {
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.bsd": "8.0"
+        },
+        "executable_address": 18446744005085129344,
+        "executable_size": 121037
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleS8000PMPFirmware",
+        "version": "1",
+        "dependencies": {
+          "com.apple.driver.RTBuddy": "1.0.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.driver.AppleA7IOP": "1.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.IOSlaveProcessor": "1.0.0"
+        },
+        "executable_address": 18446744005085250432,
+        "executable_size": 2125
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleTwisterErrorHandler",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.iokit.IOReportFamily": "1.0"
+        },
+        "executable_address": 18446744005085252608,
+        "executable_size": 2679
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleS8000",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.driver.AppleTwisterErrorHandler": "1.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.iokit.IOReportFamily": "1.0"
+        },
+        "executable_address": 18446744005085255296,
+        "executable_size": 11696
+      },
+      {
+        "bundle_id": "com.apple.IOTextEncryptionFamily",
+        "version": "1.0.0",
+        "dependencies": {
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.unsupported": "9.3.1",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.FairPlayIOKit": "3.8",
+          "com.apple.kpi.bsd": "8.0"
+        },
+        "executable_address": 18446744005085267008,
+        "executable_size": 1944
+      },
+      {
+        "bundle_id": "com.apple.driver.usb.AppleUSBHub",
+        "version": "1.2",
+        "dependencies": {
+          "com.apple.driver.usb.AppleUSBCommon": "1.0",
+          "com.apple.kpi.mach": "16.0.0",
+          "com.apple.iokit.IOUSBHostFamily": "1.2",
+          "com.apple.kpi.iokit": "16.0.0",
+          "com.apple.kpi.libkern": "16.0.0",
+          "com.apple.kpi.bsd": "16.0.0"
+        },
+        "executable_address": 18446744005085268992,
+        "executable_size": 20724
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleH6CameraInterface",
+        "version": "14.35.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kec.corecrypto": "1.0",
+          "com.apple.iokit.IOSurface": "52.6.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "14.0.0",
+          "com.apple.iokit.IOReportFamily": "1.0.0"
+        },
+        "executable_address": 18446744005085289728,
+        "executable_size": 28577
+      },
+      {
+        "bundle_id": "com.apple.driver.usb.AppleUSBHostiOSDevice",
+        "version": "1.0",
+        "dependencies": {
+          "com.apple.driver.usb.AppleUSBCommon": "1.0",
+          "com.apple.kpi.mach": "16.0.0",
+          "com.apple.iokit.IOUSBHostFamily": "1.2",
+          "com.apple.kpi.iokit": "16.0.0",
+          "com.apple.kpi.libkern": "16.0.0",
+          "com.apple.kpi.bsd": "16.0.0"
+        },
+        "executable_address": 18446744005085318336,
+        "executable_size": 1601
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleUSBMike",
+        "version": "1.0.0d1",
+        "dependencies": {
+          "com.apple.iokit.IOUSBDeviceFamily": "2.0.0",
+          "com.apple.kpi.bsd": "8.0.0b2",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0.0",
+          "com.apple.kpi.iokit": "8.0.0b2",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.iokit.IOAudio2Family": "1.0"
+        },
+        "executable_address": 18446744005085320000,
+        "executable_size": 7747
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleMobileApNonce",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.iokit.IOCryptoAcceleratorFamily": "1.0.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "8.0"
+        },
+        "executable_address": 18446744005085327808,
+        "executable_size": 4088
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleS8000CLPC",
+        "version": "1",
+        "dependencies": {
+          "com.apple.iokit.IOReportFamily": "1.0",
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.iokit.IOSurface": "52.6.0",
+          "com.apple.kec.Libm": "1.0.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.driver.ApplePMGR": "1.0"
+        },
+        "executable_address": 18446744005085331904,
+        "executable_size": 21760
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleSEPKeyStore",
+        "version": "2",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.AppleEffaceableStorage": "1.0.0",
+          "com.apple.driver.IOSlaveProcessor": "1.0.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleMobileFileIntegrity": "1.0.2",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.iokit.IOCryptoAcceleratorFamily": "1.0.0",
+          "com.apple.driver.AppleSEPManager": "1.0.0",
+          "com.apple.kec.corecrypto": "1.0"
+        },
+        "executable_address": 18446744005085353664,
+        "executable_size": 13041
+      },
+      {
+        "bundle_id": "com.apple.audio.IOBorealisOwl",
+        "version": "54.6",
+        "dependencies": {
+          "com.apple.kpi.bsd": "9.0.0",
+          "com.apple.kpi.libkern": "9.0.0",
+          "com.apple.kpi.mach": "9.0.0",
+          "com.apple.kpi.iokit": "9.0.0",
+          "com.apple.kpi.unsupported": "9.0.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.AppleSPU": "1.0.0"
+        },
+        "executable_address": 18446744005085366720,
+        "executable_size": 42293
+      },
+      {
+        "bundle_id": "com.apple.driver.DiskImages.FileBackingStore",
+        "version": "493.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0.0b2",
+          "com.apple.kpi.libkern": "8.0.0b2",
+          "com.apple.kpi.mach": "8.0.0b2",
+          "com.apple.driver.DiskImages.KernelBacked": "128",
+          "com.apple.kpi.iokit": "8.0.0b2",
+          "com.apple.driver.DiskImages": "128",
+          "com.apple.kpi.unsupported": "8.0.0b2",
+          "com.apple.iokit.IOStorageFamily": "1.0.0",
+          "com.apple.kpi.private": "10.0.0d1"
+        },
+        "executable_address": 18446744005085409024,
+        "executable_size": 1925
+      },
+      {
+        "bundle_id": "com.apple.driver.ApplePMP",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.iokit.IOHIDFamily": "1.4",
+          "com.apple.driver.RTBuddy": "1.0.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleA7IOP": "1.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.IOSlaveProcessor": "1.0.0",
+          "com.apple.kpi.private": "8.0"
+        },
+        "executable_address": 18446744005085411008,
+        "executable_size": 5322
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleS5L8960XNCO",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.iokit.IOReportFamily": "1.0"
+        },
+        "executable_address": 18446744005085416384,
+        "executable_size": 1374
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOStreamFamily",
+        "version": "1.1.0",
+        "dependencies": {
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.libkern": "8.0"
+        },
+        "executable_address": 18446744005085417792,
+        "executable_size": 1966
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleHIDKeyboard",
+        "version": "224",
+        "dependencies": {
+          "com.apple.iokit.IOHIDFamily": "1.4",
+          "com.apple.kpi.private": "11.0",
+          "com.apple.kpi.iokit": "10.0.0d2",
+          "com.apple.kpi.libkern": "10.0.0d2",
+          "com.apple.kpi.mach": "8.0"
+        },
+        "executable_address": 18446744005085419776,
+        "executable_size": 4652
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleInputDeviceSupport",
+        "version": "4140.6",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleFirmwareUpdateKext": "1.0.0",
+          "com.apple.driver.IOSlaveProcessor": "1.0.0",
+          "com.apple.kpi.private": "11.0",
+          "com.apple.iokit.CoreAnalyticsFamily": "1.0"
+        },
+        "executable_address": 18446744005085424448,
+        "executable_size": 6604
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleMultitouchDriver",
+        "version": "4140.7",
+        "dependencies": {
+          "com.apple.kpi.bsd": "9.0.0",
+          "com.apple.kpi.libkern": "9.0.0",
+          "com.apple.kpi.mach": "9.0.0",
+          "com.apple.iokit.IOHIDFamily": "1.4",
+          "com.apple.kpi.iokit": "9.0.0",
+          "com.apple.driver.AppleInputDeviceSupport": "1.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.iokit.IOReportFamily": "1.0"
+        },
+        "executable_address": 18446744005085431104,
+        "executable_size": 21997
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleTopCaseHIDEventDriver",
+        "version": "4050.1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "9.6.0",
+          "com.apple.kpi.libkern": "9.6.0",
+          "com.apple.kpi.mach": "9.6.0",
+          "com.apple.iokit.IOHIDFamily": "1.4",
+          "com.apple.kpi.iokit": "9.6.0",
+          "com.apple.driver.AppleHIDKeyboard": "170.10",
+          "com.apple.driver.AppleMultitouchDriver": "237.1",
+          "com.apple.driver.AppleMultitouchSPI": "1.0",
+          "com.apple.kpi.private": "9.6.0"
+        },
+        "executable_address": 18446744005085453120,
+        "executable_size": 6818
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleChestnutDisplayPMU",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.bsd": "8.0"
+        },
+        "executable_address": 18446744005085459968,
+        "executable_size": 1827
+      },
+      {
+        "bundle_id": "com.apple.kec.pthread",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.mach": "11.2",
+          "com.apple.kpi.private": "11.2",
+          "com.apple.kpi.unsupported": "11.2",
+          "com.apple.kpi.iokit": "13.0.0",
+          "com.apple.kpi.libkern": "11.2",
+          "com.apple.kpi.bsd": "12.0"
+        },
+        "executable_address": 18446744005085461824,
+        "executable_size": 3196
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleStockholmControl",
+        "version": "1.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleOnboardSerial": "1.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0"
+        },
+        "executable_address": 18446744005085465024,
+        "executable_size": 13448
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleSamsungSerial",
+        "version": "1.0.0d1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.iokit.IOSerialFamily": "1.0.4",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleOnboardSerial": "1.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0"
+        },
+        "executable_address": 18446744005085478528,
+        "executable_size": 1770
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleBSDKextStarter",
+        "version": "3",
+        "dependencies": {
+          "com.apple.kpi.iokit": "14.0.0",
+          "com.apple.kpi.libkern": "14.0.0"
+        },
+        "executable_address": 18446744005085480320,
+        "executable_size": 1439
+      },
+      {
+        "bundle_id": "com.apple.driver.usb.cdc.ecm",
+        "version": "5.0.0",
+        "dependencies": {
+          "com.apple.driver.usb.cdc": "5.0",
+          "com.apple.driver.AppleUSBHostMergeProperties": "1.0",
+          "com.apple.driver.usb.networking": "5.0",
+          "com.apple.kpi.bsd": "14.0.0",
+          "com.apple.kpi.iokit": "14.0.0",
+          "com.apple.kpi.libkern": "14.0.0",
+          "com.apple.kpi.mach": "14.0.0",
+          "com.apple.iokit.IOUSBHostFamily": "1.0.1",
+          "com.apple.iokit.IONetworkingFamily": "3.2"
+        },
+        "executable_address": 18446744005085481792,
+        "executable_size": 1740
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleBasebandN71",
+        "version": "1.0.0d1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleOnboardSerial": "1.0",
+          "com.apple.driver.AppleEmbeddedPCIE": "1.0.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.kpi.unsupported": "8.0"
+        },
+        "executable_address": 18446744005085483584,
+        "executable_size": 7676
+      },
+      {
+        "bundle_id": "com.apple.filesystems.apfs",
+        "version": "1677.142.1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "15.0",
+          "com.apple.kpi.dsep": "19.4.0",
+          "com.apple.kec.corecrypto": "1.0",
+          "com.apple.kpi.libkern": "15.0",
+          "com.apple.kpi.iokit": "15.0",
+          "com.apple.driver.AppleEffaceableStorage": "1.0",
+          "com.apple.kpi.mach": "15.0",
+          "com.apple.kpi.unsupported": "15.0",
+          "com.apple.iokit.IOStorageFamily": "2.1",
+          "com.apple.iokit.CoreAnalyticsFamily": "1.0",
+          "com.apple.kpi.private": "15.0"
+        },
+        "executable_address": 18446744005085491264,
+        "executable_size": 193525
+      },
+      {
+        "bundle_id": "com.apple.kext.AppleMatch",
+        "version": "1.0.0d1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0.0",
+          "com.apple.kpi.libkern": "9.0.0"
+        },
+        "executable_address": 18446744005085684800,
+        "executable_size": 1242
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleEffaceableBlockDevice",
+        "version": "1.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleEffaceableStorage": "1.0.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.iokit.IOStorageFamily": "1.0.0"
+        },
+        "executable_address": 18446744005085686080,
+        "executable_size": 1466
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleS8000AES",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.iokit.IOCryptoAcceleratorFamily": "1.0.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "8.0"
+        },
+        "executable_address": 18446744005085687552,
+        "executable_size": 4458
+      },
+      {
+        "bundle_id": "com.apple.iokit.AppleSEPGenericTransfer",
+        "version": "1",
+        "dependencies": {
+          "com.apple.driver.IOSlaveProcessor": "1.0.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.driver.AppleSEPManager": "1.0.0"
+        },
+        "executable_address": 18446744005085692032,
+        "executable_size": 2638
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOBiometricFamily",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.driver.AppleSEPManager": "1.0.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.IOSlaveProcessor": "1.0.0",
+          "com.apple.iokit.AppleSEPGenericTransfer": "1.0.0",
+          "com.apple.kpi.private": "8.0"
+        },
+        "executable_address": 18446744005085694720,
+        "executable_size": 11592
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleMesaSEPDriver",
+        "version": "100.99",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.IOSlaveProcessor": "1.0.0",
+          "com.apple.driver.AppleSMC": "1.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleBiometricSensor": "1.0.0",
+          "com.apple.iokit.AppleSEPGenericTransfer": "1.0.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.iokit.IOBiometricFamily": "1.0.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.iokit.IOHIDFamily": "1.4",
+          "com.apple.driver.AppleSEPManager": "1.0.0",
+          "com.apple.kpi.libkern": "8.0"
+        },
+        "executable_address": 18446744005085706368,
+        "executable_size": 26561
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleBluetooth",
+        "version": "1.0.0d1",
+        "dependencies": {
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.bsd": "8.0"
+        },
+        "executable_address": 18446744005085732992,
+        "executable_size": 1918
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleGameControllerPersonality",
+        "version": "1",
+        "dependencies": {
+          "com.apple.iokit.IOHIDFamily": "1.5"
+        },
+        "executable_address": null,
+        "executable_size": null
+      },
+      {
+        "bundle_id": "com.apple.driver.usb.ethernet.asix",
+        "version": "5.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "14.0.0",
+          "com.apple.driver.usb.networking": "5.0",
+          "com.apple.kpi.libkern": "14.0.0",
+          "com.apple.kpi.mach": "14.0.0",
+          "com.apple.kpi.iokit": "14.0.0",
+          "com.apple.driver.usb.AppleUSBHostCompositeDevice": "1.0",
+          "com.apple.iokit.IOUSBHostFamily": "1.0.1",
+          "com.apple.iokit.IONetworkingFamily": "3.2"
+        },
+        "executable_address": 18446744005085734912,
+        "executable_size": 5180
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleBasebandPCI",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "9.0.0",
+          "com.apple.kpi.libkern": "9.0.0",
+          "com.apple.kpi.mach": "9.0.0",
+          "com.apple.iokit.IOPCIFamily": "2.7.3",
+          "com.apple.kpi.iokit": "9.0.0",
+          "com.apple.iokit.IOSkywalkFamily": "1.0",
+          "com.apple.driver.AppleIPAppender": "1.0",
+          "com.apple.kpi.unsupported": "9.0.0",
+          "com.apple.kpi.private": "10.0.0d1",
+          "com.apple.iokit.IONetworkingFamily": "1.4.3"
+        },
+        "executable_address": 18446744005085740096,
+        "executable_size": 26795
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleSEPCredentialManager",
+        "version": "1.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.driver.AppleSEPManager": "1.0.0",
+          "com.apple.kec.corecrypto": "1.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.IOSlaveProcessor": "1.0.0",
+          "com.apple.kpi.private": "8.0"
+        },
+        "executable_address": 18446744005085766912,
+        "executable_size": 39042
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleS8003PCIe",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.iokit.IOPCIFamily": "2.7",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleEmbeddedPCIE": "1.0.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.AppleS800xPCIe": "1.0.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.iokit.IOReportFamily": "1.0"
+        },
+        "executable_address": 18446744005085806016,
+        "executable_size": 2159
+      },
+      {
+        "bundle_id": "com.apple.driver.watchdog",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.bsd": "8.0"
+        },
+        "executable_address": 18446744005085808192,
+        "executable_size": 2865
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleBSDKextStarterTMPFS",
+        "version": "1",
+        "dependencies": {
+          "com.apple.driver.AppleBSDKextStarter": "1.0"
+        },
+        "executable_address": null,
+        "executable_size": null
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleInterruptController",
+        "version": "1.0.0d1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "8.0"
+        },
+        "executable_address": 18446744005085811072,
+        "executable_size": 2981
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleC26Charger",
+        "version": "1.0.1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.iokit.IOAccessoryManager": "1.0.0",
+          "com.apple.iokit.IOHIDFamily": "1.4",
+          "com.apple.driver.AppleEmbeddedTempSensor": "1.0.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.driver.AppleARMPMU": "1.0.0"
+        },
+        "executable_address": 18446744005085814080,
+        "executable_size": 9184
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleAuthCP",
+        "version": "1.0.0",
+        "dependencies": {
+          "com.apple.driver.AppleC26Charger": "1.0.1",
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.iokit.IOAccessoryManager": "1.0.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "8.0"
+        },
+        "executable_address": 18446744005085823296,
+        "executable_size": 11003
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleSPUSphere",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "14.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.IOSlaveProcessor": "1.0.0",
+          "com.apple.driver.RTBuddy": "1.0.0",
+          "com.apple.kpi.iokit": "14.0",
+          "com.apple.iokit.IOReportFamily": "1.0",
+          "com.apple.iokit.IOSurface": "52.0",
+          "com.apple.kpi.mach": "14.0",
+          "com.apple.driver.AppleA7IOP": "1.0.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.iokit.IOHIDFamily": "2.0",
+          "com.apple.driver.AppleSPU": "1.0.0",
+          "com.apple.kpi.libkern": "14.0"
+        },
+        "executable_address": 18446744005085834304,
+        "executable_size": 1718
+      },
+      {
+        "bundle_id": "com.apple.security.sandbox",
+        "version": "300.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "10.0.0d3",
+          "com.apple.driver.AppleMobileFileIntegrity": "1.0.1",
+          "com.apple.kpi.dsep": "10.0.0d3",
+          "com.apple.kpi.libkern": "10.0.0d3",
+          "com.apple.kext.AppleMatch": "1.0d1",
+          "com.apple.kpi.iokit": "7.0",
+          "com.apple.kpi.mach": "10.0.0d3",
+          "com.apple.kpi.unsupported": "10.0.0d3",
+          "com.apple.kpi.private": "10.0.0d3"
+        },
+        "executable_address": 18446744005085836032,
+        "executable_size": 814478
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleHDQGasGaugeControl",
+        "version": "1.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleOnboardSerial": "1.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0"
+        },
+        "executable_address": 18446744005086650560,
+        "executable_size": 8451
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleTemperatureSensor",
+        "version": "1.0.0d1",
+        "dependencies": {
+          "com.apple.iokit.IOHIDFamily": "1.4",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.libkern": "8.0"
+        },
+        "executable_address": 18446744005086659072,
+        "executable_size": 3452
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleAE2Audio",
+        "version": "89.17",
+        "dependencies": {
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.bsd": "8.0"
+        },
+        "executable_address": 18446744005086662528,
+        "executable_size": 4792
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleNANDConfigAccess",
+        "version": "1.0.0",
+        "dependencies": {
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.bsd": "8.0"
+        },
+        "executable_address": 18446744005086667328,
+        "executable_size": 1326
+      },
+      {
+        "bundle_id": "com.apple.iokit.IONVMeFamily",
+        "version": "2.1.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "9.0.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.IOSlaveProcessor": "1.0",
+          "com.apple.driver.AppleNANDConfigAccess": "1.0.0",
+          "com.apple.driver.AppleSMC": "1.0.0",
+          "com.apple.driver.RTBuddy": "1.0.0",
+          "com.apple.iokit.IOPCIFamily": "1.0.0",
+          "com.apple.kpi.unsupported": "9.0.0",
+          "com.apple.driver.AppleMobileFileIntegrity": "1.0.1",
+          "com.apple.kpi.iokit": "9.0.0",
+          "com.apple.kpi.mach": "9.0.0",
+          "com.apple.driver.AppleA7IOP": "1.0.0",
+          "com.apple.driver.AppleEmbeddedPCIE": "1.0.0",
+          "com.apple.iokit.IOHIDFamily": "1.0",
+          "com.apple.iokit.IOStorageFamily": "1.7.0",
+          "com.apple.kpi.private": "9.0.0",
+          "com.apple.kpi.libkern": "9.0.0"
+        },
+        "executable_address": 18446744005086668672,
+        "executable_size": 55640
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleDialogPMU",
+        "version": "1.0.1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.iokit.IOHIDFamily": "1.4",
+          "com.apple.driver.AppleEmbeddedTempSensor": "1.0.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.AppleARMPMU": "1.0.0"
+        },
+        "executable_address": 18446744005086724352,
+        "executable_size": 2227
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleD2255PMU",
+        "version": "1.0.1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.driver.AppleDialogPMU": "1.0.0",
+          "com.apple.iokit.IOHIDFamily": "1.4",
+          "com.apple.driver.AppleEmbeddedTempSensor": "1.0.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.driver.AppleARMPMU": "1.0.0"
+        },
+        "executable_address": 18446744005086726592,
+        "executable_size": 6746
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOHIDEventDriver",
+        "version": "2.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0.0b2",
+          "com.apple.kpi.libkern": "8.0.0b2",
+          "com.apple.kpi.mach": "8.0.0b2",
+          "com.apple.iokit.IOHIDFamily": "1.5",
+          "com.apple.kpi.iokit": "8.0.0b2",
+          "com.apple.kpi.unsupported": "8.0.0b2",
+          "com.apple.kpi.private": "8.0.0"
+        },
+        "executable_address": null,
+        "executable_size": null
+      },
+      {
+        "bundle_id": "com.apple.driver.USBStorageDeviceSpecifics",
+        "version": "511.140.1",
+        "dependencies": {
+          "com.apple.kpi.mach": "9.0.0",
+          "com.apple.kpi.iokit": "9.0.0",
+          "com.apple.kpi.libkern": "9.0.0",
+          "com.apple.kpi.bsd": "9.0.0"
+        },
+        "executable_address": null,
+        "executable_size": null
+      },
+      {
+        "bundle_id": "com.apple.driver.usb.AppleUSBEHCI",
+        "version": "1.2",
+        "dependencies": {
+          "com.apple.kpi.bsd": "16.0.0",
+          "com.apple.kpi.libkern": "16.0.0",
+          "com.apple.kpi.mach": "16.0.0",
+          "com.apple.kpi.iokit": "16.0.0",
+          "com.apple.iokit.IOUSBHostFamily": "1.2",
+          "com.apple.kpi.unsupported": "16.0.0",
+          "com.apple.kpi.private": "16.0.0",
+          "com.apple.driver.usb.AppleUSBCommon": "1.0"
+        },
+        "executable_address": 18446744005086733376,
+        "executable_size": 34002
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleUSBHSIC",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0.0b1",
+          "com.apple.kpi.libkern": "8.0.0b2",
+          "com.apple.kpi.mach": "8.0.0b2",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.usb.AppleUSBEHCI": "1.2",
+          "com.apple.kpi.iokit": "8.0.0b2",
+          "com.apple.iokit.IOUSBHostFamily": "1.2",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "16.5.0",
+          "com.apple.driver.AppleEmbeddedUSB": "1.0.0",
+          "com.apple.driver.usb.AppleUSBCommon": "1.0"
+        },
+        "executable_address": 18446744005086767424,
+        "executable_size": 8137
+      },
+      {
+        "bundle_id": "com.apple.driver.usb.AppleUSBOHCI",
+        "version": "1.2",
+        "dependencies": {
+          "com.apple.kpi.bsd": "16.0.0",
+          "com.apple.kpi.libkern": "16.0.0",
+          "com.apple.kpi.mach": "16.0.0",
+          "com.apple.driver.usb.AppleUSBEHCI": "1.2",
+          "com.apple.kpi.iokit": "16.0.0",
+          "com.apple.iokit.IOUSBHostFamily": "1.2",
+          "com.apple.kpi.unsupported": "16.0.0",
+          "com.apple.driver.usb.AppleUSBCommon": "1.0"
+        },
+        "executable_address": 18446744005086775616,
+        "executable_size": 10541
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleEmbeddedUSBHost",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0.0b1",
+          "com.apple.driver.usb.AppleUSBHostCompositeDevice": "1.2",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.iokit.IOUSBHostFamily": "1.2",
+          "com.apple.driver.usb.AppleUSBHub": "1.2",
+          "com.apple.driver.AppleMobileFileIntegrity": "1.0.2",
+          "com.apple.driver.AppleUSBHostMergeProperties": "1.2",
+          "com.apple.kpi.iokit": "8.0.0b2",
+          "com.apple.kpi.mach": "8.0.0b2",
+          "com.apple.driver.usb.AppleUSBCommon": "1.0",
+          "com.apple.kpi.private": "16.5.0",
+          "com.apple.kpi.libkern": "8.0.0b2"
+        },
+        "executable_address": 18446744005086786176,
+        "executable_size": 2380
+      },
+      {
+        "bundle_id": "com.apple.driver.usb.AppleUSBHostT7000",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "15.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.unsupported": "15.0",
+          "com.apple.driver.AppleUSBHSIC": "1.0",
+          "com.apple.iokit.IOUSBHostFamily": "1.2",
+          "com.apple.driver.usb.AppleUSBOHCI": "1.2",
+          "com.apple.driver.AppleEmbeddedUSB": "1.0",
+          "com.apple.kpi.iokit": "15.0",
+          "com.apple.driver.AppleEmbeddedUSBHost": "1.0",
+          "com.apple.kpi.mach": "15.0",
+          "com.apple.driver.usb.AppleUSBCommon": "1.0",
+          "com.apple.driver.usb.AppleUSBEHCI": "1.2",
+          "com.apple.kpi.private": "16.5.0",
+          "com.apple.kpi.libkern": "15.0"
+        },
+        "executable_address": 18446744005086788608,
+        "executable_size": 6241
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleActuatorDriver",
+        "version": "4140.7",
+        "dependencies": {
+          "com.apple.kpi.bsd": "9.0.0",
+          "com.apple.kpi.libkern": "9.0.0",
+          "com.apple.kpi.mach": "9.0.0",
+          "com.apple.iokit.IOHIDFamily": "1.4",
+          "com.apple.kpi.iokit": "9.0.0",
+          "com.apple.driver.AppleInputDeviceSupport": "1.0",
+          "com.apple.driver.AppleMultitouchDriver": "423",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.iokit.IOReportFamily": "1.0"
+        },
+        "executable_address": 18446744005086794880,
+        "executable_size": 6145
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleTopCaseActuatorHIDDriver",
+        "version": "4050.1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "9.0.0",
+          "com.apple.driver.AppleActuatorDriver": "423",
+          "com.apple.kpi.libkern": "9.0.0",
+          "com.apple.iokit.IOHIDFamily": "1.4",
+          "com.apple.kpi.iokit": "9.0.0",
+          "com.apple.kpi.mach": "9.0.0",
+          "com.apple.kpi.private": "8.0.0"
+        },
+        "executable_address": null,
+        "executable_size": null
+      },
+      {
+        "bundle_id": "com.apple.driver.IOAudioCodecs",
+        "version": "1.0.0",
+        "dependencies": {
+          "com.apple.kpi.mach": "9.0.0",
+          "com.apple.kpi.libkern": "9.0.0",
+          "com.apple.driver.FairPlayIOKit": "3.3.0d1",
+          "com.apple.driver.LSKDIOKit": "1.0",
+          "com.apple.kec.Libm": "1.0.0",
+          "com.apple.kpi.iokit": "9.0.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0"
+        },
+        "executable_address": 18446744005086801088,
+        "executable_size": 11736
+      },
+      {
+        "bundle_id": "com.apple.driver.DiskImages.ReadWriteDiskImage",
+        "version": "493.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0.0b2",
+          "com.apple.kpi.libkern": "8.0.0b2",
+          "com.apple.kpi.mach": "8.0.0b2",
+          "com.apple.driver.DiskImages.KernelBacked": "128",
+          "com.apple.kpi.iokit": "8.0.0b2",
+          "com.apple.driver.DiskImages": "128",
+          "com.apple.kpi.unsupported": "8.0.0b2",
+          "com.apple.iokit.IOStorageFamily": "1.0.0"
+        },
+        "executable_address": 18446744005086812864,
+        "executable_size": 1326
+      },
+      {
+        "bundle_id": "com.apple.AppleFSCompression.AppleFSCompressionTypeZlib",
+        "version": "1.0.0",
+        "dependencies": {
+          "com.apple.kpi.dsep": "8.0.0b1",
+          "com.apple.kpi.private": "8.0.0b1",
+          "com.apple.kpi.iokit": "7.0",
+          "com.apple.kpi.libkern": "8.0.0d0",
+          "com.apple.kpi.bsd": "8.0.0b1"
+        },
+        "executable_address": 18446744005086814208,
+        "executable_size": 18026
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleBluetoothDebugService",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.mach": "9.0.0",
+          "com.apple.kpi.iokit": "9.0.0",
+          "com.apple.kpi.libkern": "9.0.0",
+          "com.apple.kpi.bsd": "9.0.0"
+        },
+        "executable_address": 18446744005086832256,
+        "executable_size": 1319
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleBCMWLANCore",
+        "version": "1.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.iokit.CoreAnalyticsFamily": "1.0",
+          "com.apple.iokit.IOSkywalkFamily": "1.0",
+          "com.apple.iokit.IOTimeSyncFamily": "500.10",
+          "com.apple.kpi.libkern": "8.0.0",
+          "com.apple.iokit.IONetworkingFamily": "1.5.0",
+          "com.apple.kpi.unsupported": "8.0.0",
+          "com.apple.driver.AppleMobileFileIntegrity": "1.0.1",
+          "com.apple.kpi.iokit": "8.0.0",
+          "com.apple.driver.corecapture": "1.0.0",
+          "com.apple.driver.AppleOnboardSerial": "1.0",
+          "com.apple.kpi.mach": "8.0.0",
+          "com.apple.driver.IOImageLoader": "1.0",
+          "com.apple.kpi.private": "8.0.0",
+          "com.apple.iokit.IO80211Family": "1.5.0",
+          "com.apple.kec.corecrypto": "1.0"
+        },
+        "executable_address": 18446744005086833600,
+        "executable_size": 401339
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleBCMWLANBusInterfacePCIe",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.iokit.CoreAnalyticsFamily": "1.0",
+          "com.apple.iokit.IOPCIFamily": "1.0.0",
+          "com.apple.iokit.IOSkywalkFamily": "1.0",
+          "com.apple.driver.AppleBluetoothDebugService": "1.0.0",
+          "com.apple.iokit.IONetworkingFamily": "1.5.0",
+          "com.apple.kpi.unsupported": "8.0.0",
+          "com.apple.kpi.iokit": "8.0.0",
+          "com.apple.driver.AppleBCMWLANCore": "1.0.0",
+          "com.apple.driver.corecapture": "1.0.0",
+          "com.apple.driver.AppleOnboardSerial": "1.0",
+          "com.apple.kpi.mach": "8.0.0",
+          "com.apple.driver.AppleEmbeddedPCIE": "1.0.0",
+          "com.apple.driver.IOImageLoader": "1.0",
+          "com.apple.kpi.private": "8.0.0",
+          "com.apple.iokit.IO80211Family": "1.5.0",
+          "com.apple.kpi.libkern": "8.0.0"
+        },
+        "executable_address": 18446744005087234944,
+        "executable_size": 69537
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleUSBDeviceNCM",
+        "version": "5.0.0",
+        "dependencies": {
+          "com.apple.iokit.IOUSBDeviceFamily": "2.0.0",
+          "com.apple.driver.usb.networking": "5.0",
+          "com.apple.kpi.bsd": "14.0.0",
+          "com.apple.kpi.libkern": "14.0.0",
+          "com.apple.kpi.iokit": "14.0.0",
+          "com.apple.kpi.mach": "14.0.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "14.0.0",
+          "com.apple.iokit.IONetworkingFamily": "3.3"
+        },
+        "executable_address": 18446744005087304512,
+        "executable_size": 3367
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleBSDKextStarterVPN",
+        "version": "3",
+        "dependencies": {
+          "com.apple.driver.AppleBSDKextStarter": "1.0"
+        },
+        "executable_address": null,
+        "executable_size": null
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleCS42L71Audio",
+        "version": "442.27",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleCSEmbeddedAudio": "1.1",
+          "com.apple.iokit.AppleARMIISAudio": "1.0",
+          "com.apple.iokit.IOAudio2Family": "1.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.iokit.IOReportFamily": "1.0",
+          "com.apple.driver.AppleEmbeddedAudio": "1.1.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.iokit.IOHIDFamily": "1.5",
+          "com.apple.iokit.IOMikeyBusFamily": "1.0",
+          "com.apple.kpi.libkern": "8.0"
+        },
+        "executable_address": 18446744005087307904,
+        "executable_size": 9389
+      },
+      {
+        "bundle_id": "com.apple.filesystems.hfs.kext",
+        "version": "556.100.11",
+        "dependencies": {
+          "com.apple.kpi.mach": "14.1",
+          "com.apple.kpi.private": "14.1",
+          "com.apple.kpi.unsupported": "14.1",
+          "com.apple.kpi.iokit": "14.1",
+          "com.apple.kpi.libkern": "14.1",
+          "com.apple.kpi.bsd": "14.1"
+        },
+        "executable_address": 18446744005087317312,
+        "executable_size": 47344
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleS8000SmartIO",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.iokit.IOCryptoAcceleratorFamily": "1.0.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleA7IOP": "1.0.0",
+          "com.apple.driver.IOSlaveProcessor": "1.0.0",
+          "com.apple.kpi.private": "8.0"
+        },
+        "executable_address": 18446744005087364672,
+        "executable_size": 14284
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleM68Buttons",
+        "version": "1.0.0d1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.iokit.IOHIDFamily": "1.5",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "8.0"
+        },
+        "executable_address": 18446744005087379008,
+        "executable_size": 14011
+      },
+      {
+        "bundle_id": "com.apple.driver.usb.IOUSBHostHIDDeviceSafeBoot",
+        "version": "1.2",
+        "dependencies": {
+          "com.apple.driver.usb.IOUSBHostHIDDevice": "1.2",
+          "com.apple.driver.usb.AppleUSBCommon": "1.0"
+        },
+        "executable_address": null,
+        "executable_size": null
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleTopCaseDriverV2",
+        "version": "4050.1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "9.6.0",
+          "com.apple.kpi.libkern": "9.6.0",
+          "com.apple.kpi.mach": "9.6.0",
+          "com.apple.iokit.IOHIDFamily": "1.4",
+          "com.apple.kpi.iokit": "9.6.0",
+          "com.apple.driver.AppleMultitouchDriver": "237.1",
+          "com.apple.kpi.private": "9.6.0"
+        },
+        "executable_address": null,
+        "executable_size": null
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleUSBDeviceMux",
+        "version": "1.0.0d1",
+        "dependencies": {
+          "com.apple.iokit.IOUSBDeviceFamily": "2.0",
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.kpi.private": "8.0"
+        },
+        "executable_address": 18446744005087393024,
+        "executable_size": 6082
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleBasebandPCIMAVControl",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.mach": "9.0.0",
+          "com.apple.driver.AppleBasebandPCI": "1.0.0",
+          "com.apple.kpi.iokit": "9.0.0",
+          "com.apple.kpi.libkern": "9.0.0",
+          "com.apple.kpi.bsd": "9.0.0"
+        },
+        "executable_address": 18446744005087399168,
+        "executable_size": 5983
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleS5L8960XWatchDogTimer",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.driver.watchdog": "1.0.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.iokit.IOReportFamily": "1.0"
+        },
+        "executable_address": 18446744005087405184,
+        "executable_size": 3465
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOAccessoryPortUSB",
+        "version": "1.0.0",
+        "dependencies": {
+          "com.apple.iokit.IOUSBDeviceFamily": "2.0.0",
+          "com.apple.iokit.IOSerialFamily": "1.0.4",
+          "com.apple.iokit.IOAccessoryManager": "1.0.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.driver.AppleOnboardSerial": "1.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0"
+        },
+        "executable_address": 18446744005087408704,
+        "executable_size": 2644
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleStorageDrivers",
+        "version": "511.140.1",
+        "dependencies": {},
+        "executable_address": null,
+        "executable_size": null
+      },
+      {
+        "bundle_id": "com.apple.driver.ApplePinotLCD",
+        "version": "1.0.0",
+        "dependencies": {
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.bsd": "8.0"
+        },
+        "executable_address": 18446744005087411392,
+        "executable_size": 1587
+      },
+      {
+        "bundle_id": "com.apple.filesystems.tmpfs",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.mach": "15.0",
+          "com.apple.kpi.private": "8.0.0",
+          "com.apple.kpi.unsupported": "15.0",
+          "com.apple.kpi.libkern": "17.7",
+          "com.apple.kpi.bsd": "17.7"
+        },
+        "executable_address": 18446744005087412992,
+        "executable_size": 3031
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleIDV",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0.0",
+          "com.apple.driver.AppleSEPManager": "1.0.0",
+          "com.apple.kpi.libkern": "8.0.0",
+          "com.apple.kpi.mach": "8.0.0",
+          "com.apple.kpi.iokit": "8.0.0",
+          "com.apple.kpi.unsupported": "9.3.1",
+          "com.apple.driver.IOSlaveProcessor": "1.0.0",
+          "com.apple.kpi.private": "8.0.0"
+        },
+        "executable_address": 18446744005087416064,
+        "executable_size": 1586
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleUSBEthernetHost",
+        "version": "8.1.1",
+        "dependencies": {
+          "com.apple.kpi.mach": "8.0.0",
+          "com.apple.iokit.IONetworkingFamily": "3.0",
+          "com.apple.iokit.IOUSBHostFamily": "1.0.1",
+          "com.apple.kpi.iokit": "8.0.0",
+          "com.apple.kpi.libkern": "8.0.0",
+          "com.apple.kpi.bsd": "8.0.0"
+        },
+        "executable_address": 18446744005087417664,
+        "executable_size": 4296
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleIDAMInterface",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "14.0.0",
+          "com.apple.kpi.libkern": "14.0.0",
+          "com.apple.kpi.mach": "14.0.0",
+          "com.apple.kpi.iokit": "14.0.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.iokit.IOUSBDeviceFamily": "2.0.0"
+        },
+        "executable_address": 18446744005087422016,
+        "executable_size": 2912
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOHIDEventDriverSafeBoot",
+        "version": "2.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0.0b2",
+          "com.apple.kpi.libkern": "8.0.0b2",
+          "com.apple.kpi.mach": "8.0.0b2",
+          "com.apple.iokit.IOHIDFamily": "1.5",
+          "com.apple.kpi.iokit": "8.0.0b2",
+          "com.apple.kpi.unsupported": "8.0.0b2",
+          "com.apple.kpi.private": "8.0.0"
+        },
+        "executable_address": null,
+        "executable_size": null
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleBasebandPCIMAVPDP",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "9.0.0",
+          "com.apple.kpi.libkern": "9.0.0",
+          "com.apple.driver.AppleBasebandPCI": "1.0.0",
+          "com.apple.kpi.mach": "9.0.0",
+          "com.apple.kpi.iokit": "9.0.0",
+          "com.apple.iokit.IOSkywalkFamily": "1.0",
+          "com.apple.driver.AppleIPAppender": "1.0",
+          "com.apple.driver.AppleBasebandPCIMAVControl": "1.0.0",
+          "com.apple.kpi.private": "10.0.0d1",
+          "com.apple.iokit.IONetworkingFamily": "1.4.3"
+        },
+        "executable_address": 18446744005087424960,
+        "executable_size": 2320
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleDiagnosticDataAccessReadOnly",
+        "version": "1.0.0",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.driver.AppleNANDConfigAccess": "1.0.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0"
+        },
+        "executable_address": 18446744005087427328,
+        "executable_size": 1646
+      },
+      {
+        "bundle_id": "com.apple.iokit.IOGPUFamily",
+        "version": "21.9",
+        "dependencies": {
+          "com.apple.kpi.bsd": "9.0.0b1",
+          "com.apple.driver.AppleMobileFileIntegrity": "1.0.1",
+          "com.apple.kpi.libkern": "9.0.0b1",
+          "com.apple.iokit.IOSurface": "52.6.0",
+          "com.apple.kpi.iokit": "9.0.0b1",
+          "com.apple.kpi.mach": "9.0.0b1",
+          "com.apple.kpi.unsupported": "9.0.0b1",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "9.0.0b1",
+          "com.apple.iokit.IOReportFamily": "1.0"
+        },
+        "executable_address": 18446744005087428992,
+        "executable_size": 19452
+      },
+      {
+        "bundle_id": "com.apple.AGXG5P",
+        "version": "173.26.4",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.RTBuddy": "1.0.0",
+          "com.apple.kec.Libm": "1.0.0",
+          "com.apple.driver.AppleMobileFileIntegrity": "1.0.1",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.iokit.IOReportFamily": "1.0",
+          "com.apple.iokit.IOSurface": "52.6.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.iokit.IOGPUFamily": "2.0.0",
+          "com.apple.kpi.private": "8.0",
+          "com.apple.kpi.libkern": "8.0"
+        },
+        "executable_address": 18446744005087448448,
+        "executable_size": 26120
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleBiometricServices",
+        "version": "1",
+        "dependencies": {
+          "com.apple.iokit.IOBiometricFamily": "1.0.0",
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.driver.AppleMesaSEPDriver": "1.0.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0"
+        },
+        "executable_address": 18446744005087474624,
+        "executable_size": 3171
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleS5L8960XUSB",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.bsd": "8.0",
+          "com.apple.kpi.libkern": "8.0",
+          "com.apple.kpi.mach": "8.0",
+          "com.apple.kpi.iokit": "8.0",
+          "com.apple.kpi.unsupported": "8.0",
+          "com.apple.driver.AppleARMPlatform": "1.0.0",
+          "com.apple.kpi.private": "16.5.0",
+          "com.apple.driver.AppleEmbeddedUSB": "1.0.0"
+        },
+        "executable_address": 18446744005087477824,
+        "executable_size": 2450
+      },
+      {
+        "bundle_id": "com.apple.driver.AppleDiskImages2",
+        "version": "1",
+        "dependencies": {
+          "com.apple.kpi.libkern": "17.0",
+          "com.apple.kpi.mach": "17.0",
+          "com.apple.iokit.IOStorageFamily": "2.1",
+          "com.apple.kpi.iokit": "17.0",
+          "com.apple.kpi.bsd": "17.0"
+        },
+        "executable_address": 18446744005087480320,
+        "executable_size": 11384
+      }
+    ]
+  }
+}

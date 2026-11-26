@@ -1,0 +1,1280 @@
+diff --git a/AGENTS.md b/AGENTS.md
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -1,3 +1,5 @@
++2026-11-20 R35两路主机修订完成：用户已确认R34应用内可用、触摸位置/滑动/长按正常，桌面/后台卡片严重卡。Huygens完成默认关闭applog_ui_quiet，精确抑制两UI进程额外DT_MODE回显；Einstein补逐核MIDR/SCTLR I/C/M及affinity/logical_match，不写缓存/PLL/电压且不宣称调频修好；Poincare完成同内核quiet/lite/cpu3打包。实际HakiOS增量编译链接、540个新增逻辑检查及3实际整包逐层读回通过，未重复历史总回归/未重建未改固件用户态。内核86f36fdf4e047e0f2da18138a39629e584975e4c6689036946ae71195bd924aa；quiet镜像bb8eae118bde5e877510b6ea17ba96e866378eb1e42d29a7320ff67059718511，lite fda8fd7a18b8f0468c7be483e3080a30a2b9aee97d862fefc077f4c99eced9d3，cpu3 74db47b0879e3148f0d3a438dd22cc197f62d96d89d8ae12cf280810c9761475。lite复用ui_lite1、会持久化减少透明/动态偏好，省略不恢复，ui_lite0可关闭；cpu3仅诊断、慢核收益未验证，四核仍受residentUFS限制。无新手机/USB/分区/boot/ADB/QEMU操作，60/29不变；R20/R32/R33/R34冻结和原索引保持。旧USB接收PID23680已不在，原capturing状态保留；18826帧/4120429字节独立重放一致无传输缺口，未获timer/drain，手机终态未查询，不宣称仍实时采集。候选效果未上机；保持当前R34，待用户选择切Fastboot测试一个配置。见reports/hakios-ios16-r35-ui-performance-prepared.md/json。
++
+ 2026-11-20 R34性能排查：用户报告几十秒响应且短按成长按，记为部分可见响应但性能不可用，不宣称触摸完整验收。当前仍affinity1单核；本次启动前整数2473us/memcpy3499MBps接近R15，不是运行中MHz测量。360秒有效窗口99%忙、backboardd48.9/kernel31.2%；同触点原始DOWN/UP90.658ms而EventFilter处理相隔99.698秒，17:29:13已存43陈旧事件最大539.914秒。两轮redwood input栈均落IOHIDVirtualServiceClientDispatchEvent内，时间戳保留，精确内部分段未测。实际loader保留phys0作UEFI/UFSworker，当前最多3XNU核；四核需存储/交接重构，既有redwood EPSS不适用8996。下一修订优先有界派发时序和单变量减少强制os_log回显，CPU线并行核对慢核cache/clock，恢复后再验三核。Mencius/Bohr/Ohm各自证据完成，主代理读回关键源码和栈；无新生产改动/build/设备查询/boot/频率/分区操作，60/29不变，原同次UFS/USB保留。见reports/hakios-ios16-r34-input-performance.md。
+ 
+ 2026-11-20 R34 UFS桌面触摸运行中：用户在获知正常Data写入范围后要求“测试呀，手机已经连接了”；17:17:31.703118+08:00单次临时boot冻结UFS最终包47740664f56fcf021096493444cc96934223f49ce0dfc099920bfb73cfc426ed，五项只读预检通过。actual affinity1/bootcpu1/cpus1、APFS根/HFS Data及journal replay完成；ID0xe7/error0及63字节轮询正常，SB main_queue_enter相对constructor75370ms，backboardd触摸服务已建立。17:21:04快照至少7800报告/54事件成功入队、type1/2/3，未见触摸read/report错误；5176帧/1177842字节运行前缀独立重放一致、gap/dup/残帧/lost0，USB仍采集。随后4条hakios input sample已证明backboardd完整read到type1/2/3；Einstein定位且主代理实际源码复核959/963及985/856通过，dispatch返回未检查，不扩大为界面验收。界面实际点击响应/坐标/多指待用户本次观察，不移用RAM验收；本次正常UFS文件系统写入已授权，无刷分区/ADB/Android/Recovery/QEMU/启动后查询或重试。计数60/29；保持同次运行及USB，UFS自动返回未启用、原10800秒timer保持。R20/R32/R33/R34冻结及原索引保持。见reports/hakios-ios16-device-r34-touch-live-ufs.md/json。
+diff --git a/project.json b/project.json
+--- a/project.json
++++ b/project.json
+@@ -42,22 +42,22 @@
+     "hardware_started": true,
+     "ios14_compatibility_verified": false,
+     "springboard_verified": true,
+-    "status": "R34 live touch RAM path observed; R20 remains accepted desktop/display baseline",
++    "status": "R35 UIquiet and percorecache diagnostic built; runtime not tested",
+     "configuration_scaffold_created": true,
+     "upstream_config_checks_passed": true,
+     "platform_uefi_verified": true,
+     "loader_started": true,
+     "hello_started": true,
+     "hardware_evidence_report": "reports\\hakios-ios16-device-r20-display.json",
+-    "latest_kernel_binary_hardware_verified": true,
+-    "kernel_sha256": "799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c",
+-    "latest_kernel_binary_verification_scope": "R34 isolated RAM: affinity1, ID0xe7, 63-byte reads, physical single-finger DOWN/MOVE/UP queue acceptance, timer/drain. Desktop/HID consumer not verified.",
++    "latest_kernel_binary_hardware_verified": false,
++    "kernel_sha256": "86f36fdf4e047e0f2da18138a39629e584975e4c6689036946ae71195bd924aa",
++    "latest_kernel_binary_verification_scope": "R35 host compile/link/package only; last hardware observations remain R34 touch and user-reported app UI",
+     "springboard_display_verified": true,
+-    "last_hardware_verified_kernel_sha256": "8e9209c1ff077ba6ad16cbd467c6cceb3cb6b16c0357667e513b913190fd9b4b",
++    "last_hardware_verified_kernel_sha256": "799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c",
+     "latest_kernel_binary_hardware_report": "reports/hakios-ios16-device-r34-touch-live.json"
+   },
+   "schema": 2,
+-  "stage": "iOS16 phase4: R34 touch reaches backboardd; user reports unusable delay; performance investigation",
++  "stage": "iOS16 phase4: R35 quiet/lite/cpu3 host packages ready; R34 app touch usable, SpringBoard performance pending",
+   "project_instructions_path": "AGENTS.md",
+   "plan_path": "PLAN.md",
+   "operations_path": "OPERATIONS.md",
+@@ -67,7 +67,7 @@
+   "active_workspace": "/home/jia/ios-mix1-build/hakios-lithium-ios16",
+   "source_lock_path": "upstreams.lock.json",
+   "source_audit_report": "reports/hakios-p0-audit.md",
+-  "current_device_status": "R34 UFS same run active; partial UI response reported, severe input backlog and lag",
++  "current_device_status": "R34 preserved by host; user reports app touch usable, SpringBoard slow; prior USB receiver absent, physical terminal not queried",
+   "device_state": {
+     "last_observation_baseline": "ios16_r20_display_hakios",
+     "live_state_requeried": true,
+@@ -80,8 +80,8 @@
+     "latest_device_test_report": "reports/hakios-ios16-device-r34-touch-live-ufs.json",
+     "last_screen_observation_source": "R26 same-run user photograph, original archived with SHA256",
+     "last_screen_observation": "UEFI TIMER DEADLINE REACHED; NO PANIC TEXT IN RETAINED LOG; drain1",
+-    "current_physical_state_source": "Same-run saved USB: SpringBoard main_queue_enter, touch reports/events, backboardd sample reads; screen not yet user-confirmed",
+-    "current_physical_state": "R34 UFS same run active; partial UI response reported, severe input backlog and lag",
++    "current_physical_state_source": "Latest user feedback: app touch position/swipe/longpress normal, home/app-switcher slow; no new hostdevicequery",
++    "current_physical_state": "R34 user-reported app UI usable; no new boot issued",
+     "current_state_host_queried": true,
+     "userdata_journal_initialized": false,
+     "userdata_journal_repair_report": null,
+@@ -150,10 +150,13 @@
+     "long_term_smp_stability_verified": false,
+     "physical_touch_sensor_reports_verified": true,
+     "touch_input_queue_verified": true,
+-    "physical_touch_ui_response_verified": false,
++    "physical_touch_ui_response_verified": true,
+     "physical_touch_multitouch_verified": false,
+     "touch_backboardd_record_read_verified": true,
+-    "touch_usable_ui_performance_verified": false
++    "touch_usable_ui_performance_verified": false,
++    "touch_coordinates_user_confirmed": true,
++    "touch_swipe_longpress_user_confirmed": true,
++    "touch_app_interaction_reported_usable": true
+   },
+   "execution_limits": {
+     "qemu_allowed": false,
+@@ -169,20 +172,20 @@
+     "large_tasks_sequential": true
+   },
+   "work_status": {
+-    "status": "ios16_r34_ufs_touch_reaches_ui_latency_unacceptable",
++    "status": "ios16_r35_ui_cpu_host_packages_prepared",
+     "phase2_approved": true,
+     "device_operations_performed": true,
+     "device_boots_performed": true,
+     "partition_writes_performed": true,
+     "hakios_temporary_boot_count": 60,
+     "backup_branch": "archive/ios14-r31-20261116",
+-    "next_step": "Input timing/backpressure and quiet-oslog comparison first; in parallel inspect slow-core cache/clock; restore useful three-core performance before four-core UFS handoff redesign",
++    "next_step": "Keep current R34; choose one R35 profile for next explicitly authorized temporary boot, lite targets home/app-switcher burden; cpu3 is diagnostic only",
+     "phase3_approved": true,
+     "auxiliary_stock_reader_boots_accepted": 4,
+     "ios16_boots_performed": 29,
+     "auxiliary_stock_reader_adb_runtime_observations": 3,
+-    "latest_evidence_recorded_at": "2026-11-20T17:30:42.667287+08:00",
+-    "latest_host_report": "reports/hakios-ios16-touch-r34-prepared.md",
++    "latest_evidence_recorded_at": "2026-11-20T18:03:37.737526+08:00",
++    "latest_host_report": "reports/hakios-ios16-r35-ui-performance-prepared.md",
+     "r5_backup_branch": "archive/ios16-r5-20261117",
+     "r6_backup_branch": "archive/ios16-r6-20261117",
+     "r7_backup_branch": "archive/ios16-r7-20261117",
+@@ -193,9 +196,9 @@
+     "current_run_shutdown_authorized": false,
+     "host_shutdown_request_scope": "Historical R8 only; no R15 shutdown requested",
+     "latest_device_report": "reports/hakios-ios16-device-r34-touch-live-ufs.md",
+-    "current_turn_new_kernel_builds": false,
+-    "current_turn_device_queries": true,
+-    "current_turn_device_boots": true,
++    "current_turn_new_kernel_builds": true,
++    "current_turn_device_queries": false,
++    "current_turn_device_boots": false,
+     "current_turn_partition_writes": false
+   },
+   "active_workspace_report": "reports/hakios-workspace.json",
+@@ -203,7 +206,7 @@
+   "refactor_report": "reports/hakios-project-refactor.md",
+   "test_package_report": "reports/hakios-test-package.json",
+   "p0_closure_report": "reports/hakios-p0-closure.json",
+-  "current_report": "reports/hakios-ios16-device-r34-touch-live-ufs.json",
++  "current_report": "reports/hakios-ios16-r35-ui-performance-prepared.json",
+   "latest_diagnosis_report": "reports/hakios-ios16-r34-input-performance.md",
+   "repeat_ready_report": null,
+   "platform_observation_workflow": {
+@@ -1294,7 +1297,7 @@
+     }
+   },
+   "live_touch": {
+-    "status": "R34_ufs_touch_response_severely_delayed",
++    "status": "R34_apps_touch_usable_R35_performance_candidates_prepared",
+     "report": "reports/hakios-ios16-device-r34-touch-live.json",
+     "default_off": true,
+     "enable": "touch=1",
+@@ -1328,7 +1331,7 @@
+       }
+     },
+     "device_operations_this_phase": 8,
+-    "next": "Keep same boot and USB; user reports icon opening, page swipe, touch/display position agreement. No reboot or additional device command.",
++    "next": "Keep current R34; choose one R35 profile for next explicitly authorized temporary boot, lite targets home/app-switcher burden; cpu3 is diagnostic only",
+     "host_preparation_report": "reports/hakios-ios16-touch-r34-prepared.json",
+     "hardware_verification_scope": "ID0xe7, at least7200 reports,197 queue-accepted events from physical taps/swipes",
+     "id": "0xe7",
+@@ -1619,7 +1622,7 @@
+       "next": "Keep same boot and USB; user reports icon opening, page swipe, touch/display position agreement. No reboot or additional device command."
+     },
+     "backboardd_queue_read_verified": true,
+-    "visible_ui_response_verified": false,
++    "visible_ui_response_verified": true,
+     "user_feedback": {
+       "recorded_at": "2026-11-20T17:30:42.667287+08:00",
+       "user_report": "Tens-of-seconds response; short press appears as long press; performance currently prevents further UI testing",
+@@ -1639,7 +1642,19 @@
+       "characterize_slow_core_cache_and_clock",
+       "three_core_response_test_after_performance_restored",
+       "four_core_requires_UFS_handoff_redesign"
+-    ]
++    ],
++    "latest_user_feedback": {
++      "recorded_at": "2026-11-20T17:57:00.525531+08:00",
++      "user_report": "Now usable for testing in applications; touch position, swipe and long press normal; SpringBoard home and app-switcher severely laggy",
++      "application_touch_usable_reported": true,
++      "coordinate_position_correct_reported": true,
++      "swipe_correct_reported": true,
++      "long_press_correct_reported": true,
++      "springboard_home_switcher_performance_accepted": false,
++      "physical_multitouch_not_reported": true
++    },
++    "application_touch_usable_reported": true,
++    "coordinate_swipe_longpress_user_confirmed": true
+   },
+   "cpu_performance_followup": {
+     "report": "evidence/touch-live-20261120/latency-cpu/findings.md",
+@@ -1650,5 +1665,131 @@
+     "all_four_requires_storage_handoff_redesign": true,
+     "redwood_epss_compatible": false,
+     "actual_cpu_mhz_measured": false
++  },
++  "r35_ui_performance": {
++    "schema": 1,
++    "revision": "R35-ui-performance",
++    "recorded_at": "2026-11-20T18:03:37.737526+08:00",
++    "host_built": true,
++    "hardware_verified": false,
++    "device_operations": 0,
++    "boot_totals": {
++      "hakios": 60,
++      "ios16": 29
++    },
++    "kernel_sha256": "86f36fdf4e047e0f2da18138a39629e584975e4c6689036946ae71195bd924aa",
++    "root_unchanged": true,
++    "profiles": {
++      "quiet": {
++        "path": "artifacts/hakios/lithium-ios16/phase4-r35-ui-perf/quiet/lithium-hakios-ios16-r35-ui-perf-quiet.img",
++        "image_sha256": "bb8eae118bde5e877510b6ea17ba96e866378eb1e42d29a7320ff67059718511",
++        "bytes": 16318464,
++        "boot_args": "bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1",
++        "command_budget": {
++          "capacity_including_nul": 608,
++          "reserved_bytes": 545,
++          "spare_bytes": 63
++        },
++        "cpus": 1,
++        "ui_lite_persistence": false,
++        "readback_passed": true
++      },
++      "lite": {
++        "path": "artifacts/hakios/lithium-ios16/phase4-r35-ui-perf/lite/lithium-hakios-ios16-r35-ui-perf-lite.img",
++        "image_sha256": "fda8fd7a18b8f0468c7be483e3080a30a2b9aee97d862fefc077f4c99eced9d3",
++        "bytes": 16318464,
++        "boot_args": "bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1",
++        "command_budget": {
++          "capacity_including_nul": 608,
++          "reserved_bytes": 555,
++          "spare_bytes": 53
++        },
++        "cpus": 1,
++        "ui_lite_persistence": true,
++        "readback_passed": true
++      },
++      "cpu3": {
++        "path": "artifacts/hakios/lithium-ios16/phase4-r35-ui-perf/cpu3/lithium-hakios-ios16-r35-ui-perf-cpu3.img",
++        "image_sha256": "74db47b0879e3148f0d3a438dd22cc197f62d96d89d8ae12cf280810c9761475",
++        "bytes": 16318464,
++        "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1",
++        "command_budget": {
++          "capacity_including_nul": 608,
++          "reserved_bytes": 545,
++          "spare_bytes": 63
++        },
++        "cpus": 3,
++        "ui_lite_persistence": false,
++        "readback_passed": true
++      }
++    },
++    "default_profile": "quiet",
++    "recommended_interaction_candidate": "lite",
++    "implemented": {
++      "ui_quiet_gate": true,
++      "existing_ui_lite_available_in_unchanged_userspace": true,
++      "cpu_per_core_sctlr_probe": true,
++      "cpu_governor_repaired": false,
++      "clock_or_voltage_writes": false,
++      "physical_cpu_topology_changed_this_phase": false,
++      "four_core_xnu_supported": false
++    },
++    "focused_checks": {
++      "ui_gate_cases": 540,
++      "actual_kernel_incremental_link": true,
++      "actual_kernel_new_markers_verified": true,
++      "package_actual_layer_readback_profiles": 3,
++      "historical_full_regression_repeated": false,
++      "unchanged_firmware_userspace_rebuilt": false
++    },
++    "user_feedback": {
++      "recorded_at": "2026-11-20T17:57:00.525531+08:00",
++      "user_report": "Now usable for testing in applications; touch position, swipe and long press normal; SpringBoard home and app-switcher severely laggy",
++      "application_touch_usable_reported": true,
++      "coordinate_position_correct_reported": true,
++      "swipe_correct_reported": true,
++      "long_press_correct_reported": true,
++      "springboard_home_switcher_performance_accepted": false,
++      "physical_multitouch_not_reported": true
++    },
++    "index_sha256": "ead184543d0a1d907521c4acaddb65b98f8e8a8783bb05c16eff8dea64011f47",
++    "source_sha256": {
++      "ports/hakios-lithium/patches/0025-lithium-ui-performance.patch": "ce830f467bf797de9b8a8ac1a6bbc3b8a703e67bf1dea029ca8b7b1f91b423bc",
++      "ports/hakios-lithium/diagnostics/cpu-sanity.inc": "55ae44db12b14b4b3a8b9c4e4592f2c4d97be2e640ae509ea5d82020628005a9",
++      "scripts/build-hakios-ui-perf-r35.py": "fddec49243316b73388f37f026fd1e783e7cbb68469854485ca2ba9658ba0f0a",
++      "scripts/package-hakios-ui-perf-r35.py": "ed3a3054fcf4d6f70b6a17feef31454d694e7a9450c689d6f4ff4d808148352f",
++      "reports/local/run-ui-perf-r35-build.ps1": "d5fe2ba0a739b452fe3da91701b9610526e07dd0371f48dcab3ea49a4a0c70d7"
++    },
++    "subagents": [
++      {
++        "name": "Huygens",
++        "work": "UIquiet commonpatch/actualdelta/focusedcheck",
++        "main_review": "Read exact gate/innerpatch changes, check results, generatedenv, and actualcompile"
++      },
++      {
++        "name": "Einstein",
++        "work": "percoreSCTLRdiagnostic and boundedsourcecheck",
++        "main_review": "Read exact newfields, startupsourceanchors, and actualkernelstring"
++      },
++      {
++        "name": "Poincare",
++        "work": "three-profilepackager",
++        "main_review": "Read args/contractimplementation and actualpackage/profilediffs"
++      }
++    ],
++    "r34_capture": {
++      "audit": "reports/local/20261120-r34-touch-live-ufs-approved/usb-audit-host-stopped.json",
++      "host_process_absent": true,
++      "phone_terminal_unqueried": true,
++      "timer_or_final_drain_captured": false
++    },
++    "unverified": [
++      "R35runtimebenefit",
++      "UIlitepreferenceeffect/persistence",
++      "slowcorecache/clockruntime",
++      "CPUgovernorrepair",
++      "threecorethroughput/latencybenefit"
++    ],
++    "report": "reports/hakios-ios16-r35-ui-performance-prepared.md"
+   }
+ }
+diff --git a/ports/hakios-lithium/diagnostics/cpu-sanity.inc b/ports/hakios-lithium/diagnostics/cpu-sanity.inc
+--- a/ports/hakios-lithium/diagnostics/cpu-sanity.inc
++++ b/ports/hakios-lithium/diagnostics/cpu-sanity.inc
+@@ -38,11 +38,18 @@
+         processor_t p=cpu_to_processor((int)i);
+         if(!p || (p->state!=PROCESSOR_RUNNING && p->state!=PROCESSOR_IDLE))continue;
+         processor_t previous=thread_bind(p);thread_block(THREAD_CONTINUE_NULL);
++        const int actual_logical=cpu_number();
+         uint64_t mpidr=__builtin_arm_rsr64("MPIDR_EL1"),cntfrq=__builtin_arm_rsr64("CNTFRQ_EL0");
++        /* R35: observe this bound core only; I/C/M are SCTLR bits 12/2/0.
++         * These enables do not measure clock rate or prove cache performance. */
++        uint64_t midr=__builtin_arm_rsr64("MIDR_EL1"),sctlr=__builtin_arm_rsr64("SCTLR_EL1");
++        uint64_t affinity=mpidr&0x000000ff00ffffffULL;
+         uint64_t mair=__builtin_arm_rsr64("MAIR_EL1"),tcr=__builtin_arm_rsr64("TCR_EL1");
+         uint64_t par=lc_translate(src),stackpar=lc_translate(&par);
+-        printf("LITHIUM CPU sanity logical=%u actual_logical=%d mpidr=0x%llx cntfrq=%llu mair=0x%llx tcr=0x%llx ram_va=0x%lx ram_par=0x%llx ram_attr=0x%llx ram_fault=%u stack_par=0x%llx\n",
+-            i,cpu_number(),mpidr,cntfrq,mair,tcr,(uintptr_t)src,par,(par>>56)&255,(unsigned)(par&1),stackpar);
++        printf("LITHIUM CPU sanity logical=%u actual_logical=%d mpidr=0x%llx cntfrq=%llu mair=0x%llx tcr=0x%llx ram_va=0x%lx ram_par=0x%llx ram_attr=0x%llx ram_fault=%u stack_par=0x%llx midr=0x%llx sctlr=0x%llx sctlr_i=%u sctlr_c=%u sctlr_m=%u affinity=0x%llx logical_match=%u\n",
++            i,actual_logical,mpidr,cntfrq,mair,tcr,(uintptr_t)src,par,(par>>56)&255,(unsigned)(par&1),stackpar,
++            midr,sctlr,(unsigned)((sctlr>>12)&1),(unsigned)((sctlr>>2)&1),(unsigned)(sctlr&1),
++            affinity,(unsigned)(actual_logical==(int)i));
+         struct lf_stats integer={0},copy={0},ticks_delta={0};
+         for(unsigned s=0;s<5;s++) {
+             uint64_t before=lf_now(),counter=__builtin_arm_rsr64("CNTVCT_EL0");
+diff --git a/ports/hakios-lithium/patches/0025-lithium-ui-performance.patch b/ports/hakios-lithium/patches/0025-lithium-ui-performance.patch
+--- /dev/null
++++ b/ports/hakios-lithium/patches/0025-lithium-ui-performance.patch
+@@ -0,0 +1,119 @@
++--- a/xnu/hakios.patch
+++++ b/xnu/hakios.patch
++@@ -381,7 +381,7 @@
++  	if (error) {
++  		goto bad;
++  	}
++-@@ -2640,6 +2649,57 @@ done:
+++@@ -2640,6 +2649,71 @@ done:
++  	return ret;
++  }
++  
++@@ -398,12 +398,26 @@
++ + */
++ +static TUNABLE(uint32_t, exec_applog, "applog", 0);
++ +static TUNABLE_STR(exec_applog_name, 128, "applog_name", "");
++++static TUNABLE(uint32_t, exec_applog_ui_quiet, "applog_ui_quiet", 0);
++ +
++ +static bool
++ +exec_applog_oslog(struct image_params *imgp)
++ +{
++ +	const char *name, *p = exec_applog_name;
++ +
++++	/*
++++	 * Suppress only our forced echo; caller/job-supplied environment is kept.
++++	 * Check before applog >= 2, and match complete executable names only.
++++	 */
++++	if (exec_applog_ui_quiet == 1 && imgp->ip_ndp != NULL) {
++++		name = imgp->ip_ndp->ni_cnd.cn_nameptr;
++++		if ((imgp->ip_ndp->ni_cnd.cn_namelen == sizeof("backboardd") - 1 &&
++++		    strncmp(name, "backboardd", sizeof("backboardd") - 1) == 0) ||
++++		    (imgp->ip_ndp->ni_cnd.cn_namelen == sizeof("SpringBoard") - 1 &&
++++		    strncmp(name, "SpringBoard", sizeof("SpringBoard") - 1) == 0)) {
++++			return false;
++++		}
++++	}
++ +	if (exec_applog >= 2) {
++ +		return true;
++ +	}
++@@ -439,7 +453,7 @@
++  /*
++   * exec_handle_file_actions
++   *
++-@@ -2709,7 +2769,7 @@ exec_handle_file_actions(struct image_params *imgp, short psa_flags)
+++@@ -2709,7 +2783,7 @@ exec_handle_file_actions(struct image_params *imgp, short psa_flags)
++  			AUDIT_SUBCALL_ENTER(OPEN, p, uthread);
++  
++  			NDINIT(ndp, LOOKUP, OP_OPEN, FOLLOW | AUDITVNPATH1, UIO_SYSSPACE,
++@@ -448,7 +462,7 @@
++  			    imgp->ip_vfs_context);
++  
++  			error = open1(imgp->ip_vfs_context, ndp,
++-@@ -3094,10 +3154,16 @@ spawn_validate_persona(struct _posix_spawn_persona_info *px_persona)
+++@@ -3094,10 +3168,16 @@ spawn_validate_persona(struct _posix_spawn_persona_info *px_persona)
++  	int error = 0;
++  	struct persona *persona = NULL;
++  
++@@ -469,7 +483,7 @@
++  	if (px_persona->pspi_flags & POSIX_SPAWN_PERSONA_GROUPS) {
++  		if (px_persona->pspi_ngroups > NGROUPS_MAX) {
++  			return EINVAL;
++-@@ -3105,12 +3171,6 @@ spawn_validate_persona(struct _posix_spawn_persona_info *px_persona)
+++@@ -3105,12 +3185,6 @@ spawn_validate_persona(struct _posix_spawn_persona_info *px_persona)
++  	}
++  
++  	persona = persona_lookup(px_persona->pspi_id);
++@@ -482,7 +496,7 @@
++  	if (persona) {
++  		persona_put(persona);
++  	}
++-@@ -3130,9 +3190,6 @@ spawn_persona_adopt(proc_t p, struct _posix_spawn_persona_info *px_persona)
+++@@ -3130,9 +3204,6 @@ spawn_persona_adopt(proc_t p, struct _posix_spawn_persona_info *px_persona)
++  	 * the kauth with a different UID/GID combo
++  	 */
++  	persona = persona_lookup(px_persona->pspi_id);
++@@ -492,7 +506,7 @@
++  
++  	cred = kauth_cred_proc_ref(p);
++  
++-@@ -3158,6 +3215,48 @@ spawn_persona_adopt(proc_t p, struct _posix_spawn_persona_info *px_persona)
+++@@ -3158,6 +3229,48 @@ spawn_persona_adopt(proc_t p, struct _posix_spawn_persona_info *px_persona)
++  		    px_persona->pspi_gmuid);
++  	}
++  
++@@ -541,7 +555,7 @@
++  	ret = persona_proc_adopt(p, persona, cred);
++  
++  	kauth_cred_unref(&cred);
++-@@ -5586,10 +5685,75 @@ bad:
+++@@ -5586,10 +5699,75 @@ bad:
++   * Note:	The argument and environment vectors are user space pointers
++   *		to arrays of user space pointers.
++   */
++@@ -617,7 +631,7 @@
++  	int error = 0;
++  	int     ptr_size = (imgp->ip_flags & IMGPF_WAS_64BIT_ADDR) ? 8 : 4;
++  	int new_ptr_size = (imgp->ip_flags & IMGPF_IS_64BIT_ADDR) ? 8 : 4;
++-@@ -5759,6 +5923,33 @@ exec_extract_strings(struct image_params *imgp)
+++@@ -5759,6 +5937,33 @@ exec_extract_strings(struct image_params *imgp)
++  		imgp->ip_envc++;
++  	}
++  
++@@ -651,7 +665,7 @@
++  	/* Save space for envv[] NULL terminator */
++  	if (imgp->ip_argspace < new_ptr_size) {
++  		error = E2BIG;
++-@@ -6636,7 +6827,23 @@ handle_mac_transition:
+++@@ -6636,7 +6841,23 @@ handle_mac_transition:
++  	}
++  
++  	/* Update the process' identity version and set the security token */
++@@ -676,7 +690,7 @@
++  	task_set_uniqueid(task);
++  	set_security_token_task_internal(p, task);
++  
++-@@ -7538,6 +7745,11 @@ process_signature(proc_t p, struct image_params *imgp)
+++@@ -7538,6 +7759,11 @@ process_signature(proc_t p, struct image_params *imgp)
++  	}
++  
++  done:
+diff --git a/scripts/build-hakios-ui-perf-r35.py b/scripts/build-hakios-ui-perf-r35.py
+--- /dev/null
++++ b/scripts/build-hakios-ui-perf-r35.py
+@@ -0,0 +1,78 @@
++#!/usr/bin/env python3
++"""Prepare and incrementally build R35 kernel changes; never open a device."""
++import argparse
++import json
++import os
++from pathlib import Path
++import shutil
++import subprocess
++import sys
++import time
++
++sys.dont_write_bytecode = True
++import hakios
++
++ROOT = Path(__file__).resolve().parents[1]
++WORK = Path('/home/jia/ios-mix1-build/hakios-lithium-ios16')
++EVIDENCE = ROOT/'evidence/ui-perf-r35-20261120/main'
++
++
++def run(label, argv, *, env=None, cwd=WORK):
++    path = EVIDENCE/(label+'.log')
++    if path.exists():
++        path = EVIDENCE/(label+'-'+str(time.time_ns())+'.log')
++    with path.open('w') as log:
++        proc = subprocess.run(argv, cwd=cwd, env=env,
++                              stdout=log, stderr=subprocess.STDOUT)
++    if proc.returncode:
++        print(path.read_text(errors='replace')[-7000:])
++        raise RuntimeError(f'{label} failed ({proc.returncode}); retained {path}')
++    print('PASS '+label, flush=True)
++    return path
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('phase', choices=('prepare', 'kernel'))
++    args = parser.parse_args()
++    EVIDENCE.mkdir(parents=True, exist_ok=True)
++    hakios.resource_check()
++    spec = hakios.read(hakios.MANIFEST)
++    if args.phase == 'prepare':
++        hakios.prepare(spec, hakios.policy(spec))
++        delta = ROOT/'evidence/ui-perf-r35-20261120/ui/actual-kern-exec.patch'
++        source = WORK/'xnu-src/xnu-8796.121.2/bsd/kern/kern_exec.c'
++        if 'exec_applog_ui_quiet' not in source.read_text():
++            run('apply-kern-exec', ['git', 'apply', '--check', str(delta)],
++                cwd=source.parents[2])
++            run('apply-kern-exec-write', ['git', 'apply', str(delta)],
++                cwd=source.parents[2])
++        assert 'exec_applog_ui_quiet' in source.read_text()
++        assert 'SCTLR_EL1' in (WORK/'devices/lithium/diagnostics/cpu-sanity.inc').read_text()
++        print('R35 UI/CPU sources prepared; unchanged firmware and userspace reused.')
++        return
++    hakios.verify_workspace(spec)
++    deps = hakios.read(ROOT/'reports/hakios-ios16-dependencies.json')
++    env = dict(os.environ, HAKIOS_SOC='msm8996', JOBS='12',
++               MAKEFLAGS='-j12', MAKEJOBS='--jobs=12', THEOS=deps['theos_linux_path'])
++    env['PATH'] = '/home/jia/ios-mix1-build/venv/bin:'+env['PATH']
++    log = run('kernel', ['make', 'kernel', 'SHELL=/bin/bash',
++              'MAKEJOBS=--jobs=12', 'DEVICE=lithium', 'JOBS=12'], env=env)
++    kernel = WORK/'hakios-kernel'
++    data = kernel.read_bytes()
++    assert b'LITHIUM TOUCH live ready' in data
++    assert b'applog_ui_quiet' in data
++    assert b'sctlr_i=' in data and b'logical_match=' in data
++    frozen = WORK/'hakios-kernel.r35'
++    if frozen.exists():
++        raise RuntimeError('R35 kernel output already exists; retain it and review before replacing')
++    shutil.copyfile(kernel, frozen)
++    hakios.write(EVIDENCE/'kernel-result.json',
++                 dict(passed=True, kernel=str(frozen), sha256=hakios.sha(frozen),
++                      bytes=len(data), inputs=hakios.inputs(spec),
++                      command_log=str(log), device_operations=0,
++                      unchanged_userspace_firmware_reused=True))
++
++
++if __name__ == '__main__':
++    main()
+diff --git a/scripts/package-hakios-ui-perf-r35.py b/scripts/package-hakios-ui-perf-r35.py
+--- /dev/null
++++ b/scripts/package-hakios-ui-perf-r35.py
+@@ -0,0 +1,187 @@
++#!/usr/bin/env python3
++"""Package R35 UFS UI profiles with the existing R34 touch-live packager.
++
++Supply the completed new kernel and unchanged root.touch-live.apfs explicitly.
++Default: quiet. Lite persists UI preferences on UFS Data; quiet does not undo
++those preferences. CPU3 is diagnostic. --dry-run reads frozen metadata/payload
++only, never the supplied kernel/root, and creates no files.
++"""
++import argparse
++import contextlib
++import importlib.util
++import io
++import json
++from pathlib import Path
++import re
++import sys
++
++sys.dont_write_bytecode = True
++ROOT = Path(__file__).resolve().parents[1]
++FROZEN_DIR = "phase4-r34-touch-live-ufs-final"
++FROZEN_IMAGE = "lithium-hakios-ios16-r34-touch-live-ufs.img"
++FROZEN_SHA = "47740664f56fcf021096493444cc96934223f49ce0dfc099920bfb73cfc426ed"
++CONTRACT_SHA = "a97073359194258501b83c31fd2f316a9814d42c2f83817fa4fdf807c7b3568f"
++ROOT_SHA = "38c69bbe8caf11ceb4e90fc6614976ef37a6c2ef51057a119e9c53d0ebe1e71c"
++PROFILES = ("quiet", "lite", "cpu3")
++
++
++def load_live():
++    spec = importlib.util.spec_from_file_location(
++        "r35_touch_live", ROOT / "scripts/package-hakios-touch-live.py")
++    live = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(live)
++    return live
++
++
++def frozen_contract(live):
++    directory = live.BASE / FROZEN_DIR
++    raw = (directory / "contract.json").read_bytes()
++    live.require(live.digest(raw) == CONTRACT_SHA, "frozen R34 UFS contract differs")
++    contract = json.loads(raw)
++    live.require(contract["image"]["sha256"] == FROZEN_SHA and
++                 contract["inputs"]["root"]["sha256"] == ROOT_SHA and
++                 contract["return_fastboot"] is False and
++                 contract["ufs_automatic_return_supported"] is False,
++                 "R34 UFS support/root/return contract differs")
++    # Read the actual frozen kernel.ver entry for the existing loader budgeter.
++    payload = (directory / "payload.bin").read_bytes()
++    live.require(live.metadata(payload) == contract["components"]["payload.bin"],
++                 "frozen R34 payload differs")
++    codec, _ = live.bootstrap()
++    entries = codec.parse_payload(payload)
++    live.require(live.text_entry(entries["cmdline"]) == contract["cmdline"] and
++                 live.metadata(entries["ramdisk"]) == contract["payload_entries"]["ramdisk"],
++                 "frozen R34 payload command line/root differs")
++    version = live.text_entry(entries["kernel.ver"])
++    live.require(live.command_budget(contract["cmdline"], version, "ufs") ==
++                 contract["command_budget"], "frozen R34 command budget differs")
++    return contract, version
++
++
++def profile_plan(live, frozen, version, profile):
++    words = frozen["cmdline"].split()
++    live.require(words.count("bootcpu=1") == words.count("cpus=1") == 1 and
++                 not any(w.split("=", 1)[0] in ("applog_ui_quiet", "ui_lite") or
++                         w.startswith("return_fastboot") for w in words),
++                 "R34 baseline CPU/feature arguments differ")
++    if profile == "cpu3":
++        words[words.index("cpus=1")] = "cpus=3"
++    words.append("applog_ui_quiet=1")
++    if profile == "lite":
++        words.append("ui_lite=1")
++    args = " ".join(words)
++    return {
++        "profile": profile, "boot_args": args,
++        "command_budget": live.command_budget(args, version, "ufs"),
++        "bootcpu": 1, "cpus": 3 if profile == "cpu3" else 1,
++        "feature_args": {"applog_ui_quiet": 1,
++                         "ui_lite": 1 if profile == "lite" else "absent (default off)"},
++        "ui_lite_preferences_may_persist_on_ufs_data": profile == "lite",
++        "quiet_does_not_reset_previously_persisted_ui_lite_preferences": True,
++        "cpu3_diagnostic_only": profile == "cpu3",
++        "return_fastboot": False, "ufs_automatic_return_supported": False,
++        "normal_boot_may_write_userdata": True,
++    }
++
++
++def package_one(live, frozen, plan, kernel, root, output, expected_kernel):
++    # Only this freshly imported module is configured. Its package() performs
++    # the existing actual boot.check_boot and all written-layer readbacks.
++    def make_args(boot_profile, previous):
++        live.require(boot_profile == "ufs" and previous == frozen["cmdline"],
++                     "support command line differs from frozen R34 UFS")
++        return plan["boot_args"]
++
++    live.SUPPORT["ufs"] = (FROZEN_DIR, FROZEN_IMAGE, FROZEN_SHA)
++    live.make_args = make_args
++    with contextlib.redirect_stdout(io.StringIO()):
++        contract = live.package(kernel, root, "ufs", output)
++    live.require(contract["inputs"]["kernel"]["sha256"] == expected_kernel and
++                 contract["inputs"]["root"]["sha256"] == ROOT_SHA,
++                 "inputs changed while packaging; discard this output")
++    old_name = contract["image"]["path"]
++    image_name = "lithium-hakios-ios16-r35-ui-perf-" + plan["profile"] + ".img"
++    image = output / image_name
++    live.require(not image.exists(), "R35 image destination already exists")
++    (output / old_name).rename(image)
++    live.require(live.metadata(image.read_bytes()) ==
++                 {key: contract["image"][key] for key in ("bytes", "sha256")},
++                 "renamed image readback differs")
++    contract["components"][image_name] = contract["components"].pop(old_name)
++    contract["image"]["path"] = image_name
++    contract["boot_topology"]["cpus"] = plan["cpus"]
++    contract.update(
++        schema="hakios-ui-perf-r35-package-v1",
++        candidate="R35-ui-perf-" + plan["profile"],
++        profile=plan["profile"], profile_plan=plan,
++        default_profile="quiet", kernel_shared_across_selected_profiles=True,
++        frozen_r34_contract_sha256=CONTRACT_SHA,
++        root_unchanged_from_r34=True,
++        touch_live_packager_sha256=contract["script_sha256"],
++        script_sha256=live.digest(Path(__file__).read_bytes()))
++    with (output / "contract.json").open("w", encoding="utf-8", newline="\n") as stream:
++        json.dump(contract, stream, indent=2)
++        stream.write("\n")
++    live.require(json.loads((output / "contract.json").read_text()) == contract,
++                 "R35 contract readback differs")
++    return contract
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--kernel", type=Path, required=True,
++                        help="completed new arm64 Mach-O kernel; no build is invoked")
++    parser.add_argument("--root", type=Path, required=True,
++                        help="unchanged R34 root.touch-live.apfs (hash pinned)")
++    parser.add_argument("--output-root", type=Path, required=True,
++                        help="new private directory; selected profiles get child directories")
++    parser.add_argument("--profile", choices=PROFILES + ("all",), default="quiet")
++    parser.add_argument("--dry-run", action="store_true",
++                        help="print profile/budget plan without reading new inputs or writing files")
++    opts = parser.parse_args()
++    live = load_live()
++    try:
++        kernel, root, output = (p.resolve() for p in
++                                (opts.kernel, opts.root, opts.output_root))
++        live.require(not output.exists(), "--output-root exists; choose a new directory")
++        for parent in (output, *output.parents):
++            revision = re.match(r"phase4-r(\d+)(?:-|$)", parent.name)
++            live.require(not revision or int(revision[1]) > 34,
++                         "output must not be inside a frozen R34 or older directory")
++        frozen, version = frozen_contract(live)
++        selected = PROFILES if opts.profile == "all" else (opts.profile,)
++        plans = [profile_plan(live, frozen, version, p) for p in selected]
++        result = {
++            "schema": "hakios-ui-perf-r35-plan-v1", "dry_run": opts.dry_run,
++            "package_host_ready": False, "default_profile": "quiet",
++            "kernel": str(kernel), "root": str(root), "output_root": str(output),
++            "required_root_sha256": ROOT_SHA, "frozen_support_sha256": FROZEN_SHA,
++            "profiles": plans, "device_operations": False, "build_invoked": False,
++        }
++        if not opts.dry_run:
++            kernel_data, root_data = kernel.read_bytes(), root.read_bytes()
++            live.verify_kernel(kernel_data, "ufs")
++            live.require(b"applog_ui_quiet" in kernel_data,
++                         "new kernel lacks the default-off applog_ui_quiet argument")
++            live.verify_root(root_data)
++            live.require(live.digest(root_data) == ROOT_SHA,
++                         "root must be byte-identical to frozen R34 root.touch-live.apfs")
++            expected_kernel = live.digest(kernel_data)
++            output.mkdir(parents=True)
++            contracts = [package_one(live, frozen, plan, kernel, root,
++                                     output / plan["profile"], expected_kernel)
++                         for plan in plans]
++            result.update(package_host_ready=True, kernel_sha256=expected_kernel,
++                          images=[{"profile": c["profile"],
++                                   "path": str(output / c["profile"] / c["image"]["path"]),
++                                   "sha256": c["image"]["sha256"]} for c in contracts])
++            with (output / "profiles.json").open("x", encoding="utf-8", newline="\n") as stream:
++                json.dump(result, stream, indent=2)
++                stream.write("\n")
++        print(json.dumps(result, indent=2))
++    except (OSError, RuntimeError, ValueError, KeyError, live.struct.error) as error:
++        parser.exit(1, "ERROR: " + str(error) + "\n")
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/reports/local/run-ui-perf-r35-build.ps1 b/reports/local/run-ui-perf-r35-build.ps1
+--- /dev/null
++++ b/reports/local/run-ui-perf-r35-build.ps1
+@@ -0,0 +1,15 @@
++param(
++    [Parameter(Mandatory=$true)]
++    [ValidateSet('prepare','kernel')]
++    [string]$Task
++)
++$ErrorActionPreference = 'Stop'
++$arguments = @('-d','Ubuntu','-u','root','--exec','systemd-run',
++    '--unit=ios-mix1-ui-perf-r35','--wait','--pipe','--collect',
++    '-p','MemoryMax=14G','-p','MemoryHigh=12G','-p','MemorySwapMax=1G',
++    '-p','CPUQuota=1200%','-p','TasksMax=1024','-p','User=jia',
++    '-p','WorkingDirectory=/mnt/f/IOS-MIX1',
++    '--setenv=JOBS=12','--setenv=MAKEFLAGS=-j12','--setenv=MAKEJOBS=--jobs=12',
++    '/usr/bin/python3','-B','/mnt/f/IOS-MIX1/scripts/build-hakios-ui-perf-r35.py',$Task)
++& wsl.exe @arguments
++exit $LASTEXITCODE
+diff --git a/reports/hakios-ios16-r35-ui-performance-prepared.md b/reports/hakios-ios16-r35-ui-performance-prepared.md
+--- /dev/null
++++ b/reports/hakios-ios16-r35-ui-performance-prepared.md
+@@ -0,0 +1,70 @@
++# R35：UI减负与CPU诊断并行修订
++
++2026-11-20，Asia/Shanghai。用户要求两路并行、减少非必要审计和测试；随后确认同次R34运行在应用内可用，触摸位置、滑动、长按正常，但SpringBoard桌面和后台卡片非常卡。本轮完成实际源码改动、增量内核构建和三个同内核配置的打包；未启动R35或查询手机。
++
++## 最新判断与本轮改动
++
++最新反馈支持优先处理SpringBoard场景的CPU/软件合成负载。此前已经看到输入积压；现在触摸恢复可用，说明积压并非始终固定的坐标/报告解析错误。不能从应用内流畅直接推导准确CPU频率或慢核原因。
++
++本次只读已保存R34日志时看到不同窗口包括184帧/5294ms、130帧/5746ms，以及3帧/6375ms。它们是不同场景的运行窗口，没有同步场景标签，不能擅自把每个窗口一一指定为某应用或桌面。有效360秒top窗口曾达99%忙，backboardd65.0%、kernel29.1%，符合容量压力；“只要空闲就好转”的用户反馈不等于已证明调频器有缺陷。
++
++UI线由Huygens完成：新增默认关闭的 `applog_ui_quiet`，只在值为1且进程名精确等于backboardd或SpringBoard时，抑制内核额外注入的 `OS_ACTIVITY_DT_MODE=YES`。保留stderr、普通日志和其他进程行为。caller/job已经提供的环境变量不被删除或覆盖；检查的实际launchd启动env和两个job没有主动提供该值。本改动降低一条明确的同步日志负担，收益需上机验证。
++
++可复现集成在 `ports/hakios-lithium/patches/0025-lithium-ui-performance.patch`，修改上游 `xnu/hakios.patch`，不是仅修改生成目录。主代理prepare后也将同等delta应用到实际 `kern_exec.c`，完成增量构建。
++
++轻量界面直接复用已包含在R34 APFS里的 `libhakios.sb.dylib` 的 `ui_lite=1`：启用系统Reduce Transparency和Reduce Motion，减少Dock/文件夹等透明模糊及应用切换动态效果。主代理读取实际源码819–846、核对实际库有该功能标记；本轮不修改或重编用户态库。
++
++CPU线由Einstein完成：在原有默认关闭的 `cpu_sanity=1` 下，逐绑定在线核记录MIDR、SCTLR_EL1及I/C/M使能、实际affinity、logical_match。保留原整数/memcpy工作量和统计；没有频率、电压、缓存策略或CPU拓扑写入。有限源码核对显示公共启动路径本来就配置I/C/M，未找到足以据此盲写缓存寄存器的缺陷；慢核仍需真机读数定位。这是已编入内核的诊断补齐，**不是已完成调频器修复**。
++
++当前resident UFS设计保留phys0供UEFI存储worker使用，仍最多三个XNU核；没有把cpus=4写入候选。`cpu3`仅启用已有三核路径并采样同一组诊断，不能保证性能提升。
++
++## 已构建的同内核配置
++
++所有配置沿用R20显示1080×2040 BGR24、bootcpu1快核、原UFS系统/Data、真实触摸读取。没有更换系统镜像、刷分区或启用UFS自动Fastboot。内核timer保留10800秒；验收无需等满该上限。
++
++| 配置 | 相对R34 UFS的参数变化 | 用途 |
++| --- | --- | --- |
++| quiet（打包器默认） | 加 `applog_ui_quiet=1`，仍单核 | 单独对照强制日志回显成本 |
++| lite（建议交互改善候选） | quiet再加 `ui_lite=1`，仍单核 | 直接降低桌面/后台切换视觉效果负担 |
++| cpu3（诊断备选） | quiet中仅将 `cpus=1` 改为3 | 对比逐核状态和吞吐，判断能否继续多核线 |
++
++这不是要求连续做三轮验收。可以先测试需要的配置，只有结果需要区分时再用对照包；不自动重启或串行启动多个候选。
++
++**lite会修改Data中的辅助功能偏好**，并可能跨启动保留。后续省略ui_lite不会恢复原值；显式 `ui_lite=0` 会把这两个设置设为关闭。它不是仅在当前进程内生效的开关，也不保证恢复用户之前的任意混合设置。普通UFS文件系统写入与此前相同。
++
++共同内核SHA-256：
++
++`86f36fdf4e047e0f2da18138a39629e584975e4c6689036946ae71195bd924aa`
++
++| 配置 | 路径（artifacts/hakios/lithium-ios16/下） | 镜像SHA-256 |
++| --- | --- | --- |
++| quiet | `phase4-r35-ui-perf/quiet/lithium-hakios-ios16-r35-ui-perf-quiet.img` | `bb8eae118bde5e877510b6ea17ba96e866378eb1e42d29a7320ff67059718511` |
++| lite | `phase4-r35-ui-perf/lite/lithium-hakios-ios16-r35-ui-perf-lite.img` | `fda8fd7a18b8f0468c7be483e3080a30a2b9aee97d862fefc077f4c99eced9d3` |
++| cpu3 | `phase4-r35-ui-perf/cpu3/lithium-hakios-ios16-r35-ui-perf-cpu3.img` | `74db47b0879e3148f0d3a438dd22cc197f62d96d89d8ae12cf280810c9761475` |
++
++根APFS逐字节复用R34，SHA-256 `38c69bbe8caf11ceb4e90fc6614976ef37a6c2ef51057a119e9c53d0ebe1e71c`。三份完整boot-args、来源及实际逐层读回结果见各自contract.json；608字节command line容量分别保留63/53/63字节。
++
++## 构建和必要验证
++
++```powershell
++pwsh -File reports/local/run-ui-perf-r35-build.ps1 -Task prepare
++pwsh -File reports/local/run-ui-perf-r35-build.ps1 -Task kernel
++```
++
++```text
++wsl -d Ubuntu -u jia -- python3 -B /mnt/f/IOS-MIX1/scripts/package-hakios-ui-perf-r35.py --kernel /home/jia/ios-mix1-build/hakios-lithium-ios16/hakios-kernel.r35 --root /home/jia/ios-mix1-build/hakios-lithium-ios16/userland/root.touch-live.apfs --output-root /mnt/f/IOS-MIX1/artifacts/hakios/lithium-ios16/phase4-r35-ui-perf --profile all
++```
++
++仅进行新增quiet选择逻辑的聚焦编译/540组行为检查、打包器语法和profile参数检查、实际内核增量编译链接及三份实际镜像逐层读回。主代理直接检查实际内核含新增SCTLR字段和quiet tunable，核对各profile参数差异。没有重复52套历史总回归、重建Mu/loader或重编未改用户态。
++
++实际增量构建约10.4秒，保留完整构建日志；已有kext symbol-set检查退出2由原构建封装按既有规则处理，内核先成功链接，未删除功能来规避。仅报告实际通过的范围。
++
++主代理独立读回UI common/actual delta、540组检查结果、CPU新增字段及公共启动来源、实际SB库和plist、打包器profile实现、实际kernel markers和image contracts。Poincare负责独立打包脚本；三位子代理写入互不重叠，未发生生产文件合并冲突。主代理负责共享prepare/构建/打包/报告。分工来源分别在 `evidence/ui-perf-r35-20261120/{ui,cpu,package}/`，主代理证据在main目录。
++
++## 当前手机与未验证事项
++
++本阶段没有手机查询、启动、复位、分区命令、ADB或QEMU；计数60/29不变。R20/R32/R33/R34冻结保留，原索引字节保持。主代理在WSL保留了修改前内核及实际源；仓库回退补丁与本报告同名，不含Apple、Qualcomm或Xiaomi二进制。
++
++主机侧发现原USB接收器PID23680已不在运行，但状态文件仍为capturing；没有据此认定手机崩溃或停止，也未擅自重新打开设备。保存的18826帧/4120429控制台字节独立重放一致、无传输缺口/重复/残帧/device-loss，未包含最终timer/drain；终态未知。原状态文件原样保留，另记 `usb-audit-host-stopped.json`。手机当前状态采用用户的“应用内可用”反馈；不再宣称接收器还在实时采集。
++
++R35实际流畅度、quiet日志减负收益、lite效果和偏好持久化、三核状态/吞吐及任何MHz/调频修复都未验证。下一步切换Fastboot后按用户授权选一个候选临时启动；保持现有R34运行直到用户选择切换。
+diff --git a/reports/hakios-ios16-r35-ui-performance-prepared.json b/reports/hakios-ios16-r35-ui-performance-prepared.json
+--- /dev/null
++++ b/reports/hakios-ios16-r35-ui-performance-prepared.json
+@@ -0,0 +1,126 @@
++{
++  "schema": 1,
++  "revision": "R35-ui-performance",
++  "recorded_at": "2026-11-20T18:03:37.737526+08:00",
++  "host_built": true,
++  "hardware_verified": false,
++  "device_operations": 0,
++  "boot_totals": {
++    "hakios": 60,
++    "ios16": 29
++  },
++  "kernel_sha256": "86f36fdf4e047e0f2da18138a39629e584975e4c6689036946ae71195bd924aa",
++  "root_unchanged": true,
++  "profiles": {
++    "quiet": {
++      "path": "artifacts/hakios/lithium-ios16/phase4-r35-ui-perf/quiet/lithium-hakios-ios16-r35-ui-perf-quiet.img",
++      "image_sha256": "bb8eae118bde5e877510b6ea17ba96e866378eb1e42d29a7320ff67059718511",
++      "bytes": 16318464,
++      "boot_args": "bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1",
++      "command_budget": {
++        "capacity_including_nul": 608,
++        "reserved_bytes": 545,
++        "spare_bytes": 63
++      },
++      "cpus": 1,
++      "ui_lite_persistence": false,
++      "readback_passed": true
++    },
++    "lite": {
++      "path": "artifacts/hakios/lithium-ios16/phase4-r35-ui-perf/lite/lithium-hakios-ios16-r35-ui-perf-lite.img",
++      "image_sha256": "fda8fd7a18b8f0468c7be483e3080a30a2b9aee97d862fefc077f4c99eced9d3",
++      "bytes": 16318464,
++      "boot_args": "bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1",
++      "command_budget": {
++        "capacity_including_nul": 608,
++        "reserved_bytes": 555,
++        "spare_bytes": 53
++      },
++      "cpus": 1,
++      "ui_lite_persistence": true,
++      "readback_passed": true
++    },
++    "cpu3": {
++      "path": "artifacts/hakios/lithium-ios16/phase4-r35-ui-perf/cpu3/lithium-hakios-ios16-r35-ui-perf-cpu3.img",
++      "image_sha256": "74db47b0879e3148f0d3a438dd22cc197f62d96d89d8ae12cf280810c9761475",
++      "bytes": 16318464,
++      "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1",
++      "command_budget": {
++        "capacity_including_nul": 608,
++        "reserved_bytes": 545,
++        "spare_bytes": 63
++      },
++      "cpus": 3,
++      "ui_lite_persistence": false,
++      "readback_passed": true
++    }
++  },
++  "default_profile": "quiet",
++  "recommended_interaction_candidate": "lite",
++  "implemented": {
++    "ui_quiet_gate": true,
++    "existing_ui_lite_available_in_unchanged_userspace": true,
++    "cpu_per_core_sctlr_probe": true,
++    "cpu_governor_repaired": false,
++    "clock_or_voltage_writes": false,
++    "physical_cpu_topology_changed_this_phase": false,
++    "four_core_xnu_supported": false
++  },
++  "focused_checks": {
++    "ui_gate_cases": 540,
++    "actual_kernel_incremental_link": true,
++    "actual_kernel_new_markers_verified": true,
++    "package_actual_layer_readback_profiles": 3,
++    "historical_full_regression_repeated": false,
++    "unchanged_firmware_userspace_rebuilt": false
++  },
++  "user_feedback": {
++    "recorded_at": "2026-11-20T17:57:00.525531+08:00",
++    "user_report": "Now usable for testing in applications; touch position, swipe and long press normal; SpringBoard home and app-switcher severely laggy",
++    "application_touch_usable_reported": true,
++    "coordinate_position_correct_reported": true,
++    "swipe_correct_reported": true,
++    "long_press_correct_reported": true,
++    "springboard_home_switcher_performance_accepted": false,
++    "physical_multitouch_not_reported": true
++  },
++  "index_sha256": "ead184543d0a1d907521c4acaddb65b98f8e8a8783bb05c16eff8dea64011f47",
++  "source_sha256": {
++    "ports/hakios-lithium/patches/0025-lithium-ui-performance.patch": "ce830f467bf797de9b8a8ac1a6bbc3b8a703e67bf1dea029ca8b7b1f91b423bc",
++    "ports/hakios-lithium/diagnostics/cpu-sanity.inc": "55ae44db12b14b4b3a8b9c4e4592f2c4d97be2e640ae509ea5d82020628005a9",
++    "scripts/build-hakios-ui-perf-r35.py": "fddec49243316b73388f37f026fd1e783e7cbb68469854485ca2ba9658ba0f0a",
++    "scripts/package-hakios-ui-perf-r35.py": "ed3a3054fcf4d6f70b6a17feef31454d694e7a9450c689d6f4ff4d808148352f",
++    "reports/local/run-ui-perf-r35-build.ps1": "d5fe2ba0a739b452fe3da91701b9610526e07dd0371f48dcab3ea49a4a0c70d7"
++  },
++  "subagents": [
++    {
++      "name": "Huygens",
++      "work": "UIquiet commonpatch/actualdelta/focusedcheck",
++      "main_review": "Read exact gate/innerpatch changes, check results, generatedenv, and actualcompile"
++    },
++    {
++      "name": "Einstein",
++      "work": "percoreSCTLRdiagnostic and boundedsourcecheck",
++      "main_review": "Read exact newfields, startupsourceanchors, and actualkernelstring"
++    },
++    {
++      "name": "Poincare",
++      "work": "three-profilepackager",
++      "main_review": "Read args/contractimplementation and actualpackage/profilediffs"
++    }
++  ],
++  "r34_capture": {
++    "audit": "reports/local/20261120-r34-touch-live-ufs-approved/usb-audit-host-stopped.json",
++    "host_process_absent": true,
++    "phone_terminal_unqueried": true,
++    "timer_or_final_drain_captured": false
++  },
++  "unverified": [
++    "R35runtimebenefit",
++    "UIlitepreferenceeffect/persistence",
++    "slowcorecache/clockruntime",
++    "CPUgovernorrepair",
++    "threecorethroughput/latencybenefit"
++  ],
++  "report": "reports/hakios-ios16-r35-ui-performance-prepared.md"
++}
+diff --git a/evidence/ui-perf-r35-20261120/ui/actual-kern-exec.patch b/evidence/ui-perf-r35-20261120/ui/actual-kern-exec.patch
+--- /dev/null
++++ b/evidence/ui-perf-r35-20261120/ui/actual-kern-exec.patch
+@@ -0,0 +1,29 @@
++--- a/bsd/kern/kern_exec.c
+++++ b/bsd/kern/kern_exec.c
++@@ -2662,12 +2662,26 @@
++  */
++ static TUNABLE(uint32_t, exec_applog, "applog", 0);
++ static TUNABLE_STR(exec_applog_name, 128, "applog_name", "");
+++static TUNABLE(uint32_t, exec_applog_ui_quiet, "applog_ui_quiet", 0);
++ 
++ static bool
++ exec_applog_oslog(struct image_params *imgp)
++ {
++ 	const char *name, *p = exec_applog_name;
++ 
+++	/*
+++	 * Suppress only our forced echo; caller/job-supplied environment is kept.
+++	 * Check before applog >= 2, and match complete executable names only.
+++	 */
+++	if (exec_applog_ui_quiet == 1 && imgp->ip_ndp != NULL) {
+++		name = imgp->ip_ndp->ni_cnd.cn_nameptr;
+++		if ((imgp->ip_ndp->ni_cnd.cn_namelen == sizeof("backboardd") - 1 &&
+++		    strncmp(name, "backboardd", sizeof("backboardd") - 1) == 0) ||
+++		    (imgp->ip_ndp->ni_cnd.cn_namelen == sizeof("SpringBoard") - 1 &&
+++		    strncmp(name, "SpringBoard", sizeof("SpringBoard") - 1) == 0)) {
+++			return false;
+++		}
+++	}
++ 	if (exec_applog >= 2) {
++ 		return true;
++ 	}
+diff --git a/evidence/ui-perf-r35-20261120/ui/check.json b/evidence/ui-perf-r35-20261120/ui/check.json
+--- /dev/null
++++ b/evidence/ui-perf-r35-20261120/ui/check.json
+@@ -0,0 +1,16 @@
++{
++  "reference": "/home/jia/ios-mix1-build/hakios-lithium-ios16/xnu-src/xnu-8796.121.2/bsd/kern/kern_exec.c",
++  "reference_sha256": "90b6028b18558a42ddc0c8a2585058db180f51032ae17847f3d2d0c055f18807",
++  "hakios_patch_reference_sha256": "8f1167b9bf3926fb1f2825c72f1b9dfb95e1281c0e125594e5525a3d135a744f",
++  "port_patch": "/mnt/f/IOS-MIX1/ports/hakios-lithium/patches/0025-lithium-ui-performance.patch",
++  "port_patch_sha256": "ce830f467bf797de9b8a8ac1a6bbc3b8a703e67bf1dea029ca8b7b1f91b423bc",
++  "expected_kern_exec_sha256": "c027fd26b84a047d415f0d2c6ad221f5af389433862fece8b5c8d7612cbe0bde",
++  "added_source_lines": 14,
++  "outer_apply": "patching file xnu/hakios.patch\n",
++  "old_section_reverse": "patching file bsd/kern/kern_exec.c\n",
++  "new_section_apply": "patching file bsd/kern/kern_exec.c\n",
++  "focused_compile": "",
++  "focused_behavior": "PASS: 540 oslog decisions; fd routing identical for every case\n",
++  "actual_source_and_hakios_patch_unchanged": true,
++  "full_build_or_device_operations": false
++}
+diff --git a/evidence/ui-perf-r35-20261120/ui/findings.md b/evidence/ui-perf-r35-20261120/ui/findings.md
+--- /dev/null
++++ b/evidence/ui-perf-r35-20261120/ui/findings.md
+@@ -0,0 +1,117 @@
++# R35 UI quiet change — host-only, 2026-11-20
++
++Delivered `ports/hakios-lithium/patches/0025-lithium-ui-performance.patch`.
++It patches the existing **xnu/hakios.patch** kern_exec diff, after R34/0024.
++The enclosing added-line count changes from 57 to 71; all subsequent kern_exec
++new-side hunk coordinates advance by 14. Normal prepare/rebuild can reproduce
++the change. `actual-kern-exec.patch` is the matching delta against the actual
++R34 generated `xnu-src/xnu-8796.121.2/bsd/kern/kern_exec.c`, for main's
++incremental application after prepare, without re-extraction.
++
++The latest user observation is that applications are usable, touch position,
++swipe and long press are normal, while SpringBoard home/app switcher remains
++severely laggy. This is user feedback, not a new host or device measurement.
++The change targets a plausible synchronous logging amplifier; its performance
++benefit is unmeasured.
++
++## Minimal production change
++
++- Adds `static TUNABLE(uint32_t, exec_applog_ui_quiet, "applog_ui_quiet", 0)`.
++- Only value **1** enables the gate. Absent/0 preserves prior behavior.
++- In `exec_applog_oslog`, before `exec_applog >= 2`, length and bytes must
++  match exactly `backboardd` or `SpringBoard` before returning false.
++  Prefixes, suffixes and case variants retain their prior behavior.
++- Prevents this function from requesting the extra `OS_ACTIVITY_DT_MODE=YES`
++  entry. Existing envp entries are retained. `exec_extract_strings` and
++  `exec_applog_path` are unchanged. fd1/fd2 routing, explicit stderr writes,
++  other processes and ordinary logging remain as before.
++- No helper, touch redesign, UI code or preference changes were made.
++
++## Launchd environment provenance
++
++Actual patched sources were read, not upstream-only approximations:
++
++1. `userland/root/etc/rc` contains `exec /sbin/launchd.darwin`.
++2. Actual `userland/src/init.c:1424-1429` constructs a fresh envp with
++   `PATH=/var/jb/usr/bin:/var/jb/bin:/var/jb/usr/sbin:/var/jb/sbin:/bin:/sbin:/usr/bin:/usr/sbin`,
++   `HOME=/var/mobile`, `TERM=dumb`. The launchd exec at 1498-1501 uses that
++   envp, not parent `environ`; flash-root selects `/sbin/launchd`.
++3. The frozen R34 UFS `boot-args.txt` has
++   `applog=1 applog_name=backboardd,SpringBoard`. This does not select
++   launchd or xpcproxy for the kernel's forced DT_MODE entry.
++4. Read-only plist decoding confirms backboardd has no EnvironmentVariables
++   dictionary; SpringBoard has only `CA_ASSERT_MAIN_THREAD_TRANSACTIONS=1`.
++   Both set `StandardErrorPath=/dev/console`; neither supplies DT_MODE.
++5. `scripts/build-hakios-ios16-userspace.py:53-56` sets build `OSLOG=''`
++   for the existing R9 diagnostic branch, and 130-134 verifies absence of
++   DT_MODE in those jobs. Preserve that generated-plist condition during
++   regeneration: upstream `userland/build.sh:468` otherwise defaults OSLOG
++   to backboardd; `mkjobs.py:275,302` can add DT_MODE independently.
++
++This verifies the inspected source/configuration path, not the live launchd
++domain environment. A caller, job, launchd-domain setting, or kernel injection
++into launchd/xpcproxy under a different `applog>=2`/name configuration can
++still provide/inherit DT_MODE. **R35 does not delete or override it.**
++In particular, testing the gate at applog=2 proves the gate's return value,
++not that inherited os_log echo is globally disabled.
++Source and plist hashes are in `reference.json`.
++
++## Optional package profiles, for main
++
++| Candidate | Boot-argument addition to R34 | Effect/persistence |
++| --- | --- | --- |
++| Quiet only | `applog_ui_quiet=1` | Gate is default-off and selected per boot; keeps existing applog/name arguments. Does not write preferences. |
++| Quiet plus existing UI lite | `applog_ui_quiet=1 ui_lite=1` | Separate optional candidate: existing SpringBoard hook writes both settings below. |
++| Explicit UI lite reversal | `ui_lite=0` | Writes both settings false; omission alone does not undo prior values. |
++
++Actual `userland/src/inject_sb.c:819-846`, called at 2186, implements:
++
++| CFPreferences key | Domain | Value for `ui_lite=1` |
++| --- | --- | --- |
++| `EnhancedBackgroundContrastEnabled` | `com.apple.Accessibility` | `kCFBooleanTrue` (Reduce Transparency) |
++| `ReduceMotionEnabled` | `com.apple.Accessibility` | `kCFBooleanTrue` (Reduce Motion) |
++
++Both use `kCFPreferencesCurrentUser` / `kCFPreferencesAnyHost`.
++It calls `CFPreferencesSynchronize` for that domain, then posts
++`com.apple.accessibility.cache.enhance.background.contrast` and
++`com.apple.accessibility.cache.reduce.motion`. The synchronization result is
++not checked by the existing code. ui_lite=0 writes false to both; no argument
++leaves them alone. Use the exact arguments above; this existing parser uses
++the first value character (`0` versus anything else).
++
++Persistence is a real setting change, not a temporary animation flag:
++with the R34 HFS Data mount (`var_hfs=ufs_darwin_data`), preferences are
++intended to remain in retained `/private/var` across boots
++(`init.c:993-1028`). The upstream comment also describes var_store-backed
++RAM persistence, but R34 UFS uses HFS Data and does not need a new var_store
++profile. Actual successful preference synchronization, visual changes and
++reboot persistence have not been measured here. This task did not set either
++preference. UI lite is optional and separate from the quiet-only comparison.
++
++## Focused check and handoff
++
++`prepare_check.py` generated both patches using the actual read-only R34
++sources. In an isolated temporary directory under this evidence directory:
++
++- Common patch applied to a copy of xnu/hakios.patch with `patch --fuzz=0`.
++- The old kern_exec inner diff reversed from a copy of the actual generated
++  source, and the new inner diff applied with zero fuzz. The result exactly
++  equals the direct source delta. No offset warnings were emitted.
++- Clang `-std=c11 -Wall -Wextra -Werror` compiled the extracted actual old/new
++  functions with minimal image_params/TUNABLE stand-ins; 540 decisions
++  covered applog 0/1/2/3, quiet 0/1/2, five filters, exact/similar names and
++  null nameidata. For each case fd0-3 with /dev/null and a named path matched
++  the original. This is a focused host behavior check, not a kernel build.
++- Original actual kern_exec and xnu/hakios.patch were reread unchanged.
++
++Results/hashes: `check.json`. The check generator is evidence tooling, not
++part of production or the build path. It assumes the original R34 reference.
++
++Main owns shared integration, boot arguments, build and packaging. Main can
++prepare the common patch normally, then from the existing generated XNU root
++apply `actual-kern-exec.patch` using `patch --batch --fuzz=0 -p1 -i ABSOLUTE_PATH`.
++The expected resulting kern_exec SHA256 is
++`c027fd26b84a047d415f0d2c6ad221f5af389433862fece8b5c8d7612cbe0bde`.
++No generated build-tree file was changed here. No full builds, repository/index
++operations, phone/USB/fastboot/adb operations, UFS edits, firmware or vendor
++binary outputs occurred.
+diff --git a/evidence/ui-perf-r35-20261120/cpu/findings.md b/evidence/ui-perf-r35-20261120/cpu/findings.md
+--- /dev/null
++++ b/evidence/ui-perf-r35-20261120/cpu/findings.md
+@@ -0,0 +1,52 @@
++R35 CPU line — 2026-11-20, host only
++
++Implemented in `ports/hakios-lithium/diagnostics/cpu-sanity.inc:40–54`.
++The existing `cpu_sanity=1` gate remains default off. After the existing
++processor bind/block, each sanity line appends raw `midr` and `sctlr`,
++`sctlr_i`/`sctlr_c`/`sctlr_m` (bits 12/2/0), masked hardware `affinity`,
++and `logical_match`. `actual_logical` is sampled once for the line.
++Affinity uses MPIDR Aff3:Aff2:Aff1:Aff0, mask `0x000000ff00ffffff`,
++excluding non-affinity flags. Raw MPIDR is retained.
++
++All prior sanity fields, integer/memcpy workloads, five-sample statistics,
++timer measurements, bind restoration and benchmark revision remain intact.
++The change adds two system-register reads and fields to the existing line;
++it adds no hardware register write, cache maintenance or clock operation.
++The existing translation helper, IRQ handling and RAM workloads are unchanged.
++
++The bounded scan found no clear missing secondary I/C/M enable defect.
++`active-source-excerpts.txt` records numbered excerpts from the active WSL
++workspace `/home/jia/ios-mix1-build/hakios-lithium-ios16`; `manifest.json`
++records full-file hashes. These are source observations, not a new binary
++attestation. Relevant workspace-relative anchors:
++
++| Source | Finding |
++| --- | --- |
++| `xnu-env.sh:14`, `xnu-build.sh:20`, `xnu-src/xnu-8796.121.2/pexpert/pexpert/arm64/BCM2837.h:15` | Default active source tree and machine wrapper; board header defines `GENERIC_PSCI_SMP`. |
++| `xnu/files/osfmk/arm64/psci_smp.c:160–189` | XNU secondary CPU_ON entry is physical `LowResetVectorBase`; startup data/segments are cleaned before CPU_ON. |
++| `xnu-src/xnu-8796.121.2/osfmk/arm64/start.s:125–146,188–218` | Secondary reset establishes a temporary SCTLR value, then finds the registered physical CPU/reset handler. This initial cache-off state is not its final state. |
++| `xnu-src/xnu-8796.121.2/osfmk/arm64/start.s:449–507` | `start_cpu` selects `arm_init_cpu`, sets core stacks and branches to `common_start`. |
++| `xnu-src/xnu-8796.121.2/osfmk/arm64/start.s:831–875,902–911,935–950` | Common path programs TCR/TTBR/MAIR, selects secondary TTBR1, then unconditionally writes `SCTLR_EL1_DEFAULT` and executes ISB. The x21 branches around checkpoints do not bypass this write. |
++| `xnu-src/xnu-8796.121.2/osfmk/arm64/proc_reg.h:589,618,624,646–651` | I/C/M are unconditionally present in `SCTLR_EL1_DEFAULT`. The SCTLR macro at `start.s:76–88` writes directly unless the KTRR setter path is selected. |
++| `xnuloader/loader.c:991–1009` | Loader's separate kernel launch trampoline clears M/C/I before entering XNU. This does not establish final per-core state and is distinct from XNU's subsequent secondary CPU_ON path. |
++| `xnuloader/loader.c:3618–3657` | Resident UFS core is excluded; preserve boot affinity `0x1` as control and compare at most three XNU CPUs. |
++
++No optional cache-enable fix is justified by this scan. The new probe will
++show whether actual per-core state agrees with the common initialization.
++I/C/M=1 does not prove cache hits, coherent operation or normal throughput;
++CNTFRQ is the architectural timer frequency, not CPU MHz. This prelaunch
++snapshot also does not measure later home/app-switcher runtime behavior.
++Without hardware measurements, a clock repair cannot be established. No
++PLL, regulator or vendor EPSS operation was added.
++
++Main integration: consume the edited diagnostic through the existing source
++sync and compile it in the actual kernel. No header/config/bootarg/loader
++change is needed for these fields. Main can package `cpu_sanity=1` with
++matching `cpus=1`/`cpus=3` profiles from that same kernel and compare the
++existing metrics by observed affinity. `cpus=4` is excluded.
++
++No compile, standalone tests, full regression or build was run by this CPU
++line; actual-kernel compilation is assigned to main as requested. Hardware
++verification is pending. No phone, USB, Fastboot, ADB, Git/index or vendor
++binary operation occurred. Writes are confined to the owned diagnostic and
++this evidence directory.
+diff --git a/evidence/ui-perf-r35-20261120/package/README.md b/evidence/ui-perf-r35-20261120/package/README.md
+--- /dev/null
++++ b/evidence/ui-perf-r35-20261120/package/README.md
+@@ -0,0 +1,51 @@
++# R35 narrow packager handoff
++
++Only `scripts/package-hakios-ui-perf-r35.py` and this evidence directory belong
++to this task. No kernel build or image packaging was run during implementation.
++The main agent must finish its kernel before invoking actual packaging.
++
++From WSL, after the main kernel build completes:
++
++```bash
++python3 /mnt/f/IOS-MIX1/scripts/package-hakios-ui-perf-r35.py \
++  --kernel /home/jia/ios-mix1-build/hakios-lithium-ios16/hakios-kernel \
++  --root /home/jia/ios-mix1-build/hakios-lithium-ios16/userland/root.touch-live.apfs \
++  --output-root /mnt/f/IOS-MIX1/artifacts/hakios/lithium-ios16/phase4-r35-ui-perf \
++  --profile all
++```
++
++Use a new output root if that directory already exists. Omit `--profile` for
++quiet only; choose `--profile lite` or `--profile cpu3` for one optional profile.
++Add `--dry-run` to inspect metadata and budgets without reading the supplied
++kernel/root or creating the output directory.
++
++All profiles use the same supplied completed kernel. The frozen R34 UFS
++contract and payload are hash checked. Actual packaging also hash checks the
++frozen R34 UFS image and byte-identical root APFS, then calls the existing
++`package-hakios-touch-live.py` module's `package()` function. That function
++uses `boot.check_boot()` and actual on-disk layer readbacks. The wrapper renames
++the image inside the new output directory and updates its R35 profile,
++CPU-count, and provenance fields, then reads back the image hash and contract.
++No shared packager is edited.
++
++The exact R34 UFS arguments are retained, with these explicit changes:
++
++| Profile | Change from R34 UFS | Boot CPU / XNU CPUs |
++| --- | --- | --- |
++| quiet (default) | append `applog_ui_quiet=1` | 1 / 1 |
++| lite (optional) | append `applog_ui_quiet=1 ui_lite=1` | 1 / 1 |
++| cpu3 (diagnostic) | append `applog_ui_quiet=1`; replace only `cpus=1` with `cpus=3` | 1 / 3 |
++
++The kernel features remain opt-in through these arguments. Lite can persist UI
++preferences on UFS Data; subsequently selecting quiet does not reset those
++preferences. No preference reset or root modification is performed.
++Normal UFS Data writes remain enabled as in R34. Automatic Fastboot return
++remains disabled and unsupported for these UFS profiles; the existing
++10800-second loader timer is retained.
++
++`source-validation.json`, `dry-run.json`, and `help.txt` record the focused
++py_compile/help/one-all-profile-dry-run check. The compilation output was removed
++immediately; this handoff contains text only. Dry-run does not claim package
++readback, new-kernel acceptance, physical CPU topology, performance, or touch
++acceptance. Actual package readback will occur only on the main agent's later
++invocation.
+diff --git a/evidence/ui-perf-r35-20261120/package/source-validation.json b/evidence/ui-perf-r35-20261120/package/source-validation.json
+--- /dev/null
++++ b/evidence/ui-perf-r35-20261120/package/source-validation.json
+@@ -0,0 +1,44 @@
++{
++  "schema": "hakios-ui-perf-r35-source-validation-v1",
++  "passed": true,
++  "checks": {
++    "py_compile": true,
++    "help": true,
++    "dry_run_all_profiles": true,
++    "exact_profile_arguments": true,
++    "quiet_default": true,
++    "command_budget_matches_frozen_loader": true,
++    "nonexistent_new_inputs_not_read": true,
++    "dry_run_created_no_output": true,
++    "lite_persistence_explicit": true
++  },
++  "command_budget": {
++    "quiet": {
++      "capacity_including_nul": 608,
++      "reserved_bytes": 545,
++      "spare_bytes": 63
++    },
++    "lite": {
++      "capacity_including_nul": 608,
++      "reserved_bytes": 555,
++      "spare_bytes": 53
++    },
++    "cpu3": {
++      "capacity_including_nul": 608,
++      "reserved_bytes": 545,
++      "spare_bytes": 63
++    }
++  },
++  "source_sha256": {
++    "scripts/package-hakios-ui-perf-r35.py": "ed3a3054fcf4d6f70b6a17feef31454d694e7a9450c689d6f4ff4d808148352f",
++    "scripts/package-hakios-touch-live.py": "7e1e8e2b2345af0fcd76887c6a17bc8cf60268748c2594df00d597d80a37d64b"
++  },
++  "frozen_contract_sha256": "a97073359194258501b83c31fd2f316a9814d42c2f83817fa4fdf807c7b3568f",
++  "actual_packaging_run": false,
++  "new_kernel_read": false,
++  "root_mutated": false,
++  "device_operations": false,
++  "build_invoked": false,
++  "git_or_index_writes": false,
++  "actual_package_layer_check": "Existing touch-live package() -> boot.check_boot() plus actual component/XNUP/FAT readbacks; not executed in source-only validation."
++}

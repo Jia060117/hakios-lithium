@@ -1,0 +1,528 @@
+{
+  "passed": true,
+  "phase": 4,
+  "inputs": {
+    "manifest_sha256": "b7d25ab8ab96d63cc3997f4a2c822d354bfbb2ea904aa3d16263ef90daec7399",
+    "baseline_commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "port_files": {
+      "README.md": "d4ca2f0c0849dbe81cb693ae6ab3d8be0568ebd9db3311e776f677b4d7a6256d",
+      "archive/ios14/compatibility/ios14-exit-observation.json": "65ed3f28da396af839f5edf097a356b88629576457237f77385262c51fddd483",
+      "archive/ios14/compatibility/ios14-exit-observation.patch": "dd99a2b1600c641349f4af13fca6defdf141e5d2dc058de81ecf7d8b2582738d",
+      "archive/ios14/compatibility/ios14-identity.json": "8b8aee60bd667aecba2d9df23ef262f68e4269407d910446ebf6a66fa85bf541",
+      "archive/ios14/compatibility/ios14-identity.patch": "22245261cde767e38855ee01f1e97e8631b2406e1c9dfb5a72ad28d2887e5dcb",
+      "archive/ios14/compatibility/ios14-mach-msg.json": "77421f31ab52974f5cedbf51d4b3f1848bded04a2f64f3a59708a418afe571c4",
+      "archive/ios14/compatibility/ios14-mach-msg.patch": "968af6abd8833f42f9995c0ac0cffda53e03bc816b8fbbeaaca6e5cd8b518617",
+      "archive/ios14/compatibility/ios14-shared-region.json": "16d2402e87421a2beba402eea2f449146f1f802aa2956d22a788108c707ec6c4",
+      "archive/ios14/compatibility/ios14-shared-region.patch": "084b24c90a018a802b74f0ce5c7f70a3d9352d3ea5b23d7af878c78650bd9cb0",
+      "archive/ios14/compatibility/ios14-system-proxy.c": "187038135d046cfe50e2a93cbc870b0d58c4ad35e71883be586c8419caab7f51",
+      "archive/ios14/compatibility/ios14-xml-entitlements.c": "7e91113550bff715ddbaf0d8858e77348d4b029d3e2eb6076138baa8b734dfa2",
+      "archive/ios14/compatibility/shared-region-438.c": "3b41216c6e60fb7461ce9aac23a654c24aa35b838be98c2574be8bfc8d11ee33",
+      "archive/ios14/patches/0001-msm8996-platform-loader.json": "30fb76f90e2edd59f8eef0548c006b50327adee0fe9514ec675cd2c911d9a3dd",
+      "archive/ios14/patches/0001-msm8996-platform-loader.patch": "4c9dddf9e46e0477455eded85c5dde11ee3f13cc67fcaadf2fa80957016076a1",
+      "archive/ios14/patches/0002-msm8996-platform-observation.json": "210db0f40a0bf9faf3f16a048fbea8d0b1b8bb6e2c82044666886a0ddeb3499a",
+      "archive/ios14/patches/0002-msm8996-platform-observation.patch": "367f25fedb32b8c35f7c49c74e790743fd91cf579b56b11705ff06002ceb631f",
+      "archive/ios14/patches/0003-msm8996-retained-result.json": "cbe0fd8f5eed18808bd98519ce01a86337a16bb7fba7c718c5c812eb124e2057",
+      "archive/ios14/patches/0003-msm8996-retained-result.patch": "e3af19156deab7db251fbbae52c07e1bd567b6787cfe68dd0a0aaabdb97eddd8",
+      "archive/ios14/patches/0004-msm8996-storage-test.json": "8f5fc9f6ecc15236d342ead46f7fa938693f441e834f1ae96f42f562e1352d85",
+      "archive/ios14/patches/0004-msm8996-storage-test.patch": "d21bd06b1acc56b6946478d99d6db9e4dc4a9efd07700865a54d89edced75785",
+      "archive/ios14/patches/0005-msm8996-pid1-fault-observation.json": "53cea613e0119b2d95728576abd3cec083031b9cc4378737fe7fd5706133ad99",
+      "archive/ios14/patches/0005-msm8996-pid1-fault-observation.patch": "0c31bff5a5002e097f0fe04044261f15385570f8364b845187df6c8cac002fe4",
+      "archive/ios14/patches/0006-msm8996-ufs-buffer-map.json": "566471800bacfc5044b739ebba84ab9a22e26a0f653871d12d47d4dd1c5777ce",
+      "archive/ios14/patches/0006-msm8996-ufs-buffer-map.patch": "02820d9df49a235c21831a47a3e62225963c7cb5e9026fc6919653cebce517cd",
+      "archive/ios14/patches/0007-lithium-ios14-dynamic.json": "633bbb9fddc29b275604cd4d0fac9aacd5b104d219ed86613e2279fa7e026e86",
+      "archive/ios14/patches/0007-lithium-ios14-dynamic.patch": "7d8a7f245228a7097237f639940d9157d7bcdfc0697d28875b2132ab0fff359c",
+      "archive/ios14/patches/0008-lithium-d20ap-identity.json": "147d845ec3b335a0c1709c1270461014ca73e5e35b081ec35358a4ad66f51f1c",
+      "archive/ios14/patches/0008-lithium-d20ap-identity.patch": "84dd117e0da6bef45c10a3aa0a00071b685778093fbaf0776e1a0fc3b83354e9",
+      "archive/ios14/patches/0009-lithium-exit-summary.json": "590cd23e9d944e3418acec66638c542ce18636742cc8f5fe3df3b4440f0e23a6",
+      "archive/ios14/patches/0009-lithium-exit-summary.patch": "0ce6a628802a005776c5cd34396b1576ea9c22812b8cbb755b9e9f433f034992",
+      "archive/ios14/patches/0010-lithium-mach14-summary.json": "c899ec9bbffa61f51c1c3f8f321889ef52fb78a097ad6db75fd18f20cfcf7bbd",
+      "archive/ios14/patches/0010-lithium-mach14-summary.patch": "6518c332aa9eaf89e5d710fd65aa39d89d51dbdd03a4855d81317974c374441c",
+      "archive/ios14/patches/0011-lithium-df-trace-summary.json": "b118c18fdf2c0d698c8178b6be86e0e7ab9b3d5afe391474197ed322e9db4fe9",
+      "archive/ios14/patches/0011-lithium-df-trace-summary.patch": "419c391e80deb22e4afa1083b0c09e651182f8005c3846f91c716e7a90905cee",
+      "archive/ios14/patches/0012-lithium-ios14-launchd.json": "adceefb5e6f93f222721ad8a99a2dfde9d21df1de8b80747cdac49c2d88a56b3",
+      "archive/ios14/patches/0012-lithium-ios14-launchd.patch": "e4b873b3e29dcf0c0c5b83e9ad7c7489a5ba9ab100e6bfb7465b1c1d3199d936",
+      "archive/ios14/patches/0013-lithium-launchd-stdio-summary.json": "24fb7d68b0c8c898c94853c8f56ed8af8b02bb85801648367adc06dca2f0927a",
+      "archive/ios14/patches/0013-lithium-launchd-stdio-summary.patch": "3e35be83990be91357919998f4fd38db624fdc17fb42976f6e4f405936cb49db",
+      "archive/ios14/patches/0014-lithium-launchd-handoff.json": "371e2c924e67cde328e5ebca8218b8098f902f3d03397e7976fef742ed8ac22d",
+      "archive/ios14/patches/0014-lithium-launchd-handoff.patch": "b4be07bb728f1a3682426b2717e7d75b52448bf3178b5e6396d80ec82031c533",
+      "archive/ios14/patches/0015-lithium-launchd-observer.json": "1114d697dacbddd46a871ec1319ba2fbf28e99b100cfcf2db4d66ba04fdcde2c",
+      "archive/ios14/patches/0015-lithium-launchd-observer.patch": "2bbb750df03f47a7cbc42ce766e520d51642db7b91b359e86635924333a5a3a9",
+      "archive/ios14/patches/0016-lithium-integrated-ui.patch": "87593a023f868f9cdaaefd1b1bc3ef16e9c34b589b198f3cc1f09f9845dc3442",
+      "archive/ios14/patches/0017-lithium-ios14-surface-abi.patch": "dd0d0ff308cf1f963458e17e06b12b271533032e288ef758fd39ca0f483b083d",
+      "archive/ios14/patches/0018-lithium-ios14-surface-methods.patch": "058fc3578aef08d6ca7e7283e07b220b16dd3ccb7cd5b17437e506f7087accbb",
+      "archive/ios14/patches/0019-lithium-ui-diagnostic-scope.patch": "c27dfbb4cf6f1287a4686836469fcb08d965de63a075f833dd9f2e66dd510fd2",
+      "archive/ios14/patches/0020-lithium-ios14-identity-summary.patch": "4d0228a3a31697e845b9bd7ee65355757f50e3f35f823065834881c10aa0180f",
+      "archive/ios14/tests/ios14_dynamic.h": "0bc4c7b8d80375c338ab1f1bf4be6425ec223f9df46301276256b7669675364c",
+      "archive/ios14/tests/ios14_launchd.h": "b3bc18b9397ca2ec906c933ce70f3cb1dc9c4e7cbbc8b5571c007496d799e596",
+      "archive/ios14/tests/shared-region-438-host.c": "6af60695801db5d340505e42e0300f29f0b3c76a9a9fe7b1a4c08fd6e51c5be0",
+      "archive/ios14/tests/storage_probe.c": "2cb581eb51967e48d497027998df23eb1c61e996c5627e0b679ac6e3d5b89cb9",
+      "config/rc.jobs.ios16": "9e7af5a668bc7c0ae508fffcac4c08be7b83a24db1bfd9e19c068683c7b61e8c",
+      "configs/lithium.config": "f30d7b7749b67917c0c1bf42a2c9f3834ba96e9751472647f3c92cca528dd81b",
+      "configs/lithium_defconfig": "62f5f403f1e20c7e4208db67746c0893004ce68d27754783685413e2a7abb4b4",
+      "device.conf": "7fe7a7c106842309ac5c2fcb7f8a6f80081c2036cf7edbcbbfed250efd847720",
+      "diagnostics/bgr24-pack.inc": "ff04a3fcfb55329416d022491bdd3943fd6c0e1e5414521273e327f3763f2a61",
+      "diagnostics/boot-observer.json": "313ef87a7e17c8688bddf23fe325d227f46fa986c57f67bcc5d7b9adb3538536",
+      "diagnostics/cpu-map.inc": "162111d0bf27e71f000b7cf54dfeecf23167db7cf0e513b5390bcacd04b5d28e",
+      "diagnostics/cpu-online.inc": "ed52966bc058b6006dac0725a7637ec5cd53e24def8aa0f7e0cc636ffc718bed",
+      "diagnostics/cpu-sanity.inc": "a14e6f2dd8aaa992c3edf042d4a932b1abcd2d65e6c3d4d82de736d819e4ff93",
+      "diagnostics/display-kernel.inc": "88ab0e61f7c15345d365b34d62ee8d6f62998307e1ae480acd10d3a6c803cf68",
+      "diagnostics/display-loader.inc": "de48d2c7ef27224533be5d2115ff2edae75b28e3be09028d83d86a0613591f47",
+      "diagnostics/display-profile.h": "1313ae4cfb18314da72f6378ea8e49098c276ac74cc772bac4cf5c5151dbc48e",
+      "diagnostics/display-userspace-r17.inc": "e0b1b6d6171aacc84aed6131e781df4656a3b279f42338b19cc132900e82bae4",
+      "diagnostics/display-userspace-r18.inc": "03674b8eaf97b46a67cd86b41ad14815e9bda2107362c20eb3665d71795045ab",
+      "diagnostics/display-userspace.inc": "22bc03d980837cd18f96a950533aa74ec8ac477932e4fcf3d8e8aa79dfe8e097",
+      "diagnostics/framebuffer-profile.inc": "d083139e3b694f4b354cb15d026b4470279059e70e409928663b202876e03b31",
+      "diagnostics/fs-progress.inc": "afd28e9aed6a550acb0832b32020b796cdd5a90b5bd7698423a5174ee41f252d",
+      "diagnostics/fsdiag-core.h": "2afca755e401440379a5f0fc82dc09283283b9036e466aa16490521c35b337b9",
+      "diagnostics/fsdiag.h": "ba732bc291033e88d86ced5ada28c4dd9593cddeb754daa533e9287019419c11",
+      "diagnostics/fsdiag.inc": "e5cd9189a07a5c9f1d87ccb537204bba427b2f152faf6619f30793ab68816a35",
+      "diagnostics/hfs-bench.inc": "f88ce2d176cb3a0475ed054652a26cee27f211f9cfb56eb015f832f9bb6010a3",
+      "diagnostics/ipc-history.inc": "bf5d67dce1173366da75172733edcb80f4cf20fbf9887ac706e983363b270256",
+      "diagnostics/ls-ready-observer.inc": "837c2ee58183e1f6608702444fd691ff01bce6d8b50d1484cd37f70d5bae8162",
+      "diagnostics/ls-ready-r11.inc": "681fce9224c26090ae83f916c14d3d1c38af848c80ac365487e2cedb2cb32719",
+      "diagnostics/lsdb-finalize.inc": "eaa35755497c6b26fc6493137cd4f00180d52868e85af08234088f458282fecb",
+      "diagnostics/progress-store.h": "5ab65c51894f0a54a5936241829afa54012c6f35ec4ac75851085617c4b302f6",
+      "diagnostics/r10.json": "6ac5b1266f1197102e63a7e33c2aa8c560d2ce6636f88ba347941f8a560bb7a2",
+      "diagnostics/r11.json": "b958050906a94486337a0eeead5efdf0f03ec73d92f9f0b931cfc2ce20f5bb0f",
+      "diagnostics/r12.json": "25e2cdcf957736a897d105d5cd06318966c574cd07ef291e6616f02cab7c44e3",
+      "diagnostics/r13.json": "c7ec43f5c62516f989e9887b44dee0789ec442db1a8e96b6e175baa5a3ccbd4d",
+      "diagnostics/r14.json": "b29b149320f9d23c0d6d95b9869e37d880e500e53e3178a3518fe2b9fef04204",
+      "diagnostics/r15.json": "21dbb5e9a0481f358b8c573c94e40e2f1fce78926926f612584e0c330b09b85c",
+      "diagnostics/r16.json": "2bf3b847575d8660f907912c2c8709691ef6d137ad686cc3db94ebd02fee0630",
+      "diagnostics/r17.json": "2832853f3cd640ca9dded796fe0345197657253c6e50bc01a27a887b733d306d",
+      "diagnostics/r18.json": "b3735485bb881c121df82c2762a547680c81cef309f56818a2290995d7899976",
+      "diagnostics/r9.json": "b5e0ffca91065af62f47137d0b31b792b9392aeec89e7e0752ec907d47a6beb7",
+      "diagnostics/raw-storage-core.h": "cb0fb27309e7e1a2a9525b5d4ae4bd7ec19b0ad7c0c00adc0a9e5e6343014ae2",
+      "diagnostics/raw-storage.inc": "9c71d4b3b712270fbf2ffd17ecfc6a7c2ef43836a381b3e22bbdf1e96ac019a2",
+      "diagnostics/service-progress.inc": "e5341c42f096ea6fb01bd5667529bce2153e6e654ac507be8db6226fe05b390d",
+      "diagnostics/service-wait-observer.inc": "6e8dc85992d0763f82dd4857bedb4456b23bb0fec14779eea4caef11b9f332c5",
+      "diagnostics/service-wait-observer.json": "974c99f595abb1e8276a2c3b256acf60d321817b6dbe28a739f67e80cdc6d345",
+      "diagnostics/springboard-observer.inc": "de87e5c861126851a7bf2f034f5d18a2239b8767663927b8b563815254c6d59d",
+      "diagnostics/thread-wait-observer.inc": "8aa04ff520ce32d65df99361127db3068810e8a09951aa6b67ef7ec901b5faa9",
+      "diagnostics/thread-wait-observer.json": "975fcf9f990d597b040471e0e5734d5a5e0ba9503f7a1245bc5c3e9fbef11ff8",
+      "drivers/usb/conf": "fcb24992a6baa873dd9fa64f8b105f39b1e80c902d7799ea1be7209ed97956cd",
+      "drivers/usb/hakios.lithium_usb.c": "d3a8f21ba0fa005b91aa7f2a338a310bdec8fb5fe6d750aba6c4564e39495c4e",
+      "drivers/usb/usb-provenance.json": "ac06d52d3d1d5ab229feeb67c38e917c87600fb0d6d261686ca78e424df73228",
+      "firmware/BootShim.S": "c0492017bc856e3af78ac451c82d5336cacd0538164b17e6bf423450cb7c725d",
+      "firmware/lithiumPkg/Drivers/LithiumBdsDxe/LithiumBdsDxe.c": "895ac85895dabb68d2adacc777b2d190e71a03c315bef8a6c510857d340f7b55",
+      "firmware/lithiumPkg/Drivers/LithiumBdsDxe/LithiumBdsDxe.inf": "7b17adb01009433db8d0db175aaedf396527c1754f2c100f9d447b984c06ce7b",
+      "firmware/lithiumPkg/Drivers/LithiumConsoleDxe/LithiumConsoleDxe.c": "b28ae43f47d0cad75d9d82fb1a298001adc0631e2054c8eb82cc99cfa5b9536f",
+      "firmware/lithiumPkg/Drivers/LithiumConsoleDxe/LithiumConsoleDxe.inf": "2a3c9ecd86a9faa535051763a3df823d2987a56a2cee321d3ee3ff8fe7de32db",
+      "firmware/lithiumPkg/Drivers/LithiumDisplayDxe/LithiumDisplayDxe.c": "a14ccb750dbc3540c8ee6ac6c4ecfa2e6a62a7b47167975137a8eecb898d6b0d",
+      "firmware/lithiumPkg/Drivers/LithiumDisplayDxe/LithiumDisplayDxe.inf": "fcbd74ef65e07eb0959dda2ae8afc6a290d1f10abb5edfc56aedcb5287ff209f",
+      "firmware/lithiumPkg/Drivers/LithiumRamDiskDxe/LithiumRamDiskDxe.c": "e9f44650ebdc5715267207434cfe59da2fbf85d01ddb387bc9712c0714bdd5d1",
+      "firmware/lithiumPkg/Drivers/LithiumRamDiskDxe/LithiumRamDiskDxe.inf": "e29c22e6249107d4ab7f5630a7db95d9f159118bf6be7a55da4d191a7376cf00",
+      "firmware/lithiumPkg/Drivers/LithiumUfsDxe/LithiumUfsDxe.c": "114b66926adb28b8ffbcea0cc5d78fc64d9c5ef4283eddff7d86161c60de08e1",
+      "firmware/lithiumPkg/Drivers/LithiumUfsDxe/LithiumUfsDxe.inf": "c66b9546faa058c48c2645d6cb2cda2d1aae9cc1297b0813a96b1948794d69cd",
+      "firmware/lithiumPkg/Drivers/LithiumUfsDxe/WarmUfs.inc": "40cc28fb6eebec3afbbf604a5f5c6060620caeaf4bae682c8ebae1190d56a2f9",
+      "firmware/lithiumPkg/Drivers/LithiumUfsDxe/storage-provenance.json": "28e35143b5b2db3efd23c591d696d63665fc79081bc8457cb58ab64557b45f7e",
+      "firmware/lithiumPkg/Include/Lithium.h": "960b5694e0231b5ff748b92fabeec2ae53c1e52e3124a2aa689c8e15359eb1df",
+      "firmware/lithiumPkg/Include/LithiumStorage.h": "eb960ee570f7d72f4e531338accb733e6788a056615c4d0d35f1aadcadff81fb",
+      "firmware/lithiumPkg/Include/Payload.h": "a866c2ffe52c5e87ce433958f109b52d2a9be606084fd58b93d1fe30f19e0569",
+      "firmware/lithiumPkg/Library/MemoryMapLib/MemoryMap.c": "53abf2caedf13aaa37162f5dc5f73520e5a2c0453245af1a7e31055eb054c908",
+      "firmware/lithiumPkg/Library/MemoryMapLib/MemoryMapLib.inf": "0f881749820ae85cef060cd6f06d091b25978322f95834adfea26d92bda072b0",
+      "firmware/lithiumPkg/Library/PlatformPeiLib/PlatformPei.c": "55d5f1832b99dead4a15986e4c1ab82a2a96e67878c0e40475d3e8efe519706e",
+      "firmware/lithiumPkg/Library/PlatformPeiLib/PlatformPeiLib.inf": "d2f98dba25535195880ff5168f7ccf3e14cfef0415471f88d2b9e770a66ffe2c",
+      "firmware/lithiumPkg/Library/PlatformSecLib/PlatformAssembly.S": "e2a289ceadffb7cdc2625ecadbc12ff33ce19a31342c227047a7d8047b14eeb8",
+      "firmware/lithiumPkg/Library/PlatformSecLib/PlatformSec.c": "a66dee9b47b00b75bd6c37c86edfcc64dbb38c7ab185886e939763370d0372de",
+      "firmware/lithiumPkg/Library/PlatformSecLib/PlatformSecLib.inf": "1cf5138c484bf3a0389d929132a5f0f6cab96979f9c9186accffda7d3a2d1bd6",
+      "firmware/lithiumPkg/Library/ResetSystemLib/ResetSystem.c": "53c6ee09a80e3a1c364cafcac9ab9a8da501aff5efd38ea5975c049403d8a08e",
+      "firmware/lithiumPkg/Library/ResetSystemLib/ResetSystemLib.inf": "2093985b7a97612cc7c8025da54d0fd30a6606fcd5454e99d2ab015edab8ff69",
+      "firmware/lithiumPkg/Library/SerialPortLib/SerialPort.c": "967ea8f9326df0d24ca305c47d861ee99a4bfb9a7c38250b4133f97f63adfa25",
+      "firmware/lithiumPkg/Library/SerialPortLib/SerialPortLib.inf": "f769922bd94c2c9f9e0dbd67dab9b93ea444acfe548f2094b71af6485acd7429",
+      "firmware/lithiumPkg/lithium.dsc": "0318dfa842b1a5d24a66fb749bb6230392d2ef2c3fafaf4e282b622cbd88916d",
+      "firmware/lithiumPkg/lithium.fdf": "5c41783fcbc813819d915d4ab35189047f6cd57e9d869a05e84c73094672eebb",
+      "firmware/lithiumPkg/lithiumPkg.dec": "bb17cadd803d8e49adfdf7236b872e56a60865df55fb22a50292cd8e22e54c86",
+      "patches/0001-lithium-ios16-device.patch": "0d207d892cbe7004456064c611b84421ab70b88dd0f9fd0493d104680d4fbd5d",
+      "patches/0002-lithium-usb-log.patch": "90b87e3ff8369821293af0e9d3043677dd40ee3b376490ca41725108b0896179",
+      "patches/0003-lithium-ios16-storage.patch": "ef00a0df78ce85a9fb4fea62592823c749982edee8b549a6bb77cf057272159a",
+      "patches/0003-lithium-panic-text-summary.patch": "6db62f611ba16c272f6e6a591c5b939a7823da0e3c6609e46f92e85b137309d7",
+      "patches/0004-lithium-static-userland-linker.patch": "aa41f2fa7069cd2eff393a05dcb19611ec2649ff15d48891211e360d416513e4",
+      "patches/0004-lithium-userland-linker.patch": "33a62fc2b81244f2f136cc4bf4a3186eda20c3c3196db70c9583d1b45ffc5104",
+      "patches/0005-lithium-console-capture.patch": "6d4dd193d90d169b4c7c45c71b5bf7688f529696bac44647ad98f849ad6d1987",
+      "patches/0006-lithium-ui-observation.patch": "21d5f3bc24b83af016433b7cabf8e7e2db1e071dfa657ddc8d88ba804d168a2a",
+      "patches/0007-lithium-boot-observer.patch": "d5cdd8ef34339b933897ebe9300089a019eb281226084c722b17182ce6c1d39b",
+      "patches/0008-lithium-thread-wait-profile.patch": "5bd36cd4de85295b5c2c8f39de936e8ee2b8d50e2014766d27a302d5fda97c12",
+      "patches/0009-lithium-service-wait-bgr24.patch": "b2c54423723ae6e2cfad2d79964f331b14c6b7d3502101eecb2b389487093efc",
+      "patches/0010-lithium-ready-storage-smp.patch": "0debbe2414c97fb888aafedcc1d795d7a53fc1e868d028e5fe9d69c9835ad9da",
+      "patches/0011-lithium-irq-safe-cpu-online.patch": "1b1341b546bf819fe31d38f3cc687b0903deccd752b24084becc1ed8345853b3",
+      "patches/0012-lithium-object-progress.patch": "53a542a0b3aeb294b3594ddcf5273698d20a1ccbbf55c018fa15840ca69cb487",
+      "patches/0013-lithium-raw-storage.patch": "4f788228955f27bbf589263c1ac12085ec4335e1c5f5a6446ff8eac4190208a8",
+      "patches/0014-lithium-hfs-diagnostics.patch": "ee6fd1e214ef603674902a14e24f09de358d49b98b46ee49506cd5d76444197e",
+      "patches/0015-lithium-run-a-finalize.patch": "a13a42d4b34b3a60bc94d0820644e60101835be50c5422a17609028db6e92ab6",
+      "patches/0016-lithium-display-profile.patch": "ab7c58d265c7919e0e44a2ad3483ea3ba9f82791533d85e09d961a4b96eab556",
+      "patches/0017-lithium-native-display-profile.patch": "fdb932ecfc4550a6d93883b43f783c588a4009f1c9f3db79c5f9a08edd8b882a",
+      "patches/0018-lithium-early-display-profile.patch": "20ca20942d052b1ecadab8495bbb926920f93abea95d956bc11fab266183b867",
+      "patches/0019-lithium-peripheral-admission.patch": "7bb7e1fafb5759c727756660b065202061d2ceb31e216f1bdbaf87fae7788b6d",
+      "patches/0020-lithium-touch-batch-queue.patch": "8c06c74e6ebf996f34cf7746e51bc28fc6bd2865dbc2116d165428f136ff4c52",
+      "patches/0021-lithium-r20-touch-geometry.patch": "2961652ccf1a65e8578ebb52697e62134b6848a1b561ba47207e199b6886ce4e",
+      "patches/0022-lithium-touch-diagnostic-init.patch": "e0507358ee4a3a9872231db3ca40d26b18d7e3f1d9c759d8f9bb2964c9af8504",
+      "peripherals/boot-options.h": "50bca4dbf79ee50eda32f47a4a954b17675912f20acc94f9f5cafa174f2f7094",
+      "peripherals/contract.json": "ada4bac146288be1ae2d26cf22ca826629cfa7ae9c378ac894aa6cee3a1687ff",
+      "peripherals/kernel.inc": "3c753b47d15bca251169c5ead3078fe86f429d1e0504df64bce189f87ef0a5da",
+      "peripherals/touch-id-core.h": "e7e823932e456986dd389a1d050fb1defa0110c57eaf946c28a8eddd1aba5085",
+      "peripherals/touch-id.inc": "09c9700fd95dae41630f31d0942a9f3066ae4262b204d1f136e28f8a4b654b90",
+      "peripherals/touch-mmio-access.inc": "d8a1733d957700df0cf0145659db0615d9d7e19c3d4af7105719a413afc8969f",
+      "peripherals/touch-mmio-policy.h": "324bd13c3c0548cf0d7b9b1e9705bce4993857df34ba2a21db816f6fd5cefb69",
+      "peripherals/touch-snapshot-core.h": "8f8e37552b2c05989a748827bda456a6b242398b4db797961099584bd6125b4f",
+      "peripherals/touch-snapshot.inc": "585ba0806fc542402a126c612ff7dfc0fe50ccae3b4c0225454a32e91008294b",
+      "peripherals/touch-stage1.inc": "04f47fb8949ebc0487e900ecdf65f524e19e6e92bc9ef90ee5837830283d5269",
+      "soc/configs/msm8996.config": "51c6e8236d3786659132f9bcfc0837c38f4d9d220c24ad4f41e28e6fbb00090a",
+      "soc/soc.conf": "8fff4048551a2f60e89a21387687c3b1616272242cc86f76ddfa673bae91c4e9"
+    }
+  },
+  "instruction_scans": {
+    "kernel": {
+      "sha256": "34402977ea364f6823ad992c220d44bddf73406ce1800fef6ac165f710b1c983",
+      "disassembly_sha256": "69e998a7c1998dca035d309c52c4041de6af5414029692526071d1c7f9deb48b",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 159
+    },
+    "loader": {
+      "sha256": "4625a453e3afcff766dbf5cacc1a23df0bc568bb8cad97f4416782af3de65a69",
+      "disassembly_sha256": "1d597b59f0c804eb96a476edd216f07c412834df535f3b748a30f0e91379b089",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0
+    },
+    "shim": {
+      "sha256": "ef99efe0bd20556478cc13d2b29c8e81c3b1c1d636bbf619cde753abfdb1e3f8",
+      "disassembly_sha256": "a71e5dcf4ebc87238ac82f69fe1b17f2257f80b2e14a2f6f9edcab4b6eddc3eb",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0
+    },
+    "userland-HakiosAudio": {
+      "sha256": "f17c53be9266f705ab5833cacbd185280f5fd1657ba0d6d09b904fd265ec4483",
+      "disassembly_sha256": "ba01c24e5720832681039eaedffefd795199f8c47c739786d80ed2383fc63919",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-HakiosMetal": {
+      "sha256": "bc0d47a72129d4bec479ea8c0321fb720c8776cb70da0f2cace188ff27ddd559",
+      "disassembly_sha256": "19f7f5be6addbcd3e5ef0e0614442298d750be6b60025f58d534f60634335ebf",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-apfs_mmap_test": {
+      "sha256": "ef7c504b43571509f4caab15f330c2c2388a735bedb835c831fa669ee41da820",
+      "disassembly_sha256": "8f434ef23b6a51dff14771911709d724f019e8eab4635ea59ce741aa0812a79a",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-battery_test": {
+      "sha256": "3cf97af59d32a884c1bf7b48aa880b79b82f61adb5bcbc91f942f3c84075b937",
+      "disassembly_sha256": "2ab9f906c8cfcc866257bc0372558a98e5a307648f77df56e8ba968804439384",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-camera_avtest": {
+      "sha256": "4e34872a1e43eddb296a706b6ab4ead996fcd4309e09cd34389a0da9b212da2d",
+      "disassembly_sha256": "4b4a2d482b4e9284c0f9c2ade848132d4450a899bfdeb8fd569059a11992dda5",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-camera_test": {
+      "sha256": "1fc452ee8ecfb4ed90d2d2074ff5ccde4b25ac0cd0da3ffd0f2596b2158533bf",
+      "disassembly_sha256": "b87fa7171879cbf07504bc6023dd6f0aafe95f6ef722f968b73d171f08b61069",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-cg_test": {
+      "sha256": "9e2b691729ef201950891f016339febfedbe7dc4e41ff40619a158e6d92e59fb",
+      "disassembly_sha256": "f5df01884ffd1bbe209bf0e44d9046d73ccc63510617e0d55feadd18d0dd4f78",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-child": {
+      "sha256": "0b1457279af7c04c85329060a108c121c92267c7c54b9a2e98b092e6acc43863",
+      "disassembly_sha256": "843db6d165266b53e345548b0804dc520e91eb0011e0214b7fb0f9e48480a619",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0
+    },
+    "userland-cow_test": {
+      "sha256": "e60d8fcced595785385fb60a765423688326952a695911f457155fd6890e0a73",
+      "disassembly_sha256": "273e4022201c572bd9052840c1404d50d2bb0f9a164cb0160f142ee0217c1b16",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-cpu_test": {
+      "sha256": "ce22d535969a9d44bde6ef501aa32c161f0a74e53baa5baac45e53f29f762be5",
+      "disassembly_sha256": "af3b40a8c78a7f4fe84a76343b8af59de760fa9af923ff0affb11b30c7792a54",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-cputop": {
+      "sha256": "d8b73a07c154d7069ad1ec09d0e028736419a03a9cb76dfd6e86fc2c8529af6c",
+      "disassembly_sha256": "35d3a4cf7135b09d40155cfd865203e19d57416d419b41826acf76024fd6e16e",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-font_test": {
+      "sha256": "8a50ec419dacf301f9058ce619b73c6fdb7b7a822505b93b5be2fa0f6b153378",
+      "disassembly_sha256": "06f5e667ba9b7cc7f9d00775ce4f5415c8be5ae77271480c7170a73cecb93b1d",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-fps_info": {
+      "sha256": "cc06fbff6f40571465571c030b11a6ff0fdfd2109073d2db8d18dd9434936e1e",
+      "disassembly_sha256": "06179deb2d02c33b71666466d34bc5f5c6f730a630a094680a3adaac7a0ca156",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-hello_dyn": {
+      "sha256": "fd314c371696f1a21fe4e2e79d0cf123883d10b30ad4449417b99fc71d0bcd0b",
+      "disassembly_sha256": "5b112eaaeb6938375ee8febd80ce4c3e863f161a2b2b921f44a1a5a9464e5ff1",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-init": {
+      "sha256": "49280373ae22a38f7dd6c69912ea1b78b1f0c6a8d180d56cfa23c5e3d591e32f",
+      "disassembly_sha256": "b6bea41e881eb057591f231d7b8e9476372d617bdb2fac22ac7219b36f37d4f4",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0
+    },
+    "userland-keychain_test": {
+      "sha256": "8ea20b933c01a65ac102fbc5293caa7028cc20f023b01f4aafbed5be5b981052",
+      "disassembly_sha256": "9dbb1cf7ca6af8e323bec2124285a409ac9c2d920e87e8aa72424d8fd1354d17",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-libhakios.app.dylib": {
+      "sha256": "ef83a2b6e1371243eb2504e9ff179da1ac3a9f0cd2645cdd18152c66fe3594f6",
+      "disassembly_sha256": "3e741771b9a1fb74f904a5c39c5137dbcda4e29e04f88e33af9d202534da14dc",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-libhakios.dylib": {
+      "sha256": "d5ec1584024e13f7752f8ca8c09970c9a653649054f5e94cc16d6cfbf0b77114",
+      "disassembly_sha256": "1749f4f5b88719a96946904f8b5401836800e50b1d77e4598d56243240701b7a",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 6
+    },
+    "userland-libhakios.media.dylib": {
+      "sha256": "475ad537b11919e8df58cadd903b9e2038b85d98363a693285ef6d81835fc3ab",
+      "disassembly_sha256": "87140ea2ebbacdc0601d26dcc8524c8089635c6ceea2a9b9b07ece4283e0cbcd",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 1,
+      "reused_exact_binary_check": true
+    },
+    "userland-libhakios.sb.dylib": {
+      "sha256": "a31a6c2f9ea036a9cf3904499aa4e3e826b5f981e2a940150b50c57a09bf8ff9",
+      "disassembly_sha256": "9880f8e7bf4be6f0c8f9a8f6f21883b2da52f9e3ec661af58db719f36b3ebb56",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 3
+    },
+    "userland-libhakios.tweaks.dylib": {
+      "sha256": "7abffd3db3193df34355d189cc398dd4e62b1c5fcf256f1d074192cc9749a63d",
+      "disassembly_sha256": "cf7dcc46bbbb92be92b8920f2ccc57ce8c9d46bd24608f0a9c2ac6d82f96c03f",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-metal_test": {
+      "sha256": "dccc41b408ad20c9935c0c451db99361cd31a8500cd4a515c7c46ff60f9f2ddc",
+      "disassembly_sha256": "875715528ca450f4dd0a02f2620aec4cb51fbcaabe79bf49b6b3f25d0cfc85d7",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-mg_test": {
+      "sha256": "960bf58af55ac7e115ecb7f872b2601609a17c435ca9ce30c9946ea1324c6605",
+      "disassembly_sha256": "865d5d37c98998dc90f5e037d60976dfb5a1eb0cfdab3b1c708b3cbf32d349a5",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-mini.o": {
+      "sha256": "c992a41c5da081b44da75800b27c060ae78a959c6e5cae265c5c6dda0cb58613",
+      "disassembly_sha256": "0ca706e659a8550c3047a053d7a38176e86762feb1040decc33db3ee91ebd5aa",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-net_test": {
+      "sha256": "bc44f0a203401138346ebc0e3e22191f91a854fb74e6b3ccf908c247c6ceb120",
+      "disassembly_sha256": "0ed063ca2fc675f25ba21968ccf243f6cc1cb41676a6e0802cf8abf0b7601db1",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-record_test": {
+      "sha256": "a2c7bf610cd4376446e3c68188c45decc537bd8bd6c3436eed9069a85b603c95",
+      "disassembly_sha256": "6c31e4a9c93318f4b53ce76d54bbadb2b1c0c1783ad2fb101af8da85a611b829",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-rwtouch": {
+      "sha256": "d6f2cd3429558e6db0f9368ba9658c6c14b5f104a25aed1db1b831dc03aee4db",
+      "disassembly_sha256": "26e65333238bb750c278357940f9ea6363f63e3e002492dc0f85535d37180bcc",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-shm_test": {
+      "sha256": "add125e09cd3ea82ae93d6b50bde2b4db5cc061ac8f7ffc088619eaa0a8896ff",
+      "disassembly_sha256": "71eb46ed70bb2ddc44bf2fdc6d923bfec9d99ff92420d42ece0cf7c3dfc01cb9",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-snap_test": {
+      "sha256": "2f2b97cbf8f57cf75b26c216027b2387adf57c063bbafe350b0c12f0d7dc2066",
+      "disassembly_sha256": "0fc2611f13f1309831c37ad50e70318aba62c2ff792ab99e02a08b685607664c",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-sound_test": {
+      "sha256": "a0363d45235cc10de486d2c614c92dc11cd9d8b526eccdd70a8c0ad546ed7260",
+      "disassembly_sha256": "f1644b15fc047687b4379b64363bce4a7487a47990a85a0487e2c836e32d3686",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-stage0": {
+      "sha256": "7590c8831bd1fbfac6e810b1f3089519ee65eb6e021bebe72776ffa35e244d18",
+      "disassembly_sha256": "309cf7e72cebc0d9162d745e1e80e71251913d3659fa0cae7bd59d2e0781f8b1",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0
+    },
+    "userland-start.o": {
+      "sha256": "eb55e9cf4c0f90d460f9f1d9844e76ca7dcfbd2f5bcafdff2302bbeade328b2d",
+      "disassembly_sha256": "9ca8129f1ca984c2304b36b2b54370e8d7d6311723fb6cf2f2fde519dddace38",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-surf_test": {
+      "sha256": "4eab0eda0d4ad588ba9efb9d0da60cea2eb00a9c804e6e4e24950945b8762210",
+      "disassembly_sha256": "3824ca44e74c717d41528abfe97dd029260abea8608958ef23f1994659fe614e",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-svc_test": {
+      "sha256": "b4f63d85dbd49e0fd32ed105a2497eed7f11e01e3e7a106589a97d5179695dac",
+      "disassembly_sha256": "6568e21b80035387d56ec4df5d6239c0fabf856a33e1d618750e3fbce9667793",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-torch_test": {
+      "sha256": "a96f0dfceec1fa34fbdcf553f8cd84c8fa3b72efc39d3376e43b7390bc8a6626",
+      "disassembly_sha256": "64f88b073a81405e56690bbde9fc8d7de9c6080c9407b2e34a41d5c3ebeb4050",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-var_store": {
+      "sha256": "282940c7897010c47cc7163dfc107dc00932cb981c94a5852c03da74485a3339",
+      "disassembly_sha256": "f95aee5d84567fcd80068f5038286dd27ad82906e7f001c01ab40a3fa4483aed",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0
+    },
+    "userland-vol_ls": {
+      "sha256": "ac12532fe76a63c3032535d8a1161b4c1fba5d844e0c630a82fbb124a655b4c9",
+      "disassembly_sha256": "4528ef90ad3b2c09d5f988ae54b30da4215ca6450722bd7cb6dc2815d3f48456",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "userland-wifipw_test": {
+      "sha256": "83528eb9ab2e77a6f2cb2438303645e1f68c5e0f971da9663ef62fffa79a1fdc",
+      "disassembly_sha256": "016a56f85f0f647d9aa0374145cb1eebc5379f4828977bd1cdada12adf9901a0",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0,
+      "reused_exact_binary_check": true
+    },
+    "LithiumUfsDxe": {
+      "sha256": "d2c57d2327df9d502ad9444912ebab34b8ebc95ddb4c720b810d9f29cd38f263",
+      "disassembly_sha256": "a75d347a5047b9298be66cab78e7da2341361ad233d84f5f1bac3f267e8aece5",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0
+    },
+    "PartitionDxe": {
+      "sha256": "c1702b1a26084496f31f1d1ef1db01c1bbd0291c7db369c7a5d7ff81ca9f8d57",
+      "disassembly_sha256": "5bda10dde6b26ebcc474714b888a31d696f92123f4782c8f89b27b9103446a56",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0
+    },
+    "LithiumBdsDxe": {
+      "sha256": "dddcaac928928070b6df22914d42dde68eef1ff5f57e3ee2e5f11a1527d1afa1",
+      "disassembly_sha256": "2976a673d399b9670da21dc0c3ef2015bb341be2449255f6c2947085c56372ff",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0
+    },
+    "LithiumDisplayDxe": {
+      "sha256": "6dea91eeaf77d9b16b7a5d8c9e824efbded0bdd7ee6dc67268078d214bfc81ce",
+      "disassembly_sha256": "30e24df323be80bfda148417a3979ca908dc65192b4ac728fdc4e78386f1291c",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0
+    },
+    "LithiumConsoleDxe": {
+      "sha256": "b2c599a63fb32a0027d75b89397d55371d12b7b7372073ed4ec63e91bef48758",
+      "disassembly_sha256": "71a28f219a9e62c80bfafe8e67178a308c6742a2e2ecf6a6c59f1dd60bc916a9",
+      "forbidden_instructions": [],
+      "safe_armv8_hint_encodings": 0
+    }
+  },
+  "instruction_filter_controls": {
+    "accepted": 8,
+    "rejected": 12
+  },
+  "instruction_filter_sha256": "fbbaf57f442c4e27e0ee31ab91050d6f795e51600e09ef6befd6285bbe34ca73",
+  "compiled_console_routing": {
+    "serial_console.o": {
+      "sha256": "f830dc9934467ab1342e8f9c0d5cfe4e85497d945fe4d515d0c7e2850ef34bad",
+      "imports_loader_log_putc": true
+    },
+    "km.o": {
+      "sha256": "eafdba74c8fa8ff7b02f6851af55567372f7acb88ebe1ae754d93be2b49f9566",
+      "imports_loader_log_putc": false
+    }
+  },
+  "sha256_literal": {
+    "symbol": "K256",
+    "address": "0xfffffff007a5efb0",
+    "bytes": 256,
+    "sha256": "74ef7306e7452d6859b6463ce496b8df30925f69e1b2969e1f3f34bbc9c6af04"
+  },
+  "linked_device_symbols": [
+    "_lithium_usb_probe",
+    "_lithium_usb_quiesce",
+    "_lithium_log_copy",
+    "_lithium_display_owns_console"
+  ],
+  "kernel_bytes": 14951936,
+  "loader_bytes": 76288,
+  "firmware_bytes": 3145728,
+  "frozen_artifacts": {
+    "hakios-kernel": "34402977ea364f6823ad992c220d44bddf73406ce1800fef6ac165f710b1c983",
+    "lithium.fd": "43483fb2f25088b17fb31f031f52a13c7820992fac4d9222e160990a6ef14d8b",
+    "loader-d22ap.efi": "4625a453e3afcff766dbf5cacc1a23df0bc568bb8cad97f4416782af3de65a69"
+  },
+  "bootshim_assembly_checked": true,
+  "identity_placeholder": false,
+  "boot_ready": false,
+  "hardware_verified": false,
+  "check_script_sha256": "f52a70702bf1aca252b7fde16b0446f4c77a52e1bcab1da6c3e9460ae6238744",
+  "all_6gb_exposed": false,
+  "usb_enumeration_verified": false,
+  "device_operations": false,
+  "scope": "Normal complete HakiOS/Mu build, targeted LSE/PAC/PAN/UAO instruction scan and compiled symbol presence; no runtime claims"
+}

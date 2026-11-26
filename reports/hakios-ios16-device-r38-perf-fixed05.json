@@ -1,0 +1,230 @@
+{
+  "schema": 1,
+  "revision": "R38-perf-fixed05",
+  "attempt": {
+    "schema": 1,
+    "revision": "R37-ram-measure",
+    "phase": "frequency",
+    "attempt_id": "r37-frequency-14",
+    "started_at": "2026-11-21T13:01:53.191362+08:00",
+    "package": "F:\\IOS-MIX1\\artifacts\\hakios\\lithium-ios16\\phase4-r37-ram-frequency-14",
+    "candidate": "R37-frequency-14",
+    "profile": "r37-frequency",
+    "image_sha256": "3e697c0195d28f44369e529ce6f6a7b7f7c73aa315c3370397ca6e62c5634e23",
+    "image_bytes": 16334848,
+    "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_clock_diag=1 cpu_power_diag=1 cpu_freq_pmu_setup=0 cpu_sanity=1 cpu_spmi_diag=1 cpu_perf_fixed=1 cpu_freq_diag=1",
+    "preflight_passed": true,
+    "boot_attempted": true,
+    "command_accepted": true,
+    "automatic_retry": false,
+    "partition_commands": 0,
+    "flash_commands": 0,
+    "erase_commands": 0,
+    "adb_commands": 0,
+    "android_recovery_boots": 0,
+    "qemu": false,
+    "preflight": {
+      "passed": true,
+      "finished_at": "2026-11-21T13:01:53.386377+08:00",
+      "device_commands": 5,
+      "retry": false
+    },
+    "private_image": "F:\\IOS-MIX1\\reports\\local\\r37-attempts\\r37-frequency-14\\lithium-hakios-ios16-r37-ram-frequency-14.img",
+    "usb_capture_started_at": "2026-11-21T13:01:53.612559+08:00",
+    "boot_output": "Sending 'boot.img' (15952 KB)                      OKAY [  0.387s]\nBooting                                            OKAY [  0.834s]\nFinished. Total time: 1.227s\n",
+    "boot_returncode": 0,
+    "accepted_at": "2026-11-21T13:01:54.865874+08:00",
+    "outcome": "boot_accepted_observation_pending"
+  },
+  "status": "RAMfixed-rateentry passed;3XNUCPUs, perfcoreinteger16.5x andmemcpy18.6-18.9x; normaltimer/drain/sameFastbootendpointverified",
+  "usb_receiver": {
+    "started_at": "2026-11-21T13:01:53.576673+08:00",
+    "enumerated": true,
+    "frames": 150,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "status": "capture_failed",
+    "output": "F:\\IOS-MIX1\\reports\\local\\r37-attempts\\r37-frequency-14\\console.log",
+    "device_commands_sent": false,
+    "candidate_seen": true,
+    "identity_verified": true,
+    "descriptor_errors": 0,
+    "descriptor_error_samples": [],
+    "configuration_verified": true,
+    "console_bytes": 37372,
+    "failure_stage": "capturing",
+    "failure": "[Errno 32] Pipe error",
+    "finished_at": "2026-11-21T13:05:27.272059+08:00"
+  },
+  "usb_audit": {
+    "raw_bytes": 42172,
+    "console_bytes": 37372,
+    "frames": 150,
+    "raw_sha256": "5f68edba86037aefe0d2fce5d1f82ac23df8bd220f4d6aed4fc091d7880384d2",
+    "console_sha256": "985f1d4cc947e7a88d63cb02dbfd69f1f114687eea3e819fbcd793f5a69ee288",
+    "first_offset": 0,
+    "final_offset": 37372,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "incomplete_frame_bytes": 0,
+    "device_lost_max": 0,
+    "frames_reporting_device_loss": 0,
+    "independent_parser_agrees_with_frozen_receiver": true,
+    "frozen_redecode_equals_complete_console": true,
+    "transport_verified": true,
+    "kernel_banner_offset": 0,
+    "timer_offset": 36880,
+    "normal_return_offset": 37256,
+    "drain_success": true,
+    "drain_records": [
+      {
+        "offset": 37323,
+        "drained": 1,
+        "target": 37323
+      }
+    ],
+    "emitted_kernel_stream_through_timer_verified": true,
+    "all_firmware_daemon_and_original_printf_logs_complete": false,
+    "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
+  },
+  "return_verification": {
+    "started_at": "2026-11-21T13:05:56.013052+08:00",
+    "elapsed_seconds": 241.146135,
+    "devices_query_count": 1,
+    "product_query_count": 1,
+    "device_rows": [
+      [
+        "54223ce9",
+        "fastboot"
+      ]
+    ],
+    "same_serial_fastboot": true,
+    "observed_product": "MSM8996_A8",
+    "product_verified": true,
+    "passed": true,
+    "retry": false,
+    "attempt_id": "r37-frequency-14",
+    "phase": "frequency",
+    "capture_stop_requested": true,
+    "finished_at": "2026-11-21T13:05:56.148630+08:00"
+  },
+  "benchmarks": {
+    "baseline_attempt": "r37-frequency-09",
+    "same_frozen_kernel": true,
+    "current_attempt": "r37-frequency-14",
+    "all_counts": 5,
+    "errors": 0,
+    "rows": [
+      {
+        "logical": 0,
+        "physical_affinity": "0x1",
+        "integer_min_avg_max_us": [
+          2441,
+          2449,
+          2456
+        ],
+        "old_integer_avg_us": 2449,
+        "integer_speedup": 1.0,
+        "memcpy_min_avg_max_MBps": [
+          3462,
+          3528,
+          3645
+        ],
+        "old_memcpy_avg_MBps": 3391,
+        "memcpy_speedup": 1.0404010616337365
+      },
+      {
+        "logical": 1,
+        "physical_affinity": "0x100",
+        "integer_min_avg_max_us": [
+          9793,
+          9802,
+          9827
+        ],
+        "old_integer_avg_us": 161900,
+        "integer_speedup": 16.517037339318506,
+        "memcpy_min_avg_max_MBps": [
+          2067,
+          2080,
+          2104
+        ],
+        "old_memcpy_avg_MBps": 112,
+        "memcpy_speedup": 18.571428571428573
+      },
+      {
+        "logical": 2,
+        "physical_affinity": "0x101",
+        "integer_min_avg_max_us": [
+          9795,
+          9805,
+          9832
+        ],
+        "old_integer_avg_us": 161885,
+        "integer_speedup": 16.51045385007649,
+        "memcpy_min_avg_max_MBps": [
+          2069,
+          2099,
+          2126
+        ],
+        "old_memcpy_avg_MBps": 111,
+        "memcpy_speedup": 18.90990990990991
+      }
+    ],
+    "PMU_effective_MHz": null,
+    "target_perf_MHz": 307.2,
+    "scope": "RAMprelaunch microbench only, notSpringBoard/UI"
+  },
+  "clock_state": {
+    "perf_TWOpasses": true,
+    "valid_stable_per_pass": 19,
+    "primary_MODE": "0xc0118000",
+    "primary_L": 32,
+    "primary_USER_CTL": "0x109",
+    "primary_ALPHA": 0,
+    "MUX": 4,
+    "CLKCTL_kernel_afterCPUonline": "0x40440071",
+    "CLKCTL_UEFI_previousphoto": "0x40040071",
+    "interpretation": "Differentstages; bit22 changedlater withoutnewUEFImaskwidening",
+    "auto_select": 0,
+    "primary_LOCK": true,
+    "perf_nominal_programmed_target_MHz": 307.2,
+    "actual_MHz": null,
+    "PMU_valid_samples": [
+      0,
+      0,
+      0
+    ],
+    "CNTFRQ_all": 19200000
+  },
+  "power": {
+    "S11_valid_reads": 12,
+    "two_pass_stable": true,
+    "digital_setpoint_uV": 905000,
+    "analog_measured": false,
+    "new_regulator_orCLKCTLwrites": 0
+  },
+  "three_XNU_running": true,
+  "four_XNU_running_verified": false,
+  "normal_timer_observed": true,
+  "USB_drain_verified": true,
+  "same_device_Fastboot_return_verified": true,
+  "firmware_prepare_commit_internals_captured": false,
+  "physical_key_nonintervention_postconfirmed": null,
+  "no_manual_intervention_requested_thisrun": true,
+  "slow_core_performance_improvement_verified": true,
+  "exactMHz_measured": false,
+  "full_frequency_four_core_goal_completed": false,
+  "desktop_SpringBoard_validation": false,
+  "profile": "IsolatedRAM_PID1hold_noPhysicalUFS",
+  "device_commands_thisrun": 8,
+  "retries": 0,
+  "new_builds_thisrun": 0,
+  "boot_counts": {
+    "hakios": 77,
+    "ios16": 46
+  },
+  "evidence_anchors": "reports/local/r37-attempts/r37-frequency-14/main-evidence-anchors.json",
+  "independent_review": "evidence/cpu-r38-20261121/clkctl-runtime/review.json",
+  "main_review": "reports/local/r37-attempts/r37-frequency-14/main-runtime-review.json",
+  "next_step": "Keep fixedlow-ratepath; qualify higherstockfrequency/voltage points and integratefullUFSdesktop separately; fourthcorestillresident"
+}

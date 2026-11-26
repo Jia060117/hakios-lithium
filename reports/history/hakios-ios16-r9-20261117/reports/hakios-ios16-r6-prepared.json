@@ -1,0 +1,56 @@
+{
+  "prepared_at": "2026-11-17T00:53:39.414398+08:00",
+  "revision": 6,
+  "status": "prepared_live_fastboot_verified",
+  "image_sha256": "5faba1f7a5ea0ac0f7717b68fdffd3013bf14c4a2d757d5c1f260532a72d1118",
+  "kernel_sha256": "17117d4a0f9a247d617fbe20a43f3c3ea58d828dd2841f93b9f78d333caa87d6",
+  "image_bytes": 16232448,
+  "readiness_report": "reports/hakios-ios16-boot-ready.json",
+  "backup_branch": "archive/ios16-r5-20261117",
+  "previous_evidence_archive": "reports/history/hakios-ios16-phase4-r5-20261117",
+  "source_baseline": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+  "changes": [
+    "bounded early SpringBoard main-thread sampling and constructor/main-queue/runloop milestones",
+    "separate framebuffer setup and row drawing timing for the first eight swaps",
+    "bounded acknowledged USB log drain before normal timer return",
+    "upstream sb_delay=8 and package epoch boot arguments",
+    "verified post-overlay fingerprint passed to driver synchronization"
+  ],
+  "fixes_explained": {
+    "dependency_sync": "After verifying the old tree, carry the exact post-overlay fingerprint to the driver sync; unknown edits still reject.",
+    "host_harness": "The new drain snapshot was included in the extracted production code; test its initial, populated and locked states rather than suppressing the unused-function error."
+  },
+  "validation": {
+    "full_hakios_kernel": true,
+    "full_upstream_userspace": true,
+    "launchd_jobs": 413,
+    "real_d22ap_loader_and_mu": true,
+    "instruction_scans": 46,
+    "real_package_checks": 16,
+    "actual_code_asan_ubsan": true,
+    "dependency_handoff_regression": true,
+    "usb_host_checks": true
+  },
+  "observation": {
+    "initial_seconds": 1800,
+    "after_first_frame_seconds": 1800,
+    "maximum_kernel_seconds": 3600,
+    "host_capture_seconds": 3720,
+    "sample_interval_seconds": 30,
+    "sample_limit": 120
+  },
+  "limitations": {
+    "desktop_verified": false,
+    "physical_touch_verified": false,
+    "a530_verified": false,
+    "all_6gb_exposed": false,
+    "xnu_cpus": 1,
+    "kernel_memory_mib": 2880,
+    "usb_tail_drain_hardware_verified": false
+  },
+  "live_fastboot_identity_verified": true,
+  "boot_issued": false,
+  "userdata_reflash_issued": false,
+  "qemu_used": false,
+  "legacy_7195_used": false
+}

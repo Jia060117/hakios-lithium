@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "profile": "ios14-integrated-ui",
+  "baseline_commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+  "target_build": "18H17",
+  "system_root": "existing UFS HFSX, read on demand",
+  "job_selection": "pinned upstream default jobs present in original 18H17, plus upstream on-demand jobs",
+  "required_original_jobs": ["com.apple.notifyd", "com.apple.cfprefsd.xpc.daemon", "com.apple.backboardd", "com.apple.SpringBoard"],
+  "diagnostics": ["svc_test", "surf_test"],
+  "diagnostics_gate_ui_start": false,
+  "display": {
+    "panel_format": "BGR24",
+    "surface_format": "BGRA32",
+    "first_ui_renderer": "upstream CoreAnimation software renderer (gl=0 metal=0), exact18H17 display/surface ABI integrated; device runtime pending",
+    "framebuffer_conversion_compiled": "BGRA32 surfaces to stock BGR24 panel",
+    "ios14_swap_bytes": 640,
+    "ios14_surface_header_bytes": 96,
+    "ios14_surface_plane_bytes": 120,
+    "a530_acceleration_required_for_first_ui_attempt": false,
+    "a530_acceleration_verified": false
+  },
+  "touch": {
+    "controller": "FT5x46",
+    "transport": "MSM8996 I2C",
+    "upstream_event_queue": "/dev/hakios-touch",
+    "synthetic_events_count_as_physical_touch": false,
+    "physical_driver_ready": false,
+    "physical_touch_required_for_first_ui_attempt": false,
+    "stock_dts_contract": {
+      "source": "artifacts/stock/V9.5.2.0.NAHCNFA/lithium-stock.dts",
+      "controller_base": "0x075ba000",
+      "i2c_bus": 12,
+      "address": "0x38",
+      "input_clock_hz": 19200000,
+      "bus_frequency_hz": 400000,
+      "sda_scl_pins": [87, 88],
+      "reset_gpio": 89,
+      "generic_interrupt_gpio": 105,
+      "vendor_irq_gpio": 125,
+      "irq_selection_verified": false,
+      "coordinate_bounds": [1080, 2040]
+    }
+  },
+  "observation": {
+    "single_combined_boot": true,
+    "separate_boot_for_each_subtest": false,
+    "manual_stopwatch_required": false,
+    "intermediate_photos_required": false,
+    "retain_failure_and_final_summary": true,
+    "initial_window_seconds": 900,
+    "progress_extension_seconds": 300,
+    "maximum_extensions": 3,
+    "maximum_startup_seconds": 1800,
+    "retain_candidate_ui_after_layer_copy_and_main_queue_reply": true,
+    "candidate_progress_counts_as_desktop_pass": false,
+    "deadline_policy": "Extend only for new observed progress; retain candidate UI, otherwise retain a deadline or panic summary"
+  },
+  "acceptance": "Actual service replies, visible updating UI and physical touch are separate observations from the same integrated boot; process presence alone never marks desktop passed",
+  "bootable_package_ready": true,
+  "package_report": "reports/hakios-test-package.json",
+  "final_freeze_report": "reports/hakios-ios14-ui-ready.json",
+  "hardware_verified": false
+}

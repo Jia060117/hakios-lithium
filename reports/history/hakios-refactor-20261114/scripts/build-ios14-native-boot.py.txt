@@ -1,0 +1,334 @@
+#!/usr/bin/env python3
+"""Build a temporary MIX boot image that directly hands off to lithium XNU.
+
+Run in WSL. Reuses pinned sailfish ADT/payload/start/console/loader code, with
+only MIX-proven parameters. Static validation only; never runs QEMU or a phone.
+"""
+import argparse
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import shutil
+import struct
+import subprocess
+import sys
+import zlib
+import gzip
+
+ROOT = Path(__file__).resolve().parents[1]
+REF = ROOT / 'upstream/research/ios-sailfish'
+PIN = '6f27e41ff249f2680540ebe8ee5ab982c5e641c9'
+OUT = ROOT / 'out/native-xnu'
+PHYS, SIZE = 0x100000000, 0x20000000
+FB, STRIDE, WIDTH, HEIGHT = 0x83401000, 3240, 1080, 2040
+
+def sha(data): return hashlib.sha256(data).hexdigest()
+def load(name, path):
+    spec = importlib.util.spec_from_file_location(name, path)
+    obj = importlib.util.module_from_spec(spec); spec.loader.exec_module(obj); return obj
+def read(path): return json.loads(path.read_text())
+def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    mode=parser.add_mutually_exclusive_group()
+    mode.add_argument('--ufs-probe',action='store_true',help='Read-only UFS diagnostic before normal root matching')
+    mode.add_argument('--ufs-root',action='store_true',help='Mount the verified external iOS14 HFS image on userdata read-only')
+    parser.add_argument('--volatile-root',action='store_true',help='Use a validated 64MiB RAM write layer and preboot directory seed')
+    args=parser.parse_args()
+    assert not args.volatile_root or args.ufs_root
+    assert subprocess.check_output(['git','-C',REF,'rev-parse','HEAD'],text=True).strip() == PIN
+    OUT.mkdir(exist_ok=True, parents=True)
+    work = Path.home() / 'ios-mix1-build/native-boot'
+    work.mkdir(exist_ok=True, parents=True)
+    kernel = Path.home() / 'ios-mix1-build/xnu7195-lithium/obj/DEVELOPMENT_ARM64_LITHIUM/mach.development.lithium.unstripped'
+    inspect = load('native_inspect', ROOT / 'scripts/inspect-native-xnu.py').inspect(kernel)
+    build = read(ROOT / 'reports/ios14-xnu-lithium-kernel.json')
+    assert build['exit_code'] == 0 and any(k['sha256'] == inspect['sha256'] for k in build['kernel_binaries'])
+    instructions = read(ROOT / 'reports/ios14-xnu-lithium-instructions.json')
+    assert instructions['kernel_sha256'] == inspect['sha256'] and instructions['instruction_policy_passed']
+    alias = read(ROOT / 'reports/ios14-native-alias-validation.json')
+    assert alias['kernel_sha256'] == inspect['sha256'] and alias['instruction_sequences_passed']
+    if args.ufs_probe or args.ufs_root:
+        ufs_validation=read(ROOT/'reports/ios14-native-ufs-validation.json')
+        assert ufs_validation['passed'] and not ufs_validation['qemu_used']
+        assert ufs_validation['parser_sha256']==sha((ROOT/'ports/lithium/native/ufs_gpt.h').read_bytes())
+        assert any(p['path'].endswith('0018-lithium-native-ufs-read.patch') for p in build['patches'])
+        dma=read(ROOT/'reports/ios14-native-ufs-dma-validation.json')
+        assert dma['passed'] and dma['kernel_sha256']==inspect['sha256'] and not dma['qemu_used']
+    root_record=None
+    if args.ufs_root:
+        root_report=ROOT/'reports/ios14-hfs-root.json'
+        hfs_readonly_report = ROOT / 'reports/ios14-native-hfs-readonly-validation.json'
+        hfs_readonly = read(hfs_readonly_report)
+        assert hfs_readonly['all_passed'] and hfs_readonly['kernel_sha256'] == inspect['sha256']
+        assert not hfs_readonly['qemu_used']
+        for source, expected in hfs_readonly['input_sha256'].items():
+            assert sha(Path(source).read_bytes()) == expected, source
+        root_record=read(root_report)
+        assert root_record['contents_and_metadata_verified'] and root_record['fsck_passed']
+        assert not root_record['fixture'] and not root_record['device_operations']
+        assert root_record['version']['ProductVersion']=='14.8'
+        assert root_record['version']['ProductBuildVersion']=='18H17'
+        root_image=Path(root_record['image'])
+        assert root_image.is_file() and root_image.stat().st_size==root_record['image_bytes']
+        h=hashlib.sha256()
+        with root_image.open('rb') as f:
+            first=f.read(4096);h.update(first)
+            while chunk:=f.read(8*1048576):h.update(chunk)
+        assert h.hexdigest()==root_record['sha256']
+        assert first[1024:1028]==b'HX\x00\x05'
+        blocksize,blocks=struct.unpack_from('>II',first,1064)
+        assert blocksize*blocks==root_record['image_bytes']
+        manifest=Path(root_record['manifest'])
+        assert sha(manifest.read_bytes())==root_record['manifest_sha256']
+        root_inputs=read(ROOT/'reports/ios14-root-files.json')
+        assert root_inputs['version']['ProductVersion']=='14.8'
+        assert root_inputs['version']['ProductBuildVersion']=='18H17'
+        for name in ('0020-lithium-native-hfs.patch','0021-lithium-native-ufs-root.patch'):
+            assert any(p['path'].endswith(name) for p in build['patches'])
+    aes_report = ROOT / 'reports/ios14-native-aes-validation.json'
+    md5_report = ROOT / 'reports/ios14-native-md5-validation.json'
+    md5 = read(md5_report)
+    assert md5['all_passed'] and md5['kernel_sha256'] == inspect['sha256'] and not md5['qemu_used']
+    for source, expected in md5['input_sha256'].items():
+        assert sha(Path(source).read_bytes()) == expected, source
+    assert any(p['path'].endswith('0022-lithium-native-md5.patch') for p in build['patches'])
+    sha256_report = ROOT / 'reports/ios14-native-sha256-validation.json'
+    sha256_check = read(sha256_report)
+    assert sha256_check['all_passed'] and sha256_check['kernel_sha256'] == inspect['sha256']
+    assert not sha256_check['qemu_used']
+    for source, expected in sha256_check['input_sha256'].items():
+        assert sha(Path(source).read_bytes()) == expected, source
+    assert any(p['path'].endswith('0023-lithium-native-sha256.patch') for p in build['patches'])
+    amfi_report = ROOT / 'reports/ios14-native-amfi-validation.json'
+    amfi_check = read(amfi_report)
+    assert amfi_check['all_passed'] and amfi_check['kernel_sha256'] == inspect['sha256']
+    assert not amfi_check['qemu_used'] and amfi_check['query']['output_flags'] == 0
+    assert amfi_check['native_nonzero_policy_hooks'] == 2
+    assert amfi_check['registration_before_machine_lockdown']
+    assert amfi_check['readonly_policy_tables_preserved']
+    assert amfi_check['old_late_registration_rejected']
+    assert amfi_check['registration_load_flags'] == 1
+    for source, expected in amfi_check['input_sha256'].items():
+        assert sha(Path(source).read_bytes()) == expected, source
+    assert any(p['path'].endswith('0024-lithium-dyld-policy.patch') for p in build['patches'])
+    trust_report = ROOT / 'reports/ios14-firmware-trust-validation.json'
+    trust_check = read(trust_report)
+    assert trust_check['all_passed'] and trust_check['kernel_sha256'] == inspect['sha256']
+    assert trust_check['native_callback_verified'] and trust_check['existing_ubc_pager_exec_unchanged']
+    assert trust_check['actual_xnu_invalid_page_tested'] and not trust_check['qemu_used']
+    for source, expected in trust_check['input_sha256'].items():
+        assert sha(Path(source).read_bytes()) == expected, source
+    if args.volatile_root:
+        cow_report = ROOT / 'reports/ios14-native-cow-validation.json'
+        cow = read(cow_report)
+        assert cow['all_passed'] and cow['kernel_sha256'] == inspect['sha256']
+        assert cow['lower_scsi_readonly_unchanged'] and cow['exact_driver_strategy_tested']
+        for source, expected in cow['input_sha256'].items():
+            assert sha(Path(source).read_bytes()) == expected, source
+        seed_report = ROOT / 'reports/ios14-preboot-seed.json'
+        seed_record = read(seed_report)
+        seed_bytes = (ROOT / seed_record['seed_path']).read_bytes()
+        assert sha(seed_bytes) == cow['seed_sha256'] == seed_record['seed_sha256']
+        assert seed_record['base_image_sha256'] == root_record['sha256']
+    aes = read(aes_report)
+    assert aes['all_passed'] and not aes['qemu_used']
+    for source, expected in aes['input_sha256'].items():
+        assert sha(Path(source).read_bytes()) == expected, source
+    assert any(p['path'].endswith('0013-lithium-native-screen-checkpoints.patch') for p in build['patches'])
+    memory = read(ROOT / 'reports/live-memory.json')
+    assert any(int(r['start'],16) <= PHYS and PHYS+SIZE <= int(r['end_exclusive'],16) for r in memory['ram_ranges'])
+    for r in memory['reserved_memory']:
+        for interval in r.get('fixed_ranges',[]):
+            assert not (PHYS < int(interval['end_exclusive'],16) and int(interval['start'],16) < PHYS+SIZE)
+        for interval in r.get('allocation_windows',[]):
+            assert int(interval['end_exclusive'],16) <= PHYS
+    firmware = read(ROOT / 'reports/platform-inputs.json')
+    for elf in firmware['firmware_elfs']:
+        for p in elf['program_headers']:
+            if p['type'] == 1:
+                assert not (PHYS < int(p['physical_end_exclusive'],16) and int(p['physical_start'],16) < PHYS+SIZE)
+    stock = load('native_stock', ROOT / 'scripts/extract-stock.py')
+    nodes, reserves = stock.parse_fdt((ROOT/'artifacts/stock/V9.5.2.0.NAHCNFA/lithium-stock.dtb').read_bytes())
+    assert nodes['/soc/qcom,wdt@9830000']['reg'] == struct.pack('>2I',0x9830000,0x1000)
+    assert nodes['/soc/ufshc@624000']['reg'] == struct.pack('>2I',0x624000,0x2500)
+    gic_node = next(v for k,v in nodes.items() if v.get('compatible',b'').startswith(b'arm,gic-v3'))
+    gic_regs = struct.unpack('>4I',gic_node['reg'])
+    assert gic_regs[:4] == (0x9bc0000,0x10000,0x9c00000,0x100000)
+    sys.path.insert(0,str(REF/'tools'))
+    adt = load('native_mkadt',REF/'tools/mkadt.py')
+    # Parameterize the existing Pixel/MSM8996 path with MIX captures; no Pixel PA survives.
+    adt.PIXEL1.update(phys_base=PHYS,mem_size=SIZE,fb=FB,fb_size=0x85800000-FB,
+        fb_w=WIDTH,fb_h=HEIGHT,fb_bpp=24,cpus=[(0,0,1593600000)])
+    adt.D20AP_ADT = str(ROOT/'artifacts/research/ios14-local-d20ap/d20ap.adt')
+    tree = adt.build(pixel1=True)
+    def rewrite(n):
+        n.props = [(k,f,v.replace(b'xiaomi,sweet',b'xiaomi,lithium').replace(b'google,sailfish',b'xiaomi,lithium')) for k,f,v in n.props]
+        for c in n.children: rewrite(c)
+    rewrite(tree)
+    # Only early boot services are described. Peripheral userland nubs follow native proof.
+    tree.children = [c for c in tree.children if c.name not in ('sweet-ufs','buttons')]
+    if args.ufs_probe or args.ufs_root:
+        tree.children.append(adt.node('lithium-ufs',[
+            ('compatible',adt.cstr('qcom,ufshc')),('reg',adt.u64(0x624000,0x2500))]))
+    if args.volatile_root:
+        ufs_node = next(c for c in tree.children if c.name == 'lithium-ufs')
+        ufs_node.props.append(('ram-cow-seed',0,seed_bytes))
+        assert adt.BOOT_MANIFEST_HASH.hex().upper() == seed_record['manifest_hash']
+    chosen = next(c for c in tree.children if c.name=='chosen')
+    chosen.props = [(k,f,(b'lithium-native-shim\0' if k in ('firmware-version','system-firmware-version') else v))
+                    for k,f,v in chosen.props if k not in ('certificate-production-status','effective-production-status-ap',
+                    'certificate-security-mode','effective-security-mode-sep','mac-address-wifi0','mac-address-bluetooth0')]
+    fbnode = next(c for c in tree.children if c.name=='sweet-fbcon')
+    fbnode.props = [(k,f,v) for k,f,v in fbnode.props if k!='kickoff-reg']
+    armio = next(c for c in tree.children if c.name=='arm-io')
+    armio.children = [c for c in armio.children if c.name=='gic']
+    blob = adt.adt.serialize(tree)
+    adtfile = OUT/'lithium.adt'; adtfile.write_bytes(blob)
+    pack = load('native_mkpayload',REF/'tools/mkpayload.py')
+    bootargs='debug=0x14e serial=3 cpus=1 keepsyms=1 -v'
+    if args.ufs_probe: bootargs+=' lithium_ufs_probe=1'
+    if args.ufs_root: bootargs+=f' rd=ufsroot0 lithium_root_crc=0x{zlib.crc32(first):x} launchdsuffix=release'
+    if args.volatile_root:
+        # RAM-backed swap would consume more of the memory it is meant to free.
+        # XNU7195's existing mode 2 retains compression but disables disk swap.
+        bootargs+=' lithium_root_cow=1 vm_compressor=2'
+    payload, info = pack.build(str(kernel),str(adtfile),bootargs)
+    (OUT/'payload.bin').write_bytes(payload)
+    n = struct.unpack_from('<I',payload,12)[0]
+    virtual, entry, adtoff, adtsize, endva, physical, memsize = struct.unpack_from('<7Q',payload,16)
+    assert physical==PHYS and memsize==SIZE and adtoff+adtsize<=len(payload)
+    ranges=[]
+    for i in range(n):
+        va, vs, off, fs = struct.unpack_from('<4Q',payload,0x2a8+32*i)
+        pa = PHYS + va - virtual
+        assert PHYS<=pa and pa+vs<=PHYS+SIZE and off+((fs+7)&~7)<=len(payload)
+        assert not any(pa<b and a<pa+vs for a,b in ranges)
+        ranges.append((pa,pa+vs))
+    assert PHYS <= PHYS+entry-virtual < PHYS+SIZE
+    for name in ('start.S','shim.ld','console.c','font.h','fdt.c','fdt.h','loader.c','loader.h'):
+        shutil.copyfile(REF/'shim'/name,work/name)
+    shutil.copyfile(ROOT/'ports/lithium/native/shim.c',work/'shim.c')
+    header = (REF/'shim/console.h').read_text()
+    begin=header.index('#ifdef PIXEL1'); end=header.index('#define FB_STRIDE',begin)
+    header=header[:begin]+f'#define FB_BASE 0x{FB:x}UL\n#define FB_W {WIDTH}\n#define FB_H {HEIGHT}\n#define FB_BPP 3\n'+header[end:]
+    (work/'console.h').write_text(header)
+    loader=(work/'loader.c').read_text()
+    anchor='\tuint64_t pa_of_va_base = p->phys_base - p->virt_base;'
+    assert loader.count(anchor)==1
+    loader=loader.replace(anchor,'''    if (rd_end < rd_start || rd_end-rd_start < sizeof(*p) ||
+        p->nsegs == 0 || p->nsegs > 32 ||
+        sizeof(*p) + p->nsegs * sizeof(struct payload_seg) > rd_end-rd_start ||
+        p->phys_base != 0x100000000ULL || p->mem_size != 0x20000000ULL ||
+        p->adt_off > rd_end-rd_start || p->adt_size > rd_end-rd_start-p->adt_off)
+        return "native payload bounds failed";
+    for (uint32_t i=0; i<p->nsegs; i++) {
+        const struct payload_seg *s=&p->segs[i];
+        if (s->vmaddr<p->virt_base || s->vmaddr-p->virt_base>p->mem_size ||
+            s->vmsize>p->mem_size-(s->vmaddr-p->virt_base) ||
+            s->file_size>s->vmsize || (s->file_off&7) ||
+            s->file_off>rd_end-rd_start || s->file_size>rd_end-rd_start-s->file_off)
+            return "native segment bounds failed";
+    }
+''' + anchor)
+    for old,new in (
+        ('\tcon_hex2("INITRD", "lo=", rd_start, "hi=", rd_end);',
+         '\tcon_hex("INITRDLO", rd_start);\n\tcon_hex("INITRDHI", rd_end);'),
+        ('\tcon_hex2("PHYS", "base=", p->phys_base, "size=", p->mem_size);',
+         '\tcon_hex("PHYS", p->phys_base);\n\tcon_hex("MEMSIZE", p->mem_size);'),
+        ('\tcon_hex2("SEGS", "n=", p->nsegs, "end=", p->kernel_end + pa_of_va_base);',
+         '\tcon_hex("KEND", p->kernel_end + pa_of_va_base);'),
+        ('\tcon_hex2("BOOTARG", "pa=", ba_pa, "top=", top);',
+         '\tcon_hex("BOOTARG", ba_pa);\n\tcon_hex("TOP", top);')):
+        assert loader.count(old)==1
+        loader=loader.replace(old,new)
+    (work/'loader.c').write_text(loader)
+    flags=['--target=aarch64-none-elf','-O2','-ffreestanding','-fno-stack-protector','-fno-pic','-fno-builtin','-fno-jump-tables',
+        '-mgeneral-regs-only','-mstrict-align','-march=armv8-a',
+        f'-DNATIVE_PAYLOAD_BYTES={len(payload)}',f'-DNATIVE_BUILD_TAG="{inspect["sha256"][:16]}"']
+    objects=[]
+    for name in ('start.S','shim.c','console.c','fdt.c','loader.c'):
+        obj=work/(name+'.o')
+        subprocess.run(['clang',*flags,'-c',work/name,'-o',obj],check=True)
+        objects.append(obj)
+    elf=work/'shim.elf'
+    subprocess.run(['clang',*flags,'-fuse-ld=lld','-static','-nostdlib','-T',work/'shim.ld',
+        '-Wl,--build-id=none','-Wl,-N',*objects,'-o',elf],check=True)
+    rawfile=work/'Image'; subprocess.run(['llvm-objcopy','-O','binary',elf,rawfile],check=True)
+    symbols={line.split()[2]:int(line.split()[0],16) for line in subprocess.check_output(['llvm-nm',elf],text=True).splitlines() if len(line.split())==3}
+    reloc=subprocess.check_output(['llvm-readelf','-r',*objects[1:]],text=True)
+    assert 'R_AARCH64_ABS64' not in reloc, 'Position-dependent shim data reference'
+    prefix=rawfile.read_bytes(); assert len(prefix)<=symbols['_end']
+    image=prefix+bytes(symbols['_end']-len(prefix))+payload
+    image=bytearray(image); struct.pack_into('<Q',image,16,len(image)); image=bytes(image)
+    assert image[56:60]==b'ARMd' and 0x40080000+len(image)<0x42800000
+    (OUT/'Image').write_bytes(image)
+    original=(ROOT/'artifacts/stock/V9.5.2.0.NAHCNFA/boot/boot.img').read_bytes()
+    ks,ka,rs,ra,ss,sa,tags,page,reserved,osfield=struct.unpack_from('<10I',original,8)
+    align=lambda n:(n+page-1)//page*page
+    rd=original[page+align(ks):page+align(ks)+rs]
+    dec=zlib.decompressobj(31); dec.decompress(original[page:page+ks]); dec.flush(); dtbs=dec.unused_data
+    cursor=0; count=0
+    while cursor<len(dtbs):
+        size=struct.unpack_from('>I',dtbs,cursor+4)[0]
+        stock.parse_fdt(dtbs[cursor:cursor+size]); cursor+=size; count+=1
+    assert count==20 and cursor==len(dtbs) and ss==0
+    packed=gzip.compress(image,compresslevel=9,mtime=0)+dtbs
+    header=bytearray(original[:page]); struct.pack_into('<I',header,8,len(packed))
+    h=hashlib.sha1()
+    for part in (packed,rd,b''): h.update(part); h.update(struct.pack('<I',len(part)))
+    header[576:608]=h.digest()+bytes(12)
+    boot=bytes(header)+packed+bytes(align(len(packed))-len(packed))+rd+bytes(align(len(rd))-len(rd))
+    assert len(boot)<64*1024**2
+    target=OUT/'lithium-xnu-native.img'; target.write_bytes(boot)
+    shutil.copyfile(kernel,OUT/'mach.development.lithium.unstripped')
+    sourcehash={str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in (ROOT/'ports/lithium/native').iterdir() if p.is_file()}
+    record=dict(image_path=target.relative_to(ROOT).as_posix(),image_sha256=sha(boot),image_bytes=len(boot),
+        kernel_sha256=inspect['sha256'],reference_commit=PIN,source_hashes=sourcehash,
+        payload_sha256=sha(payload),payload_bytes=len(payload),adt_sha256=sha(blob),payload=info,
+        kernel_phys_entry=hex(PHYS+entry-virtual),physical_ram_base=hex(PHYS),physical_ram_bytes=SIZE,
+        kernel_segment_ranges=[(hex(a),hex(b)) for a,b in ranges],
+        shim_payload_end=hex(0x40080000+len(image)),source_below_live_fdt=True,
+        framebuffer=dict(address=hex(FB),width=WIDTH,height=HEIGHT,stride=STRIDE,format='BGR24'),
+        static_checks_passed=True,alias_instruction_validation=alias,
+        aes_validation_sha256=sha(aes_report.read_bytes()),
+        md5_validation_sha256=sha(md5_report.read_bytes()),
+        sha256_validation_sha256=sha(sha256_report.read_bytes()),
+        amfi_validation_sha256=sha(amfi_report.read_bytes()),
+        firmware_trust_validation_sha256=sha(trust_report.read_bytes()),
+        complete_bootloader_allocation_map=False,
+        allocation_basis='bounded upper DDR from live FDT; fixed reservations and all dynamic allocation windows/PT_LOADs are below 4G',
+        native_xnu_entry_verified=False,ios_userspace_started=False,qemu_used=False,
+        device_operations=False,root_image_included=False,temporary_boot_only=True)
+    record['ufs_read_only_probe']=args.ufs_probe
+    record['ufs_root_requested']=args.ufs_root
+    record['boot_arguments']=bootargs
+    record['volatile_root_requested'] = args.volatile_root
+    if args.volatile_root:
+        record['cow_validation_sha256'] = sha(cow_report.read_bytes())
+        record['preboot_seed_report_sha256'] = sha(seed_report.read_bytes())
+        record['preboot_seed_sha256'] = sha(seed_bytes)
+        record['volatile_write_limit_bytes'] = 64 << 20
+        record['physical_ufs_read_only'] = True
+    if args.ufs_probe or args.ufs_root:
+        record['ufs_validation_sha256']=sha((ROOT/'reports/ios14-native-ufs-validation.json').read_bytes())
+        record['ufs_dma_validation_sha256']=sha((ROOT/'reports/ios14-native-ufs-dma-validation.json').read_bytes())
+    if args.ufs_root:
+        record['hfs_readonly_validation_sha256'] = sha(hfs_readonly_report.read_bytes())
+        assert hfs_readonly['root_journal']['image_sha256'] == root_record['sha256']
+        assert hfs_readonly['root_journal']['first_block_crc32'] == hex(zlib.crc32(first))
+        record['external_root']=dict(image_sha256=root_record['sha256'],image_bytes=root_record['image_bytes'],
+            image_path=str(root_image),report_sha256=sha(root_report.read_bytes()),
+            input_report_sha256=sha((ROOT/'reports/ios14-root-files.json').read_bytes()),
+            version=root_inputs['version'],partition='userdata',bsd_device='ufsroot0',read_only=True,
+            first_block_crc32=hex(zlib.crc32(first)),volume_block_size=blocksize,volume_blocks=blocks,
+            flashed_to_device=False,device_readback_verified=False)
+        if args.volatile_root:
+            record['external_root']['read_only'] = False
+            record['external_root']['physical_read_only'] = True
+            record['external_root']['writes_persist_across_reboot'] = False
+    (OUT/'package.json').write_text(json.dumps(record,indent=2)+'\n')
+    (ROOT/'reports/ios14-native-boot-build.json').write_text(json.dumps(record,indent=2)+'\n')
+    print(json.dumps({k:record[k] for k in ('image_path','image_sha256','image_bytes','kernel_sha256','kernel_phys_entry','shim_payload_end','static_checks_passed')},indent=2))
+
+if __name__=='__main__': main()

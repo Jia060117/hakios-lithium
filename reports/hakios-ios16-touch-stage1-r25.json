@@ -1,0 +1,98 @@
+{
+  "schema": 1,
+  "date": "2026-11-19",
+  "revision": "R25-touch-stage1",
+  "display_baseline": "R20-display",
+  "r19_disposition": "tested incorrect resolution; archived; no retry",
+  "started_utc": "2026-11-19T10:32:32Z",
+  "host_deliverables_completed_utc": "2026-11-19T11:17:17.562834+00:00",
+  "cutoff_utc": "2026-11-19T13:32:32Z",
+  "host_deliverables_complete": true,
+  "frozen_image_path": "artifacts/hakios/lithium-ios16/phase4-r25-touch-stage1/lithium-hakios-ios16-r25-touch-stage1.img",
+  "image_sha256": "f0fd106f2146bc176f448c9a694bf4e7ca0247656c323bb68ffe128f123a336d",
+  "image_bytes": 16269312,
+  "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 touch_stage=1",
+  "kernel_sha256": "6488c7207463172008d11d661bf53ca86dc990d71dac8ee3c8f541ea148ab81f",
+  "ram_mu_sha256": "a2d3afc1815552973ff3562e1d94af2322c4c1fa81609fec52977a0a6150dde7",
+  "readonly_loader_sha256": "efaeb95e73680922da42d8719b3160be1beb6cc7fcbdeb2a42e91a08072013f5",
+  "source_review_checks": 83,
+  "normal_instruction_scans": 46,
+  "diagnostic_mu_instruction_scans": 5,
+  "host_tests": {
+    "passed": true,
+    "base_suites": 15,
+    "followup_suites": 16,
+    "total_suites": 31,
+    "stage1_scenarios": 351,
+    "sanitizers": [
+      "ASan",
+      "UBSan"
+    ],
+    "source_hash_count": 70
+  },
+  "display_actual_function_cases": 10,
+  "old_aggregate_regression": {
+    "passed": false,
+    "reason": "R9 historical snapshot rejects prior exact 0021 R20 touch geometry change to userland/src/inject.c",
+    "cause_proven_by_exact_temporary_reverse": true,
+    "production_or_tests_modified": false,
+    "later_tests_not_executed": true
+  },
+  "baseline_hashes": {
+    "r15": "ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55",
+    "r20": "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82",
+    "before_after_unchanged": true
+  },
+  "no_phone_query_boot_or_partition_ops": true,
+  "qemu": false,
+  "gpu_code_changed": false,
+  "stage1_default_off": true,
+  "stage1_experimental": true,
+  "mmio_snapshot_provider_integrated": true,
+  "physical_touch_backend": false,
+  "touch_hardware_verified": false,
+  "live_probe_approved": false,
+  "await_user_phrase": "可以上机",
+  "per_device_operation_confirmation_required": true,
+  "storage_isolation": {
+    "ufs_bootarg": 0,
+    "physical_ufs_module_omitted": true,
+    "persistent_loader_log_disabled": true,
+    "no_flash_root_or_data_mount_requested": true,
+    "ram_entries_identical_to_r20": true,
+    "vendor_firmware_before_mu_unverified": true
+  },
+  "mmio_limits": {
+    "software_budget_us": 300000,
+    "returning_access_cap": 2048,
+    "poll_limit": 500,
+    "poll_delay_us": 1,
+    "unreturning_bus_faults_bounded": false,
+    "generic_abort_recovery": false,
+    "rollback_implemented": false
+  },
+  "unverified": [
+    "dynamic secure ownership and quiescent release",
+    "GCC/TLMM/QUP MMIO permission and fault/hang behavior",
+    "power/NoC/rails/electrical state and actual clock rate",
+    "GPIO105/125 physical routing and IRQ trigger",
+    "runtime controller/chip/firmware ID",
+    "I2C transfers and controller revision",
+    "real IRQ/HID/backboardd delivery",
+    "diagnostic RAM init and 180-second return on hardware"
+  ],
+  "report": "reports/hakios-ios16-touch-stage1-r25.md",
+  "checkpoint": "reports/hakios-ios16-touch-stage1-r25.patch",
+  "evidence_sha256": {
+    "evidence/touch-stage1-20261119/session/before.json": "5998a860f7c0de9b3cc66636938f7eda0a73a0fd82d91314c27f0216ac22e3d5",
+    "evidence/touch-stage1-20261119/session/actual-linked-integration.json": "6d003a7f9bb68768a07dd645fc2c4a76f8a6dacf4da0ef2671f5f0726c3b7498",
+    "evidence/touch-stage1-20261119/session/final-offline-preflight.json": "1c4817905af061d381537ee4e5f5e3429e4b75a0a213980c6b08fd7b72686920",
+    "evidence/touch-stage1-20261119/session/ml-probe-read-source.json": "dc5deee2cb5476c8878ee264bf73d00545cb4f143283439033dad409f265c2ce",
+    "evidence/touch-stage1-20261119/session/old-r9-gate-diagnosis.json": "78adc135756d4c53508bdfc0ef45fdc8b234ad432101e74a26c92d6ebab4d933",
+    "evidence/touch-stage1-20261119/session/all-peripheral-tests/passed.json": "23acc8fade927c66ebff9c3603a7c7bb3d700ed5924a1e2ce624afb1f07d6b0f",
+    "evidence/touch-stage1-20261119/session/all-peripheral-tests/previous/passed.json": "15b0b15d332caf3dd7d77a63e9c250e917fd03d8f55a2c31dfb1bfcb4dcfd1ff",
+    "evidence/touch-stage1-20261119/session/package-freeze.log": "7b8ff2f83ce8038169c5ea78ae88464281d5fd504b49bfd35469d1be1dbdc445",
+    "reports/hakios-ios16-touch-stage1-r25-build-checks.json": "ef992ec6d39d658290569e0c676eec59edc339a43ae2628e1f2d2dc49bb99a8c",
+    "artifacts/hakios/lithium-ios16/phase4-r25-touch-stage1/contract.json": "19fb40018c61b86472126dde0e48b4869f6166a535b30cc45298af2e95d9a3e1"
+  }
+}

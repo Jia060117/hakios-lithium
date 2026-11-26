@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+"""Install the verified iOS HFS root only to the authorized MIX userdata.
+
+Run on Windows. Default is host validation only; --flash performs the already
+authorized destructive userdata replacement and leaves the phone in Fastboot.
+No erase/format/GPT/boot/recovery/firmware command is issued by this script.
+"""
+import argparse
+from datetime import datetime
+import hashlib
+import json
+from pathlib import Path
+import re
+import subprocess
+import time
+
+ROOT=Path(__file__).resolve().parents[1]
+ADB=Path('C:/platform-tools/adb.exe');FASTBOOT=Path('C:/platform-tools/fastboot.exe')
+SERIAL='54223ce9';PART_BYTES=250710192128
+
+def write(path,value):path.write_text(json.dumps(value,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+def digest(path):
+    h=hashlib.sha256()
+    with path.open('rb') as f:
+        while b:=f.read(8*1048576):h.update(b)
+    return h.hexdigest()
+def windows_path(path):
+    m=re.fullmatch(r'/mnt/([a-z])/(.+)',path)
+    assert m, 'transfer artifact must reside on a Windows drive'
+    return Path(m[1].upper()+':/'+m[2])
+
+def main():
+    p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--flash',action='store_true');p.add_argument('--serial',required=True)
+    a=p.parse_args();assert a.serial==SERIAL
+    transfer=json.loads((ROOT/'reports/ios14-root-transfer.json').read_text())
+    validation=json.loads((ROOT/'reports/ios14-root-transfer-validation.json').read_text())
+    assert validation['passed'] and validation['validator_sha256']==digest(ROOT/'scripts/prepare-ios14-root-transfer.py')
+    root=json.loads((ROOT/'reports/ios14-hfs-root.json').read_text())
+    package=json.loads((ROOT/'out/native-xnu/package.json').read_text())
+    assert not transfer['fixture'] and transfer['archive_copies_verified']
+    assert transfer['validation']['all_bytes_verified'] and transfer['validation']['skipped_blocks']==0
+    assert root['fsck_passed'] and root['contents_and_metadata_verified'] and not root['fixture']
+    assert transfer['root_report_sha256']==digest(ROOT/'reports/ios14-hfs-root.json')
+    assert package['ufs_root_requested'] and package['static_checks_passed']
+    assert package['external_root']['report_sha256']==transfer['root_report_sha256']
+    assert package['external_root']['image_sha256']==root['sha256']==transfer['root_image_sha256']
+    assert root['image_bytes']==transfer['root_image_bytes'] and root['image_bytes']<PART_BYTES
+    assert digest(ROOT/package['image_path'])==package['image_sha256']
+    # Validate the temporary kernel/header/patch package before any phone write.
+    subprocess.run(['python',ROOT/'scripts/boot-ios14-native.py'],check=True)
+    image=windows_path(transfer['sparse_path'])
+    print('Checking the completed transfer file SHA256',flush=True)
+    assert image.stat().st_size==transfer['sparse_bytes'] and digest(image)==transfer['sparse_sha256']
+    print('Root, transfer, and temporary boot package agree; target is MIX userdata only.',flush=True)
+    if not a.flash:return
+    local=ROOT/'reports/local'/(datetime.now().strftime('%Y%m%d-%H%M%S-%f')+'-root-install')
+    local.mkdir(parents=True);commands=[]
+    def cmd(argv,timeout=20):
+        r=subprocess.run(list(map(str,argv)),capture_output=True,timeout=timeout)
+        commands.append(dict(command=list(map(str,argv)),returncode=r.returncode,
+            stdout=r.stdout.decode(errors='replace'),stderr=r.stderr.decode(errors='replace')))
+        write(local/'commands.json',commands);assert r.returncode==0
+        return (r.stdout+r.stderr).decode(errors='replace')
+    fbs=cmd([FASTBOOT,'devices'])
+    if not any(line.split()==[SERIAL,'fastboot'] for line in fbs.splitlines()):
+        assert cmd([ADB,'-s',SERIAL,'shell','getprop','ro.product.device']).strip()=='lithium'
+        assert cmd([ADB,'-s',SERIAL,'shell','getprop','sys.boot_completed']).strip()=='1'
+        cmd([ADB,'-s',SERIAL,'reboot','bootloader'])
+        end=time.monotonic()+40
+        while time.monotonic()<end:
+            if any(line.split()==[SERIAL,'fastboot'] for line in cmd([FASTBOOT,'devices']).splitlines()):break
+            time.sleep(1)
+        else:raise RuntimeError('MIX did not enter Fastboot')
+    def getvar(name):
+        text=cmd([FASTBOOT,'-s',SERIAL,'getvar',name])
+        match=re.search(r'(?:\(bootloader\)\s*)?'+re.escape(name)+r':\s*(\S+)',text)
+        assert match, (name,text)
+        return match[1]
+    assert getvar('product')=='MSM8996_A8'
+    assert re.search(r'Device unlocked:\s*true',cmd([FASTBOOT,'-s',SERIAL,'oem','device-info']),re.I)
+    size=int(getvar('partition-size:userdata'),0);maximum=int(getvar('max-download-size'),0)
+    assert size==PART_BYTES and maximum>=256*1048576
+    report=dict(started_at=datetime.now().astimezone().isoformat(),serial=SERIAL,product='MSM8996_A8',
+        partition='userdata',partition_bytes=size,max_download_bytes=maximum,
+        root_image_sha256=root['sha256'],root_image_bytes=root['image_bytes'],
+        sparse_sha256=transfer['sparse_sha256'],local_log_path=local.relative_to(ROOT).as_posix(),
+        flash_completed=False,partition_writes_attempted=True,data_replaced=None,
+        device_readback_verified=False,root_filesystem_mounted=False,qemu_used=False,
+        authorization='OPERATIONS.md: necessary userdata clearing and native boot already authorized')
+    def persist():
+        write(local/'result.json',report);write(ROOT/'reports/ios14-root-install.json',report)
+    persist()
+    argv=[str(FASTBOOT),'-s',SERIAL,'-S','256M','flash','userdata',str(image)]
+    write(local/'flash-command.json',argv)
+    print('Replacing MIX userdata with the verified HFS root; leaving Fastboot active.',flush=True)
+    # Stream the log while running so the calling agent can monitor every chunk.
+    with (local/'flash.log').open('w',encoding='utf-8') as log:
+        process=subprocess.Popen(argv,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,errors='replace')
+        for line in process.stdout:
+            log.write(line);log.flush();print(line,end='',flush=True)
+        result=process.wait()
+    report.update(flash_returncode=result,flash_completed=result==0,data_replaced=True if result==0 else None,
+                  completed_at=datetime.now().astimezone().isoformat())
+    persist();assert result==0, 'flash failed; retain Fastboot for diagnosis'
+    print('Flash completed; readback and mounting require the native boot experiment.',flush=True)
+
+if __name__=='__main__':main()

@@ -1,0 +1,181 @@
+#!/usr/bin/env python3
+"""Test isolated touch follow-ups against the R20 display baseline, without hardware."""
+
+import argparse
+from contextlib import nullcontext
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
+import time
+
+ROOT = Path(__file__).resolve().parents[1]
+SOURCE = ROOT / 'maintenance/hakios-lithium/peripherals-next'
+R20_IMAGE = ROOT / 'artifacts/hakios/lithium-ios16/phase4-r20-display/lithium-hakios-ios16-r20-display.img'
+R20_SHA256 = '3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82'
+R20_REPORT = ROOT / 'reports/hakios-ios16-device-r20-display.json'
+R20_PACKAGE_CHECKS = ROOT / 'reports/hakios-ios16-display-r20-checks.json'
+R15_IMAGE = ROOT / 'artifacts/hakios/lithium-ios16/baseline-desktop-r15.img'
+R15_SHA256 = 'ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55'
+SUITES = {
+    'qup-combined': ('qup-combined.h', 'qup-combined-test.c'),
+    'touch-delivery': ('touch-delivery.h', 'touch-delivery-test.c'),
+    'irq-affinity-audit': ('irq-affinity-audit.h', 'irq-affinity-audit-test.c'),
+    'a5xx-fence-packet': ('a5xx-fence-packet.h', 'a5xx-fence-packet-test.c'),
+    'ft5x46-frame': ('ft5x46-frame.h', 'ft5x46-frame-test.c'),
+    'touch-stage': ('touch-stage.h', 'touch-stage-test.c'),
+    'touch-static': ('touch-static.h', 'touch-static-test.c'),
+    'touch-stage-trace': ('touch-stage-trace.h', 'touch-stage-trace-test.c'),
+    'qup-clean-entry-safety': ('qup-combined.h', 'tests/qup-clean-entry-safety-test.c'),
+    'touch-submit-deadline': ('touch-stage.h', 'tests/touch-submit-deadline-test.c'),
+    'touch-runtime': ('touch-runtime.h', 'touch-runtime-test.c'),
+    'touch-board-admission': ('touch-board-admission.h', 'touch-board-admission-test.c'),
+    'touch-mmio-policy': ('../../../ports/hakios-lithium/peripherals/touch-mmio-policy.h', 'touch-mmio-policy-test.c'),
+    'touch-mmio-access': ('../../../ports/hakios-lithium/peripherals/touch-mmio-access.inc', 'touch-mmio-access-test.c'),
+}
+PYTHON_SUITES = {
+    'touch-hakios-sink': ('touch-hakios-sink.h', 'test-touch-batch-patch.py'),
+    'touch-mmio-object': ('../../../ports/hakios-lithium/peripherals/touch-mmio-access.inc', 'test-touch-mmio-object.py'),
+    'touch-diagnostic-init': ('../../../ports/hakios-lithium/patches/0022-lithium-touch-diagnostic-init.patch',
+                              '../../../scripts/test-hakios-touch-diagnostic-init.py'),
+}
+
+
+def digest(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def frozen_check():
+    if digest(R20_IMAGE) != R20_SHA256:
+        raise RuntimeError('Frozen R20-display baseline image changed')
+    if digest(R15_IMAGE) != R15_SHA256:
+        raise RuntimeError('Frozen R15 desktop baseline changed')
+    report = json.loads(R20_REPORT.read_text(encoding='utf-8'))
+    checks = json.loads(R20_PACKAGE_CHECKS.read_text(encoding='utf-8'))
+    if (report.get('revision') != 'R20-display' or
+            report.get('image_sha256') != R20_SHA256 or
+            report.get('display_acceptance', {}).get('passed') is not True):
+        raise RuntimeError('R20-display hardware acceptance record does not match the frozen image')
+    if (checks.get('candidate') != 'R20-display' or
+            checks.get('image_sha256') != R20_SHA256 or checks.get('passed') is not True):
+        raise RuntimeError('R20-display package-check record does not match the frozen image')
+    if report.get('physical_touch_verified', False) is not False:
+        raise RuntimeError('R20 report must keep physical touch unverified')
+    return {'r20_image_sha256': R20_SHA256, 'r20_display_acceptance': True,
+            'r15_image_sha256': R15_SHA256, 'frozen_baselines_unchanged': True}
+
+
+def sources(selected):
+    catalog = {**SUITES, **PYTHON_SUITES}
+    files = [SOURCE / relative for suite in selected for relative in catalog[suite]]
+    # Bind the sink test to the actual queue implementation and upstream
+    # helpers it extracts, as well as every transitively included header.
+    files += sorted(SOURCE.glob('*.h'))
+    files += [ROOT / 'ports/hakios-lithium/patches/0020-lithium-touch-batch-queue.patch',
+              ROOT / 'upstream/hakios-xnu-kernel/drivers/input/hakios.input.c']
+    previous = ROOT / 'reports/overnight-20261118/accepted-host-tests/passed.json'
+    names = json.loads(previous.read_text(encoding='utf-8'))['source_sha256']
+    files += [ROOT / 'scripts/test-hakios-lithium-peripherals.py', previous]
+    files += [ROOT / name for name in names]
+    files += [ROOT / name for name in (
+        'ports/hakios-lithium/peripherals/boot-options.h',
+        'ports/hakios-lithium/peripherals/kernel.inc',
+        'ports/hakios-lithium/peripherals/contract.json',
+        'maintenance/hakios-lithium/peripherals/kernel-admission-test.c',
+    )]
+    files += [Path(__file__).resolve()]
+    if 'touch-diagnostic-init' in selected:
+        files += [SOURCE / 'tests/touch-diagnostic-init-test.c',
+                  ROOT / 'scripts/hakios_r13.py',
+                  ROOT / 'upstream/hakios-xnu-kernel/userland/src/init.c']
+    return {p.resolve().relative_to(ROOT).as_posix(): digest(p) for p in files}
+
+
+def run(argv, timeout, env):
+    started = time.monotonic()
+    result = subprocess.run(argv, capture_output=True, text=True, timeout=timeout, env=env)
+    print(result.stdout, end='', flush=True)
+    if result.stderr:
+        print(result.stderr, end='', file=sys.stderr, flush=True)
+    return {'argv': argv, 'exit_code': result.returncode, 'stdout': result.stdout,
+            'stderr': result.stderr, 'elapsed_seconds': time.monotonic() - started}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--compiler', default='clang')
+    parser.add_argument('--suite', choices=tuple(SUITES) + tuple(PYTHON_SUITES), action='append')
+    parser.add_argument('--skip-existing', action='store_true',
+                        help='Run only the selected new suites; not a full regression')
+    parser.add_argument('--build-dir', type=Path, help='New directory for retained local evidence')
+    args = parser.parse_args()
+    selected = args.suite or list(SUITES) + list(PYTHON_SUITES)
+    before = frozen_check()
+    for suite in selected:
+        header, test_source = {**SUITES, **PYTHON_SUITES}[suite]
+        if not (SOURCE / test_source).is_file():
+            parser.error('Missing test source: ' + suite)
+    original = sources(selected)
+    if args.build_dir:
+        output = args.build_dir.resolve()
+        output.mkdir(parents=True, exist_ok=False)
+        destination = nullcontext(output)
+    else:
+        destination = tempfile.TemporaryDirectory(prefix='lithium-touch-next-')
+    env = {**os.environ, 'ASAN_OPTIONS': 'halt_on_error=1',
+           'UBSAN_OPTIONS': 'halt_on_error=1:print_stacktrace=1',
+           'PYTHONDONTWRITEBYTECODE': '1'}
+    with destination as directory:
+        output = Path(directory)
+        checks = []
+        if not args.skip_existing:
+            print('RUN existing 14 peripheral suites', flush=True)
+            checks.append(run([sys.executable, '-B', str(ROOT / 'scripts/test-hakios-lithium-peripherals.py'),
+                               '--compiler', args.compiler, '--build-dir', str(output / 'previous')],
+                              300, env))
+        for suite in selected:
+            if suite in PYTHON_SUITES:
+                _, test_source = PYTHON_SUITES[suite]
+                print('RUN ' + suite + ' exact-source integration', flush=True)
+                command = [sys.executable, '-B', str(SOURCE / test_source),
+                           '--compiler', args.compiler]
+                if suite == 'touch-diagnostic-init':
+                    command += ['--build-dir', str(output / 'touch-diagnostic-init')]
+                test = run(command, 90, env)
+                test.update(suite=suite, source_integration=True)
+                checks.append(test)
+                continue
+            header, test_source = SUITES[suite]
+            binary = output / (suite + '-test')
+            print('BUILD ' + suite, flush=True)
+            build = run([args.compiler, '-std=c11', '-pedantic', '-Wall', '-Wextra', '-Werror',
+                         '-g', '-O1', '-fno-omit-frame-pointer', '-fsanitize=address,undefined',
+                         '-I', str(SOURCE), str(SOURCE / test_source), '-o', str(binary)], 60, env)
+            checks.append(build)
+            if build['exit_code'] == 0:
+                test = run([str(binary)], 30, env)
+                test.update(suite=suite, binary_sha256=digest(binary))
+                checks.append(test)
+        after = frozen_check()
+        if original != sources(selected):
+            raise RuntimeError('Sources changed during tests; no pass evidence published')
+        passed = all(c['exit_code'] == 0 for c in checks) and before == after
+        evidence = {'scope': 'host-only QUP/touch modules, exact-source HakiOS queue integration, IRQ affinity policy and A5xx packet models; no hardware',
+                    'passed': passed, 'full_existing_regression': not args.skip_existing,
+                    'new_suites': selected, 'checks': checks, 'source_sha256': original,
+                    'frozen_before': before, 'frozen_after': after,
+                    'production_kernel_integration': False, 'device_operations': False,
+                    'physical_touch_verified': False, 'gpu_hardware_verified': False}
+        if args.build_dir:
+            (output / ('passed.json' if passed else 'failed.json')).write_text(
+                json.dumps(evidence, indent=2) + chr(10), encoding='utf-8')
+        print(('PASS' if passed else 'FAIL') + ': isolated next-phase host tests; R20/R15 baselines preserved')
+        if not passed:
+            raise SystemExit(1)
+
+
+if __name__ == '__main__':
+    main()

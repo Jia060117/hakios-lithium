@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+"""Backport the pinned sailfish AES CBC/ECB provider to XNU7195 LITHIUM."""
+import difflib
+import importlib.util
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+PATCH = ROOT / 'ports/lithium/patches/xnu-7195/0017-lithium-native-aes-cbc.patch'
+REFERENCE = ROOT / 'upstream/research/ios-sailfish/xnu/patches/0020-sweet-portable-aes-cbc.patch'
+
+
+def main():
+    spec = importlib.util.spec_from_file_location('native_alias', ROOT / 'scripts/prepare-ios14-native-alias-probe.py')
+    helper = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(helper)
+    edits = {}
+    def read(path):
+        return helper.baseline(path, PATCH)
+    path = 'libkern/crypto/corecrypto_aes.c'
+    old = read(path)
+    new = old
+    for direction in ('encrypt', 'decrypt'):
+        before = f'const struct ccmode_cbc *cbc = g_crypto_funcs->ccaes_cbc_{direction};'
+        assert new.count(before) == 2
+        new = new.replace(before, f'const struct ccmode_cbc *cbc = AES_CBC_{direction.upper()}_MODE;')
+    anchor = '#include <kern/debug.h>\n'
+    assert new.count(anchor) == 1
+    new = new.replace(anchor, anchor + '''
+#if defined(ARM64_BOARD_CONFIG_LITHIUM)
+/* Fixed portable CBC/ECB provider; no corecrypto kext is loaded on LITHIUM. */
+extern const struct ccmode_cbc lithium_aes_cbc_encrypt;
+extern const struct ccmode_cbc lithium_aes_cbc_decrypt;
+#define AES_CBC_ENCRYPT_MODE (&lithium_aes_cbc_encrypt)
+#define AES_CBC_DECRYPT_MODE (&lithium_aes_cbc_decrypt)
+#else
+#define AES_CBC_ENCRYPT_MODE (g_crypto_funcs->ccaes_cbc_encrypt)
+#define AES_CBC_DECRYPT_MODE (g_crypto_funcs->ccaes_cbc_decrypt)
+#endif
+''')
+    edits[path] = (old, new)
+    names = ('aes', 'aes_ct', 'aes_ct_enc', 'aes_ct_dec', 'aes_ct_cbcenc', 'aes_ct_cbcdec')
+    reference = REFERENCE.read_text()
+    for name in names:
+        path = f'libkern/crypto/lithium_{name}.c'
+        section = reference.split(f'+++ b/libkern/crypto/sweet_{name}.c\n', 1)[1].split('diff --git', 1)[0]
+        source = ''.join(line[1:] + '\n' for line in section.splitlines()
+                         if line.startswith('+') and not line.startswith('+++'))
+        source = source.replace('sweet', 'lithium').replace('SWEET', 'LITHIUM')
+        source = source.replace('0020-stage-bearssl.sh', 'build-ios14-xnu.py at BearSSL 7bea48e5e850ab4cafbe68d3765cdaba13a86d6f')
+        edits[path] = ('', source)
+    path = 'libkern/conf/files'
+    old = read(path)
+    anchor = next(line for line in old.splitlines(True) if line.startswith('libkern/crypto/corecrypto_aes.c'))
+    edits[path] = (old, old.replace(anchor, anchor + ''.join(
+        f'libkern/crypto/lithium_{name}.c\toptional crypto\n' for name in names)))
+    path = 'libkern/conf/Makefile.template'
+    old = read(path)
+    anchor = 'SFLAGS+= -include meta_features.h\n'
+    assert old.count(anchor) == 1
+    flags = '\n# Portable bitsliced AES: keep SIMD out of the kernel path.\nifeq ($(CURRENT_MACHINE_CONFIG),LITHIUM)\n'
+    for name in names:
+        flags += f'lithium_{name}.o_INCFLAGS = -I$(SOURCE_DIR)/libkern/crypto/lithium_bearssl/inc -I$(SOURCE_DIR)/libkern/crypto/lithium_bearssl/src $(LITHIUM_EMPTY)\n'
+        flags += f'lithium_{name}.o_CFLAGS_ADD += -mgeneral-regs-only\n'
+    flags += 'corecrypto_aes.o_CFLAGS_ADD += -mgeneral-regs-only\nendif\n'
+    edits[path] = (old, old.replace(anchor, anchor + flags))
+    patch = 'Subject: lithium: real portable AES CBC/ECB for TCP startup\n\n'
+    patch += 'Adapted from ios-sailfish 6f27e41ff249f2680540ebe8ee5ab982c5e641c9 patch 0020.\n'
+    patch += 'BearSSL 7bea48e5e850ab4cafbe68d3765cdaba13a86d6f; retain its MIT license.\n'
+    patch += 'AES GCM/XTS and other corecrypto APIs are not implemented by this patch.\n\n'
+    for path, (old, new) in edits.items():
+        patch += f'diff --git a/{path} b/{path}\n'
+        if not old:
+            patch += 'new file mode 100644\n'
+        patch += ''.join(difflib.unified_diff(old.splitlines(True), new.splitlines(True),
+                                            fromfile='a/' + path if old else '/dev/null', tofile='b/' + path))
+    PATCH.write_text(patch)
+    print(PATCH)
+
+
+if __name__ == '__main__':
+    main()

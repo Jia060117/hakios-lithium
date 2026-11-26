@@ -1,0 +1,332 @@
+{
+  "schema": 1,
+  "revision": "R38-ufs-perf-low01",
+  "authorization": "User: 先上机测试一下吧，触摸记得连接上，我看看效果如何; disclosed307.2model/UFSnormalDatawrites/noautomaticreturn",
+  "scope": "One temporary frozen UFS desktop boot, existing R20 root/Data and display configuration, proven low-rate CPU PLL init, GPIO89 reset and QUP6 SMP touch into HakiOS/backboardd, USB capture; normal filesystem writes allowed",
+  "image_sha256": "bb4e8e23e0cc7d9af8198e6974c92cd51cbfdbc2c070b181c59027a608acb5b6",
+  "payload_boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1 touch_smp=1 cpu_perf_fixed=1 cpu_perf_ufs=1",
+  "temporary_boot_issued": true,
+  "partition_commands": 0,
+  "firmware_downloads": 0,
+  "adb_commands": 0,
+  "qemu": false,
+  "automatic_retry": false,
+  "normal_boot_may_write_userdata": true,
+  "automatic_fastboot_enabled": false,
+  "kernel_timer_seconds": 10800,
+  "usb_wait_seconds": 180,
+  "usb_capture_seconds": 12600,
+  "started_at": "2026-11-21T13:38:50.109315+08:00",
+  "preflight_passed": true,
+  "preflight_finished_at": "2026-11-21T13:38:50.299398+08:00",
+  "outcome": "user_confirmed_smoother_desktop_capture_ended_physical_state_unknown",
+  "command_accepted": true,
+  "accepted_at": "2026-11-21T13:38:51.776318+08:00",
+  "boot_totals": {
+    "hakios": 78,
+    "ios16": 47
+  },
+  "runtime_prefix_review": "F:\\IOS-MIX1\\reports\\local\\20261121-r38-ufs-perf-low01-approved\\runtime-prefix-review.json",
+  "kernel_running_processors": 3,
+  "touch_id": "0xe7",
+  "touch_ready": true,
+  "physical_desktop_observed": true,
+  "usb_receiver_pid": 38396,
+  "runtime_observation": {
+    "captured_at": "2026-11-21T13:43:26.740765+08:00",
+    "saved_prefix_bytes": 926216,
+    "saved_prefix_sha256": "c1b7cff018fb5d7d2c34dcb8c4890b5029898724a662e0a573b48ccbfa421155",
+    "xnu_running_processors": 3,
+    "touch_id": "0xe7",
+    "touch_id_error": 0,
+    "touch_ready": true,
+    "touch_smp_init_bound_phys1": true,
+    "touch_smp_poll_bound_phys1": true,
+    "touch_reports_lower_bound": 10200,
+    "touch_events_posted_lower_bound": 253,
+    "printed_event_types": [
+      1,
+      2,
+      3
+    ],
+    "touch_read_error_lines": [],
+    "backboardd_touch_screen_service_created": true,
+    "SpringBoard_main_queue_enter_ms": 43920,
+    "SpringBoard_last_sample": {
+      "sample": 5,
+      "elapsed_ms": 224830,
+      "stage": "main_queue_callback_done",
+      "loop_mask": 15,
+      "commits": 4291
+    },
+    "framebuffer_stats_visible": true,
+    "display_geometry_correct": true,
+    "UFS_root_mounted": true,
+    "Data_journal_replayed": true,
+    "USB_current_status": {
+      "started_at": "2026-11-21T13:38:50.488269+08:00",
+      "enumerated": true,
+      "frames": 4219,
+      "missing_bytes": 0,
+      "duplicate_bytes": 0,
+      "status": "capturing",
+      "output": "F:\\IOS-MIX1\\reports\\local\\20261121-r38-ufs-perf-low01-approved\\console.log",
+      "device_commands_sent": false,
+      "candidate_seen": true,
+      "identity_verified": true,
+      "descriptor_errors": 0,
+      "descriptor_error_samples": [],
+      "configuration_verified": true,
+      "console_bytes": 925964
+    },
+    "actual_MHz": null,
+    "actual_temperature": null,
+    "physical_desktop_and_user_responsiveness": "user confirms severalfold smoother this run",
+    "final_timer_and_USB_drain": false,
+    "scope": "running prefix only; UI response and physical desktop not yet observed by main",
+    "anchors": [
+      {
+        "line": 91,
+        "text": "GenericARMPE: 3 of 3 processors are running"
+      },
+      {
+        "line": 95,
+        "text": "MiniIOMobileFramebuffer: display 1080x2040 on a panel of 1080x2040 (3240 bytes per row)"
+      },
+      {
+        "line": 110,
+        "text": "LITHIUM TOUCH smp context=init logical=0 affinity=0x1 max_logical=2 bound=1"
+      },
+      {
+        "line": 147,
+        "text": "[ ok ] mount the Darwin volume read only"
+      },
+      {
+        "line": 203,
+        "text": "jnl: ufs_darwin_data: journal replay done."
+      },
+      {
+        "line": 209,
+        "text": "LITHIUM TOUCH live id error=0 byte=0xe7 status=0x0c110000 op=0x00000c40 core=0x00000000 polls=36"
+      },
+      {
+        "line": 210,
+        "text": "LITHIUM TOUCH live ready id=0xe7 report_bytes=63 sink=hakios_touch_post coordinates=normalized65535 polling=1"
+      },
+      {
+        "line": 211,
+        "text": "LITHIUM TOUCH smp context=poll logical=0 affinity=0x1 max_logical=2 bound=1"
+      },
+      {
+        "line": 1766,
+        "text": "hakios: input: touch screen service 0x100c0ef10, buttons 0x100b0ff30"
+      },
+      {
+        "line": 3830,
+        "text": "LITHIUM SB MARK main_queue_enter elapsed_ms=43920"
+      },
+      {
+        "line": 4622,
+        "text": "LITHIUM SB SAMPLE 1 elapsed_ms=83622 stage=main_queue_callback_done loop_mask=15 commits=1029 thread_info=0 state=3 cpu_permille=31 user_us=21683144 system_us=16143830 wall=1794940849.982648"
+      },
+      {
+        "line": 5231,
+        "text": "LITHIUM TOUCH report number=6000 mode=0x00 points=15 posted=0 irq=1"
+      }
+    ]
+  },
+  "prefix_transport_audit": "reports/local/20261121-r38-ufs-perf-low01-approved/snapshot-134032/usb-audit.json",
+  "device_commands_after_boot": 0,
+  "tests_rebuilt": 0,
+  "accepted_boot_counts": {
+    "hakios": 78,
+    "ios16": 47
+  },
+  "interaction_update": {
+    "observed_at": "2026-11-21T13:44:34.905022+08:00",
+    "events_successfully_enqueued_lower_bound": 340,
+    "observed_queue_event_types": [
+      1,
+      2,
+      3
+    ],
+    "actual_consumer_sample_lines": [
+      {
+        "line": 5368,
+        "text": "hakios: input: sample type 1 finger 0 at 48605 47706"
+      },
+      {
+        "line": 5370,
+        "text": "hakios: input: sample type 2 finger 0 at 46481 47481"
+      },
+      {
+        "line": 5371,
+        "text": "hakios: input: sample type 2 finger 0 at 42780 47256"
+      },
+      {
+        "line": 5372,
+        "text": "hakios: input: sample type 2 finger 0 at 34831 46838"
+      }
+    ],
+    "backboardd_sample_types_seen": [
+      1,
+      2
+    ],
+    "SpringBoard_observer_commits_lower_bound": 4291,
+    "scope": "actual kernel queue submissions and input consumer samples; physical UI response remains user observation",
+    "independent_peer_prefix_report": "evidence/cpu-r38-20261121/ufs-runtime/peer/review.md",
+    "peer_earlier_snapshot_posted_zero_superseded_by_this_update": true
+  },
+  "user_acceptance": {
+    "recorded_at": "2026-11-21T13:50:11.720174+08:00",
+    "user_quote": "流畅的数倍，目前的卡顿感估计就只是来源于软件绘制的瓶颈了",
+    "accepted_observation": "用户确认本次UFS桌面交互流畅度较此前提升数倍",
+    "quantified_speedup_measured": false,
+    "remaining_software_bottleneck_is_user_hypothesis": true,
+    "analysis": {
+      "software_render_path_selected": {
+        "gl": 0,
+        "metal": 0
+      },
+      "framebuffer_worker_arg": 1,
+      "latest_display_windows": [
+        {
+          "frames": 52,
+          "duration_ms": 5010,
+          "reported_integer_fps": 10,
+          "driver_wall_us_per_frame": 29646,
+          "gpu_wait_us_per_frame": 1,
+          "line": 16041
+        },
+        {
+          "frames": 51,
+          "duration_ms": 5031,
+          "reported_integer_fps": 10,
+          "driver_wall_us_per_frame": 26597,
+          "gpu_wait_us_per_frame": 1,
+          "line": 16103
+        },
+        {
+          "frames": 51,
+          "duration_ms": 5023,
+          "reported_integer_fps": 10,
+          "driver_wall_us_per_frame": 27759,
+          "gpu_wait_us_per_frame": 1,
+          "line": 16129
+        },
+        {
+          "frames": 51,
+          "duration_ms": 5037,
+          "reported_integer_fps": 10,
+          "driver_wall_us_per_frame": 30408,
+          "gpu_wait_us_per_frame": 1,
+          "line": 16208
+        },
+        {
+          "frames": 51,
+          "duration_ms": 5007,
+          "reported_integer_fps": 10,
+          "driver_wall_us_per_frame": 27304,
+          "gpu_wait_us_per_frame": 1,
+          "line": 16256
+        },
+        {
+          "frames": 51,
+          "duration_ms": 5017,
+          "reported_integer_fps": 10,
+          "driver_wall_us_per_frame": 29890,
+          "gpu_wait_us_per_frame": 1,
+          "line": 16328
+        },
+        {
+          "frames": 51,
+          "duration_ms": 5039,
+          "reported_integer_fps": 10,
+          "driver_wall_us_per_frame": 26445,
+          "gpu_wait_us_per_frame": 1,
+          "line": 16351
+        },
+        {
+          "frames": 51,
+          "duration_ms": 5025,
+          "reported_integer_fps": 10,
+          "driver_wall_us_per_frame": 30018,
+          "gpu_wait_us_per_frame": 1,
+          "line": 16413
+        },
+        {
+          "frames": 51,
+          "duration_ms": 5023,
+          "reported_integer_fps": 10,
+          "driver_wall_us_per_frame": 30692,
+          "gpu_wait_us_per_frame": 1,
+          "line": 16439
+        },
+        {
+          "frames": 51,
+          "duration_ms": 5035,
+          "reported_integer_fps": 10,
+          "driver_wall_us_per_frame": 25525,
+          "gpu_wait_us_per_frame": 1,
+          "line": 16523
+        },
+        {
+          "frames": 51,
+          "duration_ms": 5026,
+          "reported_integer_fps": 10,
+          "driver_wall_us_per_frame": 28124,
+          "gpu_wait_us_per_frame": 1,
+          "line": 16568
+        },
+        {
+          "frames": 51,
+          "duration_ms": 5031,
+          "reported_integer_fps": 10,
+          "driver_wall_us_per_frame": 26970,
+          "gpu_wait_us_per_frame": 1,
+          "line": 16627
+        }
+      ],
+      "metrics": {
+        "window_count": 12,
+        "driver_wall_us_per_frame_min": 25525,
+        "driver_wall_us_per_frame_weighted_mean": 28283.72593800979,
+        "driver_wall_us_per_frame_max": 30692,
+        "window_rate_min": 10.121055765032745,
+        "window_rate_max": 10.379241516966069
+      },
+      "same_run_config": "three XNU cores; 307.2MHz perfcl target model; PMU actual MHz not measured",
+      "limits": [
+        "Driver wall duration is not pure CPU time and may include preemption/scheduling",
+        "5s frame-accounting windows are not touch-to-photon or display-refresh measurements",
+        "Idle/animation demand may alter frame counts; 10fps here does not establish a hard cap",
+        "No current native thermal evidence; low CPU target still applies",
+        "No current proof that software drawing is the ONLY remaining bottleneck"
+      ],
+      "next_order": [
+        "Preserve this user-confirmed working UFS desktop package intact",
+        "Integrate source-backed TSENS before higher stock frequency step",
+        "Use existing display CPU/wall spans and input timing to split rendering vs waits; consider single-variable framebuffer worker experiment after preserving baseline"
+      ]
+    },
+    "source_snapshot_bytes": 2281691,
+    "source_snapshot_sha256": "85729b6433255209ad3118787a24d267bca73730eb569d725e086cb13d7d2bdc",
+    "device_commands": 0,
+    "new_build": false,
+    "current_run_preserved": true,
+    "USB_log_still_capturing": true
+  },
+  "physical_desktop_evidence": "user reports interacting and severalfold smoother; no photo required",
+  "capture_end_update": {
+    "finished_at": "2026-11-21T14:01:09.099602+08:00",
+    "status": "capture_failed",
+    "failure": "[Errno 32] Pipe error",
+    "frames": 15349,
+    "console_bytes": 3192352,
+    "transport_verified": true,
+    "final_timer_drain_seen": false,
+    "physical_terminal_state": "unverified",
+    "audit": "reports/local/20261121-r38-ufs-perf-low01-approved/usb-audit-capture-ended.json",
+    "device_operations": 0
+  }
+}

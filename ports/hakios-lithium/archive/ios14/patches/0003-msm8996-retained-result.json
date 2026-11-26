@@ -1,0 +1,24 @@
+{
+  "baseline": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+  "scope": "MIX single-boot-core measurements only: retain timer samples and final IRQ/hardware-counter snapshot in existing return log and screen",
+  "applied_after": [
+    "0001-msm8996-platform-loader.patch",
+    "0002-msm8996-platform-observation.patch"
+  ],
+  "original_files": {
+    "xnu/files/osfmk/arm64/loader_return.c": "0d882fbf4b353aebc79199da62a1437d777e94d9bccc7a4320feec8cd811f91d",
+    "xnuloader/loader.c": "64090e87772d104ac2dc61eeddee9e9a62969f86f06b40d65a4f69066673f704"
+  },
+  "patch_sha256": "e3af19156deab7db251fbbae52c07e1bd567b6787cfe68dd0a0aaabdb97eddd8",
+  "hardware_verified": false,
+  "clock_origin": "Kernel EARLY_BOOT timed-return initialization; separate from hello elapsed_ms",
+  "clock_source": "Architectural CNTVCT_EL0 with observed CNTFRQ_EL0; same SoC timebase, not an independent external clock",
+  "expected_frequency_hz": 19200000,
+  "frequency_evidence": "reports/entry-state.json",
+  "sources": [
+    "Complete pinned HakiOS loader_return, logging, timer and hello implementations",
+    "R8/R9 frozen inputs and user reports",
+    "MIX measured CNTFRQ_EL0=19200000"
+  ],
+  "user_workflow": "Leave connected; after the test, read or photograph the retained final screen once. No intermediate photos or manual stopwatch."
+}

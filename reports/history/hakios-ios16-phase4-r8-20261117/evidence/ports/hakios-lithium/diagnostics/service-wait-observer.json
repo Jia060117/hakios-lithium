@@ -1,0 +1,38 @@
+{
+  "revision": 8,
+  "base_revision": 7,
+  "before_sha256": {
+    "xnu/files/osfmk/arm64/user_exception_trace.c": "b27ccd62b12e72f5f6985401b5dd856206e9cbd3ae6d3decbe01d5d0c51ad1ae",
+    "xnu/files/iokit/Kernel/MiniIOMobileFramebuffer.cpp": "924e652b58e39b7acee4164ff598b5b439a202743ad021f5fbace4ff064c9753",
+    "xnuloader/loader.c": "4dbc866f82ff9c5129e54ee1bd59a642157aa7b5a55ef4632043636a998d310c"
+  },
+  "after_sha256": {
+    "xnu/files/osfmk/arm64/user_exception_trace.c": "b3dfdea0d5101c4673855c7fb6eb5141f891c4259640a74225c009594e3a89df",
+    "xnu/files/iokit/Kernel/MiniIOMobileFramebuffer.cpp": "a26e7d18ae83ca8ab94c2dc56a55ff678004dd9151e1be687dd2589039663c9a",
+    "xnuloader/loader.c": "a7a8323d7015504ca2237057d4e4dd0ca2e54d84949ccda8ed7ef82e66a2f930"
+  },
+  "process": "SpringBoard",
+  "related_processes": [
+    "backboardd",
+    "lsd",
+    "containermanagerd",
+    "containermanagerd_system",
+    "runningboardd",
+    "installcoordinationd"
+  ],
+  "first_kernel_seconds": 180,
+  "interval_ms": 360000,
+  "max_samples": 8,
+  "max_threads_per_process": 96,
+  "max_processes_per_sample": 8,
+  "frames_per_thread": 14,
+  "top_enabled": true,
+  "proc_name_api": "proc_best_name",
+  "synchronous_console_drain": true,
+  "ipc_receiver_lookup": "ipc_port_get_receiver_task_locked; sampled current name mapping, not historical RPC proof",
+  "bgr24_packing_pixels": 4,
+  "pixel_algorithm_unchanged": true,
+  "kernel_memory_mib": 2880,
+  "xnu_cpus": 1,
+  "desktop_hardware_verified": false
+}

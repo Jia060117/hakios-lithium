@@ -1,0 +1,27 @@
+{
+  "baseline": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+  "reason_namespace": 23,
+  "reason_name": "OS_REASON_GUARD",
+  "code": "0x20000003000000c8",
+  "guard_type": 1,
+  "guard_type_name": "GUARD_TYPE_MACH_PORT",
+  "guard_flavor": 3,
+  "guard_flavor_name": "kGUARD_EXC_INVALID_OPTIONS",
+  "target": 200,
+  "target_name": "message ID, not a port number in this branch",
+  "matching_branch": "mach_msg_copyin_user_header: mach_msg_legacy_allowed returned false",
+  "parent_cleanup_excluded_by_photo": true,
+  "codesigning_or_jetsam_is_not_this_exit_reason": true,
+  "policy_gap": "Original18H17 uses legacy mach_msg trap;8796 denies message ID200 under legacy allowlist/platform policy",
+  "proposed_compatibility": "Reuse complete IPC path, gated to lithium_ios14_test and PLATFORM_IOS/sdk14.8; preserve validation and guards",
+  "evidence_sha256": {
+    "reports/local/20261115-234805-640317-hakios-preflight/guard-source/osfmk/ipc/mach_msg.c": "e3f442e76cfa3a7fd9efb5b8c86bc460d11f20ad9ceee5d78d247873eaa4c915",
+    "reports/local/20261115-234805-640317-hakios-preflight/guard-source/osfmk/ipc/mach_port.c": "6691cb27045ccf22ad0c7cf733ec5814e402eccf82fc98b3c0be3508a12504a4",
+    "reports/local/20261115-234805-640317-hakios-preflight/guard-source/osfmk/mach/port.h": "cc7aa46a7211a076bafb507baa6ce38c333c6b96418e2e7193e8cadd8ceabf97",
+    "reports/local/20261115-234805-640317-hakios-preflight/guard-source/bsd/sys/reason.h": "782540658b7d4af1fb7278de7868874e374db6c35af5be9756a19ee4b6983cb3"
+  },
+  "hardware_scope": "R22 retained kernel reason and parent cleanup logs",
+  "ios14_compatibility_verified": false,
+  "device_operations": false,
+  "qemu_used": false
+}

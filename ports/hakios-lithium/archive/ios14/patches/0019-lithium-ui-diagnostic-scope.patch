@@ -1,0 +1,28 @@
+--- a/xnu/files/osfmk/arm64/loader_return.c
++++ b/xnu/files/osfmk/arm64/loader_return.c
+@@ -503,7 +503,7 @@
+ lithium_ui_save(void)
+ {
+     char line[256];
+-    snprintf(line, sizeof(line), "\nLITHIUM UI FINAL layers_copied=%u bb_hook=%u sb_queue=%u svc_exit_plus1=%u surf_exit_plus1=%u extensions=%u physical_touch=NOT_CONNECTED gpu=SOFTWARE_CANDIDATE\n",
++    snprintf(line, sizeof(line), "\nLITHIUM UI FINAL layers_copied=%u bb_inject=%u sb_queue=%u svc_exit_plus1=%u surf_exit_plus1=%u extensions=%u physical_touch=NOT_CONNECTED gpu=SOFTWARE_CANDIDATE\n",
+         lithium_ui_layers, lithium_ui_backboard, lithium_ui_sbqueue, lithium_ui_svc, lithium_ui_surf, lithium_ui_extensions);
+     loader_log_line(line);
+ }
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -448,11 +448,13 @@
+         static const char *ui[] = {"LITHIUM P2 LAUNCHROOT ", "LITHIUM P2 LAUNCHEXEC ",
+             "LITHIUM UI FINAL ", "LITHIUM UI DEADLINE ", "LITHIUM UI ABI ",
+             "LITHIUM UI BACKBOARD ", "LITHIUM UI HOOKS ", "LITHIUM UI SPRINGBOARD ",
+-            "LITHIUM UI SVC ", "LITHIUM UI SURF ",
++            "LITHIUM UI SVC ", "LITHIUM UI SURF ", "LITHIUM UI READY ", "LITHIUM UI FINISH ",
++            "userabort: backboardd[", "userabort: SpringBoard[", "usertrap: ",
+             "LITHIUM P2 FAULT ", "LITHIUM P2 STATE ", "LITHIUM P2 ABORT ", "LITHIUM P2 PAGEIN "};
+         for (unsigned i = 0; i < sizeof(ui)/sizeof(ui[0]); i++)
+             lithium_show_line(lithium_last_line(log, bytes, ui[i]), log + bytes);
+         print("PHYSICAL TOUCH NOT CONNECTED; A530 ACCELERATION UNVERIFIED\n");
++        lithium_show_launchd_diagnostics(log, bytes);
+         const char *ui_panic = lithium_last_line(log, bytes, "panic(");
+         print(ui_panic ? "KERNEL PANIC CAUSE:\n" : "UI DEADLINE RETURN; NO PANIC LINE CAPTURED\n");
+         lithium_show_line(ui_panic, log + bytes);

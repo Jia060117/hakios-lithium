@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "date": "2026-11-19",
+  "candidate": "R21-touch-stage0-readonly",
+  "passed": true,
+  "host_only": true,
+  "r19": {
+    "tested": true,
+    "display_resolution_correct": false,
+    "user_confirmed_on": "2026-11-19",
+    "archived": true,
+    "further_testing": false
+  },
+  "r20_display_baseline": {
+    "image_sha256": "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82",
+    "geometry": "1080x2040 BGR24, stride 3240; 360x680 points at scale 3",
+    "display_verified": true
+  },
+  "package": {
+    "external_dir": "/home/jia/ios-mix1-build/r21-stage0-package-20261119-g2",
+    "image_sha256": "07d9e4cd10ee37854d6fd65df5f8fe36d8d836d1212c77aeca6491a51d82c6f8",
+    "contract_sha256": "5c7348d3272155df8fade04ceed76baeefc8f04c3a87b836aa958f7d221bb813",
+    "checks_sha256": "45e63cacb306689f720800928a66316110b2a7c5f96f846effb980cd0ab53722",
+    "build_report_sha256": "e143791ea9056760525a9b12699324fd0029ee9b46581496ea9a96f4545c61a1",
+    "kernel_sha256": "f19ef6e026a10bef44003d91984c44eb475b000bc952f68d9247b3e2271b63b1",
+    "loader_sha256": "efaeb95e73680922da42d8719b3160be1beb6cc7fcbdeb2a42e91a08072013f5",
+    "mu_sha256": "3c54f75e5d2fb04403c5ccd7f89c27dd8aab9dfdb663a30ef5dc195887f0b097",
+    "readback_passed": true,
+    "r20_userspace_reused_byte_identical": true,
+    "write_arguments_removed": true,
+    "touch_default_disabled": true
+  },
+  "identity": {
+    "device_tree_im4p_path": "/home/jia/ios-mix1-build/hakios-lithium-ios16/sysimage/DeviceTree.d22ap.im4p",
+    "device_tree_im4p_sha256": "51e7e42b74fb5e4cf5c7c1eed30b3d79ec829edfe8c0884c2e7839ddf62a4853",
+    "generated_identity_header_sha256": "dd9ce97930dfe40fae6f01d52085197c679fea09a117a9376df947b0a6d5b59f"
+  },
+  "host_tests": {
+    "touch_r21_candidate_suites": 12,
+    "exact_patch_0020": true,
+    "loader_selector_asan_ubsan": true,
+    "package_readback": true,
+    "overlay_build_input_match": true,
+    "result": "pass"
+  },
+  "post_alignment_verification": {
+    "r20_r15_baseline_gate": true,
+    "generic_peripheral_suites_passed": 19,
+    "r21_candidate_suites_passed": 12,
+    "exact_patch_0020_passed": true,
+    "current_build_selector_passed": true,
+    "independent_package_readback_on_temporary_copy": true,
+    "original_package_hashes_unchanged": true,
+    "device_operations": false,
+    "qemu_used": false
+  },
+  "touch_capability": {
+    "stage0_static_report_only": true,
+    "stages1_3_fail_closed": true,
+    "physical_touch_backend_integrated": false,
+    "touch_package_ready": false,
+    "device_test_ready": false
+  },
+  "device_operations": false,
+  "partition_operations": false,
+  "userdata_changed": false,
+  "qemu_used": false
+}

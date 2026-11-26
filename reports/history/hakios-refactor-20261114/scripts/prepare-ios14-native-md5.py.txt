@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+"""Adapt pinned sailfish MD5 support to the real XNU7195 legacy digest ABI."""
+import difflib
+import importlib.util
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+PATCH = ROOT / 'ports/lithium/patches/xnu-7195/0022-lithium-native-md5.patch'
+REFERENCE = ROOT / 'upstream/research/ios-sailfish/xnu/patches/0027-sweet-bearssl-md5.patch'
+
+
+def main():
+    spec = importlib.util.spec_from_file_location('alias_baseline', ROOT / 'scripts/prepare-ios14-native-alias-probe.py')
+    helper = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(helper)
+    reference = REFERENCE.read_text()
+    edits = {}
+
+    def added(path):
+        section = reference.split('+++ b/' + path + '\n', 1)[1].split('diff --git', 1)[0]
+        return ''.join(line[1:] + '\n' for line in section.splitlines() if line.startswith('+'))
+
+    def adapt(text):
+        return text.replace('sweet', 'lithium').replace('SWEET', 'LITHIUM').replace(
+            '0020-stage-bearssl.sh', 'build-ios14-xnu.py at BearSSL 7bea48e5e850ab4cafbe68d3765cdaba13a86d6f')
+
+    path = 'libkern/crypto/corecrypto_md5.c'
+    old = helper.baseline(path, PATCH)
+    insertion = adapt(added(path))
+    # BearSSL init sets the state/count/vtable but leaves the partial buffer
+    # untouched. Initialize it before copying the state into the legacy ABI.
+    insertion = insertion.replace('br_md5_context br_ctx;', 'br_md5_context br_ctx = {0};')
+    ending = '\n#endif /* !ARM64_BOARD_CONFIG_LITHIUM */\n'
+    assert insertion.endswith(ending)
+    anchor = '/* Copy a ccdigest ctx into a legacy MD5 context */\n'
+    assert old.count(anchor) == 1
+    edits[path] = (old, old.replace(anchor, anchor + insertion[:-len(ending)]) + ending)
+    names = ('md5', 'dec32le', 'enc32le')
+    for name in names:
+        edits[f'libkern/crypto/lithium_{name}.c'] = ('', adapt(added(f'libkern/crypto/sweet_{name}.c')))
+    path = 'libkern/conf/files'
+    old = helper.baseline(path, PATCH)
+    anchor = next(line for line in old.splitlines(True) if line.startswith('libkern/crypto/corecrypto_md5.c'))
+    edits[path] = (old, old.replace(anchor, anchor + ''.join(f'libkern/crypto/lithium_{n}.c\toptional crypto\n' for n in names)))
+    path = 'libkern/conf/Makefile.template'
+    old = helper.baseline(path, PATCH)
+    flags = '\n# Portable MD5 for the legacy API used by HFS volume UUIDs.\nifeq ($(CURRENT_MACHINE_CONFIG),LITHIUM)\n'
+    for name in ('corecrypto_md5', *(f'lithium_{n}' for n in names)):
+        flags += f'{name}.o_INCFLAGS = -I$(SOURCE_DIR)/libkern/crypto/lithium_bearssl/inc -I$(SOURCE_DIR)/libkern/crypto/lithium_bearssl/src $(LITHIUM_EMPTY)\n'
+        flags += f'{name}.o_CFLAGS_ADD += -mgeneral-regs-only\n'
+    edits[path] = (old, old + flags + 'endif\n')
+    patch = 'Subject: lithium: real BearSSL MD5 for HFS volume UUID generation\n\n'
+    patch += 'Adapt ios-sailfish 6f27e41ff249f2680540ebe8ee5ab982c5e641c9 patch 0027.\n'
+    patch += 'Preserve the 7195 byte-count convention and all non-LITHIUM paths.\n\n'
+    for path, (old, new) in edits.items():
+        patch += f'diff --git a/{path} b/{path}\n'
+        if not old:
+            patch += 'new file mode 100644\n'
+        patch += ''.join(difflib.unified_diff(old.splitlines(True), new.splitlines(True),
+                                            fromfile='a/' + path if old else '/dev/null', tofile='b/' + path))
+    PATCH.write_text(patch)
+    print(PATCH)
+
+
+if __name__ == '__main__':
+    main()

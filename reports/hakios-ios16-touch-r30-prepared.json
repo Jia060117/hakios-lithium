@@ -1,0 +1,167 @@
+{
+  "schema": 1,
+  "recorded_at": "2026-11-20T00:35:03.087804+08:00",
+  "revision": "R30-touch-qup-state",
+  "phase": "host_prepared_before_device_operations",
+  "passed": true,
+  "image_path": "artifacts/hakios/lithium-ios16/phase4-r30-touch-qup-state/lithium-hakios-ios16-r30-touch-qup-state.img",
+  "image_sha256": "fb7c575ec377dd8854786479cb1448f35974071c2ef19010b186eda1df1f92ae",
+  "image_bytes": 16289792,
+  "kernel_sha256": "2991245a0578658c77154df75236873c8dc4b2d805cb033c2ffd80a19b4c93cd",
+  "payload_boot_args": "bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 touch_stage=1 touch_clock_init=1 touch_diag=1 touch_qup_state=1",
+  "display_baseline": "R20-display",
+  "package_contract": "artifacts/hakios/lithium-ios16/phase4-r30-touch-qup-state/contract.json",
+  "full_hakios_kernel_build": true,
+  "normal_mu_d22ap_support_build": true,
+  "launchd_jobs": 413,
+  "source_review_checks": 82,
+  "instruction_scans": 46,
+  "base_suites": 29,
+  "followup_suites": 17,
+  "total_suites": 46,
+  "sanitizers": [
+    "ASan",
+    "UBSan"
+  ],
+  "core_enabled_scenarios": 9766,
+  "adapter_scenarios": 34104,
+  "adapter_assertions": 4228222,
+  "diagnostic_init_scenarios": 376,
+  "packager_synthetic_tests": 108,
+  "merged_source_hashes": 106,
+  "new_features_default_off": true,
+  "max_sw_reset": 1,
+  "first_run_count_max": 1,
+  "new_fifo_data_port_access": false,
+  "new_fifo_tags_requested": false,
+  "id_call": false,
+  "first_run_bus_activity_unverified": true,
+  "first_run_may_resume_retained_activity": true,
+  "terminal_gic_observation": "unread; entry/pre-write view only",
+  "external_callbacks_after_adapter_poison": false,
+  "core_inner_budget_us": 200000,
+  "core_phase_budget_us": 20000,
+  "adapter_outer_budget_us": 100000,
+  "adapter_access_cap_including_gic": 4096,
+  "ownership_verified": false,
+  "physical_touch_verified": false,
+  "hardware_verified": false,
+  "source_backup_files": 814,
+  "original_index_preserved": true,
+  "historical_aggregate_passed": false,
+  "historical_aggregate_note": "Existing R9 geometry0021 hash gate remains unresolved; not relabelled passed",
+  "changes": [
+    {
+      "owner": "Poincare",
+      "file": "ports/hakios-lithium/peripherals/touch-qup-state-core.h",
+      "line": 408,
+      "description": "New default-off core: eight two-pass snapshots, checked RESET/base/setup/first RUN/divider/PAUSE; no FIFO data/tag/ID"
+    },
+    {
+      "owner": "Main",
+      "file": "ports/hakios-lithium/peripherals/touch-qup-state.inc",
+      "line": 97,
+      "description": "Board/context/affinity1/GIC pre-write checks, independent allowlists, sealed callbacks, valid/unread logs"
+    },
+    {
+      "owner": "Main",
+      "file": "ports/hakios-lithium/peripherals/boot-options.h",
+      "line": 204,
+      "description": "Strict touch_qup_state=1 parser, RAM policy and mutually exclusive older active experiments"
+    },
+    {
+      "owner": "Main",
+      "file": "ports/hakios-lithium/peripherals/kernel.inc",
+      "line": 43,
+      "description": "Single background worker dispatch; default R20 path remains inert"
+    },
+    {
+      "owner": "Copernicus",
+      "file": "maintenance/hakios-lithium/peripherals/touch-qup-state-adapter-test.c",
+      "line": 405,
+      "description": "Actual adapter/core fault injection, all eight groups and 34104 scenarios"
+    },
+    {
+      "owner": "Archimedes",
+      "file": "maintenance/hakios-lithium/peripherals/touch-qup-state-adapter-boundary-test.c",
+      "line": 168,
+      "description": "Independent targeted regressions for adapter poison boundary and explicit unread terminal GIC"
+    },
+    {
+      "owner": "Raman",
+      "file": "scripts/package-hakios-ios16-touch-r30.py",
+      "line": 826,
+      "description": "Exact R29 ancestry, source/test/build/isolated Mu/readonly loader/APFS/image gates"
+    },
+    {
+      "owner": "Main",
+      "file": "scripts/hakios_touch_r30.py",
+      "line": 34,
+      "description": "Exact five-file production delta and eight byte-identical old modules"
+    }
+  ],
+  "parallel_execution": [
+    {
+      "agent": "Chandrasekhar",
+      "scope": "Fixed MiCode/Linux QUP state/count/clock protocol audit",
+      "main_review": "Read pinned sources and manifest independently; correct 0x150/0x208 FIFO aggregate vs 0x100/0x200 block counts; no physical silence proof"
+    },
+    {
+      "agent": "Poincare",
+      "scope": "New portable core, default-off/enabled sanitizer tests",
+      "main_review": "Reviewed all 18 writes, guard phases, poison semantics and first-failure valid bits; independently reran 9766 scenarios on final header"
+    },
+    {
+      "agent": "Copernicus",
+      "scope": "Actual production adapter/core fault tests",
+      "main_review": "Reviewed independent numeric whitelist and eight groups; independently reran 34104 scenarios/4228222 assertions without excluding groups"
+    },
+    {
+      "agent": "Raman",
+      "scope": "Separate R30 packager and 108 synthetic tests",
+      "main_review": "Reviewed source/build/protected pins and actual APFS gates; independently reran 108 tests, then actual package and final layer/source closure"
+    },
+    {
+      "agent": "Archimedes",
+      "scope": "Independent production/source review and targeted adapter regressions",
+      "main_review": "Two nonblocking gaps reproduced, accepted and fixed by main; new boundary suite and final full regression passed. Original review retained"
+    }
+  ],
+  "device_queries": 0,
+  "device_boots": 0,
+  "partition_operations": 0,
+  "adb_commands": 0,
+  "qemu": false,
+  "boot_totals_unchanged": {
+    "hakios": 53,
+    "ios16": 22
+  },
+  "unverified": [
+    "Physical SW_RESET effect, secure ownership, electrical readiness and first-RUN bus behavior",
+    "OP full bits6/7 I2C/RESET phase meaning and count-read side effects",
+    "Actual divider/SCL frequency, PAUSE/internal parser and inherited FIFO state",
+    "MMIO/map/barrier that never returns, abort/SError/XPU not contained by software budgets",
+    "GIC terminal/global exclusion, actual controller ID, IRQ/HID and physical input",
+    "R30 hardware timer/USB drain/end screen; no device has run this package",
+    "Unchanged PID1 initial boot_arg-read failure can miss opt-in"
+  ],
+  "corrections": [
+    "Final core wording distinguishes no new software tags from unverified physical traffic",
+    "Independent review IR-01: R30 wrappers reject adapter poison before external callbacks; clock sentinel propagates void-delay stop",
+    "Independent review IR-02: terminal GIC explicitly unread; no new GIC access or quiescence claim",
+    "Pre-review unused package/build/tests retained in main/pre-review-attempt; final code fully rebuilt and retested",
+    "Second build-check refused the still-present first report after copying outputs; read back both, archived prior report and partial copies, then reran without disabling preservation gates"
+  ],
+  "evidence_sha256": {
+    "evidence/touch-r30-20261119/main/final-offline-preflight.json": "b39a3e8f2da0b094cfa68de7308e6daabce67b7568a7bedbbd68635cf00c9f2e",
+    "evidence/touch-r30-20261119/main/production-freeze.json": "5a69ce13e257b1891c95ed6bfb161690f66baa7a4d478383e907c72a50b7367e",
+    "evidence/touch-r30-20261119/main/primary-source-review.json": "b4d08e87840fae25eb015cb89323434118490d69176c0c90ca3d3c05a3bcdc30",
+    "evidence/touch-r30-20261119/main/kernel-stack-review.json": "94280cfd17854356e7c20842710dd7396206d523e665dcd66ff9a08a7ed3fb68",
+    "evidence/touch-r30-20261119/protocol/findings.md": "fd87becb92a7a0e7e221b3359955a8e6b74331332a3b9bb0f97636163f9af2e1",
+    "evidence/touch-r30-20261119/core/results.json": "3e901731557f37cb9445ebeaaae0df8fd3a989926967859b84af0aff721a76cf",
+    "evidence/touch-r30-20261119/adapter/report.md": "292de0f1fa16c0a97792852d762b02c67a7ff0c80514043b00bbb679373ba8da",
+    "evidence/touch-r30-20261119/independent-review/report.json": "7e59dd95cafff893eff174317857f827fe07ddfdac6faf0f7d8a0ce3d1f59886",
+    "evidence/touch-r30-20261119/independent-review/followup.json": "d6b47e70d3994245c0bcd0701b84a498344f325398b3af157a3bb9233898d771",
+    "evidence/touch-r30-20261119/packager/unit-tests.json": "97992bc7459ff5dd47391b338612c99be298a8d94212eeaf6745b848251509a0"
+  }
+}

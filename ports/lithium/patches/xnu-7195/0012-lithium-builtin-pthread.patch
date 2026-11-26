@@ -1,0 +1,126 @@
+Subject: pthread: integrate the published 7195-era libpthread kernel provider
+
+Reference integration: 6f27e41ff249f2680540ebe8ee5ab982c5e641c9, patch 0019.
+Implementation: Apple libpthread-454.120.2 / 1cc19984213f4e21d435daa3679722aa1854f71b.
+Preserve the full synchronization implementation and assert its storage layout.
+
+--- /dev/null
++++ b/bsd/pthread/lithium_pthread_compat.h
+@@ -0,0 +1,27 @@
++/*
++ * Compile the matching libpthread provider with its kext view of BSD headers.
++ * It owns its full ksyn_waitq_element layout; the kernel's opaque counterpart
++ * reserves this layout. All communication with private BSD state uses callbacks.
++ */
++#ifndef LITHIUM_PTHREAD_COMPAT_H
++#define LITHIUM_PTHREAD_COMPAT_H
++#undef BSD_KERNEL_PRIVATE
++#undef XNU_KERNEL_PRIVATE
++/* Public pmap.h exposes this pointer even in its kext view. */
++typedef struct arm_saved_state arm_saved_state_t;
++#define __PTHREAD_EXPOSE_INTERNALS__ 1
++#define NEEDS_SCHED_CALL_T 1
++
++/* The seven-argument kext API forwards to the eight-argument kernel vm_fault. */
++#define vm_fault vm_fault_external
++
++/* Avoid collisions with the kernel side of the callback interface. */
++#define pthread_kern lithium_pthread_kern
++#define current_uthread lithium_pthread_current_uthread
++#define pthread_start lithium_pthread_start
++#define pthread_stop lithium_pthread_stop
++
++/* os/log passes &__dso_handle as the containing Mach-O image address. */
++extern void *lithium_pthread_log_image __asm("__mh_execute_header");
++#define __dso_handle lithium_pthread_log_image
++#endif
+--- /dev/null
++++ b/bsd/pthread/lithium_pthread_init.c
+@@ -0,0 +1,26 @@
++/* Built-in provider: Apple libpthread-454.120.2, paired with xnu-7195.141.2. */
++#if defined(ARM64_BOARD_CONFIG_LITHIUM)
++#include "lithium_pthread_compat.h"
++#include "lithium_libpthread/kern/kern_init.c"
++
++/* Keep the provider's full layout within the kernel's reserved storage. */
++_Static_assert(sizeof(struct ksyn_waitq_element) == 56,
++    "update LITHIUM ksyn storage in sys/pthread_internal.h");
++
++/* Restore the startup interface after compiling the provider's kext code. */
++#define XNU_KERNEL_PRIVATE 1
++#include <kern/startup.h>
++#include <pexpert/pexpert.h>
++
++__startup_func
++static void
++lithium_pthread_register(void)
++{
++    kern_return_t kr = lithium_pthread_start(NULL, NULL);
++    if (kr != KERN_SUCCESS || lithium_pthread_kern == NULL) {
++        panic("LITHIUM: pthread provider registration failed: %d", kr);
++    }
++    kprintf("LITHIUM pthread: libpthread-454.120.2 registered\n");
++}
++STARTUP(EARLY_BOOT, STARTUP_RANK_SECOND, lithium_pthread_register);
++#endif /* ARM64_BOARD_CONFIG_LITHIUM */
+--- /dev/null
++++ b/bsd/pthread/lithium_pthread_support.c
+@@ -0,0 +1,5 @@
++/* Built-in provider: Apple libpthread-454.120.2, paired with xnu-7195.141.2. */
++#if defined(ARM64_BOARD_CONFIG_LITHIUM)
++#include "lithium_pthread_compat.h"
++#include "lithium_libpthread/kern/kern_support.c"
++#endif /* ARM64_BOARD_CONFIG_LITHIUM */
+--- /dev/null
++++ b/bsd/pthread/lithium_pthread_synch.c
+@@ -0,0 +1,5 @@
++/* Built-in provider: Apple libpthread-454.120.2, paired with xnu-7195.141.2. */
++#if defined(ARM64_BOARD_CONFIG_LITHIUM)
++#include "lithium_pthread_compat.h"
++#include "lithium_libpthread/kern/kern_synch.c"
++#endif /* ARM64_BOARD_CONFIG_LITHIUM */
+--- a/bsd/sys/pthread_internal.h
++++ b/bsd/sys/pthread_internal.h
+@@ -34,7 +34,12 @@
+ 
+ struct ksyn_waitq_element {
+ #if __LP64__
++#if defined(ARM64_BOARD_CONFIG_LITHIUM)
++	/* libpthread-454.120.2 includes kwe_uth; validated in the provider. */
++	char opaque[56];
++#else
+ 	char opaque[48];
++#endif
+ #else
+ 	char opaque[32];
+ #endif
+--- a/bsd/conf/files
++++ b/bsd/conf/files
+@@ -403,6 +403,9 @@
+ bsd/security/audit/audit_worker.c		optional config_audit
+ 
+ bsd/pthread/pthread_shims.c		standard
++bsd/pthread/lithium_pthread_init.c	standard
++bsd/pthread/lithium_pthread_support.c	standard
++bsd/pthread/lithium_pthread_synch.c	standard
+ bsd/pthread/pthread_priority.c		standard
+ bsd/pthread/pthread_workqueue.c		standard
+ 
+--- a/bsd/conf/Makefile.template
++++ b/bsd/conf/Makefile.template
+@@ -43,6 +43,15 @@
+ 	-DBSD_KERNEL_PRIVATE -DLP64_DEBUG=0 \
+         -Warray-bounds-pointer-arithmetic
+ SFLAGS+= -include meta_features.h
++
++# 7195-era libpthread provider, staged with its existing license headers.
++ifeq ($(CURRENT_MACHINE_CONFIG),LITHIUM)
++LITHIUM_PTHREAD_ROOT = $(SOURCE_DIR)/bsd/pthread/lithium_libpthread
++LITHIUM_PTHREAD_INC = -I$(LITHIUM_PTHREAD_ROOT) -I$(LITHIUM_PTHREAD_ROOT)/private -I$(LITHIUM_PTHREAD_ROOT)/include $(LITHIUM_EMPTY)
++lithium_pthread_init.o_INCFLAGS = $(LITHIUM_PTHREAD_INC)
++lithium_pthread_support.o_INCFLAGS = $(LITHIUM_PTHREAD_INC)
++lithium_pthread_synch.o_INCFLAGS = $(LITHIUM_PTHREAD_INC)
++endif
+ 
+ #
+ # Directories for mig generated files

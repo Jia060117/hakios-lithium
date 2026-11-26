@@ -1,0 +1,139 @@
+#!/usr/bin/env python3
+"""Run real HFS init/check code with host I/O shims, then inspect native calls."""
+import argparse
+import hashlib
+import json
+from pathlib import Path
+import re
+import struct
+import subprocess
+import zlib
+
+ROOT = Path(__file__).resolve().parents[1]
+WORK = Path.home() / 'ios-mix1-build/xnu7195-lithium'
+
+
+def digest(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def function(text, name):
+    start = text.index('\n' + name + '(')
+    # Include the return-type line; all selected functions close at column 0.
+    start = text.rfind('\n', 0, start - 1) + 1
+    return text[start:text.index('\n}', start) + 3]
+
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('kernel', type=Path)
+    args = p.parse_args()
+    core = WORK / 'src/bsd/lithium_hfs/core'
+    build = json.loads((ROOT / 'reports/ios14-xnu-lithium-kernel.json').read_text())
+    assert build['exit_code'] == 0 and any(k['sha256'] == digest(args.kernel) for k in build['kernel_binaries'])
+    for name, expected in build['hfs_dependency']['staged_sha256'].items():
+        assert digest(core.parent / name) == expected, name
+    out = WORK / 'hfs-readonly-validation'
+    (out / 'include/sys').mkdir(parents=True, exist_ok=True)
+    (out / 'include/sys/appleapiopts.h').write_text('#define __APPLE_API_PRIVATE 1\n')
+    vfs = (core / 'hfs_vfsutils.c').read_text()
+    journal = (core / 'hfs_journal.c').read_text()
+    header = (core / 'hfs_journal.h').read_text()
+    start = header.index('typedef struct journal_header')
+    end = header.index('\n', header.index('#define OLD_JOURNAL_HEADER_MAGIC'))
+    template = ROOT / 'ports/lithium/host/hfs-readonly-test.c'
+    text = template.read_text()
+    helper_start = vfs.index('#if defined(ARM64_BOARD_CONFIG_LITHIUM)\nstatic int\nlithium_hfs_readonly_root')
+    values = dict(JOURNAL_HEADER=header[start:end], CHECKSUM=function(journal, 'calc_checksum'),
+        IS_CLEAN=function(journal, 'journal_is_clean'),
+        HELPER=vfs[helper_start:vfs.index('\n#endif', helper_start) + 7],
+        EARLY=function(vfs, 'hfs_early_journal_init'), LATE=function(vfs, 'hfs_late_journal_init'))
+    for name, value in values.items():
+        text = text.replace('@@' + name + '@@', value)
+    source = out / 'check.c'
+    source.write_text(text)
+    binary = out / 'check'
+    command = ['clang', '-std=gnu11', '-O1', '-g', '-fsanitize=address,undefined',
+        '-Wno-deprecated-non-prototype', '-Wno-format', '-Werror=implicit-function-declaration',
+        '-I' + str(out / 'include'), '-I' + str(core), str(source), '-o', str(binary)]
+    compiled = subprocess.run(command, capture_output=True, text=True)
+    (out / 'compile.log').write_text(compiled.stdout + compiled.stderr)
+    assert compiled.returncode == 0, '\n'.join(l for l in compiled.stderr.splitlines() if 'error:' in l)
+    r = subprocess.run([binary], capture_output=True, text=True)
+    (out / 'test.log').write_text(r.stdout + r.stderr)
+    assert r.returncode == 0, (r.returncode, r.stdout[-3000:], r.stderr[-3000:])
+    count = int(re.search(r'HFS_READONLY_CASES=(\d+)', r.stdout)[1])
+    assert count >= 51
+    # Check the real image's JIB against its catalog, using the already tested
+    # libdmg reader with a mapping that rejects every write attempt.
+    importer = ROOT / 'ports/lithium/host/hfs-root-copy.c'
+    probe_text = importer.read_text().split('static char *readstr(', 1)[0]
+    probe_text = probe_text.replace('if(!m->writable ||', 'if(!m->writable)abort();\n    if(')
+    probe_text += r'''
+int main(int argc,char **argv) {
+    if(argc!=2)return 2;
+    TestByteOrder();io_func *io=mapped_open(argv[1],0);
+    Volume *v=openVolume(io);if(!v)return 3;
+    const char *names[]={"/.journal_info_block","/.journal"};
+    for(int n=0;n<2;n++) {
+        HFSPlusCatalogRecord *r=getRecordFromPath3(names[n],v,NULL,NULL,0,0,kHFSRootFolderID);
+        if(!r || r->recordType!=kHFSPlusFileRecord)return 4;
+        HFSPlusCatalogFile *f=(HFSPlusCatalogFile*)r;
+        printf("CATALOG %s %llu %u %u\n",names[n],(unsigned long long)f->dataFork.logicalSize,
+            f->dataFork.extents[0].startBlock,f->dataFork.extents[0].blockCount);
+        free(r);
+    }
+    closeVolume(v);CLOSE(io);return 0;
+}
+'''
+    probe_source = out / 'catalog.c'
+    probe_source.write_text(probe_text)
+    host = WORK.parent / 'hfs-host'
+    libraries = [host / 'build/hfs/libhfs.a', host / 'build/common/libcommon.a']
+    probe = out / 'catalog'
+    subprocess.run(['clang', '-O2', '-I' + str(host / 'includes'), probe_source,
+        *libraries, '-lz', '-o', probe], check=True)
+    root = json.loads((ROOT / 'reports/ios14-hfs-root.json').read_text())
+    installed_image = Path(root['image'])
+    catalog_output = subprocess.check_output([probe, installed_image], text=True)
+    catalog = {name: list(map(int, (size, start, blocks))) for name, size, start, blocks in
+        re.findall(r'CATALOG (\S+) (\d+) (\d+) (\d+)', catalog_output)}
+    with installed_image.open('rb') as f:
+        first = f.read(4096)
+        attrs, version, info_block = struct.unpack_from('>III', first, 1028)
+        block, blocks = struct.unpack_from('>II', first, 1064)
+        f.seek(info_block * block)
+        jib = f.read(block)
+        flags = struct.unpack_from('>I', jib)[0]
+        offset, size = struct.unpack_from('>QQ', jib, 36)
+        f.seek(offset)
+        journal_header = f.read(4096)
+    assert catalog['/.journal_info_block'] == [block, info_block, 1]
+    assert catalog['/.journal'] == [size, offset // block, size // block]
+    assert attrs == 0x80002100 and flags == 5 and not any(journal_header)
+    assert block * blocks == root['image_bytes'] == installed_image.stat().st_size
+    disk = dict(image_sha256=root['sha256'], first_block_crc32=hex(zlib.crc32(first)),
+        attributes=hex(attrs), last_mounted_version=hex(version), jib_flags=hex(flags),
+        journal_offset=hex(offset), journal_size=hex(size), header_all_zero=True, catalog=catalog,
+        reads_from='host installed-image source; full digest rechecked by boot packager')
+    disassembly = subprocess.check_output(['llvm-objdump', '--macho', '--disassemble',
+        '--no-show-raw-insn', '--section=__TEXT_EXEC,__text', str(args.kernel)], text=True)
+    assert '_lithium_hfs_check_readonly_journal:' in disassembly
+    calls = len(re.findall(r'\bbl\s+_lithium_hfs_check_readonly_journal\b', disassembly))
+    assert calls >= 2, calls
+    (out / 'native-call-sites.txt').write_text('\n'.join(l for l in disassembly.splitlines()
+        if 'lithium_hfs_check_readonly_journal' in l) + '\n')
+    inputs = [template, importer, *libraries, Path(__file__), core / 'hfs_vfsutils.c', core / 'hfs_vfsops.c',
+        core / 'hfs_format.h', core / 'hfs_journal.c', core / 'hfs_journal.h', core / 'hfs_unistr.h',
+        ROOT / 'ports/lithium/patches/hfs-556/0001-lithium-readonly-root-journal.patch']
+    record = dict(all_passed=True, host_cases=count, sanitizer='ASan + UBSan',
+        scope='Actual early/late HFS init and journal_is_clean/checksum; host buffer/catalog/device shims',
+        native_helper_call_sites=calls, kernel_sha256=digest(args.kernel), root_journal=disk,
+        input_sha256={str(f): digest(f) for f in inputs}, log=str(out / 'test.log'),
+        device_operations=False, qemu_used=False)
+    (ROOT / 'reports/ios14-native-hfs-readonly-validation.json').write_text(json.dumps(record, indent=2) + '\n')
+    print(json.dumps({k: record[k] for k in ('all_passed','host_cases','native_helper_call_sites','kernel_sha256')}))
+
+
+if __name__ == '__main__':
+    main()

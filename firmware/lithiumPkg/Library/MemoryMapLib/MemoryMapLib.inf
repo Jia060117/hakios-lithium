@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+[Defines]
+  INF_VERSION = 0x00010005
+  BASE_NAME = LithiumMemoryMapLib
+  FILE_GUID = C031188B-A636-4480-A5C4-3785D1B6D382
+  MODULE_TYPE = BASE
+  VERSION_STRING = 0.1
+  LIBRARY_CLASS = MemoryMapLib
+[Sources]
+  MemoryMap.c
+[Packages]
+  MdePkg/MdePkg.dec
+  ArmPkg/ArmPkg.dec
+  SiliciumPkg/SiliciumPkg.dec

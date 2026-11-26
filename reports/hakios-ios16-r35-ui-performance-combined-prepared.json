@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "recorded_at": "2026-11-20T18:12:46.799310+08:00",
+  "revision": "R35-ui-perf-combined",
+  "image_path": "artifacts/hakios/lithium-ios16/phase4-r35-ui-perf-combined/lithium-hakios-ios16-r35-ui-perf-combined.img",
+  "image_sha256": "bfc3a041b7d81f33582dae04ba9894c53b3b44f16e1b5f70ba10b1672500370d",
+  "kernel_sha256": "86f36fdf4e047e0f2da18138a39629e584975e4c6689036946ae71195bd924aa",
+  "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1",
+  "source_sha256": {
+    "ports/hakios-lithium/patches/0025-lithium-ui-performance.patch": "ce830f467bf797de9b8a8ac1a6bbc3b8a703e67bf1dea029ca8b7b1f91b423bc",
+    "ports/hakios-lithium/diagnostics/cpu-sanity.inc": "55ae44db12b14b4b3a8b9c4e4592f2c4d97be2e640ae509ea5d82020628005a9",
+    "scripts/build-hakios-ui-perf-r35.py": "fddec49243316b73388f37f026fd1e783e7cbb68469854485ca2ba9658ba0f0a",
+    "scripts/package-hakios-ui-perf-r35.py": "ed3a3054fcf4d6f70b6a17feef31454d694e7a9450c689d6f4ff4d808148352f",
+    "reports/local/run-ui-perf-r35-build.ps1": "d5fe2ba0a739b452fe3da91701b9610526e07dd0371f48dcab3ea49a4a0c70d7",
+    "scripts/package-hakios-ui-perf-combined.py": "998e1d89f47155677b03c0e43511d303c88dc8f6b1cd736f2973923b80dab575"
+  },
+  "host_package_ready": true,
+  "hardware_verified": false,
+  "normal_Data_writes": true,
+  "ui_lite_preferences_may_persist": true,
+  "cpus": 3,
+  "bootcpu": 1,
+  "frequency_or_voltage_writes": false,
+  "no_new_kernel_build": true,
+  "requested_interpretation": "Combine the three previously listed profiles: UIquiet and UIlite already enabled in last run; cpus3 is the new variable.",
+  "existing_same_kernel_three_core_speed_unverified": true,
+  "preflight": {
+    "outcome": "devices_empty_stop_no_boot",
+    "commands": 1,
+    "boot_issued": false,
+    "attempt_consumed": false,
+    "evidence": "reports/local/20261120-r35-ui-perf-combined-approved"
+  },
+  "report": "reports/hakios-ios16-r35-ui-performance-combined-prepared.md",
+  "boot_totals": {
+    "hakios": 61,
+    "ios16": 30
+  }
+}

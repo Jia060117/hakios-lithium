@@ -1,0 +1,53 @@
+{
+  "revision": 19,
+  "scope": "Host-only unattended freeze; no phone operations",
+  "host_ready": true,
+  "goal_complete": false,
+  "image_path": "F:\\IOS-MIX1\\artifacts\\hakios\\lithium-ios16\\phase4-r19\\lithium-hakios-ios16-r19.img",
+  "image_sha256": "2f74a8da0fe182d39c66a86db398f9816067cb05cce8a6a774398700ed38f60a",
+  "image_bytes": 16269312,
+  "contract_sha256": "ab5fcf8c87d5a604da1a881e6e44628ec700eb1ff655fcbf3cb2ebe257162904",
+  "live_and_snapshot_evidence_verified": 149,
+  "prior_port_files_unchanged": 150,
+  "exact_new_admission_files": 4,
+  "baseline_images": {
+    "15": "ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55",
+    "16": "bd466615ab19ccd44eb23ec87273a23a499681d954d64e6b88c23676ffb8f94b",
+    "17": "0c2bf3b78253e5b8cebd8a40ff548a68f1d520fbeebede7a441b6d75f591aa50",
+    "18": "8d5aa292bb747f3e5022de7a9fa5adee3bb9422d8fa296f4b6a376ca59a973bd"
+  },
+  "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=750 fbheight=1334 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1",
+  "bootcpu": 1,
+  "xnu_cpus": 1,
+  "expected_affinity": "0x1",
+  "actual_r19_cpu_verified": false,
+  "compiled_instruction_scans": 46,
+  "source_review_checks": 84,
+  "launchd_jobs": 413,
+  "permission_checks": 416,
+  "host_tests": {
+    "contract": 18,
+    "snapshots": 17,
+    "offline_preflight": 10,
+    "display_log": 22,
+    "peripheral_suites": 14,
+    "malformed_package_cases": 16
+  },
+  "instruction_filter_controls": {
+    "accepted": 8,
+    "rejected": 12
+  },
+  "actual_offline_preflight": true,
+  "device_operations": false,
+  "qemu_used": false,
+  "userdata_or_partition_changes": false,
+  "display_acceptance_verified": false,
+  "physical_touch_verified": false,
+  "a530_acceleration_verified": false,
+  "git_commit_created": false,
+  "git_identity_changed": false,
+  "source_checkpoint_patch": "51af88313dc8a0aea4976f493cb71d2dca5a3566c74c4b5308a8a1e5b0c333fa",
+  "staged_paths": 15,
+  "remaining": "Physical display validation under explicit restored authorization; touch/GPU backends remain absent",
+  "report": "F:\\IOS-MIX1\\reports\\overnight-20261118\\R19.md"
+}

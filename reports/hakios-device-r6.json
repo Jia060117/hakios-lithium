@@ -1,0 +1,137 @@
+{
+  "schema": 1,
+  "attempt": "HakiOS lithium R6",
+  "started_at": "2026-11-14T21:06:29.705279+08:00",
+  "recorded_at": "2026-11-14T21:19:25.110470+08:00",
+  "baseline": {
+    "project": "HakiOS",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2"
+  },
+  "package": {
+    "image_sha256": "bfe2b8c3e7e6acea6b929ebe0eab4ab07d4226fa2f0e0a00d080a6156ec71ac7",
+    "image_bytes": 15683584,
+    "kernel_sha256": "02357c2cdb8b6d3cf700071adf3a77d2987667bc2a238bfc5383bdb907cd6698",
+    "loader_sha256": "ff406ff9423900cc799bdaee0fc8b4efac1305cd340d99890dd8b0ae51907921",
+    "fd_sha256": "7141cda976f3642fa0877a889c07f424f58cb9c24c06716b5a7dd9c1863b015f",
+    "hello_sha256": "c6ce7932427b0980316497bbdf62f10cd6f19057f1309a34d3cff25fd6522bbe",
+    "payload_sha256": "967d668435f473bd389df665a180f1926654814938049e281bc8a0b7974eeb98",
+    "cmdline": "cores=1 serial=3 -v hello_wait=600",
+    "stock_dtb_table_sha256": "ab929abf55ad4822ae83489a58d6b550b7b24ea8398ce8ead1de7b1d2caed6aa"
+  },
+  "frozen_artifacts_path": "artifacts/hakios/device-tests/20261114-210629",
+  "identity_verified": true,
+  "bootloader_unlocked": true,
+  "userdata_bytes": 250710192128,
+  "temporary_boot_issued": true,
+  "fastboot_returncode": 0,
+  "command_accepted": true,
+  "fastboot_boot_output": "Sending 'boot.img' (15316 KB)                      OKAY [  0.374s]\nBooting                                            OKAY [  0.739s]\nFinished. Total time: 1.120s\n",
+  "user_screen_observation": {
+    "source": "two_user_photos",
+    "observation_pending": false,
+    "loadimage_success_observed": true,
+    "loader_exception_observed": true,
+    "return_to_fastboot_confirmed_by_user": true,
+    "return_to_fastboot_user_text": "已进入"
+  },
+  "latest_usb": {
+    "checked_at": "2026-11-14T21:19:24.458184+08:00",
+    "authorized_device_in_fastboot": true,
+    "adb_present": false,
+    "local_log_path": "reports/local/20261114-210629-680164-hakios-preflight/post-boot-usb.json"
+  },
+  "verified_stages": {
+    "fastboot_command": true,
+    "uefi": true,
+    "mmu_hobs": true,
+    "bds": true,
+    "gop": true,
+    "efi_file_hash": true,
+    "loader": true,
+    "kernel": false,
+    "hello": false,
+    "load_image": true,
+    "kernel_prepared": true
+  },
+  "outcome": "loader_running_kernel_prepared_UEFI_cache_maintenance_translation_fault_before_kernel_jump",
+  "exact_failure_stage": "loader_stack_cache_clean_before_MMU_off_and_kernel_branch",
+  "loader_pe": {
+    "preferred_base": "0x40400000",
+    "size_of_image": 9875456,
+    "mapped_window": [
+      "0x40400000",
+      "0x41000000"
+    ],
+    "fits_mapped_window": true,
+    "relocations_present": true
+  },
+  "uefi_heap": {
+    "base": "0x124000000",
+    "end_exclusive": "0x128000000",
+    "size_bytes": 67108864,
+    "measured_ddr_checked": true,
+    "reservation_ranges_checked": 10,
+    "other_board_regions_disjoint": true,
+    "memory_evidence_path": "reports/live-memory.json",
+    "memory_evidence_sha256": "38cc2d64f1b8b2f760492a78cbdd9f8916b9dd6f7041a641f7c11f4aafd9414d",
+    "memory_map_sha256": "6d63cc3bdae336dc8429d10e74bede596bdd281c92c0fa70a8484dc5fc977145",
+    "runtime_availability_verified": false,
+    "runtime_loader_allocation_verified": true
+  },
+  "hardware_verified": false,
+  "ios14_compatibility_verified": false,
+  "partition_writes_performed": false,
+  "qemu_used": false,
+  "screen_evidence": {
+    "photos": [
+      {
+        "source": "user_photo",
+        "path": "reports/local/20261114-210629-680164-hakios-preflight/loadimage-ok.jpg",
+        "sha256": "c8fd917f09ab3f80f0233bd958304d1c2a3f2d4f941385a75531146b711b4d0d"
+      },
+      {
+        "source": "user_photo",
+        "path": "reports/local/20261114-210629-680164-hakios-preflight/loader-exception.jpg",
+        "sha256": "4918938170cdf29d29729610d12c6e4d4bb7faa1452ceff782b2056bcb79c1cd"
+      }
+    ],
+    "visible_lines": [
+      "LOADIMAGE OK",
+      "STARTIMAGE HOLD 20S",
+      "MIX LOADER ACTUAL BASE 127695000 SIZE 96B000",
+      "MIX LOADIMAGE STATUS SUCCESS CODE 0",
+      "XNULOADER V3",
+      "PLATFORM LITHIUM",
+      "LITHIUM OWNED WINDOW 100000000 SIZE 20000000",
+      "JUMPING TO 10341A4A8",
+      "UEFI EXCEPTION TYPE 0 ELR 12769A574 ESR 96000147 FAR 415D0000",
+      "LOADER IMAGE BASE 127695000 ELR OFFSET 5574"
+    ]
+  },
+  "efi_status": {
+    "api": "LoadImage",
+    "code": "0x0",
+    "name": "EFI_SUCCESS",
+    "StartImage_entered": true,
+    "StartImage_returned": false
+  },
+  "loader_actual_base": "0x127695000",
+  "exception": {
+    "type": 0,
+    "elr": "0x12769a574",
+    "esr": "0x96000147",
+    "far": "0x415d0000",
+    "loader_offset": "0x5574",
+    "linked_instruction_address": "0x40405574",
+    "instruction": "dc cvac, x10",
+    "ec": "0x25",
+    "same_el_data_abort": true,
+    "cache_maintenance": true,
+    "dfsc": "0x07",
+    "translation_fault_level": 3,
+    "fault_address_is_stack_end": true,
+    "disassembly_path": "reports/local/20261114-210629-680164-hakios-preflight/exception-disassembly.txt",
+    "disassembly_sha256": "cea959c7e46615ccd29f2eb19fbb95af289fcbc6cbc7a87afa44904456596510"
+  }
+}

@@ -1,0 +1,417 @@
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -923,6 +923,28 @@
+ 	__builtin_unreachable();
+ }
+ 
++#if defined(HAKIOS_LITHIUM)
++#include "../devices/lithium/diagnostics/cpu-map.inc"
++#endif
++
++static uint64_t
++platform_cpu_mpidr(const struct platform *plat, int index)
++{
++#if defined(HAKIOS_LITHIUM)
++	if (plat == &platform_lithium) return lithium_cpu_mpidr(index);
++#endif
++	return (uint64_t)index << plat->core_shift;
++}
++
++static int
++platform_cpu_index(const struct platform *plat, uint64_t mpidr)
++{
++#if defined(HAKIOS_LITHIUM)
++	if (plat == &platform_lithium) return lithium_cpu_index(mpidr);
++#endif
++	return (int)(mpidr >> plat->core_shift);
++}
++
+ /* ------------------------------------------------------------------------ */
+ /* The kernel on another core.                                               */
+ /*                                                                          */
+@@ -3203,7 +3225,7 @@
+ 	block_enabled = 0;
+ 	for (const char *c = pi.cmdline; *c; c++) {
+ 		if (starts_with(c, "bootcpu=") && (c == pi.cmdline || c[-1] == ' ') && c[8] >= '0' && c[8] <= '7') {
+-			kernel_mpidr = (uint64_t)(c[8] - '0') << PLAT->core_shift;
++			kernel_mpidr = platform_cpu_mpidr(PLAT, c[8] - '0');
+ 		}
+ 		more_cores |= (starts_with(c, "cpus=") || starts_with(c, "cpumask=")) && (c == pi.cmdline || c[-1] == ' ');
+ 		battery_requested |= starts_with(c, "battery=1") && (c == pi.cmdline || c[-1] == ' ') &&
+@@ -3555,20 +3577,33 @@
+ 	 * this loader stays on while it watches is not the kernel's, nor any the firmware runs.
+ 	 */
+ 	uint64_t cpu_mpidr[8] = { kernel_mpidr };
+-	int cpu_count = 1, boot_core = (int)(kernel_mpidr >> plat->core_shift);
++	int cpu_count = 1, boot_core = platform_cpu_index(plat, kernel_mpidr);
++#if defined(HAKIOS_LITHIUM)
++	if (boot_core < 0 || (ufs_requested >= 2 && kernel_mpidr == this_mpidr)) {
++		print("lithium: invalid kernel core or resident UFS core conflict\n"); return 0;
++	}
++	print("LITHIUM CPU MAP boot=0x%llx resident=0x%llx; four physical, at most three XNU; CPU MHz unmeasured\n", (unsigned long long)kernel_mpidr, (unsigned long long)this_mpidr);
++#endif
+ 
+ 	if (more_cores) {
+ 		for (int distance = 1; distance < plat->cores; distance++) {
+ 			for (int side = 0; side < 2; side++) {
+ 				int core = side == 0 ? boot_core + distance : boot_core - distance;
+-				uint64_t mpidr = (uint64_t)core << plat->core_shift;
++				uint64_t mpidr = platform_cpu_mpidr(plat, core);
+ 				int64_t state;
+ 
+ 				if (core < 0 || core >= plat->cores || mpidr == this_mpidr) {
+ 					continue;
+ 				}
+ 				state = psci_call(PSCI_AFFINITY_INFO, mpidr, 0, 0);
+-				if (state == 1 || state == PSCI_NOT_SUPPORTED) {
++#if defined(HAKIOS_LITHIUM)
++				print("LITHIUM CPU candidate index=%d mpidr=0x%llx psci=%lld\n", core, (unsigned long long)mpidr, (long long)state);
++#endif
++				if (state == 1
++#if !defined(HAKIOS_LITHIUM)
++				    || state == PSCI_NOT_SUPPORTED
++#endif
++				) {
+ 					cpu_mpidr[cpu_count++] = mpidr;
+ 				} else if (state >= 0) {
+ 					print("core %x is not off (the firmware says %d): not the kernel's to take\n", mpidr, (uint64_t)state);
+@@ -3597,7 +3632,7 @@
+ 		dt_prop_u64(&w, "bus-frequency", 100000000ULL);
+ 		dt_prop_u64(&w, "memory-frequency", 100000000ULL);
+ 		dt_prop_u64(&w, "peripheral-frequency", 24000000ULL);
+-		if (plat->small_cores & (1u << ((cpu_mpidr[i] >> plat->core_shift) & 31))) {
++		if (plat->small_cores & (1u << (platform_cpu_index(plat, cpu_mpidr[i]) & 31))) {
+ 			dt_prop_u32(&w, "small-core", 1);
+ 		}
+ 		dt_end(&w);
+--- a/drivers/storage/hakios.ufs.c
++++ b/drivers/storage/hakios.ufs.c
+@@ -827,6 +827,9 @@
+ 		}
+ 		ufs_data_bsize = *(uint32_t *)data;
+ 		return 0;
++	case DKIOCISSOLIDSTATE:
++		*(uint32_t *)data = 1;
++		return 0;
+ 	case DKIOCGETPHYSICALBLOCKSIZE:
+ 		*(uint32_t *)data = 4096;
+ 		return 0;
+@@ -984,6 +987,9 @@
+ 			return EINVAL;
+ 		}
+ 		ufs_bsize[part] = *(uint32_t *)data;
++		return 0;
++	case DKIOCISSOLIDSTATE:
++		*(uint32_t *)data = 1;
+ 		return 0;
+ 	case DKIOCGETPHYSICALBLOCKSIZE:
+ 		*(uint32_t *)data = native;
+--- a/xnu/files/iokit/Kernel/GenericARMPE.cpp
++++ b/xnu/files/iokit/Kernel/GenericARMPE.cpp
+@@ -129,6 +129,13 @@
+ {
+ 	/* The interrupt controller and timer were set up in arm_init / arm_init_cpu (pe_init_fiq). */
+ 	setCPUState(kIOCPUStateRunning);
++#if defined(LITHIUM_ARMV8_0)
++	IOLog("LITHIUM CPU online logical=%u phys=0x%x mpidr=0x%llx midr=0x%llx cntfrq=%llu boot=%u; timer Hz, CPU MHz unmeasured\n",
++	    (unsigned)getCPUNumber(), (unsigned)physID,
++	    (unsigned long long)__builtin_arm_rsr64("MPIDR_EL1"),
++	    (unsigned long long)__builtin_arm_rsr64("MIDR_EL1"),
++	    (unsigned long long)__builtin_arm_rsr64("CNTFRQ_EL0"), (unsigned)boot);
++#endif
+ 	if (ml_get_cpu_count() > 1) {
+ 		psci_smp_cpu_running();
+ 		/*
+--- a/xnu/files/osfmk/arm64/gic_v3_irq.c
++++ b/xnu/files/osfmk/arm64/gic_v3_irq.c
+@@ -472,6 +472,9 @@
+ 
+ 	gicr = gicr_cpu_base[cpu] = gic_find_redistributor();
+ 
++#if defined(LITHIUM_ARMV8_0)
++	/* MSM8996 firmware does not provide reliable GICR_WAKER state. */
++#else
+ 	uint32_t waker = gic_read32(gicr + GICR_WAKER);
+ 	if (waker & (GICR_WAKER_PROCSLEEP | GICR_WAKER_CHILDASLEEP)) {
+ 		gic_write32(gicr + GICR_WAKER, waker & ~GICR_WAKER_PROCSLEEP);
+@@ -479,6 +482,7 @@
+ 			/* spin until the redistributor is awake */
+ 		}
+ 	}
++#endif
+ 
+ 	/*
+ 	 * The interrupts between processors, where there is more than one. A core that an earlier
+--- a/xnu/files/osfmk/arm64/loader_return.c
++++ b/xnu/files/osfmk/arm64/loader_return.c
+@@ -106,6 +106,31 @@
+ 		os_atomic_store(&loader_log_lock, 0, release);
+ 	}
+ 	__builtin_arm_wsr64("DAIF", daif);
++}
++
++static uint64_t lithium_log_contention_dropped_bytes;
++/* Bound each ring lock and IRQ-mask interval to 256 bytes. */
++void lithium_log_bytes(const char *bytes, unsigned size);
++void
++lithium_log_bytes(const char *bytes, unsigned size)
++{
++	while (size != 0) {
++		unsigned take = size > 256 ? 256 : size;
++		uint64_t daif = __builtin_arm_rsr64("DAIF");
++		bool locked = false;
++		__builtin_arm_wsr("DAIFSet", DAIFSC_IRQF | DAIFSC_FIQF);
++		for (uint32_t tries = 0; !locked && tries < 64; tries++)
++			locked = os_atomic_cmpxchg(&loader_log_lock, 0, 1, acquire);
++		if (locked) {
++			for (unsigned i = 0; i < take; i++)
++				if (bytes[i] != '\r') loader_log_put_locked(bytes[i]);
++			os_atomic_store(&loader_log_lock, 0, release);
++		} else {
++			__atomic_add_fetch(&lithium_log_contention_dropped_bytes, take, __ATOMIC_RELAXED);
++		}
++		__builtin_arm_wsr64("DAIF", daif);
++		bytes += take; size -= take;
++	}
+ }
+ 
+ /*
+@@ -547,6 +572,8 @@
+ 		hakios_mpss_stop();            /* and the modem */
+ #if HAKIOS_LITHIUM_USB_LOG
+ 		extern bool lithium_usb_log_drain(uint64_t, unsigned);
++		printf("LITHIUM LOG writer_contention_dropped_bytes=%llu\n",
++		    (unsigned long long)__atomic_load_n(&lithium_log_contention_dropped_bytes, __ATOMIC_RELAXED));
+ 		printf("LITHIUM USB: normal timer return boundary; draining before quiesce\n");
+ 		uint64_t target = lithium_log_position();
+ 		bool drained = lithium_usb_log_drain(target, 5000);
+--- a/xnu/files/osfmk/arm64/user_exception_trace.c
++++ b/xnu/files/osfmk/arm64/user_exception_trace.c
+@@ -186,6 +186,7 @@
+ #if defined(LITHIUM_ARMV8_0)
+ #include "../../../../devices/lithium/diagnostics/thread-wait-observer.inc"
+ #include "../../../../devices/lithium/diagnostics/service-wait-observer.inc"
++#include "../../../../devices/lithium/diagnostics/ipc-history.inc"
+ #endif
+ 
+ static void
+@@ -404,7 +405,7 @@
+ static void
+ ustacks_fire(__unused thread_call_param_t p0, __unused thread_call_param_t p1)
+ {
+-	static task_t found[8];
++	static task_t found[10];
+ 	unsigned count = 0;
+ 	task_t task;
+ 
+@@ -412,6 +413,7 @@
+ 	uint64_t lithium_began = mach_absolute_time(), lithium_ns;
+ 	printf("LITHIUM USTACKS begin sequence=%u\n", ++lithium_ustacks_sequence);
+ 	if (lithium_ustacks_top) ustacks_top();
++	lithium_ipc_history_dump();
+ #endif
+ 	if (strcmp(ustacks_name, "top") == 0) {
+ 		ustacks_top();
+@@ -421,7 +423,7 @@
+ 	queue_iterate(&tasks, task, task_t, tasks) {
+ 		struct proc *proc = get_bsdtask_info(task);
+ 
+-		if (count < 8 && proc != NULL && (strncmp(proc_best_name(proc), ustacks_name, sizeof(ustacks_name)) == 0
++		if (count < 10 && proc != NULL && (strncmp(proc_best_name(proc), ustacks_name, sizeof(ustacks_name)) == 0
+ #if defined(LITHIUM_ARMV8_0)
+ 		    || lithium_ustacks_match(proc_best_name(proc))
+ #endif
+@@ -486,7 +488,7 @@
+ 	ustacks_every = 360000; ustacks_count = 8; ustacks_threads = 96;
+ 	strlcpy(ustacks_tname, "*", sizeof(ustacks_tname));
+ 	lithium_ustacks_top = 1;
+-	strlcpy(lithium_ustacks_related, "backboardd,lsd,containermanagerd,containermanagerd_system,runningboardd,installcoordinationd", sizeof(lithium_ustacks_related));
++	strlcpy(lithium_ustacks_related, "backboardd,lsd,containermanagerd,containermanagerd_system,runningboardd,installcoordinationd,cfprefsd", sizeof(lithium_ustacks_related));
+ #endif
+ 	PE_parse_boot_argn("ustacks_ms", &ustacks_every, sizeof(ustacks_every));
+ 	PE_parse_boot_argn("ustacks_threads", &ustacks_threads, sizeof(ustacks_threads));
+@@ -499,7 +501,7 @@
+ 		printf("LITHIUM USTACKS: invalid finite limits; disabled\n");
+ 		return;
+ 	}
+-	printf("LITHIUM USTACKS config first=%u period_ms=%u count=%u threads=%u frames=%u procs=8 top=%u\n",
++	printf("LITHIUM USTACKS config first=%u period_ms=%u count=%u threads=%u frames=%u procs=10 top=%u\n",
+ 	    at, ustacks_every, ustacks_count, ustacks_threads, USTACKS_MAX_FRAMES, lithium_ustacks_top);
+ 	printf("LITHIUM USTACKS related=%s names=proc_best_name\n", lithium_ustacks_related);
+ #endif
+--- a/userland/src/inject.c
++++ b/userland/src/inject.c
+@@ -97,6 +97,10 @@
+ 	vm_protect(mach_task_self(), page, vm_page_size, FALSE, VM_PROT_READ);
+ 	return original;
+ }
++
++#if defined(HAKIOS_LITHIUM_DIAG)
++#include "../../devices/lithium/diagnostics/ls-ready-observer.inc"
++#endif
+ 
+ /* ---- backboardd: CA::WindowServer ------------------------------------------------------------ */
+ 
+@@ -1173,6 +1177,9 @@
+ 		return;
+ 	}
+ 	slide = (uintptr_t)cache - CACHE_BASE;
++#if defined(HAKIOS_LITHIUM_DIAG)
++	if (strcmp(name, "lsd") == 0) lithium_ls_watch(cache, length);
++#endif
+ 	if (strcmp(name, "backboardd") == 0) {
+ 		char arguments[1024] = "";
+ 		size_t size = sizeof(arguments) - 1;
+--- a/userland/build.sh
++++ b/userland/build.sh
+@@ -242,7 +242,7 @@
+ 			  echo "build.sh: no ldid: wifipw_test is unsigned, and the keychain will refuse it (-34018)"; }
+ 		# our library for inside stock Darwin programs (the jobs in INJECT are started with it)
+ 		$DYN -dynamiclib -install_name /redwood/lib/libhakios.dylib -framework CoreFoundation -framework IOKit -lobjc \
+-			-o obj/libhakios.dylib src/inject.c
++			${HAKIOS_INJECT_CFLAGS:-} -o obj/libhakios.dylib src/inject.c
+ 		$DYN -dynamiclib -install_name /redwood/lib/libhakios.sb.dylib -framework CoreFoundation -framework CoreGraphics -framework IOKit -framework IOSurface -lobjc \
+ 			-o obj/libhakios.sb.dylib src/inject_sb.c
+ 		# ... the tweak loader of the package manager's prefix (src/inject_tweaks.c): it goes into a
+--- a/xnu/hakios.patch
++++ b/xnu/hakios.patch
+@@ -3671,30 +3671,122 @@
+ diff --git a/osfmk/console/serial_console.c b/osfmk/console/serial_console.c
+ --- a/osfmk/console/serial_console.c
+ +++ b/osfmk/console/serial_console.c
+-@@ -245,6 +245,12 @@
++@@ -242,45 +242,57 @@
++  * @param poll Whether or not this call should poll instead of going to sleep
++  *             waiting for an interrupt when the hardware device isn't ready
++  */
+++/* USB retains all emitted text; a bounded early echo avoids pixel scrolling. */
+++#if HAKIOS_LITHIUM_USB_LOG
+++static uint32_t lithium_screen_used;
+++static bool
+++lithium_screen_echo(void)
+++{
+++	if (kernel_debugger_entry_count > 0) return true;
+++	if (os_atomic_load(&lithium_screen_used, relaxed) >= 4096) return false;
+++	return os_atomic_inc_orig(&lithium_screen_used, relaxed) < 4096;
+++}
+++#endif
+++
+++static inline void
+++_cnputc_physical(char c, bool poll)
+++{
+++	bool in_debugger = (kernel_debugger_entry_count > 0);
+++	const uint32_t idx = get_cons_ops_index();
+++	poll = poll || in_debugger;
+++	if (c == '\n') _cnputc_physical('\r', poll);
+++	cons_ops[idx].putc(c, poll);
+++}
+++
+  static inline void
+  _cnputc(char c, bool poll)
+  {
++-	bool in_debugger = (kernel_debugger_entry_count > 0);
++-	const uint32_t idx = get_cons_ops_index();
++-
++-	poll = poll || in_debugger;
++-
++-	if (c == '\n') {
++-		_cnputc('\r', poll);
++-	}
++-
++-	cons_ops[idx].putc(c, poll);
++-}
++-
++-/**
++- * Helper function for outputting characters directly to the underlying console
++- * (either video or serial).
++- *
++- * @param c The array of characters to print.
++- * @param poll Whether or not this call should poll instead of going to sleep
++- *             waiting for an interrupt when the hardware device isn't ready
++- * @param size The number of characters to print to the console.
++- */
+ +#if HAKIOS_LITHIUM_USB_LOG
+-+	/* Capture both BSD printf and user /dev/console at their shared sink.
+-+	 * CR is ignored by the retained ring; never print from this hook. */
+ +	extern void loader_log_putc(char c);
+ +	loader_log_putc(c);
+++	if (!lithium_screen_echo()) return;
+ +#endif
+- 	bool in_debugger = (kernel_debugger_entry_count > 0);
+- 	const uint32_t idx = get_cons_ops_index();
+- 
+-@@ -272,6 +278,13 @@
+++	_cnputc_physical(c, poll);
+++}
+++
++ static inline void
++ _cnputs(char *c, int size, bool poll)
++ {
+  	extern int disableConsoleOutput;
+- 
+- 	if (disableConsoleOutput) {
++-
++-	if (disableConsoleOutput) {
++-		return;
++-	}
++-
+ +#if HAKIOS_LITHIUM_USB_LOG
+-+		/* Graphical ownership suppresses pixels, not the USB log. */
+-+		extern void loader_log_putc(char c);
+-+		if (c != NULL) {
+-+			for (int i = 0; i < size; i++) loader_log_putc(c[i]);
+-+		}
+++	extern void lithium_log_bytes(const char *, unsigned);
+++	if (c == NULL || size <= 0) return;
+++	lithium_log_bytes(c, (unsigned)size);
+++	if (disableConsoleOutput) return;
+++	while (size-- > 0) {
+++		if (!lithium_screen_echo()) break;
+++		_cnputc_physical(*c++, poll);
+++	}
+++#else
+++	if (disableConsoleOutput) return;
++ 	assert(c != NULL);
++-
++-	while (size-- > 0) {
++-		_cnputc(*c, poll);
++-		c++;
++-	}
+++	while (size-- > 0) _cnputc(*c++, poll);
+ +#endif
+- 		return;
+- 	}
+- 
++ }
++ 
++ /**
++diff --git a/osfmk/console/serial_general.c b/osfmk/console/serial_general.c
++--- a/osfmk/console/serial_general.c
+++++ b/osfmk/console/serial_general.c
++@@ -169,7 +169,11 @@
++ 		 * if boot-arg 'drain_uart_sync=1' is set, then
++ 		 * drain all the buffer right now and append new ch
++ 		 */
++-		if (serialmode & SERIALMODE_SYNCDRAIN) {
+++		bool chunk_long_messages = (serialmode & SERIALMODE_SYNCDRAIN) != 0;
+++#if HAKIOS_LITHIUM_USB_LOG
+++		chunk_long_messages = true;
+++#endif
+++		if (chunk_long_messages) {
++ 			info->str[info->pos] = '\0';
++ 			console_write(info->str, info->pos);
++ 			info->pos            = 0;
++diff --git a/osfmk/ipc/ipc_kmsg.c b/osfmk/ipc/ipc_kmsg.c
++--- a/osfmk/ipc/ipc_kmsg.c
+++++ b/osfmk/ipc/ipc_kmsg.c
++@@ -2911,6 +2911,10 @@
++ 	port = hdr->msgh_remote_port;
++ 	assert(IP_VALID(port));
++ 	ip_mq_lock(port);
+++#if defined(LITHIUM_ARMV8_0)
+++	extern void lithium_ipc_send_locked(ipc_port_t, mach_msg_id_t, mach_msg_bits_t);
+++	lithium_ipc_send_locked(port, hdr->msgh_id, hdr->msgh_bits);
+++#endif
++ 
++ 	/*
++ 	 * If the destination has been guarded with a reply context, and the

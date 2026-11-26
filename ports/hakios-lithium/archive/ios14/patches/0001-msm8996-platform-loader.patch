@@ -1,0 +1,473 @@
+--- a/xnu/hakios.patch
++++ b/xnu/hakios.patch
+@@ -2061,7 +2061,7 @@
+  MACHINE_FLAGS_ARM64_T6000 = -DARM64_BOARD_CONFIG_T6000 		-mcpu=apple-a14
+  MACHINE_FLAGS_ARM64_VMAPPLE = -DARM64_BOARD_CONFIG_VMAPPLE              -march=armv8.5a
+ -MACHINE_FLAGS_ARM64_BCM2837 = -DARM64_BOARD_CONFIG_BCM2837
+-+MACHINE_FLAGS_ARM64_BCM2837 = -DARM64_BOARD_CONFIG_BCM2837 -Xclang -target-feature -Xclang +pan
+++MACHINE_FLAGS_ARM64_BCM2837 = -DARM64_BOARD_CONFIG_BCM2837 $(if $(filter msm8996,$(HAKIOS_SOC)),-DLITHIUM_ARMV8_0=1 -march=armv8-a,-Xclang -target-feature -Xclang +pan)
+  
+  
+  #
+@@ -3381,7 +3381,7 @@
+ index d9f0723244e5..53fe4f371d7f 100644
+ --- a/pexpert/pexpert/arm64/BCM2837.h
+ +++ b/pexpert/pexpert/arm64/BCM2837.h
+-@@ -11,6 +11,15 @@
++@@ -11,6 +11,17 @@
+  #define BCM2837
+  #define BCM2837_BRINGUP
+  #define ARM_ARCH_TIMER
+@@ -3393,7 +3393,9 @@
+ + * ARMv8.2: they set PSTATE.PAN on every exception entry, so the kernel must
+ + * know to lift it around user memory accesses.
+ + */
+++#if !defined(LITHIUM_ARMV8_0)
+ +#define __ARM_PAN_AVAILABLE__     1
+++#endif
+  
+  #define __ARM_ARCH__              8
+  #define __ARM_VMSA__              8
+@@ -3502,3 +3504,184 @@
+  def find_non_ascii(s):
+      for c in s:
+          if ord(c) >= 0x80: return True
++diff --git a/pexpert/arm/pe_serial.c b/pexpert/arm/pe_serial.c
++--- a/pexpert/arm/pe_serial.c
+++++ b/pexpert/arm/pe_serial.c
++@@ -697,6 +697,154 @@
++ 	gPESF = fns;
++ }
++ 
+++#if defined(LITHIUM_ARMV8_0)
+++/*****************************************************************************/
+++
+++/*
+++ * lithium: framebuffer "serial" for boards with no usable UART (the Redmi Note
+++ * 10 Pro's debug UART engine runs in SPI mode). kprintf output is drawn onto
+++ * the boot framebuffer described by the ADT node "lithium-fbcon":
+++ *   reg    = <phys size>       absolute physical address, not arm-io relative
+++ *   width, height              pixels
+++ *   stride                     bytes per line, 24bpp
+++ * Lines wrap back to the top instead of scrolling; the line after the cursor
+++ * is kept blank so the newest output is easy to find.
+++ */
+++
+++extern unsigned char iso_font[256 * 16];
+++
+++#define FBCON_SCALE     2
+++#define FBCON_FG        0xffffffffu
+++#define FBCON_BG        0xff000000u
+++
+++static volatile uint8_t *fbcon_base;
+++static uint32_t fbcon_width, fbcon_height, fbcon_stride;
+++static uint32_t fbcon_cols, fbcon_rows, fbcon_col, fbcon_row;
+++
+++static void
+++fbcon_clear_row(uint32_t row)
+++{
+++	for (uint32_t y = row * 16 * FBCON_SCALE; y < (row + 1) * 16 * FBCON_SCALE; y++) {
+++		volatile uint8_t *line = fbcon_base + y * fbcon_stride;
+++		for (uint32_t x = 0; x < fbcon_width; x++) {
+++			line[x * 3] = 0; line[x * 3 + 1] = 0; line[x * 3 + 2] = 0;
+++		}
+++	}
+++}
+++
+++static void
+++fbcon_newline(void)
+++{
+++	fbcon_col = 0;
+++	fbcon_row = (fbcon_row + 1) % fbcon_rows;
+++	fbcon_clear_row(fbcon_row);
+++	fbcon_clear_row((fbcon_row + 1) % fbcon_rows);
+++}
+++
+++static void
+++fbcon_init(void)
+++{
+++	fbcon_cols = fbcon_width / (8 * FBCON_SCALE);
+++	fbcon_rows = fbcon_height / (16 * FBCON_SCALE);
+++	fbcon_col = fbcon_row = 0;
+++	for (uint32_t r = 0; r < fbcon_rows; r++) {
+++		fbcon_clear_row(r);
+++	}
+++}
+++
+++static unsigned int
+++fbcon_transmit_ready(void)
+++{
+++	return 1;
+++}
+++
+++static void
+++fbcon_transmit_data(uint8_t c)
+++{
+++	if (c == '\r') {
+++		fbcon_col = 0;
+++		return;
+++	}
+++	if (c == '\n') {
+++		fbcon_newline();
+++		return;
+++	}
+++	if (fbcon_col >= fbcon_cols) {
+++		fbcon_newline();
+++	}
+++	const unsigned char *glyph = iso_font + c * 16;
+++	uint32_t x0 = fbcon_col * 8 * FBCON_SCALE, y0 = fbcon_row * 16 * FBCON_SCALE;
+++	for (uint32_t gy = 0; gy < 16; gy++) {
+++		for (uint32_t sy = 0; sy < FBCON_SCALE; sy++) {
+++			volatile uint8_t *line = fbcon_base + (y0 + gy * FBCON_SCALE + sy) * fbcon_stride + x0 * 3;
+++			for (uint32_t gx = 0; gx < 8; gx++) {
+++				uint32_t px = (glyph[gy] & (1u << gx)) ? FBCON_FG : FBCON_BG;
+++				for (uint32_t sx = 0; sx < FBCON_SCALE; sx++) {
+++					uint32_t off = (gx * FBCON_SCALE + sx) * 3;
+++					line[off] = (uint8_t)px; line[off + 1] = (uint8_t)(px >> 8); line[off + 2] = (uint8_t)(px >> 16);
+++				}
+++			}
+++		}
+++	}
+++	fbcon_col++;
+++}
+++
+++static unsigned int
+++fbcon_receive_ready(void)
+++{
+++	return 0;
+++}
+++
+++static uint8_t
+++fbcon_receive_data(void)
+++{
+++	return 0;
+++}
+++
+++SECURITY_READ_ONLY_LATE(static struct pe_serial_functions) lithium_fbcon_serial_functions =
+++{
+++	.init = fbcon_init,
+++	.transmit_ready = fbcon_transmit_ready,
+++	.transmit_data = fbcon_transmit_data,
+++	.receive_ready = fbcon_receive_ready,
+++	.receive_data = fbcon_receive_data,
+++	.device = SERIAL_LITHIUM_FBCON
+++};
+++
+++static void
+++fbcon_probe(void)
+++{
+++	DTEntry entry;
+++	uint64_t const *reg;
+++	uint32_t const *val;
+++	unsigned int size;
+++
+++	if (SecureDTFindEntry("name", "lithium-fbcon", &entry) != kSuccess ||
+++	    SecureDTGetProperty(entry, "reg", (void const **)&reg, &size) != kSuccess || size < 16) {
+++		return;
+++	}
+++	if (SecureDTGetProperty(entry, "width", (void const **)&val, &size) == kSuccess) {
+++		fbcon_width = *val;
+++	}
+++	if (SecureDTGetProperty(entry, "height", (void const **)&val, &size) == kSuccess) {
+++		fbcon_height = *val;
+++	}
+++	if (SecureDTGetProperty(entry, "stride", (void const **)&val, &size) == kSuccess) {
+++		fbcon_stride = *val;
+++	}
+++	if (fbcon_width < 16 || fbcon_width > 1080 || fbcon_height < 32 || fbcon_height > 2040 ||
+++	    fbcon_stride < fbcon_width * 3 || fbcon_stride > 3240 ||
+++	    reg[0] != 0x83401000ULL || reg[1] < (uint64_t)fbcon_stride * fbcon_height) {
+++		return;
+++	}
+++	fbcon_base = (volatile uint8_t *)ml_io_map_wcomb(reg[0], reg[1]);
+++	if (fbcon_base != NULL) {
+++		register_serial_functions(&lithium_fbcon_serial_functions);
+++	}
+++}
+++
+++#endif
+++
++ #if HIBERNATION
++ /**
++  * Transitions the serial driver into a mode that can be run in the hibernation
++@@ -776,6 +924,9 @@
++ 	}
++ 
++ 	PE_parse_boot_argn("disable-uart-irq", &disable_uart_irq, sizeof(disable_uart_irq));
+++#if defined(LITHIUM_ARMV8_0)
+++	fbcon_probe();
+++#endif
++ 
++ #ifdef PI3_UART
++ 	if (SecureDTFindEntry("name", "gpio", &entryP) == kSuccess) {
++diff --git a/pexpert/pexpert/arm/protos.h b/pexpert/pexpert/arm/protos.h
++--- a/pexpert/pexpert/arm/protos.h
+++++ b/pexpert/pexpert/arm/protos.h
++@@ -47,7 +47,8 @@
++ 	SERIAL_DOCKCHANNEL=0x2,
++ 	SERIAL_PI3_UART=0x4,
++ 	SERIAL_VMAPPLE_UART=0x8,
++-	SERIAL_DCC_UART=0x10
+++	SERIAL_DCC_UART=0x10,
+++	SERIAL_LITHIUM_FBCON=0x20
++ } serial_device_t;
++ 
++ kern_return_t serial_irq_enable(serial_device_t device);
+--- a/xnu/files/osfmk/arm64/gic_v3_irq.c
++++ b/xnu/files/osfmk/arm64/gic_v3_irq.c
+@@ -55,6 +55,7 @@
+ #define GICD_IGRPMODR(n)        (0x0d00 + 4 * (n))
+ #define GICD_IROUTER(n)         (0x6000 + 8 * (n))
+ 
++static uint32_t gicr_frame_stride = 0x20000; /* optional ADT redistributor-stride */
+ #define GICR_FRAME_SIZE         0x20000     /* RD_base + SGI_base per CPU */
+ #define GICR_TYPER              0x0008
+ #define GICR_TYPER_LAST         (1u << 4)
+@@ -399,7 +400,7 @@
+ 	/* GICR_TYPER[63:32] packs Aff3.Aff2.Aff1.Aff0 */
+ 	uint32_t affinity = (uint32_t)(((mpidr >> 32) & 0xff) << 24 | (mpidr & 0xffffff));
+ 
+-	for (vm_offset_t frame = gicr_base; frame + GICR_FRAME_SIZE <= gicr_base + gicr_size; frame += GICR_FRAME_SIZE) {
++	for (vm_offset_t frame = gicr_base; frame + GICR_FRAME_SIZE <= gicr_base + gicr_size; frame += gicr_frame_stride) {
+ 		uint64_t typer = *(volatile uint64_t *)(frame + GICR_TYPER);
+ 
+ 		if ((uint32_t)(typer >> 32) == affinity) {
+@@ -437,6 +438,13 @@
+ 		gicd_base = ml_io_map(soc_base + reg[0], reg[1]);
+ 		gicr_base = ml_io_map(soc_base + reg[2], reg[3]);
+ 		gicr_size = reg[3];
++		if (SecureDTGetProperty(entry, "redistributor-stride", &prop, &prop_size) == kSuccess) {
++			if (prop_size != sizeof(uint32_t)) panic("gic: bad redistributor-stride size");
++			uint32_t stride = *(const uint32_t *)prop;
++			if (stride < GICR_FRAME_SIZE || stride > gicr_size || (stride & 0xffff))
++				panic("gic: bad redistributor-stride value");
++			gicr_frame_stride = stride;
++		}
+ 		if (gicd_base == 0 || gicr_base == 0) {
+ 			panic("gic: cannot map the distributor/redistributor");
+ 		}
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -15,7 +15,13 @@
+ /* ------------------------------------------------------------------------ */
+ /* Fixed conventions shared with the boot shim, the packer and the kernel   */
+ 
++#if defined(HAKIOS_LITHIUM)
++#define PAYLOAD_BASE        0x120000000ULL
++#define LITHIUM_UEFI_STACK_BASE 0x41590000ULL
++#define LITHIUM_UEFI_STACK_END  0x415d0000ULL
++#else
+ #define PAYLOAD_BASE        0xF0000000ULL
++#endif
+ #define PAYLOAD_MAGIC       0x50554E58u /* "XNUP" */
+ 
+ struct payload_header { uint32_t magic; uint32_t size; };
+@@ -24,7 +30,11 @@
+ #define KERNEL_VIRT_BASE    0xFFFFFFF004000000ULL /* boot_args.virtBase */
+ #define KERNEL_LINK_OFFSET  0x03000000ULL         /* kernel text sits 48 MB above the base */
+ #define BASE_ALIGN          0x02000000ULL         /* 32 MB: L2 block size with 16K pages */
++#if defined(HAKIOS_LITHIUM)
++#define MAX_MEM_SIZE        0x20000000ULL
++#else
+ #define MAX_MEM_SIZE        0x180000000ULL        /* 6 GB; the kernel's bootstrap page tables cover 8 */
++#endif
+ /*
+  * A root image too big for the payload area is placed here, at a fixed
+  * offset inside the kernel's memory window, once; it then survives any
+@@ -574,6 +584,17 @@
+ 	 */
+ 	.timeout_scale = 20,
+ };
++
++#if defined(HAKIOS_LITHIUM)
++static const struct platform platform_lithium = {
++	.name = "lithium", .io_base = 0x00400000, .io_size = 0x3fc00000,
++	.gic_dist = 0x09bc0000, .gic_redist = 0x09c00000, .uart = 0,
++	.cores = 4, .core_shift = 8, .psci_hvc = 0,
++};
++#define XL_CLEAR_PAN_UAO "" /* Kryo has neither PAN nor UAO */
++#else
++#define XL_CLEAR_PAN_UAO "  .inst 0xd500409f\n" "  .inst 0xd500407f\n"
++#endif
+ 
+ static const struct platform platform_redwood = {
+ 	/* io_base must be non-zero: XNU treats a zero SoC base as "no SoC" and skips clock setup. */
+@@ -678,8 +699,7 @@
+         /* PSTATE bits the kernel may have left set. PAN in particular is fatal:
+          * UEFI maps its memory as EL0-accessible, so with PAN every data access
+          * (including the exception handler's own stack push) faults. */
+-        "  .inst 0xd500409f\n"          /* msr PAN, #0 */
+-        "  .inst 0xd500407f\n"          /* msr UAO, #0 */
++        XL_CLEAR_PAN_UAO
+         "  mrs x9, sctlr_el1\n"
+         "  bic x9, x9, #0x1\n"
+         "  bic x9, x9, #0x4\n"
+@@ -745,10 +765,15 @@
+                 "msr daifset, #0xf\n"
+                 /* Last thing before the MMU goes off: write this stack back to RAM
+                  * (dirty cache lines do not survive, and we come back to this frame). */
++#if defined(HAKIOS_LITHIUM)
++                "mov x2, %2\n"
++                "mov x3, %3\n"
++#else
+                 "mov x2, sp\n"
+                 "sub x2, x2, #0x400\n"
+                 "bic x2, x2, #63\n"
+                 "add x3, x2, #0x4000\n"
++#endif
+                 "1: dc cvac, x2\n"
+                 "add x2, x2, #64\n"
+                 "cmp x2, x3\n"
+@@ -765,7 +790,12 @@
+                 "isb\n"
+                 "mov x0, %1\n"
+                 "br %0\n"
++#if defined(HAKIOS_LITHIUM)
++                : : "r" (entry), "r" (boot_args_pa),
++                    "r" (LITHIUM_UEFI_STACK_BASE), "r" (LITHIUM_UEFI_STACK_END) : "x0", "x2", "x3");
++#else
+                 : : "r" (entry), "r" (boot_args_pa) : "x0", "x2", "x3");
++#endif
+ 	__builtin_unreachable();
+ }
+ 
+@@ -850,8 +880,7 @@
+         ".globl other_cpu_return_stub\n"
+         "other_cpu_return_stub:\n"              /* x0..x7 as for loader_return_stub */
+         "  msr daifset, #0xf\n"
+-        "  .inst 0xd500409f\n"                  /* msr PAN, #0 */
+-        "  .inst 0xd500407f\n"                  /* msr UAO, #0 */
++        XL_CLEAR_PAN_UAO
+         "  mrs x9, sctlr_el1\n"
+         "  bic x9, x9, #0x1\n"
+         "  bic x9, x9, #0x4\n"
+@@ -2523,12 +2552,17 @@
+ static void EFIAPI
+ exception_handler(int64_t type, uint64_t *ctx)
+ {
++#if defined(HAKIOS_LITHIUM)
++	screen_quiet = 0;
++#endif
+ 	print("\nUEFI EXCEPTION type=%d elr=%x esr=%x far=%x lr=%x sp=%x spsr=%x\n", (uint64_t)type, ctx[EXC_CTX_ELR],
+ 	    ctx[EXC_CTX_ESR], ctx[EXC_CTX_FAR], ctx[EXC_CTX_LR], ctx[EXC_CTX_SP], ctx[EXC_CTX_SPSR]);
+ 	print("loader image base %x (elr offset %x)\n", (uint64_t)(uintptr_t)&__ImageBase,
+ 	    ctx[EXC_CTX_ELR] - (uint64_t)(uintptr_t)&__ImageBase);
+ 	flush_log();
++#if !defined(HAKIOS_LITHIUM)
+ 	ST->rt->reset_system(0 /* EfiResetCold */, 0, 0, NULL);
++#endif
+ 	for (;;) {
+ 	}
+ }
+@@ -2795,6 +2829,20 @@
+ 			best_size = hi - lo;
+ 		}
+ 	}
++#if defined(HAKIOS_LITHIUM)
++	/* Mu reserves this entire range with an EfiLoaderData allocation HOB.
++	 * It belongs to this loader and cannot be used by resident UEFI. */
++	int owned = 0;
++	for (uint64_t off = 0; off < map_size; off += desc_size) {
++		efi_memory_descriptor *d = (efi_memory_descriptor *)(map_buf + off);
++		if (d->type == EfiLoaderData && d->phys_start == 0x100000000ULL &&
++		    (d->pages << 12) == MAX_MEM_SIZE) owned = 1;
++	}
++	if (!owned || pi->forced_base != 0) { print("lithium kernel allocation contract missing\n"); return 0; }
++	win_base = 0x100000000ULL; win_size = MAX_MEM_SIZE;
++	print("lithium owned window %x size %x\n", win_base, win_size);
++	return 1;
++#endif
+ 	print("largest free block %x size %x\n", best_base, best_size);
+ 	if (pi->forced_base != 0) {
+ 		best_base = pi->forced_base;
+@@ -3104,6 +3152,9 @@
+ 		ba->video.v_width = SCREEN.width;
+ 		ba->video.v_height = SCREEN.height;
+ 		ba->video.v_depth = 32;
++#if defined(HAKIOS_LITHIUM)
++		ba->video.v_depth = 24;
++#endif
+ 	}
+ 	/*
+ 	 * No "-v" by default: on the phone the verbose console is a text
+@@ -3410,6 +3461,15 @@
+ 	}
+ 	dt_end(&w);
+ 
++#if defined(HAKIOS_LITHIUM)
++	dt_begin(&w, "lithium-fbcon");
++	uint64_t fbcon_reg[2] = { SCREEN.base, (uint64_t)SCREEN.stride * SCREEN.height };
++	dt_prop(&w, "reg", fbcon_reg, sizeof(fbcon_reg));
++	dt_prop_u32(&w, "width", SCREEN.width);
++	dt_prop_u32(&w, "height", SCREEN.height);
++	dt_prop_u32(&w, "stride", SCREEN.stride);
++	dt_end(&w);
++#endif
+ 	dt_begin(&w, "arm-io");
+ 	dt_prop_str(&w, "device_type", plat->name);
+ 	dt_prop(&w, "ranges", ranges, sizeof(ranges));
+@@ -3430,6 +3490,9 @@
+ 	dt_prop_str(&w, "compatible", "arm,gic-v3");
+ 	uint64_t gic_reg[4] = { plat->gic_dist - plat->io_base, 0x10000, plat->gic_redist - plat->io_base, 0x100000 };
+ 	dt_prop(&w, "reg", gic_reg, sizeof(gic_reg));
++#if defined(HAKIOS_LITHIUM)
++	dt_prop_u32(&w, "redistributor-stride", 0x40000);
++#endif
+ 	dt_end(&w);
+ 	if (plat->uart != 0) {
+ 		dt_begin(&w, "uart0");
+@@ -3487,7 +3550,16 @@
+ 			}
+ 		}
+ 		uint64_t sp_now = (uint64_t)(uintptr_t)__builtin_frame_address(0);
++#if defined(HAKIOS_LITHIUM)
++		/* MIX has an unmapped gap immediately above its allocated UEFI stack. */
++		if (sp_now < LITHIUM_UEFI_STACK_BASE || sp_now >= LITHIUM_UEFI_STACK_END) {
++			print("lithium UEFI stack outside loading contract: %x\n", sp_now);
++			return 0;
++		}
++		clean_dcache(LITHIUM_UEFI_STACK_BASE, LITHIUM_UEFI_STACK_END);
++#else
+ 		clean_dcache(sp_now - 0x2000, sp_now + 0x2000);
++#endif
+ 		flush_dcache(phys_base, top);
+ 		if (checkpoint == CHECKPOINT_SELFTEST) {
+ 			/* Do not enter the kernel at all: exercise only the return path. */
+@@ -4350,6 +4422,10 @@
+ 		}
+ 		print("display %d x %d at %x\n", (uint64_t)SCREEN.width, (uint64_t)SCREEN.height, SCREEN.base);
+ 	}
++#if defined(HAKIOS_LITHIUM)
++	PLAT = &platform_lithium;
++	SCREEN.base = 0x83401000; SCREEN.width = 1080; SCREEN.height = 2040; SCREEN.stride = 3240;
++#endif
+ 	print("platform %s\n", PLAT->name);
+ 
+ 	install_exception_hook();
+@@ -4365,6 +4441,13 @@
+ 	if (have_payload) {
+ 		run_kernel(0, 0);
+ 	}
++#if defined(HAKIOS_LITHIUM)
++	/* Keep the returned log visible. userdata is iOS HFSX: an automatic
++	 * stock Android reset is not part of this platform test. */
++	print("lithium test ended; use power + volume-down for Fastboot\n");
++	for (;;) BS->stall(1000000);
++#else
+ 	reboot();
++#endif
+ 	return 0;
+ }
+--- a/xnuloader/build.sh
++++ b/xnuloader/build.sh
+@@ -6,8 +6,8 @@
+ [ -f identity.h ] || ./mkidentity.sh
+ 
+ clang --target=aarch64-unknown-windows -ffreestanding -fno-builtin -fno-stack-protector -fshort-wchar \
+-  -mgeneral-regs-only -O1 -Wall -Wextra -Wno-unused-parameter -c loader.c -o loader.obj
++  ${LOADER_CFLAGS:-} -mgeneral-regs-only -O1 -Wall -Wextra -Wno-unused-parameter -c loader.c -o loader.obj
+ # /base: UEFI loads an image at its preferred address when that is free. The PE default (0x140000000)
+ # is in the middle of the phone's largest block of RAM, which XNU needs in one piece.
+-lld-link /subsystem:efi_application /entry:efi_main /nodefaultlib /base:0xA1000000 /out:loader.efi loader.obj
++lld-link /subsystem:efi_application /entry:efi_main /nodefaultlib /base:${LOADER_IMAGE_BASE:-0xA1000000} /out:loader.efi loader.obj
+ ls -la loader.efi

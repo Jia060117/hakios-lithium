@@ -1,0 +1,146 @@
+{
+  "schema": 1,
+  "recorded_at": "2026-11-16T02:39:26.357818+08:00",
+  "baseline": {
+    "project": "HakiOS",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2"
+  },
+  "attempt": "HakiOS lithium R28",
+  "package": {
+    "image_sha256": "9530cb2f73028a50fe0ceb013db182b8aeb1bce00e5349918ee9ae1e5982247f",
+    "image_bytes": 15773696,
+    "kernel_sha256": "648320e505088c834eff8c8c0cb17b4ee29ba6d96a4c7da8aba1554fbe063748",
+    "loader_sha256": "232d75f1910709c9ea65a60ac2231a06cf4a4e32a824ed7df0786607bea7c5e3",
+    "fd_sha256": "a9f13c1c1edb2515e6268f80566f133b20fd32d357af35bb605a10f4dcb89c04",
+    "payload_sha256": "49dfa11b51b00a198954db6284bb38b43e3f442d49ae8b744cbc464c3040c8fc",
+    "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=2 lithium_storage_test=1 systrace=2 systrace_name=launchd loader_return_after=180 lithium_ios14_test=1 lithium_launchd_test=1 applog=1 applog_name=launchd",
+    "stock_dtb_table_sha256": "ab929abf55ad4822ae83489a58d6b550b7b24ea8398ce8ead1de7b1d2caed6aa",
+    "test_profile": "p2-ios14-launchd",
+    "ramdisk_sha256": "5d65260119ac17b947be13cbea881aec45ae5c936ee61a3a7e08eab43b9b11f6",
+    "dynamic_init_sha256": "d1eeae3b4bdfacdc9515ef13ce21649d0cd4cce6d2ee99e276a175c31aa02ef7",
+    "loader_identity": {
+      "target": "iPhone10,1 / D20AP",
+      "source_sha256": "1827dfc68e87b822c43e86781872caa6a5d490efc5145a2a60feba0e2bd54b93",
+      "generator_sha256": "ae6cebdcfa22994661211e0bc35fd14770484173f951ceef6a65e9b84ad3ff99",
+      "header_sha256": "71874512c290ec24d799173f2aa10131c6f61573d598c0e281252e373c5b6630",
+      "placeholder": false
+    }
+  },
+  "selected_process_presence_passed": true,
+  "full_service_API_verified": false,
+  "P2_overall_passed": false,
+  "ios14_compatibility_verified": false,
+  "original_18H17_binaries_unmodified": true,
+  "measurements": {
+    "clock_ticks_start": 1450202018,
+    "clock_ticks_end": 4931356525,
+    "frequency_hz": 19200000,
+    "hardware_elapsed_ms": 181310,
+    "clock_valid": true,
+    "ppi27_start": 0,
+    "ppi27_end": 24934,
+    "irq_delta": 24934,
+    "samples": 3,
+    "stalled": 0,
+    "min_step": 4241,
+    "last_timer_ppi27": 24216,
+    "last_timer_heartbeat": 18,
+    "last_timer_elapsed_ms": 170201,
+    "launch_result_visible": true,
+    "launch_result": "PASS",
+    "job_started": true,
+    "attempts": 1,
+    "ps_budget_seconds": 30,
+    "ps_ok": true,
+    "snapshot_complete": true,
+    "restore_errno": 0,
+    "original_process_presence": {
+      "PID1_LAUNCHD": true,
+      "NOTIFYD": true,
+      "CFPREFSD": true
+    },
+    "process_presence_attempts": {
+      "PID1_LAUNCHD": 1,
+      "NOTIFYD": 1,
+      "CFPREFSD": 1
+    },
+    "ps": {
+      "pid": 6,
+      "waited": true,
+      "exit_code": 0,
+      "signal": 0,
+      "timeout": false,
+      "wait_errno": 0,
+      "cleanup": "NONE",
+      "kill_sent": false,
+      "kill_rc": 0,
+      "kill_errno": 0,
+      "elapsed_ms": 6487,
+      "clock_valid": true,
+      "polls": 5,
+      "wait_status": 0,
+      "fork_errno": 0
+    },
+    "observer_phases": [
+      {
+        "phase": "start",
+        "attempt": 0,
+        "job_ms": 366,
+        "valid": true,
+        "time_sec": 180,
+        "time_usec": 21140
+      },
+      {
+        "phase": "ps_begin",
+        "attempt": 1,
+        "job_ms": 487,
+        "valid": true,
+        "time_sec": 180,
+        "time_usec": 141584
+      },
+      {
+        "phase": "done",
+        "attempt": 1,
+        "job_ms": 8045,
+        "valid": true,
+        "time_sec": 187,
+        "time_usec": 700043
+      }
+    ],
+    "shared_region_count": 3,
+    "shared_region_slide": 412909568,
+    "shared_region_rc": 0,
+    "mach14_platform": 2,
+    "mach14_sdk": "0x000e0800",
+    "mach14_id": 200,
+    "mach14_legacy": true,
+    "other_process_exit": {
+      "pid": 2,
+      "signal": 1,
+      "namespace": 0,
+      "code": 0,
+      "csflags": "0x22000001",
+      "process_identity_not_established": true,
+      "not_a_PID1_exit": true
+    }
+  },
+  "acceptance_scope": "Original launchd PID1 and selected notifyd/cfprefsd process presence in one successful PS snapshot",
+  "limitations": [
+    "Single snapshot; service calls, sustained availability and full iOS are unverified",
+    "Raw PS rows and kernel RAM log not exported",
+    "PID2 identity unknown; same-run handoff markers outside photographed area",
+    "Observer elapsed time does not measure whole iOS boot time"
+  ],
+  "evidence_sha256": {
+    "reports/hakios-device-r28.json": "39d90df9f9360db1fc3cd820e8984f755a70293392bebd837d0ee505771ffd64",
+    "reports/local/20261116-022842-248448-hakios-preflight/r28-launchd-notifyd-cfprefsd-process-pass.jpg": "7871dce7bfd4362fb553dc9f84f534c3d47c1b99538ff458656e782ba7242eb8",
+    "reports/local/20261116-022842-248448-hakios-preflight/r28-screen-transcription.txt": "bfb1e7884b10d3a6de3c20e2cc3aeb39d5364a714c761a3cd621c46f5a798cc3",
+    "reports/local/20261116-022842-248448-hakios-preflight/test-contract.json": "b8736cffc28d87102121baa8f42121ca4a890a2ef829af0884637025694c22c2",
+    "artifacts/hakios/p2-ios14-launchd-observer-ready/sources/port/tests/ios14_launchd.h": "b8818773fd4454ec91d9924b8c8f99bf5434fc4bc2a90e79203f45acd110d356",
+    "reports/local/20261116-022842-248448-hakios-preflight/lithium-hakios-test.img": "9530cb2f73028a50fe0ceb013db182b8aeb1bce00e5349918ee9ae1e5982247f"
+  },
+  "archival_device_operations": false,
+  "qemu_used": false,
+  "legacy_7195_used": false
+}

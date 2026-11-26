@@ -1,0 +1,155 @@
+{
+  "schema": 1,
+  "baseline": {
+    "project": "HakiOS",
+    "path": "upstream/hakios-xnu-kernel",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2",
+    "apple_xnu_commit": "c54f35ca767986246321eb901baf8f5ff7923f6a"
+  },
+  "device": "lithium",
+  "soc": "msm8996",
+  "port_path": "ports/hakios-lithium",
+  "workspace_linux": "/home/jia/ios-mix1-build/hakios-lithium",
+  "defconfig": "lithium_defconfig",
+  "test_profile": "p2-ios14-ui",
+  "target_userspace": {
+    "version": "14.8",
+    "build": "18H17",
+    "identity": "iPhone10,1 / D20AP"
+  },
+  "policy": {
+    "legacy_7195_execution_allowed": false,
+    "qemu_allowed": false,
+    "automatic_fallback_allowed": false
+  },
+  "readiness": {
+    "dependency_closure_verified": true,
+    "ios14_compatibility_plan_bounded": true,
+    "a530_path_bounded": true,
+    "lithium_loading_contract_implemented": true,
+    "note": "P0 plan/input/implementation gates only; bounded GLES candidate and iOS14 interface audit remain unverified at runtime. Initial build is the upstream hello platform test."
+  },
+  "dependencies": [
+    {
+      "name": "xnu",
+      "url": "https://github.com/apple-oss-distributions/xnu.git",
+      "commit": "c54f35ca767986246321eb901baf8f5ff7923f6a",
+      "release": "xnu-8796.121.2",
+      "declared_in": "xnu/apply.sh",
+      "role": "kernel_source"
+    },
+    {
+      "name": "hfs",
+      "url": "https://github.com/apple-oss-distributions/hfs.git",
+      "commit": "31d5ec238dfab485e78a9a30b8b92d13e8914f03",
+      "release": "hfs-627.100.6",
+      "declared_in": "xnu/hfs/hfs.sh",
+      "role": "filesystem_source"
+    },
+    {
+      "name": "AvailabilityVersions",
+      "url": "https://github.com/apple-oss-distributions/AvailabilityVersions.git",
+      "commit": "5d9baee345b3bc72b26c71adc65f94f2d5e9ced2",
+      "declared_in": "xnu-deps/setup.sh",
+      "role": "build_dependency"
+    },
+    {
+      "name": "libdispatch",
+      "url": "https://github.com/apple-oss-distributions/libdispatch.git",
+      "commit": "a641558f447659d90ad002ef0ee6f0212273fbfc",
+      "declared_in": "xnu-deps/setup.sh",
+      "role": "firehose_kernel_library"
+    },
+    {
+      "name": "libpthread",
+      "url": "https://github.com/apple-oss-distributions/libpthread.git",
+      "commit": "a6c70ca0e544347a0377babf748f831577ec24f9",
+      "declared_in": "xnu-deps/setup.sh",
+      "role": "pthread_kernel_library"
+    },
+    {
+      "name": "mm_bootstrap_cmds",
+      "url": "https://github.com/markmentovai/bootstrap_cmds",
+      "commit": "f337e600741638896fb6056ce87c6479f74b89a3",
+      "declared_in": "xnu-deps/setup.sh",
+      "role": "mig_host_tool"
+    },
+    {
+      "name": "tcsh",
+      "url": "https://github.com/tcsh-org/tcsh.git",
+      "commit": "b7db07931546178c4cb2542b5fc850c483628ed5",
+      "declared_in": "xnu-deps/setup.sh",
+      "role": "host_tool"
+    },
+    {
+      "name": "unifdef",
+      "url": "https://github.com/fanf2/unifdef.git",
+      "commit": "08d12cd3059fe072929ea001ad9833f5487fd355",
+      "declared_in": "xnu-deps/setup.sh",
+      "role": "host_tool"
+    },
+    {
+      "name": "hakios-sm7325",
+      "url": "https://github.com/oosexgang/hakios-sm7325.git",
+      "commit": "af52dfba33f91340bde68dbbe238ae583f9fd472",
+      "declared_in": "devices/manifest.conf",
+      "role": "other_device_reference_not_lithium_dependency"
+    },
+    {
+      "name": "hakios-uefi",
+      "url": "https://github.com/oosexgang/hakios-uefi.git",
+      "commit": "1c6522893266157506c767e2ca427053ed3634a8",
+      "declared_in": "devices/manifest.conf",
+      "role": "loader_firmware_candidate_requires_lithium_port"
+    },
+    {
+      "name": "Mesa",
+      "url": "https://archive.mesa3d.org/mesa-25.0.7.tar.xz",
+      "sha256": "592272df3cf01e85e7db300c449df5061092574d099da275d19e97ef0510f8a6",
+      "declared_in": "tools/mk-mesa.sh",
+      "role": "graphics_candidate_not_a530_acceptance"
+    },
+    {
+      "name": "AdrenoMetal",
+      "url": "https://github.com/UniXNU/AdrenoMetal.git",
+      "commit": "243d63cf43305a85c8119b66b49cb7df4b30b019",
+      "declared_in": "tools/mk-m2v.sh",
+      "role": "ios16_graphics_component_requires_abi_audit"
+    },
+    {
+      "name": "metal2vulkan",
+      "url": "https://github.com/steelbrain/metal2vulkan.git",
+      "commit": "624bab3918de5b978e1101517abca2b4fa426565",
+      "declared_in": "tools/mk-m2v.sh",
+      "role": "graphics_component_requires_a530_and_ios14_audit"
+    }
+  ],
+  "external_inputs": [
+    {
+      "name": "theos Linux cctools",
+      "status": "standalone ld64-956.6 and cctools binaries frozen in reports/hakios-dependencies.json",
+      "declared_in": "xnu-deps/setup.sh"
+    },
+    {
+      "name": "iPhoneOS16.5.sdk",
+      "status": "SDK commit/tree/archive frozen in reports/hakios-sdk-cache.json; build tools only",
+      "declared_in": "xnu-deps/setup.sh"
+    },
+    {
+      "name": "MacOSX13.3.sdk Kernel.framework",
+      "status": "archive and extracted Kernel.framework hashes frozen in reports/hakios-dependencies.json",
+      "declared_in": "xnu-deps/setup.sh"
+    },
+    {
+      "name": "D20AP iOS14.8 firmware/userland",
+      "status": "local_inputs_verified_in_historical_reports_new_integration_pending",
+      "report": "reports/ios14-local-inputs.json"
+    },
+    {
+      "name": "lithium GPU and peripheral firmware",
+      "status": "source_and_selection_audit_pending_use_matching_stock_firmware_only",
+      "report": "reports/stock-firmware.json"
+    }
+  ]
+}

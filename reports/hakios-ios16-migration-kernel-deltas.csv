@@ -1,0 +1,21 @@
+﻿path,tags,action,baseline_origin,ios14_compatibility_patches,sha256
+bsd/dev/hakios.ufs.c,DEVICE-SPECIFIC,KEEP,upstream drivers/map,[],d9e7526ec3c5a1331482caa8f47599d883dee489a806f33fc36b3916c6f3d0db
+bsd/kern/bsd_init.c,IOS14-SPECIFIC,ARCHIVE_REASSESS,Apple8796 plus complete upstream hakios.patch,['ios14-identity.patch'],e11ee760f0d7088a58b29d39a69494a90e6f4e6185b05d4e3f2c9e4177e73093
+bsd/kern/kern_exit.c,DEVICE-SPECIFIC|IOS14-SPECIFIC,SPLIT,Apple8796 plus complete upstream hakios.patch,['ios14-exit-observation.patch'],04d82cfff2434b5b952a9eaa4ca23deddeb0817403e01b1d32eff5e50db08316
+bsd/kern/kern_proc.c,IOS14-SPECIFIC,ARCHIVE_REASSESS,Apple8796 plus complete upstream hakios.patch,['ios14-identity.patch'],7c731dad2b027a1deae87be2ae15eede4de70a78c29b8849818ca542de3939ba
+bsd/kern/sys_persona.c,IOS14-SPECIFIC,ARCHIVE_REASSESS,Apple8796 plus complete upstream hakios.patch,['ios14-identity.patch'],f23145cecc832458601cf47489f332432f287d12efffb9ea0ab726c3979cb5db
+bsd/kern/syscalls.master,IOS14-SPECIFIC,ARCHIVE_REASSESS,Apple8796 plus complete upstream hakios.patch,['ios14-shared-region.patch'],249c072bb8f7acbdaaad4ac6699b7e91a50b712ecd6a9e8c38477c653048ba3a
+bsd/miscfs/apfs/apfs_vnops.c,DEVICE-SPECIFIC|IOS14-SPECIFIC,SPLIT,upstream xnu/files,[],f72a8bf1a2305b26959339b4ea2e64f0c3ae46a050b22f568e4c368f6446eda1
+bsd/vm/vm_unix.c,IOS14-SPECIFIC,ARCHIVE_REASSESS,Apple8796 plus complete upstream hakios.patch,['ios14-shared-region.patch'],7d5b94c263e295c2777da6557ef1070f65af716d47dad5a7d1bfadddbf31b979
+iokit/Kernel/MiniIOMobileFramebuffer.cpp,DEVICE-SPECIFIC|IOS14-SPECIFIC,SPLIT,upstream xnu/files,[],6d047b75ca5f8d38114b380d2b86c8046df3127fce39312f7626a3db8e308a8d
+iokit/Kernel/MiniIOSurface.cpp,IOS14-SPECIFIC,ARCHIVE_REASSESS,upstream xnu/files,[],d6eee573dc0403079db9732a9d119ebffd9ae2d15d587d52e85f1b87972862a8
+iokit/Kernel/MiniIOSurface.h,IOS14-SPECIFIC,ARCHIVE_REASSESS,upstream xnu/files,[],36b89efe37795fda3b52a2484d9bac3137a62b9a75727644d2e80d18c57dcd76
+makedefs/MakeInc.def,DEVICE-SPECIFIC,KEEP,Apple8796 plus complete upstream hakios.patch,[],d84f9be69888a5196772c295279dc620153c07a39bd5d168bc9dca7cb2f96a04
+osfmk/arm64/gic_v3_irq.c,DEVICE-SPECIFIC,KEEP,upstream xnu/files,[],b9de3f9d2dda4615586cdce2f1a7858467d1066e221132fe7643aef82acd3672
+osfmk/arm64/loader_return.c,DEVICE-SPECIFIC|IOS14-SPECIFIC,SPLIT,upstream xnu/files,[],6e00fb60f4d3fee7ffb392fe1e24ffb52f97ef8d94c733e5c3b15112adcb71fb
+osfmk/arm64/user_exception_trace.c,DEVICE-SPECIFIC|IOS14-SPECIFIC,SPLIT,upstream xnu/files,[],bffad53dac580fde3a1f4c819114bfea753f2a6eeb7b495081e9119b8d549904
+osfmk/ipc/mach_msg.c,IOS14-SPECIFIC,ARCHIVE_REASSESS,Apple8796 plus complete upstream hakios.patch,['ios14-mach-msg.patch'],625c37ec0c6372a9dbe05e8290371d688349652ac2359350bb455f5649b2cfd0
+osfmk/vm/vm_fault.c,DEVICE-SPECIFIC|IOS14-SPECIFIC,SPLIT,Apple8796 plus complete upstream hakios.patch,['ios14-exit-observation.patch'],05907c20dd8437cf25775b53fa6393cac01a4d2fd60c2e8397675ac82a33a999
+pexpert/arm/pe_serial.c,DEVICE-SPECIFIC|IOS14-SPECIFIC,SPLIT,Apple8796 plus complete upstream hakios.patch,[],e72b8c3e631649d6eb4ca4411a6ba46b4a288d1fae3f3b67c52dafbd9c56bb7d
+pexpert/pexpert/arm/protos.h,DEVICE-SPECIFIC,KEEP,Apple8796 plus complete upstream hakios.patch,[],05b94e3d7405a5bd5bd558eae7b62debcc3fe06a49a3002db8cec3f78632a77b
+pexpert/pexpert/arm64/BCM2837.h,DEVICE-SPECIFIC,KEEP,Apple8796 plus complete upstream hakios.patch,[],8884f7efabe3b0a021bb31d64b18014d4e049eb78059c62f81da48e49613cafc

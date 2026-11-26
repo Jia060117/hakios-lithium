@@ -1,0 +1,217 @@
+Subject: lithium: validate fresh/empty journals on immutable HFS roots
+
+Pinned hfs-556.100.11; no journal replay, creation, or metadata writes.
+TN1150 defines NeedInit as having no valid journal transactions.
+
+diff --git a/core/hfs_vfsutils.c b/core/hfs_vfsutils.c
+--- a/core/hfs_vfsutils.c
++++ b/core/hfs_vfsutils.c
+@@ -2688,6 +2688,60 @@
+ 	hfsmp->jvp = NULL;
+ }
+ 
++
++#if defined(ARM64_BOARD_CONFIG_LITHIUM)
++static int
++lithium_hfs_readonly_root(struct hfsmount *hfsmp)
++{
++    return (hfsmp->hfs_flags & (HFS_READ_ONLY | HFS_WRITEABLE_MEDIA)) == HFS_READ_ONLY &&
++        (vfs_flags(hfsmp->hfs_mp) & MNT_ROOTFS);
++}
++
++/* TN1150: NeedInit means the header is invalid and there are no valid
++ * transactions. A clean, consistent, correctly located fresh journal can
++ * remain uninitialized on immutable media. Never initialize/replay it here.
++ * Existing journals must pass Apple's checksum and empty-log validation.
++ */
++static int __attribute__((noinline))
++lithium_hfs_check_readonly_journal(struct hfsmount *hfsmp,
++    HFSPlusVolumeHeader *vhp, uint32_t flags, uint64_t offset,
++    uint64_t size, off_t embedded)
++{
++    uint32_t attrs = SWAP_BE32(vhp->attributes);
++    uint64_t block = SWAP_BE32(vhp->blockSize);
++    uint64_t blocks = SWAP_BE32(vhp->totalBlocks);
++    uint64_t info = SWAP_BE32(vhp->journalInfoBlock);
++    uint64_t bytes = block * blocks;
++    int error;
++
++    if (!lithium_hfs_readonly_root(hfsmp) ||
++        !(attrs & kHFSVolumeJournaledMask) ||
++        !(attrs & kHFSVolumeUnmountedMask) ||
++        (attrs & (kHFSVolumeInconsistentMask | kHFSBootVolumeInconsistentMask)) ||
++        !(flags & kJIJournalInFSMask) ||
++        (flags & ~(kJIJournalInFSMask | kJIJournalNeedInitMask)) ||
++        block < 512 || (block & (block - 1)) ||
++        block < hfsmp->hfs_logical_block_size || !blocks ||
++        embedded < 0 || (uint64_t)embedded > hfsmp->hfs_logical_bytes ||
++        bytes > hfsmp->hfs_logical_bytes - (uint64_t)embedded ||
++        info == 0 || info >= blocks || offset < block || offset % block ||
++        size < 256 * 1024 || size > 1024 * 1024 * 1024 || size % block ||
++        offset > bytes || size > bytes - offset ||
++        (info * block >= offset && info * block < offset + size)) {
++        printf("LITHIUM HFS: read-only root journal metadata rejected\n");
++        return EINVAL;
++    }
++    if (flags & kJIJournalNeedInitMask) {
++        printf("LITHIUM HFS: clean fresh journal; initialization deferred on read-only root\n");
++        return 0;
++    }
++    error = journal_is_clean(hfsmp->hfs_devvp, offset + embedded, size,
++        hfsmp->hfs_devvp, hfsmp->hfs_logical_block_size);
++    printf("LITHIUM HFS: read-only root journal check=%d\n", error);
++    return error;
++}
++#endif
++
+ int
+ hfs_early_journal_init(struct hfsmount *hfsmp, HFSPlusVolumeHeader *vhp,
+ 					   void *_args, off_t embeddedOffset, daddr64_t mdb_offset,
+@@ -2730,6 +2784,21 @@
+ 	jibp = (JournalInfoBlock *)buf_dataptr(jinfo_bp);
+ 	jib_flags  = SWAP_BE32(jibp->flags);
+ 	jib_size   = SWAP_BE64(jibp->size);
++#if defined(ARM64_BOARD_CONFIG_LITHIUM)
++    if (lithium_hfs_readonly_root(hfsmp)) {
++        jib_offset = SWAP_BE64(jibp->offset);
++        retval = lithium_hfs_check_readonly_journal(hfsmp, vhp,
++            jib_flags, jib_offset, jib_size, embeddedOffset);
++        if (!retval) {
++            hfsmp->jvp = devvp;
++            hfsmp->jnl = NULL;
++            hfsmp->jnl_start = jib_offset / SWAP_BE32(vhp->blockSize);
++            hfsmp->jnl_size = jib_size;
++        }
++        buf_brelse(jinfo_bp);
++        goto cleanup_dev_name;
++    }
++#endif
+ 
+ 	if (jib_flags & kJIJournalInFSMask) {
+ 		hfsmp->jvp = hfsmp->hfs_devvp;
+@@ -2929,6 +2998,11 @@
+ 
+ 	fid = GetFileInfo(vcb, kRootDirID, ".journal_info_block", &jib_attr, &jib_fork);
+ 	if (fid == 0 || jib_fork.cf_extents[0].startBlock == 0 || jib_fork.cf_size == 0) {
++#if defined(ARM64_BOARD_CONFIG_LITHIUM)
++        if (lithium_hfs_readonly_root(hfsmp)) {
++            return EINVAL;
++        }
++#endif
+ 		printf("hfs: can't find the .journal_info_block! disabling journaling (start: %d).\n",
+ 			   fid ? jib_fork.cf_extents[0].startBlock : 0);
+ 		vcb->vcbAtrb &= ~kHFSVolumeJournaledMask;
+@@ -2938,6 +3012,11 @@
+ 
+ 	// make sure the journal_info_block begins where we think it should.
+ 	if (SWAP_BE32(vhp->journalInfoBlock) != jib_fork.cf_extents[0].startBlock) {
++#if defined(ARM64_BOARD_CONFIG_LITHIUM)
++        if (lithium_hfs_readonly_root(hfsmp)) {
++            return EINVAL;
++        }
++#endif
+ 		printf("hfs: The journal_info_block moved (was: %d; is: %d).  Fixing up\n",
+ 			   SWAP_BE32(vhp->journalInfoBlock), jib_fork.cf_extents[0].startBlock);
+ 
+@@ -2957,6 +3036,11 @@
+ 		if (jinfo_bp) {
+ 			buf_brelse(jinfo_bp);
+ 		}
++#if defined(ARM64_BOARD_CONFIG_LITHIUM)
++        if (lithium_hfs_readonly_root(hfsmp)) {
++            return EINVAL;
++        }
++#endif
+ 		printf("hfs: can't read journal info block. disabling journaling.\n");
+ 		vcb->vcbAtrb &= ~kHFSVolumeJournaledMask;
+ 		return 0;
+@@ -2969,6 +3053,12 @@
+ 
+ 	fid = GetFileInfo(vcb, kRootDirID, ".journal", &jattr, &jfork);
+ 	if (fid == 0 || jfork.cf_extents[0].startBlock == 0 || jfork.cf_size == 0) {
++#if defined(ARM64_BOARD_CONFIG_LITHIUM)
++        if (lithium_hfs_readonly_root(hfsmp)) {
++            buf_brelse(jinfo_bp);
++            return EINVAL;
++        }
++#endif
+ 		printf("hfs: can't find the journal file! disabling journaling (start: %d)\n",
+ 			   fid ? jfork.cf_extents[0].startBlock : 0);
+ 		buf_brelse(jinfo_bp);
+@@ -2979,6 +3069,12 @@
+ 
+ 	// make sure the journal file begins where we think it should.
+ 	if ((jib_flags & kJIJournalInFSMask) && (jib_offset / (u_int64_t)vcb->blockSize) != jfork.cf_extents[0].startBlock) {
++#if defined(ARM64_BOARD_CONFIG_LITHIUM)
++        if (lithium_hfs_readonly_root(hfsmp)) {
++            buf_brelse(jinfo_bp);
++            return EINVAL;
++        }
++#endif
+ 		printf("hfs: The journal file moved (was: %lld; is: %d).  Fixing up\n",
+ 			   (jib_offset / (u_int64_t)vcb->blockSize), jfork.cf_extents[0].startBlock);
+ 
+@@ -2989,6 +3085,12 @@
+ 
+ 	// check the size of the journal file.
+ 	if (jib_size != (u_int64_t)jfork.cf_extents[0].blockCount*vcb->blockSize) {
++#if defined(ARM64_BOARD_CONFIG_LITHIUM)
++        if (lithium_hfs_readonly_root(hfsmp)) {
++            buf_brelse(jinfo_bp);
++            return EINVAL;
++        }
++#endif
+ 		printf("hfs: The journal file changed size! (was %lld; is %lld).  Fixing up.\n",
+ 			   jib_size, (u_int64_t)jfork.cf_extents[0].blockCount*vcb->blockSize);
+ 		
+@@ -2997,6 +3099,27 @@
+ 		recreate_journal = 1;
+ 	}
+ 	
++#if defined(ARM64_BOARD_CONFIG_LITHIUM)
++    if (lithium_hfs_readonly_root(hfsmp)) {
++        /* The catalog and JIB must agree exactly; never repair them here. */
++        if (jib_fork.cf_size != (off_t)vcb->blockSize ||
++            jib_fork.cf_extents[0].blockCount != 1 ||
++            jfork.cf_size != (off_t)jib_size) {
++            buf_brelse(jinfo_bp);
++            return EINVAL;
++        }
++        retval = lithium_hfs_check_readonly_journal(hfsmp, vhp,
++            jib_flags, jib_offset, jib_size, vcb->hfsPlusIOPosOffset);
++        if (!retval) {
++            hfsmp->jvp = devvp;
++            hfsmp->jnl = NULL;
++            hfsmp->jnl_start = (jib_offset + vcb->hfsPlusIOPosOffset) / vcb->blockSize;
++            hfsmp->jnl_size = jib_size;
++        }
++        buf_brelse(jinfo_bp);
++        return retval;
++    }
++#endif
+ 	if (jib_flags & kJIJournalInFSMask) {
+ 		hfsmp->jvp = hfsmp->hfs_devvp;
+ 		jib_offset += (off_t)vcb->hfsPlusIOPosOffset;
+diff --git a/core/hfs_vfsops.c b/core/hfs_vfsops.c
+--- a/core/hfs_vfsops.c
++++ b/core/hfs_vfsops.c
+@@ -1698,9 +1698,19 @@
+ 			// point as journaled.
+ 			//
+ 			if ((retval = hfs_early_journal_init(hfsmp, vhp, args, embeddedOffset, mdb_offset, mdbp, cred)) == 0) {
++#if defined(ARM64_BOARD_CONFIG_LITHIUM)
++                if (mp && hfsmp->jnl)
++#else
+ 				if (mp)
++#endif
+ 					vfs_setflags(mp, (u_int64_t)((unsigned int)MNT_JOURNALED));
+ 			} else {
++#if defined(ARM64_BOARD_CONFIG_LITHIUM)
++                /* Immutable root cannot be repaired by a later fsck. */
++                if ((hfsmp->hfs_flags & (HFS_READ_ONLY | HFS_WRITEABLE_MEDIA)) == HFS_READ_ONLY &&
++                    (vfs_flags(mp) & MNT_ROOTFS))
++                    goto error_exit;
++#endif
+ 				if (retval == EROFS) {
+ 					// EROFS is a special error code that means the volume has an external
+ 					// journal which we couldn't find.  in that case we do not want to

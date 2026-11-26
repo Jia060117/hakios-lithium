@@ -1,0 +1,182 @@
+--- a/xnu/files/osfmk/arm64/loader_return.c
++++ b/xnu/files/osfmk/arm64/loader_return.c
+@@ -109,6 +109,9 @@
+ }
+ 
+ static uint64_t lithium_log_contention_dropped_bytes;
++#if defined(LITHIUM_ARMV8_0)
++#include "../../../../devices/lithium/return-fastboot/kernel.inc"
++#endif
+ /* Bound each ring lock and IRQ-mask interval to 256 bytes. */
+ void lithium_log_bytes(const char *bytes, unsigned size);
+ void
+@@ -435,8 +438,8 @@
+ 	}
+ }
+ 
+-void
+-loader_return(void)
++static void
++loader_return_common(bool normal_timer)
+ {
+ #if defined(GENERIC_PSCI_SMP)
+ 	/*
+@@ -476,7 +479,18 @@
+ 			loader_log_putc(*c);
+ 		}
+ 	}
++#if defined(LITHIUM_ARMV8_0)
++	loader_jump(lithium_fastboot_return_reason(normal_timer), 0);
++#else
++	(void)normal_timer;
+ 	loader_jump(0, 0);
++#endif
++}
++
++void
++loader_return(void)
++{
++	loader_return_common(false);
+ }
+ 
+ /* Bring-up aid: stop here if the loader asked for checkpoint n. */
+@@ -504,7 +518,7 @@
+ 	if (as_panic != (void *)1) {
+ 		panic("return_panic: the panic that was asked for, on cpu %d", cpu_number());
+ 	}
+-	loader_return();
++	loader_return_common(true);
+ }
+ 
+ 
+@@ -576,6 +590,9 @@
+ 		hakios_wifi_stop();            /* and the Wi-Fi DSP, if it runs, shut down */
+ 		hakios_adsp_stop();            /* and the audio DSP */
+ 		hakios_mpss_stop();            /* and the modem */
++#if defined(LITHIUM_ARMV8_0)
++		lithium_fastboot_timer_prepare();
++#endif
+ #if HAKIOS_LITHIUM_USB_LOG
+ 		extern bool lithium_usb_log_drain(uint64_t, unsigned);
+ 		printf("LITHIUM LOG writer_contention_dropped_bytes=%llu\n",
+@@ -583,8 +600,17 @@
+ 		printf("LITHIUM USB: normal timer return boundary; draining before quiesce\n");
+ 		uint64_t target = lithium_log_position();
+ 		bool drained = lithium_usb_log_drain(target, 5000);
++#if defined(LITHIUM_ARMV8_0)
++		lithium_fastboot_primary(target, drained);
++#endif
+ 		printf("LITHIUM USB: timer boundary drain=%u target=%llu\n", drained, target);
+-		(void)lithium_usb_log_drain(lithium_log_position(), 250);
++		uint64_t tail_target = lithium_log_position();
++		bool tail_drained = lithium_usb_log_drain(tail_target, 250);
++#if defined(LITHIUM_ARMV8_0)
++		lithium_fastboot_tail(tail_target, tail_drained);
++#else
++		(void)tail_drained;
++#endif
+ #endif
+ 	}
+ 	if (PE_parse_boot_argn("return_cpu", &cpu, sizeof(cpu)) && cpu <= (uint32_t)ml_get_max_cpu_number() &&
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -274,6 +274,9 @@
+ static efi_block_io *
+ find_log_partition(void)
+ {
++#if defined(HAKIOS_LITHIUM_RAM_DIAGNOSTIC)
++	return NULL; /* No physical provider or persistent log target. */
++#else
+ 	static const efi_guid part_guid = EFI_PARTITION_INFO_GUID;
+ 	static const efi_guid blk_guid = EFI_BLOCK_IO_GUID;
+ 	static const char16 want[] = LOG_PARTITION;
+@@ -305,6 +308,7 @@
+ 	}
+ 	BS->free_pool(handles);
+ 	return NULL;
++#endif
+ }
+ 
+ /*
+@@ -2767,6 +2771,9 @@
+ 	const uint8_t *ramdisk;
+ 	uint32_t ramdisk_size;
+ 	const char *cmdline;
++#if defined(HAKIOS_LITHIUM)
++	uint32_t cmdline_size, cmdline_copies;
++#endif
+ 	uint64_t checkpoint;
+ 	uint64_t forced_base;
+ 	uint64_t resident_rd;           /* size of a root image the host put at the resident address */
+@@ -2840,6 +2847,10 @@
+ 			pi->kernel_size = e->size;
+ 		} else if (str_eq(e->name, "cmdline")) {
+ 			pi->cmdline = text;
++#if defined(HAKIOS_LITHIUM)
++			pi->cmdline_size = e->size;
++			pi->cmdline_copies++;
++#endif
+ 		} else if (str_eq(e->name, "physbase")) {
+ 			pi->forced_base = parse_number(text, 16); /* testing aid; must be free RAM */
+ 		} else if (str_eq(e->name, "resident")) {
+@@ -3042,6 +3053,10 @@
+  * written to the log partition. Returns 0 if the kernel could not be started.
+  */
+ static int starts_with(const char *s, const char *prefix);
++
++#if defined(HAKIOS_LITHIUM)
++#include "../devices/lithium/return-fastboot/loader.inc"
++#endif
+ 
+ static int
+ run_kernel(int have_checkpoint, uint64_t checkpoint)
+@@ -3286,6 +3301,10 @@
+ 			break;
+ 		}
+ 	}
++#if defined(HAKIOS_LITHIUM)
++	lithium_fastboot_seed(pi.cmdline, pi.cmdline_size, pi.cmdline_copies,
++	    kern_lo, kern_hi, checkpoint);
++#endif
+ 	for (const char *c = pi.cmdline; *c; c++) {
+ 		if (starts_with(c, "loader_return_after=")) {
+ 			for (c += 20; *c >= '0' && *c <= '9'; c++) {
+@@ -3876,6 +3895,9 @@
+ 		}
+ 	}
+ 	write_logs(klog, klog_len);
++#if defined(HAKIOS_LITHIUM)
++	lithium_fastboot_after_return(reason, loader_ctx[CTX_ESR]);
++#endif
+ 	return 1;
+ }
+ 
+--- a/drivers/storage/hakios.ufs.c
++++ b/drivers/storage/hakios.ufs.c
+@@ -2106,3 +2106,7 @@
+ 		}
+ 	}
+ }
++
++#if defined(LITHIUM_ARMV8_0)
++#include "../../../../devices/lithium/return-fastboot/storage.inc"
++#endif
+--- a/userland/src/init.c
++++ b/userland/src/init.c
+@@ -89,6 +89,8 @@
+ 	}
+ 	return NULL;
+ }
++
++#include "../../devices/lithium/return-fastboot/init.inc"
+ 
+ /* LITHIUM TOUCH diagnostic init: begin. */
+ /*
+@@ -1705,6 +1707,7 @@
+ 		const char *reason;
+ 		unsigned seconds;
+ 
++		if (lithium_fastboot_test_hold()) return 0;
+ 		if (lithium_touch_diag_admission(&reason, &seconds)) {
+ 			return lithium_touch_diag_wait(reason, seconds);
+ 		}

@@ -1,0 +1,364 @@
+{
+  "schema": 1,
+  "attempt": "HakiOS lithium R8",
+  "started_at": "2026-11-14T23:43:29.397089+08:00",
+  "recorded_at": "2026-11-15T00:01:19.838871+08:00",
+  "baseline": {
+    "project": "HakiOS",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2"
+  },
+  "package": {
+    "image_sha256": "e0d0394a99d41fa64b727752632215d8d87869cf7ba02ceb37a830857aa26e4f",
+    "image_bytes": 15683584,
+    "kernel_sha256": "cea35d92711dec40712b1044174df8c49b78f20ae1a0a3d3e346364989a97b01",
+    "loader_sha256": "7f18c2ce2acf265824951b46e8b6797f8f6229678f5bc4558673232dd4775004",
+    "fd_sha256": "35c2314bce5ca01f5148a2976d49541944bc2c9f812f7f631cb9b98553090932",
+    "hello_sha256": "fc3dcce5e628fe4b4b0f4ff0d17c934ac39beed543b168a379ca4999b5488c96",
+    "payload_sha256": "7e64c625a35d7ab22118e9f7ce942efa4867f4b4dacc87290bc305ca6577bb55",
+    "cmdline": "cores=1 serial=3 -v hello_wait=600 loader_return_after=660",
+    "stock_dtb_table_sha256": "ab929abf55ad4822ae83489a58d6b550b7b24ea8398ce8ead1de7b1d2caed6aa"
+  },
+  "frozen_artifacts_path": "artifacts/hakios/device-tests/20261114-234329",
+  "identity_verified": true,
+  "bootloader_unlocked": true,
+  "userdata_bytes": 250710192128,
+  "temporary_boot_issued": true,
+  "fastboot_returncode": 0,
+  "command_accepted": true,
+  "fastboot_boot_output": "Sending 'boot.img' (15316 KB)                      OKAY [  0.398s]\nBooting                                            OKAY [  0.739s]\nFinished. Total time: 1.143s\n",
+  "user_screen_observation": {
+    "source": "three_user_photos_and_text",
+    "observation_pending": false,
+    "running_feedback": "已进入 Hello，日志继续增加",
+    "progress_feedback": "看起来一切正常",
+    "ordered_observations": [
+      "kernel_and_hello_running",
+      "timer_select_progress_180693_ms",
+      "timer_select_progress_542059_ms",
+      "600_select_wakes_and_normal_timed_return"
+    ],
+    "later_device_feedback": "手机没电了，我正在充电，你先准备好镜像吧",
+    "return_to_fastboot_confirmed_by_user": false,
+    "current_device_state_basis": "user_reports_battery_depleted_and_charging_after_supplied_return_photo",
+    "return_to_fastboot_verified_by_fresh_USB_preflight": true,
+    "later_fastboot_preflight_report": "reports/hakios-device-r9.json",
+    "return_to_fastboot_recovery_method": "unknown"
+  },
+  "latest_usb": {
+    "checked_at": "2026-11-14T23:44:12.294934+08:00",
+    "authorized_device_in_fastboot": false,
+    "adb_present": false,
+    "local_log_path": "reports/local/20261114-234329-362583-hakios-preflight/post-boot-usb.json"
+  },
+  "verified_stages": {
+    "fastboot_command": true,
+    "uefi": true,
+    "mmu_hobs": false,
+    "bds": false,
+    "gop": false,
+    "efi_file_hash": false,
+    "loader": true,
+    "kernel": true,
+    "hello": true,
+    "kernel_prepared": true,
+    "initial_kernel_thread_scheduling": true,
+    "periodic_memory_callback_progress": true,
+    "real_timer_ppi27_progress": true,
+    "select_timed_wake_progress": true,
+    "context_switch_progress": true,
+    "kernel_return_to_loader": true,
+    "orderly_timed_return": true
+  },
+  "outcome": "600_successful_select_wakes_602287_ms_then_orderly_kernel_timed_return",
+  "exact_failure_stage": "none_observed_in_supplied_R8_photos",
+  "loader_pe": {
+    "preferred_base": "0x40400000",
+    "size_of_image": 9879552,
+    "mapped_window": [
+      "0x40400000",
+      "0x41000000"
+    ],
+    "fits_mapped_window": true,
+    "relocations_present": true
+  },
+  "uefi_heap": {
+    "base": "0x124000000",
+    "end_exclusive": "0x128000000",
+    "size_bytes": 67108864,
+    "measured_ddr_checked": true,
+    "reservation_ranges_checked": 10,
+    "other_board_regions_disjoint": true,
+    "memory_evidence_path": "reports/live-memory.json",
+    "memory_evidence_sha256": "38cc2d64f1b8b2f760492a78cbdd9f8916b9dd6f7041a641f7c11f4aafd9414d",
+    "memory_map_sha256": "6d63cc3bdae336dc8429d10e74bede596bdd281c92c0fa70a8484dc5fc977145",
+    "runtime_availability_verified": false
+  },
+  "hardware_verified": true,
+  "ios14_compatibility_verified": false,
+  "partition_writes_performed": false,
+  "qemu_used": false,
+  "stack_contract": {
+    "base": "0x41590000",
+    "end_exclusive": "0x415d0000",
+    "size_bytes": 262144,
+    "memory_map_pcd_loader_bounds_match": true,
+    "cache_line_aligned": true,
+    "hardware_handoff_verified": true
+  },
+  "test_contract": {
+    "scope": "MIX platform observations only; not iOS14",
+    "timer_counter": "Acknowledged virtual-timer PPI 27 only; emitted in LITHIUM TIMER lines",
+    "hello": "Complete upstream static hello plus board-only observations of select/gettimeofday/getrusage",
+    "termination": "PID1 remains alive after 600 select iterations; existing loader_return_after callback at 660 seconds",
+    "timed_return_origin": "Kernel EARLY_BOOT startup; not the moment hello starts",
+    "logging": "Bounded text summary of last timer/select/hello and panic cause; raw composed log stays in RAM",
+    "memory_overlay": "Full HakiOS xnu/files hashes checked against actual compilation tree before building",
+    "compiled_markers_verified": true,
+    "runtime_verified": true,
+    "acceptance_requires": [
+      "Hello and kernel executed on this package",
+      "Increasing real timer PPI count and timed select wake/context-switch observations",
+      "600 successful select wakes, no select errors, elapsed time and independent wall-clock comparison",
+      "No unexpected panic; preserve any actual panic reason",
+      "Repeat three ten-minute boots before P1 closure"
+    ],
+    "runtime_verification_scope": "R8_kernel_hello_timer_progress_600_select_wakes_and_timed_return_not_full_P1"
+  },
+  "screen_evidence": {
+    "photos": [
+      {
+        "source": "user_photo",
+        "source_filename": "bcc52b6e7f57090e755ec8677818afc9.jpg",
+        "path": "reports/local/20261114-234329-362583-hakios-preflight/r8-progress-180s.jpg",
+        "frozen_path": "artifacts/hakios/device-tests/20261114-234329/r8-progress-180s.jpg",
+        "sha256": "8be38041081fab0a83f145ff11a93ec0468b96b958eba8bc41ecda456fa7a351",
+        "observed_scope": "timer_select_context_switch_progress_through_180693_ms"
+      },
+      {
+        "source": "user_photo",
+        "source_filename": "codex-clipboard-486eedf8-792e-4829-81a0-cfe7631a0f97.jpg",
+        "path": "reports/local/20261114-234329-362583-hakios-preflight/r8-progress-542s.jpg",
+        "frozen_path": "artifacts/hakios/device-tests/20261114-234329/r8-progress-542s.jpg",
+        "sha256": "20b23be0b6a5a0a317671579a13ef15cf9205eb35f5a82abbb09fcc368adc96f",
+        "observed_scope": "nine_timer_select_samples_through_542059_ms"
+      },
+      {
+        "source": "user_photo",
+        "source_filename": "codex-clipboard-d92348c9-c162-4810-b07a-14291acbc239.jpg",
+        "path": "reports/local/20261114-234329-362583-hakios-preflight/r8-timed-return-602s.jpg",
+        "frozen_path": "artifacts/hakios/device-tests/20261114-234329/r8-timed-return-602s.jpg",
+        "sha256": "dcc5ad83477119a88b715b6bb1a84e3f2fe87bbf0c92b72e4315f9fb41ef8d72",
+        "observed_scope": "600_successful_select_wakes_and_kernel_timed_return"
+      }
+    ],
+    "runtime_samples": [
+      {
+        "timer_ppi27": 2995,
+        "heartbeat": 6,
+        "select_wakes": 60,
+        "select_errors": 0,
+        "elapsed_ms": 60238,
+        "nvcsw": 60,
+        "nivcsw": 6,
+        "free_mib": 469,
+        "available_mib": 469,
+        "wired_mib": 42,
+        "photo_path": "reports/local/20261114-234329-362583-hakios-preflight/r8-progress-542s.jpg",
+        "timer_and_select_lines_are_separate": true
+      },
+      {
+        "timer_ppi27": 6586,
+        "heartbeat": 12,
+        "select_wakes": 120,
+        "select_errors": 0,
+        "elapsed_ms": 120465,
+        "nvcsw": 120,
+        "nivcsw": 6,
+        "free_mib": 469,
+        "available_mib": 469,
+        "wired_mib": 42,
+        "photo_path": "reports/local/20261114-234329-362583-hakios-preflight/r8-progress-542s.jpg",
+        "timer_and_select_lines_are_separate": true
+      },
+      {
+        "timer_ppi27": 10179,
+        "heartbeat": 18,
+        "select_wakes": 180,
+        "select_errors": 0,
+        "elapsed_ms": 180693,
+        "nvcsw": 180,
+        "nivcsw": 6,
+        "free_mib": 469,
+        "available_mib": 469,
+        "wired_mib": 42,
+        "photo_path": "reports/local/20261114-234329-362583-hakios-preflight/r8-progress-542s.jpg",
+        "timer_and_select_lines_are_separate": true
+      },
+      {
+        "timer_ppi27": 13770,
+        "heartbeat": 24,
+        "select_wakes": 240,
+        "select_errors": 0,
+        "elapsed_ms": 240922,
+        "nvcsw": 240,
+        "nivcsw": 6,
+        "free_mib": 469,
+        "available_mib": 469,
+        "wired_mib": 42,
+        "photo_path": "reports/local/20261114-234329-362583-hakios-preflight/r8-progress-542s.jpg",
+        "timer_and_select_lines_are_separate": true
+      },
+      {
+        "timer_ppi27": 17366,
+        "heartbeat": 30,
+        "select_wakes": 300,
+        "select_errors": 0,
+        "elapsed_ms": 301148,
+        "nvcsw": 300,
+        "nivcsw": 6,
+        "free_mib": 469,
+        "available_mib": 469,
+        "wired_mib": 42,
+        "photo_path": "reports/local/20261114-234329-362583-hakios-preflight/r8-progress-542s.jpg",
+        "timer_and_select_lines_are_separate": true
+      },
+      {
+        "timer_ppi27": 20956,
+        "heartbeat": 36,
+        "select_wakes": 360,
+        "select_errors": 0,
+        "elapsed_ms": 361377,
+        "nvcsw": 360,
+        "nivcsw": 6,
+        "free_mib": 469,
+        "available_mib": 469,
+        "wired_mib": 42,
+        "photo_path": "reports/local/20261114-234329-362583-hakios-preflight/r8-progress-542s.jpg",
+        "timer_and_select_lines_are_separate": true
+      },
+      {
+        "timer_ppi27": 24546,
+        "heartbeat": 42,
+        "select_wakes": 420,
+        "select_errors": 0,
+        "elapsed_ms": 421604,
+        "nvcsw": 420,
+        "nivcsw": 6,
+        "free_mib": 469,
+        "available_mib": 469,
+        "wired_mib": 42,
+        "photo_path": "reports/local/20261114-234329-362583-hakios-preflight/r8-progress-542s.jpg",
+        "timer_and_select_lines_are_separate": true
+      },
+      {
+        "timer_ppi27": 28141,
+        "heartbeat": 48,
+        "select_wakes": 480,
+        "select_errors": 0,
+        "elapsed_ms": 481831,
+        "nvcsw": 480,
+        "nivcsw": 6,
+        "free_mib": 469,
+        "available_mib": 469,
+        "wired_mib": 42,
+        "photo_path": "reports/local/20261114-234329-362583-hakios-preflight/r8-progress-542s.jpg",
+        "timer_and_select_lines_are_separate": true
+      },
+      {
+        "timer_ppi27": 31733,
+        "heartbeat": 54,
+        "select_wakes": 540,
+        "select_errors": 0,
+        "elapsed_ms": 542059,
+        "nvcsw": 540,
+        "nivcsw": 6,
+        "free_mib": 469,
+        "available_mib": 469,
+        "wired_mib": 42,
+        "photo_path": "reports/local/20261114-234329-362583-hakios-preflight/r8-progress-542s.jpg",
+        "timer_and_select_lines_are_separate": true
+      }
+    ],
+    "source_evidence": {
+      "xnu/files/osfmk/arm64/gic_v3_irq.c": {
+        "path": "reports/local/20261114-234329-362583-hakios-preflight/r8-gic-source.c",
+        "sha256": "b9de3f9d2dda4615586cdce2f1a7858467d1066e221132fe7643aef82acd3672"
+      },
+      "xnu/files/osfmk/arm64/loader_return.c": {
+        "path": "reports/local/20261114-234329-362583-hakios-preflight/r8-kernel-return-source.c",
+        "sha256": "0d882fbf4b353aebc79199da62a1437d777e94d9bccc7a4320feec8cd811f91d"
+      },
+      "userland/src/hello.c": {
+        "path": "reports/local/20261114-234329-362583-hakios-preflight/r8-hello-source.c",
+        "sha256": "c0c814f9a089ab0a013cec5201b24b093f43b2e36b5fc5f5c8b9c4563a3cdd29"
+      },
+      "xnuloader/loader.c": {
+        "path": "reports/local/20261114-234329-362583-hakios-preflight/r8-loader-source.c",
+        "sha256": "64090e87772d104ac2dc61eeddee9e9a62969f86f06b40d65a4f69066673f704"
+      }
+    },
+    "visible_lines": [
+      "Hello from user space on Darwin!",
+      "I am process 1, uid 0, console fd 0.",
+      "kernel.ver=2.3.4-hakios-darwin22.5-msm8996-g63fc2b46-dirty",
+      "LITHIUM RETURN LOG 17236 BYTES",
+      "KERNEL TIMED RETURN OBSERVED",
+      "LITHIUM SELECT WAKES 600 ERRORS 0 ELAPSED MS 602287 NVCSW 600 NIVCSW 6",
+      "LITHIUM HELLO WAIT COMPLETE KEEPING PID1 ALIVE FOR LOADER TIMED RETURN",
+      "RAW LOG RETAINED IN RAM SCREEN SHOWS TEXT SUMMARY",
+      "LITHIUM TEST ENDED USE POWER VOLUME DOWN FOR FASTBOOT"
+    ],
+    "return_screen_characters_normalized_by_console": true,
+    "photo_capture_timestamps_verified": false,
+    "final_timer_line_visible": false,
+    "panic_cause_line_visible": false,
+    "raw_ram_log_read_back_to_host": false
+  },
+  "stage_evidence_basis": {
+    "kernel": "direct_R8_hello_kernel_version_and_kernel_logs",
+    "hello": "direct_R8_pid1_console_and_600_wakes",
+    "uefi": "inferred_from_R8_kernel_execution_and_return_screen",
+    "loader": "direct_R8_timed_return_screen_and_source_contract",
+    "kernel_prepared": "inferred_from_R8_kernel_execution",
+    "mmu_hobs": "not_directly_photographed_in_R8",
+    "bds": "not_directly_photographed_in_R8",
+    "gop": "not_directly_photographed_in_R8",
+    "efi_file_hash": "not_directly_photographed_in_R8",
+    "real_timer_ppi27_progress": "nine_direct_R8_samples_of_acknowledged_PPI27_counter",
+    "context_switch_progress": "direct_R8_getrusage_nvcsw_60_to_600_nivcsw_6",
+    "orderly_timed_return": "direct_R8_Kernel_Timed_Return_Observed_and_wait_complete"
+  },
+  "hardware_verification_scope": "R8_kernel_hello_timer_progress_600_select_wakes_and_timed_return_not_full_P1",
+  "runtime_acceptance": {
+    "P1_passed": false,
+    "timed_callback_progress_observed": true,
+    "direct_timer_irq_counter_observed": true,
+    "timer_irq_counter_increasing": true,
+    "select_600_wakes_completed": true,
+    "select_errors": 0,
+    "select_elapsed_ms": 602287,
+    "select_sleep_wake_duration_verified_against_kernel_clock": true,
+    "independent_wallclock_comparison_verified": false,
+    "continuous_ten_minutes_observed_by_kernel_clock": true,
+    "continuous_ten_minutes_verified": false,
+    "final_timer_count": null,
+    "final_timer_count_not_inferred_from_earlier_samples": true,
+    "last_direct_timer_ppi27": 31733,
+    "last_direct_timer_heartbeat": 54,
+    "last_direct_timer_sample_adjacent_select_elapsed_ms": 542059,
+    "observed_600_wake_timed_returns_on_identical_image": 1,
+    "consecutive_successful_ten_minute_boots": 0,
+    "orderly_timed_return_observed": true,
+    "unexpected_panic_observed": false,
+    "pid1_kept_alive_observed": true,
+    "return_screen_readable": true,
+    "ios14_boot_verified": false,
+    "graphics_and_touch_verified": false,
+    "remaining_evidence": [
+      "Independent elapsed-time comparison",
+      "Late timer IRQ count covering the full observation interval",
+      "Three qualifying consecutive boots"
+    ]
+  }
+}

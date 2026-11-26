@@ -1,0 +1,138 @@
+{
+  "schema": 1,
+  "attempt": "HakiOS lithium R15",
+  "started_at": "2026-11-15T20:05:58.898864+08:00",
+  "recorded_at": "2026-11-15T20:06:00.350998+08:00",
+  "baseline": {
+    "project": "HakiOS",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2"
+  },
+  "package": {
+    "image_sha256": "4b2d13d2f2455dd91ea4d2a4a7444a980e388d15b301cad9ce5e4b279cc48c9f",
+    "image_bytes": 15724544,
+    "kernel_sha256": "3556a5e8543aae8ab8cfabc41fda08fabc457305f8d99e1c8a852d289ad0dd78",
+    "loader_sha256": "6d09d14717c0422c9ba946ad4b20a292b7d33de711f66dd869615c8335526951",
+    "fd_sha256": "a3f2246962bad13ba6888b141c115593ddb16c27f252ff9d173215179c25125e",
+    "payload_sha256": "296c6a1437d3772fa64b09879f504c75b480b69fea0db3b8cd5fed1228256a45",
+    "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=2 lithium_storage_test=1 systrace=1 loader_return_after=120",
+    "stock_dtb_table_sha256": "ab929abf55ad4822ae83489a58d6b550b7b24ea8398ce8ead1de7b1d2caed6aa",
+    "test_profile": "p2-storage-readonly",
+    "ramdisk_sha256": "e4c662b50594b0bbe58166fc1bbafc5637907f1dfba2d797aa62e44c6aeeef44",
+    "storage_probe_sha256": "77000ea899388da732a183b514704b58fb41bc959bee747b65225c0557b6e1b0"
+  },
+  "frozen_artifacts_path": "artifacts/hakios/p2-storage-ready-pid1-fault",
+  "frozen_boot_image": "reports/local/20261115-200558-876703-hakios-preflight/lithium-hakios-test.img",
+  "local_log_path": "reports/local/20261115-200558-876703-hakios-preflight",
+  "test_contract_path": "reports/local/20261115-200558-876703-hakios-preflight/test-contract.json",
+  "identity_verified": true,
+  "bootloader_unlocked": true,
+  "userdata_bytes": 250710192128,
+  "temporary_boot_issued": true,
+  "fastboot_returncode": 0,
+  "command_accepted": true,
+  "fastboot_boot_output": "Sending 'boot.img' (15356 KB)                      OKAY [  0.379s]\nBooting                                            OKAY [  0.786s]\nFinished. Total time: 1.171s\n",
+  "latest_usb": {
+    "checked_at": "2026-11-15T20:06:00.350998+08:00",
+    "authorized_device_in_fastboot": false,
+    "adb_present": false,
+    "local_log_path": "reports/local/20261115-200558-876703-hakios-preflight/post-boot-usb.json"
+  },
+  "battery_preflight": {
+    "battery_soc_ok": "yes",
+    "local_log_path": "reports/local/20261115-200558-876703-hakios-preflight/battery-query.json"
+  },
+  "user_screen_observation": {
+    "source": "user_photo",
+    "observation_pending": false,
+    "current_screen": "Retained PID1 SP-alignment fault and panic summary",
+    "automatic_reboot_observed": null
+  },
+  "verified_stages": {
+    "fastboot_command": true,
+    "uefi": true,
+    "mmu_hobs": false,
+    "bds": true,
+    "gop": true,
+    "efi_file_hash": true,
+    "loader": true,
+    "kernel": true,
+    "hello": false,
+    "storage_probe": false,
+    "hfs_mount": false,
+    "warm_ufs_ready": true,
+    "loader_userdata_hfsx_header": true,
+    "storage_probe_entry": true
+  },
+  "outcome": "diagnostic_PID1_entry_SP_alignment_SIGBUS",
+  "exact_failure_stage": "diagnostic_C_entry_first_stack_store",
+  "runtime_acceptance": {
+    "storage_test_passed": false,
+    "final_summary_pending": false,
+    "kernel_started": true,
+    "hfs_mount_verified": false,
+    "ios14_file_reads_verified": false,
+    "orderly_return_observed": false,
+    "panic_return_observed": true,
+    "final_summary_retained": true
+  },
+  "hardware_verified": false,
+  "ios14_compatibility_verified": false,
+  "partition_writes_performed": false,
+  "qemu_used": false,
+  "observation_recorded_at": "2026-11-15T20:13:26.834713+08:00",
+  "screen_evidence": {
+    "photos": [
+      {
+        "path": "reports/local/20261115-200558-876703-hakios-preflight/r15-pid1-sp-alignment.jpg",
+        "sha256": "e8c1f396c70b33e79fed75fe812a1677f3e145b79a7e235fd983cc967efd4033"
+      }
+    ],
+    "transcription_path": "reports/local/20261115-200558-876703-hakios-preflight/r15-screen-transcription.txt"
+  },
+  "failure": {
+    "reason_namespace": 2,
+    "reason_namespace_name": "OS_REASON_SIGNAL",
+    "subcode": 10,
+    "signal": "SIGBUS",
+    "exception": 1,
+    "exception_name": "EXC_BAD_ACCESS",
+    "code": "0x103",
+    "code_name": "EXC_ARM_SP_ALIGN",
+    "fault_pc": "0x100003508",
+    "fault_lr": "0x0",
+    "fault_sp": "0x16fdffe88",
+    "fault_far": "0x16fdffe48",
+    "esr": "0x9a000000",
+    "esr_ec": "0x26",
+    "instruction": "stp x24, x23, [sp, #-0x40]!",
+    "pc_is_first_C_entry_instruction": true,
+    "stack_alignment_remainder": 8,
+    "panic_caller": "0xfffffff00778cab0",
+    "ios14_launchd_was_tested": false,
+    "disassembly_path": "reports/local/20261115-200558-876703-hakios-preflight/r15-fault-disassembly.txt",
+    "disassembly_sha256": "33c6c1dd38f14c15441f40eabf0fe0fd56d63656165b91a746a0ae9f2adec9fd"
+  },
+  "measurements": {
+    "loader_return_log_bytes": 23141,
+    "ufs_stage": 6,
+    "ufs_cap": "0x107001f",
+    "ufs_hce": 1,
+    "ufs_hcs": "0x10f",
+    "ufs_ver": "0x10100",
+    "ufs_doorbell": 0,
+    "ufs_rc_ocs_st": 0,
+    "clock_ticks_start": 78655474783,
+    "clock_ticks_end": 78858611021,
+    "frequency_hz": 19200000,
+    "hardware_elapsed_ms": 10580,
+    "clock_valid": true,
+    "ppi27_start": 0,
+    "ppi27_end": 734,
+    "irq_delta": 734,
+    "samples": 0,
+    "stalled": 0,
+    "min_step": 0
+  },
+  "kernel_execution_verified": true
+}

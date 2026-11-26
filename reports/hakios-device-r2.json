@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "attempt": "HakiOS lithium R2",
+  "started_at": "2026-11-14T20:19:04.620928+08:00",
+  "recorded_at": "2026-11-14T20:24:09.013212+08:00",
+  "baseline": {
+    "project": "HakiOS",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2"
+  },
+  "package": {
+    "image_sha256": "a407484baee0ec46799d0a44e08ff1f38f099573945c7ab1021493321f6cb76e",
+    "image_bytes": 15679488,
+    "kernel_sha256": "02357c2cdb8b6d3cf700071adf3a77d2987667bc2a238bfc5383bdb907cd6698",
+    "loader_sha256": "47cffc4b88772c1a62651c82a5ecb9646efede562b1959bf260b3950edb2b813",
+    "fd_sha256": "ad9069ad3aa204cdb84341d8f90863785fe83740e7a9c94a6d4fa7fb8a10c093",
+    "hello_sha256": "c6ce7932427b0980316497bbdf62f10cd6f19057f1309a34d3cff25fd6522bbe",
+    "payload_sha256": "967d668435f473bd389df665a180f1926654814938049e281bc8a0b7974eeb98",
+    "cmdline": "cores=1 serial=3 -v hello_wait=600",
+    "stock_dtb_table_sha256": "ab929abf55ad4822ae83489a58d6b550b7b24ea8398ce8ead1de7b1d2caed6aa"
+  },
+  "frozen_artifacts_path": "artifacts/hakios/device-tests/20261114-201904",
+  "identity_verified": true,
+  "bootloader_unlocked": true,
+  "userdata_bytes": 250710192128,
+  "temporary_boot_issued": true,
+  "fastboot_returncode": 0,
+  "command_accepted": true,
+  "fastboot_boot_output": "Sending 'boot.img' (15312 KB)                      OKAY [  0.368s]\nBooting                                            OKAY [  0.738s]\nFinished. Total time: 1.112s\n",
+  "user_screen_observation": {
+    "source": "user_text",
+    "text": "几行字一闪而过就没了，都来不及捕捉；随后重新出现 MIUI 启动画面",
+    "unidentified_text_flashed": true,
+    "automatic_reboot_reported": true,
+    "miui_boot_screen_reported": true,
+    "android_boot_completed_verified": false
+  },
+  "latest_usb": {
+    "checked_at": "2026-11-14T20:24:09.060620+08:00",
+    "authorized_device_in_fastboot": true,
+    "adb_present": false,
+    "local_log_path": "reports/local/20261114-201904-596104-hakios-preflight/post-boot-usb.json"
+  },
+  "verified_stages": {
+    "fastboot_command": true,
+    "uefi": false,
+    "loader": false,
+    "kernel": false,
+    "hello": false
+  },
+  "outcome": "automatic_reboot_to_miui_boot_screen_reported_no_hakios_execution_evidence",
+  "exact_failure_stage": "unknown",
+  "hardware_verified": false,
+  "ios14_compatibility_verified": false,
+  "partition_writes_performed": false,
+  "qemu_used": false,
+  "firmware_instruction_scan": {
+    "modules": 23,
+    "matches": []
+  }
+}

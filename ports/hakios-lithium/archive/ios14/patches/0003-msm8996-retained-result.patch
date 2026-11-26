@@ -1,0 +1,116 @@
+--- a/xnu/files/osfmk/arm64/loader_return.c
++++ b/xnu/files/osfmk/arm64/loader_return.c
+@@ -338,6 +338,63 @@
+ 	}
+ }
+ 
++#if defined(LITHIUM_ARMV8_0) && defined(GENERIC_GIC_V3_IRQ)
++/* Single boot-core MIX test: reuse the existing callback and return-log channel. */
++static uint64_t lithium_start_ticks, lithium_start_irqs, lithium_clock_hz;
++static uint64_t lithium_previous_irqs, lithium_min_irq_step;
++static uint32_t lithium_timer_samples, lithium_stalled_samples;
++
++static uint64_t
++lithium_counter_ticks(void)
++{
++    __asm__ volatile ("isb" ::: "memory");
++    return __builtin_arm_rsr64("CNTVCT_EL0");
++}
++
++static uint64_t
++lithium_elapsed_ms(uint64_t ticks)
++{
++    if (lithium_clock_hz == 0 || ticks < lithium_start_ticks) return 0;
++    uint64_t delta = ticks - lithium_start_ticks;
++    return (delta / lithium_clock_hz) * 1000 + (delta % lithium_clock_hz) * 1000 / lithium_clock_hz;
++}
++
++static void
++lithium_timer_sample(void)
++{
++    char line[256];
++    uint64_t irqs = lithium_vtimer_irq_count(), ticks = lithium_counter_ticks();
++    uint64_t step = irqs - lithium_previous_irqs;
++    if (irqs <= lithium_previous_irqs) lithium_stalled_samples++;
++    if (lithium_timer_samples == 0 || step < lithium_min_irq_step) lithium_min_irq_step = step;
++    lithium_previous_irqs = irqs;
++    lithium_timer_samples++;
++    snprintf(line, sizeof(line), "\nLITHIUM TIMER ppi27=%llu heartbeat=%llu elapsed_ms=%llu samples=%u stalled=%u\n",
++        (unsigned long long)irqs, (unsigned long long)loader_live.heartbeat,
++        (unsigned long long)lithium_elapsed_ms(ticks), lithium_timer_samples, lithium_stalled_samples);
++    /* printf's screen output alone was absent from R8's returned log. Save explicitly. */
++    loader_log_puts(line);
++    printf("%s", line);
++}
++
++static void
++lithium_save_final_measurements(void)
++{
++    char line[256];
++    uint64_t ticks = lithium_counter_ticks(), irqs = lithium_vtimer_irq_count();
++    unsigned valid = lithium_clock_hz == 19200000 && lithium_start_ticks != 0 && ticks >= lithium_start_ticks;
++    snprintf(line, sizeof(line), "\nLITHIUM CLOCK ticks_start=%llu ticks_end=%llu freq_hz=%llu elapsed_ms=%llu valid=%u\n",
++        (unsigned long long)lithium_start_ticks, (unsigned long long)ticks,
++        (unsigned long long)lithium_clock_hz, (unsigned long long)lithium_elapsed_ms(ticks), valid);
++    loader_log_puts(line);
++    snprintf(line, sizeof(line), "LITHIUM FINAL ppi27_start=%llu ppi27_end=%llu irq_delta=%llu samples=%u stalled=%u min_step=%llu\n",
++        (unsigned long long)lithium_start_irqs, (unsigned long long)irqs,
++        (unsigned long long)(irqs - lithium_start_irqs), lithium_timer_samples,
++        lithium_stalled_samples, (unsigned long long)lithium_min_irq_step);
++    loader_log_puts(line);
++}
++#endif
++
+ /*
+  * Everything printf()/IOLog()/os_log wrote ends up in the kernel message
+  * buffer (what dmesg shows), whether or not a console displayed it.
+@@ -400,6 +457,9 @@
+ 			loader_log_putc(*c);
+ 		}
+ 	}
++#if defined(LITHIUM_ARMV8_0) && defined(GENERIC_GIC_V3_IRQ)
++    if (!loader_return_entered) lithium_save_final_measurements();
++#endif
+ 	loader_jump(0, 0);
+ }
+ 
+@@ -467,6 +527,11 @@
+ 	if (!PE_parse_boot_argn("loader_return_after", &seconds, sizeof(seconds)) || seconds == 0) {
+ 		return;
+ 	}
++#if defined(LITHIUM_ARMV8_0) && defined(GENERIC_GIC_V3_IRQ)
++    lithium_clock_hz = __builtin_arm_rsr64("CNTFRQ_EL0");
++    lithium_start_ticks = lithium_counter_ticks();
++    lithium_start_irqs = lithium_previous_irqs = lithium_vtimer_irq_count();
++#endif
+ 	thread_call_t call = thread_call_allocate(loader_return_timer, NULL);
+ 	clock_interval_to_deadline(seconds, NSEC_PER_SEC, &deadline);
+ 	thread_call_enter_delayed(call, deadline);
+@@ -564,8 +629,7 @@
+ 	hakios_memory_line(line, sizeof(line));
+ 	printf("%s", line);
+ #if defined(LITHIUM_ARMV8_0) && defined(GENERIC_GIC_V3_IRQ)
+-	printf("LITHIUM TIMER ppi27=%llu heartbeat=%llu\n",
+-	    (unsigned long long)lithium_vtimer_irq_count(), (unsigned long long)loader_live.heartbeat);
++	lithium_timer_sample();
+ #endif
+ 	hakios_adreno_minute();                /* (and how warm the GPU is, if it is in use) */
+ }
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -385,9 +385,15 @@
+ 	print(panic_line != NULL ? "KERNEL PANIC CAUSE:\n" :
+ 	    timed != NULL ? "KERNEL TIMED RETURN OBSERVED\n" : "RETURN CAUSE NOT CAPTURED\n");
+ 	lithium_show_line(panic_line, log + bytes);
++	print("FINAL HARDWARE MEASUREMENTS:\n");
++	lithium_show_line(lithium_last_line(log, bytes, "LITHIUM CLOCK "), log + bytes);
++	lithium_show_line(lithium_last_line(log, bytes, "LITHIUM FINAL "), log + bytes);
+ 	lithium_show_line(lithium_last_line(log, bytes, "LITHIUM TIMER "), log + bytes);
++	print("FINAL USER WAIT:\n");
+ 	lithium_show_line(lithium_last_line(log, bytes, "LITHIUM SELECT "), log + bytes);
+ 	lithium_show_line(lithium_last_line(log, bytes, "LITHIUM HELLO "), log + bytes);
++	print("MEASUREMENTS SAVED UNTIL REBOOT\n");
++	print("READ THIS SCREEN LATER; NO STOPWATCH NEEDED\n");
+ 	print("RAW LOG RETAINED IN RAM; SCREEN SHOWS TEXT SUMMARY\n");
+ }
+ #endif

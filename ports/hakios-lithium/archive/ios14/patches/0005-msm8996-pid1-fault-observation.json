@@ -1,0 +1,14 @@
+{
+  "baseline": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+  "patch_sha256": "0c31bff5a5002e097f0fe04044261f15385570f8364b845187df6c8cac002fe4",
+  "scope": "MIX-only PID1 register capture at existing HakiOS user_exception_trace plus APFS error-only telemetry and retained loader summary",
+  "original_files": {
+    "xnu/files/osfmk/arm64/user_exception_trace.c": "b4fa90eb28d8752ae68b4dc4532aea3ed43611f7f5874aee4ab17ec035c80916",
+    "xnu/files/bsd/miscfs/apfs/apfs_vnops.c": "f3dcd203e6aa63b4d5f760f18a477ea22a6f9489e99db022a5a26ef15418a8ef",
+    "xnuloader/loader.c": "b886effa0b37845d7c0f489e44a019d7b183d420f445c813c7d96b9ea0ecd307"
+  },
+  "requires_boot_arg": "systrace=1",
+  "changes_fault_or_filesystem_behavior": false,
+  "hardware_verified": false,
+  "relates_to": "reports/hakios-device-r14.json"
+}

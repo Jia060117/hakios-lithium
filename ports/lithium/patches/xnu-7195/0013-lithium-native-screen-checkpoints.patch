@@ -1,0 +1,381 @@
+Subject: lithium: native XNU entry, BGR24 early/serial/panic logs
+
+diff --git a/osfmk/arm64/lithium_early.c b/osfmk/arm64/lithium_early.c
+new file mode 100644
+--- /dev/null
++++ b/osfmk/arm64/lithium_early.c
+@@ -0,0 +1,80 @@
++/*
++ * Native MIX bootstrap console. Adapted from joranv1/ios-sailfish
++ * 6f27e41ff249f2680540ebe8ee5ab982c5e641c9, patches 0010/0012/0079.
++ * MIX display capture: BGR888, 1080x2040, stride 3240, PA 0x83401000.
++ * No allocation, current thread, locks, firmware or serial hardware needed.
++ * start.s and arm_vm_init keep a Normal-NC alias alive across TTBR0 teardown.
++ */
++#include <arm64/lithium_early.h>
++#if defined(LITHIUM)
++#include <kern/misc_protos.h>
++#define WIDTH 1080u
++#define HEIGHT 2040u
++#define STRIDE 3240u
++#define SCALE 2u
++#define CELL_W 16u
++#define CELL_H 32u
++#define ROWS ((HEIGHT - 32u) / CELL_H)
++#define COLS (WIDTH / CELL_W)
++extern unsigned char iso_font[256 * 16];
++static volatile unsigned char *fb = (volatile unsigned char *)(uintptr_t)0x83401000;
++static unsigned int row = 4, col, started, panicking;
++
++static void pixel(unsigned int x, unsigned int y, uint32_t rgb)
++{
++    volatile unsigned char *p = fb + y * STRIDE + x * 3u;
++    p[0] = rgb; p[1] = rgb >> 8; p[2] = rgb >> 16;
++}
++static void clear_row(void)
++{
++    for (unsigned int y = row * CELL_H; y < (row + 1) * CELL_H; y++)
++        for (unsigned int x = 0; x < WIDTH; x++) pixel(x, y, 0);
++}
++void lithium_early_putc(char c)
++{
++    if (!started) { started = 1; clear_row(); }
++    if (c == '\r') { col = 0; return; }
++    if (c == '\n' || col == COLS) {
++        col = 0; row = (row + 1) % ROWS; clear_row();
++        __asm__ volatile("dsb sy" ::: "memory");
++        if (c == '\n') return;
++    }
++    const unsigned char *glyph = iso_font + (unsigned char)c * 16;
++    for (unsigned int gy = 0; gy < 16; gy++)
++        for (unsigned int sy = 0; sy < SCALE; sy++)
++            for (unsigned int gx = 0; gx < 8; gx++)
++                for (unsigned int sx = 0; sx < SCALE; sx++)
++                    pixel(col * CELL_W + gx * SCALE + sx,
++                        row * CELL_H + gy * SCALE + sy,
++                        (glyph[gy] & (1u << gx)) ? 0xffffffu : 0);
++    col++;
++}
++static void string(const char *s)
++{ while (*s) lithium_early_putc(*s++); }
++void lithium_early_mark(unsigned int stage, const char *label)
++{
++    if (stage > 20) return;
++    for (unsigned int y = HEIGHT - 32; y < HEIGHT; y++)
++        for (unsigned int x = stage * 48; x < (stage + 1) * 48; x++)
++            pixel(x, y, 0x00ff00u | (stage * 12u << 16));
++    string("XNU LITHIUM ");
++    lithium_early_putc('0' + stage / 10);
++    lithium_early_putc('0' + stage % 10);
++    string(": "); string(label); lithium_early_putc('\n');
++}
++void lithium_early_relocate(uint64_t base)
++{
++    fb = (volatile unsigned char *)(uintptr_t)base;
++    lithium_early_mark(9, "final framebuffer alias live");
++}
++void lithium_early_panic(const char *fmt, va_list *args)
++{
++    if (panicking) return;
++    panicking = 1;
++    string("\nXNU LITHIUM PANIC: ");
++    va_list copy; va_copy(copy, *args);
++    _doprnt(fmt, &copy, lithium_early_putc, 16);
++    va_end(copy); lithium_early_putc('\n');
++    __asm__ volatile("dsb sy" ::: "memory");
++}
++#endif
+diff --git a/osfmk/arm64/lithium_early.h b/osfmk/arm64/lithium_early.h
+new file mode 100644
+--- /dev/null
++++ b/osfmk/arm64/lithium_early.h
+@@ -0,0 +1,16 @@
++/* Native lithium diagnostics, derived from ios-sailfish early console. */
++#ifndef _ARM64_LITHIUM_EARLY_H_
++#define _ARM64_LITHIUM_EARLY_H_
++#include <pexpert/arm64/board_config.h>
++#include <stdint.h>
++#include <stdarg.h>
++#if defined(LITHIUM)
++void lithium_early_mark(unsigned int stage, const char *label);
++void lithium_early_putc(char c);
++void lithium_early_panic(const char *fmt, va_list *args);
++void lithium_early_relocate(uint64_t base);
++#else
++static inline void lithium_early_mark(unsigned int stage, const char *label)
++{ (void)stage; (void)label; }
++#endif
++#endif
+diff --git a/osfmk/arm/arm_init.c b/osfmk/arm/arm_init.c
+--- a/osfmk/arm/arm_init.c
++++ b/osfmk/arm/arm_init.c
+@@ -57,6 +57,7 @@
+ #include <pexpert/arm/consistent_debug.h>
+ #include <pexpert/device_tree.h>
+ #include <arm/proc_reg.h>
++#include <arm64/lithium_early.h>
+ #include <arm/pmap.h>
+ #include <arm/caches_internal.h>
+ #include <arm/cpu_internal.h>
+@@ -312,6 +313,7 @@
+ 	uint64_t        xmaxmem;
+ 	thread_t        thread;
+ 
++	lithium_early_mark(1, "arm_init entered; MMU enabled");
+ 	arm_slide_rebase_and_sign_image();
+ 
+ 	/* If kernel integrity is supported, use a constant copy of the boot args. */
+@@ -326,6 +328,7 @@
+ #endif /* defined(HAS_APPLE_PAC) */
+ 
+ 	PE_init_platform(FALSE, args); /* Get platform expert set up */
++	lithium_early_mark(2, "platform expert initialized");
+ 
+ #if __arm64__
+ 	wfe_timeout_configure();
+@@ -366,6 +369,7 @@
+ #endif
+ 
+ 	ml_parse_cpu_topology();
++	lithium_early_mark(3, "CPU topology parsed");
+ 
+ 	master_cpu = ml_get_boot_cpu_number();
+ 	assert(master_cpu >= 0 && master_cpu <= ml_get_max_cpu_number());
+@@ -415,11 +419,13 @@
+ 	boot_processor->thread_timer = &thread->system_timer;
+ 
+ 	cpu_bootstrap();
++	lithium_early_mark(4, "CPU bootstrap complete");
+ 
+ 	rtclock_early_init();
+ 
+ 	kernel_debug_string_early("kernel_startup_bootstrap");
+ 	kernel_startup_bootstrap();
++	lithium_early_mark(5, "kernel startup bootstrap complete");
+ 
+ 	/*
+ 	 * Initialize the timer callout world
+@@ -488,7 +494,9 @@
+ 	__builtin_arm_wsr("pan", 1);
+ #endif  /* __ARM_PAN_AVAILABLE__ */
+ 
++	lithium_early_mark(7, "entering arm_vm_init");
+ 	arm_vm_init(xmaxmem, args);
++	lithium_early_mark(15, "arm_vm_init returned");
+ 
+ 	if (debug_boot_arg) {
+ 		patch_low_glo();
+@@ -560,6 +568,7 @@
+ #endif
+ 
+ 	PE_init_platform(TRUE, &BootCpuData);
++	lithium_early_mark(19, "interrupt platform initialized");
+ 
+ #if __arm64__
+ 	ml_map_cpu_pio();
+diff --git a/osfmk/arm64/arm_vm_init.c b/osfmk/arm64/arm_vm_init.c
+--- a/osfmk/arm64/arm_vm_init.c
++++ b/osfmk/arm64/arm_vm_init.c
+@@ -42,6 +42,7 @@
+ #include <machine/atomic.h>
+ #include <arm64/proc_reg.h>
+ #include <arm64/lowglobals.h>
++#include <arm64/lithium_early.h>
+ #include <arm/cpu_data_internal.h>
+ #include <arm/misc_protos.h>
+ #include <pexpert/arm64/boot.h>
+@@ -1694,6 +1695,24 @@
+ #define ARM64_PHYSMAP_SLIDE_RANGE (1ULL << 30) // 1 GB
+ #define ARM64_PHYSMAP_SLIDE_MASK  (ARM64_PHYSMAP_SLIDE_RANGE - 1)
+ 
++#if defined(LITHIUM)
++#define LITHIUM_EARLY_FB_VA (LOW_GLOBAL_BASE_ADDRESS + ARM_TT_L2_SIZE)
++static void lithium_early_map_final(void)
++{
++    const vm_map_address_t va = LITHIUM_EARLY_FB_VA;
++    assert(va + ARM_TT_L2_SIZE <= gVirtBase);
++    tt_entry_t l1 = cpu_tte[(va & ARM_TT_L1_INDEX_MASK) >> ARM_TT_L1_SHIFT];
++    assert((l1 & (ARM_TTE_VALID | ARM_TTE_TYPE_MASK)) == (ARM_TTE_VALID | ARM_TTE_TYPE_TABLE));
++    tt_entry_t *l2 = (tt_entry_t *)phystokv(l1 & ARM_TTE_TABLE_MASK);
++    tt_entry_t *slot = &l2[(va & ARM_TT_L2_INDEX_MASK) >> ARM_TT_L2_SHIFT];
++    assert(*slot == ARM_TTE_EMPTY);
++    *slot = 0x82000000ULL | ARM_TTE_VALID | ARM_TTE_TYPE_BLOCK |
++        ARM_TTE_BLOCK_SH(SH_OUTER_MEMORY) |
++        ARM_TTE_BLOCK_ATTRINDX(CACHE_ATTRINDX_WRITECOMB) |
++        ARM_TTE_BLOCK_AF | ARM_TTE_BLOCK_PNX | ARM_TTE_BLOCK_NX;
++    __asm__ volatile("dsb ishst" ::: "memory");
++}
++#endif
+ void
+ arm_vm_init(uint64_t memory_size, boot_args * args)
+ {
+@@ -2012,6 +2031,9 @@
+ 
+ 	set_tbi();
+ 
++#if defined(LITHIUM)
++    lithium_early_map_final();
++#endif
+ 	arm_vm_physmap_init(args);
+ 	set_mmu_ttb_alternate(cpu_ttep & TTBR_BADDR_MASK);
+ 
+@@ -2019,6 +2041,9 @@
+ 	ml_enable_monitor();
+ #endif
+ 
++#if defined(LITHIUM)
++    lithium_early_relocate(LITHIUM_EARLY_FB_VA + 0x1401000);
++#endif
+ 	set_mmu_ttb(invalid_ttep & TTBR_BADDR_MASK);
+ 
+ 	flush_mmu_tlb();
+@@ -2029,6 +2054,7 @@
+ 	// global table pointers may need to be different due to physical aperture remapping
+ 	cpu_tte = (tt_entry_t*)(phystokv(cpu_ttep));
+ 	invalid_tte = (tt_entry_t*)(phystokv(invalid_ttep));
++	lithium_early_mark(11, "TTBR0 removed; final physmap live");
+ 
+ 	// From here on out, we're off the bootstrap translation tables.
+ 
+@@ -2097,7 +2123,9 @@
+ 		arm_vm_map(cpu_tte, cur, ARM_PTE_EMPTY);
+ 	}
+ #endif
++	lithium_early_mark(12, "entering pmap_bootstrap");
+ 	pmap_bootstrap(dynamic_memory_begin);
++	lithium_early_mark(13, "pmap_bootstrap returned");
+ 
+ 	disable_preemption();
+ 
+diff --git a/pexpert/arm/pe_serial.c b/pexpert/arm/pe_serial.c
+--- a/pexpert/arm/pe_serial.c
++++ b/pexpert/arm/pe_serial.c
+@@ -27,6 +27,7 @@
+ #include <pexpert/arm/consistent_debug.h>
+ #include <pexpert/arm64/board_config.h>
+ #include <arm64/proc_reg.h>
++#include <arm64/lithium_early.h>
+ #endif
+ #if HIBERNATION
+ #include <machine/pal_hibernate.h>
+@@ -816,6 +817,17 @@
+ 	gPESF = fns;
+ }
+ 
++#if defined(LITHIUM)
++static void lithium_uart_init(void) {}
++static int lithium_uart_ready(void) { return 1; }
++static void lithium_uart_putc(int c) { lithium_early_putc((char)c); }
++static int lithium_uart_empty(void) { return 0; }
++static struct pe_serial_functions lithium_serial_functions = {
++    .uart_init = lithium_uart_init,
++    .tr0 = lithium_uart_ready, .td0 = lithium_uart_putc,
++    .rr0 = lithium_uart_empty, .rd0 = lithium_uart_empty
++};
++#endif
+ int
+ serial_init(void)
+ {
+@@ -838,6 +850,10 @@
+ 		return 1;
+ 	}
+ 
++#if defined(LITHIUM)
++    register_serial_functions(&lithium_serial_functions);
++    lithium_early_mark(16, "native BGR24 serial console registered");
++#endif
+ 	dccmode = 0;
+ 	if (PE_parse_boot_argn("dcc", &dccmode, sizeof(dccmode))) {
+ 		register_serial_functions(&dcc_serial_functions);
+diff --git a/osfmk/arm64/start.s b/osfmk/arm64/start.s
+--- a/osfmk/arm64/start.s
++++ b/osfmk/arm64/start.s
+@@ -459,6 +459,26 @@
+ 
+ 	mov		x20, x0
+ 	mov		x21, #0
++#if defined(LITHIUM)
++    /* Real XNU physical entry: white BGR24 band, preserve boot args in x20. */
++    MOV64 x0, (0x83401000 + 2008 * 3240)
++    mov w1, #255
++    mov x2, #32
++    mov x4, #3240
++Llithium_mark_row:
++    mov x3, #48
++    mov x5, x0
++Llithium_mark_pixel:
++    strb w1, [x5], #1
++    strb w1, [x5], #1
++    strb w1, [x5], #1
++    subs x3, x3, #1
++    b.ne Llithium_mark_pixel
++    add x0, x0, x4
++    subs x2, x2, #1
++    b.ne Llithium_mark_row
++    dsb sy
++#endif
+ 
+ 	// Set low reset vector before attempting any loads
+ 	adrp	x0, EXT(LowExceptionVectorBase)@page
+@@ -605,6 +625,16 @@
+ 	lsr		x5,  x24, #(ARM_TT_L2_SHIFT)
+ 	create_bootstrap_mapping x14, x15, x5, x3, x2, x9, x10, x11, x12, x13
+ 
++#if defined(LITHIUM)
++    /* Both low splash and upper DDR use L1 slot 0 with 16K / 39-bit VA. */
++    MOV64 x10, 0x82000000
++    MOV64 x11, (ARM_TTE_TYPE_BLOCK | ARM_TTE_VALID | ARM_TTE_BLOCK_SH(SH_OUTER_MEMORY) | ARM_TTE_BLOCK_ATTRINDX(CACHE_ATTRINDX_WRITECOMB) | ARM_TTE_BLOCK_AF | ARM_TTE_BLOCK_PNX | ARM_TTE_BLOCK_NX)
++    orr x11, x11, x10
++    and x12, x10, #(ARM_TT_L2_INDEX_MASK)
++    lsr x12, x12, #(ARM_TT_L2_SHIFT)
++    add x13, x25, #(2 * PGBYTES)
++    str x11, [x13, x12, lsl #TTE_SHIFT]
++#endif
+ 	/* Ensure TTEs are visible */
+ 	dsb		ish
+ 
+diff --git a/osfmk/kern/debug.c b/osfmk/kern/debug.c
+--- a/osfmk/kern/debug.c
++++ b/osfmk/kern/debug.c
+@@ -80,6 +80,9 @@
+ #include <stdatomic.h>
+ #include <sys/pgo.h>
+ #include <console/serial_protos.h>
++#if defined(__arm64__)
++#include <arm64/lithium_early.h>
++#endif
+ 
+ #if !(MACH_KDP && CONFIG_KDP_INTERACTIVE_DEBUGGING)
+ #include <kdp/kdp_udp.h>
+@@ -852,6 +855,9 @@
+     uint64_t panic_options_mask, void *panic_data_ptr, unsigned long panic_caller)
+ {
+ #pragma clang diagnostic pop
++#if defined(LITHIUM)
++    lithium_early_panic(panic_format_str, panic_args);
++#endif
+ 
+ #if defined(__x86_64__) && (DEVELOPMENT || DEBUG)
+ 	/* Turn off I/O tracing once we've panicked */
+diff --git a/osfmk/conf/files.arm64 b/osfmk/conf/files.arm64
+--- a/osfmk/conf/files.arm64
++++ b/osfmk/conf/files.arm64
+@@ -32,6 +32,7 @@
+ osfmk/arm64/dbgwrap.c		standard
+ osfmk/arm/arm_timer.c		standard
+ osfmk/arm/arm_init.c	standard
++osfmk/arm64/lithium_early.c	standard
+ osfmk/arm64/arm_vm_init.c	standard
+ osfmk/arm/io_map.c		standard
+ osfmk/arm64/loose_ends.c	standard
+diff --git a/osfmk/arm64/Makefile b/osfmk/arm64/Makefile
+--- a/osfmk/arm64/Makefile
++++ b/osfmk/arm64/Makefile
+@@ -76,5 +76,7 @@
+ 
+ endif # $(PLATFORM),MacOSX
+ 
++EXPORT_MD_LIST += lithium_early.h
++
+ include $(MakeInc_rule)
+ include $(MakeInc_dir)

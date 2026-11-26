@@ -1,0 +1,36 @@
+{
+  "source_sha256": "0bc4c7b8d80375c338ab1f1bf4be6425ec223f9df46301276256b7669675364c",
+  "test_script_sha256": "31b1b4142d385f9dbc97d2e33731ea032bb2fdf00ff64a0c52f673ca2fab1eb0",
+  "passed": true,
+  "checks": [
+    "PASS child termination case 0 preserves ownership and failure",
+    "PASS child termination case 1 preserves ownership and failure",
+    "PASS child termination case 2 preserves ownership and failure",
+    "PASS child termination case 3 preserves ownership and failure",
+    "PASS child termination case 4 preserves ownership and failure",
+    "PASS child termination case 5 preserves ownership and failure",
+    "PASS child termination case 6 preserves ownership and failure",
+    "PASS child termination case 7 preserves ownership and failure",
+    "PASS child termination case 8 preserves ownership and failure",
+    "PASS child termination case 9 preserves ownership and failure"
+  ],
+  "cases": [
+    "exit0",
+    "fork failure",
+    "ECHILD without kill",
+    "wait EINVAL cleanup",
+    "exit7",
+    "external SIGKILL",
+    "timeout and kill",
+    "EINTR exhaustion",
+    "EINTR then exit0",
+    "kill ESRCH"
+  ],
+  "deadlines_seconds": [
+    30,
+    60
+  ],
+  "actual_child_runner_exercised": true,
+  "sanitizer": "address,undefined",
+  "hardware_verified": false
+}

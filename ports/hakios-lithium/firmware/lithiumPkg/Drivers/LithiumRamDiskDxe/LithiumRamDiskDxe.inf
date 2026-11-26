@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+[Defines]
+  INF_VERSION = 0x00010005
+  BASE_NAME = LithiumRamDiskDxe
+  FILE_GUID = A1FE2BC7-B5EC-43FD-9EEB-4E8E541B6937
+  MODULE_TYPE = DXE_DRIVER
+  VERSION_STRING = 0.1
+  ENTRY_POINT = LithiumRamDiskEntry
+[Sources]
+  LithiumRamDiskDxe.c
+[Packages]
+  MdePkg/MdePkg.dec
+  lithiumPkg/lithiumPkg.dec
+[LibraryClasses]
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  BaseMemoryLib
+  BaseLib
+  FdtLib
+  CacheMaintenanceLib
+[Protocols]
+  gEfiBlockIoProtocolGuid
+  gEfiDevicePathProtocolGuid
+[Depex]
+  TRUE

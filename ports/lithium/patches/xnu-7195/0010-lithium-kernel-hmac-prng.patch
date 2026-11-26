@@ -1,0 +1,282 @@
+Subject: prng: adapt sailfish HMAC-SHA256 provider to XNU7195
+
+Source: 6f27e41ff249f2680540ebe8ee5ab982c5e641c9, patch 0014.
+7195 owns DRBG state separately and uses the older init callback signature.
+Entropy collection preserves existing health tests; no dummy crypto table.
+
+--- a/osfmk/prng/prng_random.c
++++ b/osfmk/prng/prng_random.c
+@@ -145,6 +145,143 @@
+ 		     .strictFIPS = 0,
+ 	     }};
+ 
++#if defined(LITHIUM)
++/*
++ * The corecrypto kext normally installs the kernel PRNG. LITHIUM has no such
++ * kext: use the built-in HMAC-SHA256 DRBG, just as early_random does. A
++ * single mutex serializes generation and reseeding across all CPUs. This
++ * favors a small, auditable bring-up implementation over per-CPU scaling.
++ * This registers only the PRNG, not the unrelated g_crypto_funcs table.
++ */
++#include <kern/startup.h>
++
++static LCK_GRP_DECLARE(lithium_prng_group, "lithium-prng");
++static LCK_MTX_DECLARE(lithium_prng_lock, &lithium_prng_group);
++static struct cckprng_ctx lithium_prng_ctx;
++static uint8_t lithium_drbg_state[EARLY_RANDOM_STATE_STATIC_SIZE];
++static struct ccdrbg_info lithium_drbg_info;
++static const struct ccdrbg_nisthmac_custom lithium_prng_custom = {
++	.di = &ccsha256_ltc_di,
++	.strictFIPS = 0,
++};
++static cckprng_getentropy lithium_getentropy;
++static void *lithium_getentropy_arg;
++static unsigned lithium_max_ngens;
++static bool lithium_generators[MAX_CPUS];
++
++static struct ccdrbg_state *
++lithium_prng_state(struct cckprng_ctx *ctx)
++{
++	return (struct ccdrbg_state *)lithium_drbg_state;
++}
++
++static void
++lithium_prng_check(int status)
++{
++	if (status != CCDRBG_STATUS_OK) {
++		panic("LITHIUM HMAC DRBG error %d", status);
++	}
++}
++
++static void
++lithium_prng_init_with_getentropy(struct cckprng_ctx *ctx, unsigned max_ngens,
++    size_t seed_nbytes, const void *seed, size_t nonce_nbytes, const void *nonce,
++    cckprng_getentropy getentropy, void *getentropy_arg)
++{
++	assert(max_ngens > 0 && max_ngens <= MAX_CPUS);
++	ccdrbg_factory_nisthmac(&lithium_drbg_info, &lithium_prng_custom);
++	assert(lithium_drbg_info.size <= sizeof(lithium_drbg_state));
++	const char ps[] = "xnu lithium kernel random";
++	lithium_prng_check(ccdrbg_init(&lithium_drbg_info, lithium_prng_state(ctx),
++	    seed_nbytes, seed, nonce_nbytes, nonce, sizeof(ps) - 1, ps));
++	lithium_getentropy = getentropy;
++	lithium_getentropy_arg = getentropy_arg;
++	lithium_max_ngens = max_ngens;
++}
++
++static void
++lithium_prng_init(struct cckprng_ctx *ctx, unsigned max_ngens,
++    __unused size_t entropybuf_nbytes, __unused const void *entropybuf,
++    __unused const uint32_t *entropybuf_nsamples, size_t seed_nbytes,
++    const void *seed, size_t nonce_nbytes, const void *nonce)
++{
++	lithium_prng_init_with_getentropy(ctx, max_ngens, seed_nbytes, seed,
++	    nonce_nbytes, nonce, entropy_provide, NULL);
++}
++
++static void
++lithium_prng_initgen(__unused struct cckprng_ctx *ctx, unsigned gen_idx)
++{
++	lck_mtx_lock(&lithium_prng_lock);
++	assert(gen_idx < lithium_max_ngens);
++	assert(!lithium_generators[gen_idx]);
++	lithium_generators[gen_idx] = true;
++	lck_mtx_unlock(&lithium_prng_lock);
++}
++
++static void
++lithium_prng_reseed(struct cckprng_ctx *ctx, size_t nbytes, const void *seed)
++{
++	lck_mtx_lock(&lithium_prng_lock);
++	lithium_prng_check(ccdrbg_reseed(&lithium_drbg_info, lithium_prng_state(ctx),
++	    nbytes, seed, 0, NULL));
++	lck_mtx_unlock(&lithium_prng_lock);
++}
++
++static void
++lithium_prng_refresh(struct cckprng_ctx *ctx)
++{
++	/* The entropy callback also uses try-lock; refresh must not wait. */
++	if (!lck_mtx_try_lock(&lithium_prng_lock)) {
++		return;
++	}
++	uint8_t entropy[SHA256_DIGEST_LENGTH];
++	size_t nbytes = sizeof(entropy);
++	int32_t nsamples = lithium_getentropy(&nbytes, entropy, lithium_getentropy_arg);
++	if (nsamples < 0) {
++		panic("LITHIUM PRNG entropy health test failed");
++	}
++	if (nsamples >= 256) {
++		assert(nbytes >= SEED_SIZE && nbytes <= sizeof(entropy));
++		lithium_prng_check(ccdrbg_reseed(&lithium_drbg_info, lithium_prng_state(ctx),
++		    nbytes, entropy, 0, NULL));
++	}
++	cc_clear(sizeof(entropy), entropy);
++	lck_mtx_unlock(&lithium_prng_lock);
++}
++
++static void
++lithium_prng_generate(struct cckprng_ctx *ctx, unsigned gen_idx,
++    size_t nbytes, void *out)
++{
++	assert(nbytes <= CCKPRNG_GENERATE_MAX_NBYTES);
++	lck_mtx_lock(&lithium_prng_lock);
++	assert(gen_idx < lithium_max_ngens && lithium_generators[gen_idx]);
++	lithium_prng_check(ccdrbg_generate(&lithium_drbg_info, lithium_prng_state(ctx),
++	    nbytes, out, 0, NULL));
++	lck_mtx_unlock(&lithium_prng_lock);
++}
++
++__startup_func
++static void
++lithium_prng_startup(void)
++{
++	/* Ensure the boot seed exists before registration erases the early DRBG. */
++	(void)early_random();
++	const struct cckprng_funcs funcs = {
++		.init = lithium_prng_init,
++		.initgen = lithium_prng_initgen,
++		.reseed = lithium_prng_reseed,
++		.refresh = lithium_prng_refresh,
++		.generate = lithium_prng_generate,
++		.init_with_getentropy = lithium_prng_init_with_getentropy,
++	};
++	register_and_init_prng(&lithium_prng_ctx, &funcs);
++	kprintf("LITHIUM PRNG: HMAC-SHA256 registered\n");
++}
++STARTUP(EARLY_BOOT, STARTUP_RANK_FIRST, lithium_prng_startup);
++#endif /* LITHIUM */
++
+ static void read_erandom(void * buf, size_t nbytes);
+ 
+ /*
+@@ -339,12 +476,22 @@
+ write_random(void * buffer, u_int numbytes)
+ {
+ 	uint8_t seed[SHA256_DIGEST_LENGTH];
++#if defined(LITHIUM)
++	const struct ccdigest_info *di = &ccsha256_ltc_di;
++	ccdigest_di_decl(di, ctx);
++	ccdigest_init(di, ctx);
++	ccdigest_update(di, ctx, numbytes, buffer);
++	ccdigest_final(di, ctx, seed);
++	ccdigest_di_clear(di, ctx);
++#else
+ 	SHA256_CTX ctx;
+ 
+ 	/* hash the input to minimize the time we need to hold the lock */
+ 	SHA256_Init(&ctx);
+ 	SHA256_Update(&ctx, buffer, numbytes);
+ 	SHA256_Final(seed, &ctx);
++
++#endif
+ 
+ 	prng_funcs.reseed(prng_ctx, sizeof(seed), seed);
+ 	cc_clear(sizeof(seed), seed);
+--- a/osfmk/prng/entropy.c
++++ b/osfmk/prng/entropy.c
+@@ -40,6 +40,10 @@
+ #include <machine/machine_routines.h>
+ #include <libkern/section_keywords.h>
+ #include <sys/cdefs.h>
++#if defined(LITHIUM)
++#include <corecrypto/ccdigest.h>
++#include <corecrypto/ccsha2.h>
++#endif
+ 
+ // The number of samples we can hold in an entropy buffer.
+ #define ENTROPY_MAX_SAMPLE_COUNT (2048)
+@@ -85,7 +89,11 @@
+ 	// State for a SHA256 computation. This is used to accumulate
+ 	// entropy samples from across all CPUs. It is finalized when
+ 	// entropy is provided to the consumer of this module.
++#if defined(LITHIUM)
++	ccdigest_ctx_decl(CCSHA256_STATE_SIZE, CCSHA256_BLOCK_SIZE, sha256_ctx);
++#else
+ 	SHA256_CTX sha256_ctx;
++#endif
+ 
+ 	// Since the corecrypto kext is not loaded when this module is
+ 	// initialized, we cannot initialize the SHA256 state at that
+@@ -361,7 +369,39 @@
+ 	entropy_analysis_sample_count += sample_count;
+ }
+ 
+-int32_t
++/* LITHIUM uses the same built-in digest as early_random, without a kext. */
++static void
++entropy_hash_init(void)
++{
++#if defined(LITHIUM)
++	ccdigest_init(&ccsha256_ltc_di, entropy_data.sha256_ctx);
++#else
++	SHA256_Init(&entropy_data.sha256_ctx);
++#endif
++}
++
++static void
++entropy_hash_update(const void *data, size_t nbytes)
++{
++#if defined(LITHIUM)
++	ccdigest_update(&ccsha256_ltc_di, entropy_data.sha256_ctx, nbytes, data);
++#else
++	SHA256_Update(&entropy_data.sha256_ctx, data, nbytes);
++#endif
++}
++
++static void
++entropy_hash_final(void *out)
++{
++#if defined(LITHIUM)
++	ccdigest_final(&ccsha256_ltc_di, entropy_data.sha256_ctx, out);
++	ccdigest_ctx_clear(CCSHA256_STATE_SIZE, CCSHA256_BLOCK_SIZE, entropy_data.sha256_ctx);
++#else
++	SHA256_Final(out, &entropy_data.sha256_ctx);
++#endif
++}
++
++	int32_t
+ entropy_provide(size_t *entropy_size, void *entropy, __unused void *arg)
+ {
+ #if (DEVELOPMENT || DEBUG)
+@@ -376,9 +416,11 @@
+ 	// The first call to this function comes while the corecrypto kext
+ 	// is being loaded. We require SHA256 to accumulate entropy
+ 	// samples.
++#if !defined(LITHIUM)
+ 	if (__improbable(!g_crypto_funcs)) {
+ 		return sample_count;
+ 	}
++#endif
+ 
+ 	// There is only one consumer (the kernel PRNG), but they could
+ 	// try to consume entropy from different threads. We simply fail
+@@ -391,7 +433,7 @@
+ 	// perform this initialization in entropy_init because the
+ 	// corecrypto kext is not loaded yet.
+ 	if (__improbable(!entropy_data.sha256_ctx_init)) {
+-		SHA256_Init(&entropy_data.sha256_ctx);
++		entropy_hash_init();
+ 		entropy_data.sha256_ctx_init = true;
+ 	}
+ 
+@@ -416,7 +458,7 @@
+ 		// We accumulate the samples regardless of whether the test
+ 		// failed. It cannot hurt.
+ 		entropy_data.total_sample_count += cpu_sample_count;
+-		SHA256_Update(&entropy_data.sha256_ctx, e->samples, cpu_sample_count * sizeof(e->samples[0]));
++		entropy_hash_update(e->samples, cpu_sample_count * sizeof(e->samples[0]));
+ 
+ 		// This code path is only used for testing. Its use is governed by
+ 		// a boot arg; see its initialization above.
+@@ -458,8 +500,8 @@
+ 		goto out;
+ 	}
+ 
+-	SHA256_Final(entropy, &entropy_data.sha256_ctx);
+-	SHA256_Init(&entropy_data.sha256_ctx);
++	entropy_hash_final(entropy);
++	entropy_hash_init();
+ 	entropy_data.read_sample_count = entropy_data.total_sample_count;
+ 
+ 	sample_count = n;

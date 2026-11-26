@@ -1,0 +1,97 @@
+{
+  "schema": 1,
+  "target": "iOS 14.8 / 18H17; preparatory firmware",
+  "journal_build_tag": "0xb7509da56dd90328",
+  "hardware_image_sha256": "7d452fe4a67f8b5b1cee96ab757d22b648394477ed68d093ba14ae6745bf1ea6",
+  "hardware_fd_sha256": "3a7d5650e6a323c07f484fbd448bda193984ad4a5a1591759668dd06d57210a4",
+  "qemu_image_sha256": "f0d41cff406cac43cba81cbfe619eacd4a07b395cfbc027b842a63f144b821d3",
+  "qemu_fd_sha256": "f6d89b4bd975dca8609ab8117d57533be224110f82f1341842bd312269bc4a14",
+  "stock_hook_instruction_checks_passed": true,
+  "hardware_linux_early_execution_verified": true,
+  "hardware_observation_pending": false,
+  "hardware_status": "Tenth attempt visually reached post-MMU high-VA marker 9; no automatic Android return; explicit manual recovery verified",
+  "all_six_qemu_cases_passed": true,
+  "qemu_linux_early_checkpoint": 8,
+  "qemu_linux_post_mmu_checkpoint": 9,
+  "qemu_linux_post_mmu_pc": "0xffffffc002400450",
+  "qemu_linux_post_mmu_sctlr_el1": "0x14c5d83d",
+  "qemu_green_pixels_verified": true,
+  "qemu_exception_pixels_verified": true,
+  "hook_sites": [
+    {
+      "offset": "0x1000",
+      "original_instruction": "f50300aa",
+      "stub_symbol": "linux_hook_entry",
+      "checkpoint": 1
+    },
+    {
+      "offset": "0x1008",
+      "original_instruction": "09fe0594",
+      "stub_symbol": "linux_hook_el_setup",
+      "checkpoint": 2
+    },
+    {
+      "offset": "0x100c",
+      "original_instruction": "c5fd0594",
+      "stub_symbol": "linux_hook_phys_offset",
+      "checkpoint": 3
+    },
+    {
+      "offset": "0x1010",
+      "original_instruction": "160038d5",
+      "stub_symbol": "linux_hook_boot_mode",
+      "checkpoint": 4
+    },
+    {
+      "offset": "0x101c",
+      "original_instruction": "f70300aa",
+      "stub_symbol": "linux_hook_cpu_lookup",
+      "checkpoint": 5
+    },
+    {
+      "offset": "0x1030",
+      "original_instruction": "5b0e0058",
+      "stub_symbol": "linux_hook_page_tables",
+      "checkpoint": 6
+    },
+    {
+      "offset": "0x180800",
+      "original_instruction": "c5060058",
+      "stub_symbol": "linux_hook_cpu_setup",
+      "checkpoint": 7
+    },
+    {
+      "offset": "0x180820",
+      "original_instruction": "001018d5",
+      "stub_symbol": "linux_hook_mmu_enable",
+      "checkpoint": 8
+    },
+    {
+      "offset": "0x1230",
+      "original_instruction": "83feff10",
+      "stub_symbol": "linux_hook_post_mmu",
+      "checkpoint": 9
+    }
+  ],
+  "reports": [
+    "reports/uefi-qemu.json",
+    "reports/uefi-qemu-strict-align.json",
+    "reports/uefi-qemu-payload-reject.json",
+    "reports/uefi-qemu-linux-early.json",
+    "reports/uefi-qemu-linux-early-trap.json",
+    "reports/uefi-qemu-linux-post-mmu.json"
+  ],
+  "hardware_post_mmu_execution_verified": true,
+  "xnu_started": false,
+  "ios_userspace_started": false,
+  "previous_hardware_attempt_report": "reports/uefi-device-attempt-09.json",
+  "previous_hardware_visual_linux_early_checkpoint": 8,
+  "previous_hardware_verification_scope": "User text only; explicitly recovered by manual power key; no same-boot binary journal",
+  "hardware_attempt_report": "reports/uefi-device-attempt-10.json",
+  "hardware_local_log_path": "reports/local/20261112-223456-612914-uefi",
+  "hardware_visual_linux_early_checkpoint": 9,
+  "hardware_verification_scope": "User text: eight yellow plus ninth green, no red; conditional hook after SCTLR/ISB/high-VA branch. No recovered binary journal or numeric hardware SCTLR/PC.",
+  "automatic_stock_handoff_verified": false,
+  "physical_recovery_pending": false,
+  "physical_recovery_verified": true
+}

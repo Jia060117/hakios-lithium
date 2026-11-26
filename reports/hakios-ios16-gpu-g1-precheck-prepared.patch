@@ -1,0 +1,3648 @@
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -1,3 +1,5 @@
++2026-11-23 GPU G1供电/fuse前置主机包冻结：CPU614.4基线，新增默认关gpu_power_diag只允许显式G0/RAM，GFX/MX指定SID3/1S2均1700、7field双遍最多28EXT_READL、六raw64fuse双遍含缺失row63，0PMIC/GPUpowerclock写/未读GPU。历史MMSSrev1/bin0/limitation0缺row63，模型computednull，不猜电压；G1上电未验。实际完整内核7c63f434/RAM镜像24f53f36、逐层读回/最终无UFSFV/FastbootDXE保持、180秒/自动返回10秒主机通过。适配器末读取越预算未标记由mock发现并补postaccess检查，旧01保持不启，新02专项通过；Pasteur核心41419cases186408checks/Ramanfuse6006cases73234checks+317calc/Baconadapter158cases1183442checks/Kepler打包增量7项，main13parser/实际链接/源hash复核。本阶段设备0、97/66/原索引/614/R20/low01/G0旧冻结保持，源码补丁可回退不含vendor固件。依用户GPU计划§0等待一次新前置RAM采集批准；见reports/hakios-ios16-gpu-g1-precheck-prepared.md/json。
++
+ 2026-11-23 GPU G0一次RAM真机通过：03:52:07接受61bc8b82，97/66；真实XNU3核、G0 logical0affinity1，9 GCC/GPUCC字段双遍18读全valid/stable、18us、三个16KiBallocation释放，0GPU写/未读GPU或SMMU。CX/GX00222001均PWR_ON0/SW_COLLAPSE1；四GPU分支enable0/off1，BIMC链两字段不等整总线供电/ownership证明，chipID/CP未验。180正常timer/四stop/source0/drain1target57875；235帧65444raw/57924console独立重放连续0gap/dup/残帧/lost，Pipeerror原样保留。03:56:56唯一devices/product核实54223ce9/MSM8996_A8回Fastboot，未请求手动恢复/未捕获固件内部PrepareCommit或目视终屏。CPU614.4配置模型，四CPU TSENS峰51.2/51.8/48.0/48.6C非GPU温度；RAMlookup2非UFS失败。Bacon保存日志/位定义复核、main生命周期/USB独立审计；无分区刷写/改压/固件装载/ADB/QEMU/重试，原索引/614/R20/low01冻结保持。G0结案，下一G1供电/fuse/RPMbus证据后才上电读ID，旧批准不扩到写GPU；见reports/hakios-ios16-gpu-g0-01.md/json。
+ 
+ 2026-11-23 GPU G0主机包冻结：用户选614.4MHz配置模型为基线，结束频率搜索；A530内核/MSM语义→Freedreno Gallium，Metal延后。G0 exact9 GCC/GPUCC字段双遍18读/0写，不读GPU/SMMU，完整VM页可释放映射/绑定logical0affinity1，缺开关不访问。实际完整内核14635e6d/隔离RAM镜像61bc8b82构建读回、最终嵌套FV无物理UFS且FastbootDXE精确，180秒/自动返回10秒；主机核心2696case470478check/适配器14case795check/打包22+FV6通过。本地匹配stock8固件64504字节仅忽略区，stock最低活跃133MHz、GFX CPR3/PMI8994S2区别于MX PM8994RPM，PAS13/供电/池所有权均未验；fb2只变一字节90186317未上机。Bacon/Kepler/Pasteur/Kant并行，main实际构建及来源/哈希复核；本阶段设备0、96/65/原索引/614/R20/low01旧冻结保持。按用户GPU计划§0等待一次G0 RAM上机批准，不沿用CPU阶段授权；见reports/hakios-ios16-gpu-g0-prepared.md/json。
+--- a/project.json
++++ b/project.json
+@@ -174,20 +174,20 @@
+     "large_tasks_sequential": true
+   },
+   "work_status": {
+-    "status": "gpu_G0_passed_left_in_fastboot",
++    "status": "gpu_G1_precheck_host_ready_awaiting_approval",
+     "phase2_approved": true,
+     "device_operations_performed": true,
+     "device_boots_performed": true,
+     "partition_writes_performed": true,
+     "hakios_temporary_boot_count": 97,
+     "backup_branch": "archive/ios14-r31-20261116",
+-    "next_step": "G1 GPU GFX/MX supply evidence and controlled power-on at stock133MHz; CPU614.4baseline",
++    "next_step": "One G1 supply/fuse RAM capture, especially row63; then stock133MHz GFX/MX power prerequisites",
+     "phase3_approved": true,
+     "auxiliary_stock_reader_boots_accepted": 4,
+     "ios16_boots_performed": 66,
+     "auxiliary_stock_reader_adb_runtime_observations": 3,
+     "latest_evidence_recorded_at": "2026-11-22T20:01:41.851288+00:00",
+-    "latest_host_report": "reports/hakios-ios16-gpu-g0-01.md",
++    "latest_host_report": "reports/hakios-ios16-gpu-g1-precheck-prepared.md",
+     "r5_backup_branch": "archive/ios16-r5-20261117",
+     "r6_backup_branch": "archive/ios16-r6-20261117",
+     "r7_backup_branch": "archive/ios16-r7-20261117",
+@@ -3838,12 +3838,12 @@
+     "cpu_baseline_model_hz": 614400000,
+     "cpu_choice": "user_accepted_2026-11-23",
+     "route": "A530 MSM-style kernel ABI then Freedreno Gallium/GLES; fill/blit first; Metal later",
+-    "phase": "G0_runtime_passed_next_G1",
++    "phase": "G1_prerequisites_host_ready",
+     "default_off": true,
+     "device_operations_this_phase": 8,
+     "next_device_approval_required": true,
+     "hardware_stage_passed": "G0_readonly_clock_gdsc",
+-    "report": "reports/hakios-ios16-gpu-g0-prepared.md",
++    "report": "reports/hakios-ios16-gpu-g1-precheck-prepared.md",
+     "g0_image": "evidence\\gpu-g0-20261123\\package\\g0-01\\lithium-hakios-ios16-gpu-g0-01.img",
+     "g0_image_sha256": "61bc8b8220f54e8a2b0772a694690901b89e48a65b2d52463c8f962ab02c7933",
+     "g0_kernel_sha256": "14635e6dcd3db6ab26226afbdf53f27a6a266d8931e335e91fc229d2b26ea1ff",
+@@ -3864,6 +3864,14 @@
+     "gx_gdsc_raw": "0x00222001",
+     "automatic_fastboot_observed": true,
+     "latest_runtime_report": "reports/hakios-ios16-gpu-g0-01.md",
+-    "g1_device_authorized": false
++    "g1_device_authorized": false,
++    "g1_precheck_image": "evidence\\gpu-g1-20261123\\package\\g1-precheck-02\\lithium-hakios-ios16-gpu-g1-precheck-02.img",
++    "g1_precheck_image_sha256": "24f53f36277df2ccdd4cb2bc5e4226ea5edda403435820ff55a7a586d5b4bc6a",
++    "g1_kernel_sha256": "7c63f434fcae955c07299cf135025fb6b349bab854df3e7d8acf2c974ca090e8",
++    "g1_stage1_armed": false,
++    "g1_max_observer_read_commands": 28,
++    "g1_missing_fuse_row": 63,
++    "g1_voltage_model_ready": false,
++    "current_phase_device_operations": 0
+   }
+ }
+--- a/ports/hakios-lithium/peripherals/boot-options.h
++++ b/ports/hakios-lithium/peripherals/boot-options.h
+@@ -21,6 +21,7 @@
+     bool gpu_probe;
+     unsigned gpu_stage;
+     bool gpu_wd;
++    bool gpu_power_diag;
+ };
+ 
+ struct lithium_peripheral_key {
+@@ -45,6 +46,7 @@
+     LITHIUM_GPU_STAGE,
+     LITHIUM_GPU_WD,
+     LITHIUM_TOUCH_SMP,
++    LITHIUM_GPU_POWER_DIAG,
+     LITHIUM_OPTION_COUNT
+ };
+ 
+@@ -115,6 +117,7 @@
+         [LITHIUM_GPU_STAGE] = {"gpu_stage", sizeof("gpu_stage") - 1, 4},
+         [LITHIUM_GPU_WD] = {"gpu_wd", sizeof("gpu_wd") - 1, 1},
+         [LITHIUM_TOUCH_SMP] = {"touch_smp", sizeof("touch_smp") - 1, 1},
++        [LITHIUM_GPU_POWER_DIAG] = {"gpu_power_diag", sizeof("gpu_power_diag") - 1, 1},
+     };
+     unsigned values[LITHIUM_OPTION_COUNT] = {0};
+     unsigned seen = 0;
+@@ -269,6 +272,17 @@
+     options->gpu_stage = values[LITHIUM_GPU_STAGE];
+     options->gpu_probe = values[LITHIUM_GPU_PROBE] != 0 || options->gpu_stage != 0;
+     options->gpu_wd = options->gpu_probe && values[LITHIUM_GPU_WD] != 0;
++    /* G1 prerequisites only. This never arms a GPU power/clock write.
++     * Exact, explicit G0 request keeps old profiles and higher stages inert. */
++    if (values[LITHIUM_GPU_POWER_DIAG] != 0 &&
++        (values[LITHIUM_GPU_PROBE] != 1 ||
++         (seen & (1u << LITHIUM_GPU_STAGE)) == 0 ||
++         values[LITHIUM_GPU_STAGE] != 0 || values[LITHIUM_TOUCH] != 0 ||
++         (seen & (1u << LITHIUM_TOUCH_STAGE)) != 0)) {
++        *options = (struct lithium_peripheral_options){0};
++        return false;
++    }
++    options->gpu_power_diag = values[LITHIUM_GPU_POWER_DIAG] != 0;
+     return true;
+ }
+ 
+--- a/ports/hakios-lithium/peripherals/kernel.inc
++++ b/ports/hakios-lithium/peripherals/kernel.inc
+@@ -60,6 +60,17 @@
+ #include "../gpu/g0-adapter.inc"
+ #undef LG0_MMIO_LOAD
+ #undef LG0_READ_BARRIER
++#define LG1_BARRIER() __asm__ volatile("dsb sy" ::: "memory")
++#define LG1_LOAD32(address) (*(volatile uint32_t *)(address))
++#define LG1_LOAD64(address) (*(volatile uint64_t *)(address))
++#define LG1_STORE_READ_COMMAND(address,value) (*(volatile uint32_t *)(address)=(value))
++#define LG1_DELAY_US(us) delay(us)
++#include "../gpu/g1-precheck.inc"
++#undef LG1_DELAY_US
++#undef LG1_STORE_READ_COMMAND
++#undef LG1_LOAD64
++#undef LG1_LOAD32
++#undef LG1_BARRIER
+ #endif
+ 
+ static void
+@@ -74,6 +85,8 @@
+             return;
+         }
+         lithium_gpu_g0_probe();
++        if (lithium_peripheral_requested.gpu_power_diag)
++            lithium_gpu_g1_precheck();
+         return;
+     }
+     if (lithium_peripheral_requested.touch &&
+--- a/ports/hakios-lithium/peripherals/contract.json
++++ b/ports/hakios-lithium/peripherals/contract.json
+@@ -217,5 +217,47 @@
+     "hardware_verified": false,
+     "core_sha256": "3c3a74a96e548b0dbb74656b084262f96454bd510e329dc8ba033d4ca65012fb",
+     "adapter_sha256": "8f21e1f958e4436334feed330da772fc0686817d0df4bcf4f362ae1d99baed59"
++  },
++  "gpu_g1_precheck": {
++    "default_off": true,
++    "arg": "gpu_power_diag=1",
++    "stage": 0,
++    "requires_gpu_probe": true,
++    "ram_only": true,
++    "regulator_writes": 0,
++    "gpu_writes": 0,
++    "spmi_operation": "EXT_READL",
++    "max_read_commands": 28,
++    "rail_sids": [
++      3,
++      1
++    ],
++    "rail_bases": [
++      5888,
++      5888
++    ],
++    "field_offsets": [
++      4,
++      5,
++      64,
++      65,
++      69,
++      70,
++      97
++    ],
++    "fuse_rows": [
++      39,
++      41,
++      63,
++      64,
++      66,
++      68
++    ],
++    "overall_returning_access_budget_us": 250000,
++    "access_cap": 9000,
++    "post_access_budget_check": true,
++    "gpu_aperture_access": false,
++    "stage1_armed": false,
++    "hardware_verified": false
+   }
+ }
+--- /dev/null
++++ b/ports/hakios-lithium/gpu/g1-precheck.inc
+@@ -0,0 +1,248 @@
++/* SPDX-License-Identifier: MIT
++ * G1 prerequisites, never power-on: two exact SPMI peripheral snapshots and
++ * immutable QFPROM rows. Observer CMD writes request READs only; there are no
++ * PMIC, clock, GDSC, IRQ or GPU aperture writes. Call once in an isolated RAM
++ * boot after UEFI CPU initialization, bound to logical0/affinity1. Disabled
++ * PMIC/cpufreq drivers and the one-shot worker avoid another XNU channel user;
++ * route/config checks do not prove exclusion of TZ or firmware clients.
++ */
++#ifndef LITHIUM_GPU_G1_PRECHECK_INC
++#define LITHIUM_GPU_G1_PRECHECK_INC
++#include "g1-spmi-read.h"
++#include "g1-fuse.h"
++
++#define LG1_BUDGET_US UINT64_C(250000)
++#define LG1_ACCESS_CAP 9000u
++#define LG1_COMMAND_CAP (2u * LGS_RAIL_COUNT * LGS_FIELD_COUNT)
++#define LG1_FUSE_BASE UINT64_C(0x00074000)
++
++struct lg1_mapping { struct r38_mmio_window window; vm_offset_t allocation; };
++static struct {
++    unsigned used, reads, writes, fuse_reads;
++    uint64_t start_us, last_us;
++    bool poisoned;
++    struct lg1_mapping core, observer, fuses;
++    uint64_t observer_pa;
++    uint32_t allowed_cmd;
++    struct lgs_result transaction;
++    struct lgs_route routes[LGS_RAIL_COUNT];
++    unsigned rail_valid[LGS_RAIL_COUNT][2];
++    uint8_t rail_raw[LGS_RAIL_COUNT][2][LGS_FIELD_COUNT];
++    unsigned rail_stable[LGS_RAIL_COUNT], rail_error[LGS_RAIL_COUNT];
++    uint64_t fuse_raw[2][LGF_ROW_COUNT];
++    unsigned fuse_valid[2], fuse_stable;
++    struct lgf_result fuse_decoded;
++} lg1;
++
++static uint64_t lg1_now(void)
++{
++    uint64_t ns=0;
++    absolutetime_to_nanoseconds(mach_absolute_time(),&ns);
++    return ns/1000;
++}
++static bool lg1_owner(void)
++{
++    return cpu_number()==0 && LITHIUM_PERIPHERAL_AFFINITY()==1 &&
++        ml_get_interrupts_enabled();
++}
++static bool lg1_open(void)
++{
++    const uint64_t now=lg1_now();
++    if (lg1.poisoned || !lg1_owner() || now<lg1.last_us ||
++        now-lg1.start_us>=LG1_BUDGET_US ||
++        lg1.reads+lg1.writes+lg1.fuse_reads>=LG1_ACCESS_CAP) {
++        lg1.poisoned=true;
++        return false;
++    }
++    lg1.last_us=now;
++    return true;
++}
++static bool lg1_map(struct lg1_mapping *m,uint64_t pa,uint64_t bytes)
++{
++    if (!lg1_open() || !r38_mmio_window_init(pa,bytes,PAGE_SIZE,&m->window)) return false;
++    m->allocation=ml_io_map_unmappable(m->window.physical_base,
++        m->window.mapped_bytes,VM_WIMG_IO);
++    printf("LITHIUM GPU supply map physical=0x%llx allocation=0x%lx bytes=%llu valid=%u\n",
++        (unsigned long long)m->window.physical_base,(unsigned long)m->allocation,
++        (unsigned long long)m->window.mapped_bytes,(unsigned)(m->allocation!=0));
++    return m->allocation!=0;
++}
++static void lg1_unmap(struct lg1_mapping *m)
++{
++    if (!m->allocation) return;
++    printf("LITHIUM GPU supply unmap allocation=0x%lx bytes=%llu\n",
++        (unsigned long)m->allocation,(unsigned long long)m->window.mapped_bytes);
++    ml_io_unmap(m->allocation,m->window.mapped_bytes);
++    m->allocation=0;
++}
++static vm_offset_t lg1_pointer(const struct lg1_mapping *m,uint64_t pa,unsigned bytes)
++{
++    if (!m->allocation || pa< m->window.physical_base || !bytes ||
++        bytes>m->window.mapped_bytes || pa-m->window.physical_base>m->window.mapped_bytes-bytes)
++        return 0;
++    return m->allocation+pa-m->window.physical_base;
++}
++static int lg1_read32(void *opaque,uint64_t pa,uint32_t *out)
++{
++    (void)opaque;
++    vm_offset_t p=0;
++    if (!out || (pa&3) || !lg1_open()) return -1;
++    if (pa==LGS_CORE_PA ||
++        (pa>=LGS_CORE_PA+0x800 && pa<LGS_CORE_PA+0x800+4*LGS_CHANNELS))
++        p=lg1_pointer(&lg1.core,pa,4);
++    else if (lg1.observer_pa && (pa==lg1.observer_pa+4 || pa==lg1.observer_pa+8 ||
++        pa==lg1.observer_pa+0x18 || pa==lg1.observer_pa+0x1c))
++        p=lg1_pointer(&lg1.observer,pa,4);
++    if (!p) return -2;
++    LG1_BARRIER();
++    *out=LG1_LOAD32(p);
++    LG1_BARRIER();
++    ++lg1.reads;
++    if (!lg1_open()) return -3; /* returning load may itself exhaust budget */
++    return 0;
++}
++static int lg1_read_command(void *opaque,uint64_t pa,uint32_t cmd)
++{
++    (void)opaque;
++    if (!lg1_open() || !lg1.observer_pa || pa!=lg1.observer_pa ||
++        !lg1.allowed_cmd || cmd!=lg1.allowed_cmd || (cmd>>27)!=1 ||
++        lg1.writes>=LG1_COMMAND_CAP) return -1;
++    const vm_offset_t p=lg1_pointer(&lg1.observer,pa,4);
++    if (!p) return -2;
++    LG1_BARRIER();
++    LG1_STORE_READ_COMMAND(p,cmd);
++    LG1_BARRIER();
++    ++lg1.writes;
++    if (!lg1_open()) return -3; /* attempted command remains recorded by core */
++    return 0;
++}
++static int lg1_time(void *opaque,uint64_t *out)
++{
++    (void)opaque;
++    if (!out || !lg1_open()) return -1;
++    *out=lg1.last_us;
++    return 0;
++}
++static int lg1_delay(void *opaque,uint32_t us)
++{
++    (void)opaque;
++    if (us>1000 || !lg1_open()) return -1;
++    LG1_DELAY_US(us);
++    return lg1_open()?0:-1;
++}
++static void lg1_capture_fuses(void)
++{
++    if (!lg1_map(&lg1.fuses,LG1_FUSE_BASE,0x1000)) return;
++    for(unsigned pass=0;pass<2;++pass)
++        for(unsigned i=0;i<LGF_ROW_COUNT;++i) {
++            const uint64_t pa=LG1_FUSE_BASE+8*lgf_rows[i].rowid;
++            const vm_offset_t p=lg1_pointer(&lg1.fuses,pa,8);
++            if (!p || (pa&7) || !lg1_open()) continue;
++            LG1_BARRIER();
++            lg1.fuse_raw[pass][i]=LG1_LOAD64(p);
++            LG1_BARRIER();
++            ++lg1.fuse_reads;
++            if (!lg1_open()) continue;
++            lg1.fuse_valid[pass]|=1u<<i;
++        }
++    lg1_unmap(&lg1.fuses);
++    for(unsigned i=0;i<LGF_ROW_COUNT;++i) {
++        const unsigned bit=1u<<i;
++        if ((lg1.fuse_valid[0]&lg1.fuse_valid[1]&bit) &&
++            lg1.fuse_raw[0][i]==lg1.fuse_raw[1][i]) lg1.fuse_stable|=bit;
++        for(unsigned pass=0;pass<2;++pass) {
++            if (lg1.fuse_valid[pass]&bit)
++                printf("LITHIUM GPU fuse pass=%u row=%u pa=0x%llx bits=64 valid=1 raw=0x%016llx stable=%u\n",
++                    pass,lgf_rows[i].rowid,(unsigned long long)(LG1_FUSE_BASE+8*lgf_rows[i].rowid),
++                    (unsigned long long)lg1.fuse_raw[pass][i],(lg1.fuse_stable&bit)!=0);
++            else
++                printf("LITHIUM GPU fuse pass=%u row=%u bits=64 valid=0 raw=UNREAD stable=0\n",pass,lgf_rows[i].rowid);
++        }
++    }
++    if (lg1.fuse_stable==LGF_ALL_VALID &&
++        lgf_decode(lg1.fuse_raw[0],lg1.fuse_valid[0],&lg1.fuse_decoded)) {
++        const struct lgf_result *d=&lg1.fuse_decoded;
++        printf("LITHIUM GPU fuse decode valid=1 revision=%u speedbin=%u limitation=%u aging_raw=%u init0=%u init1=%u init2=%u init3=%u offset1=%u offset3=%u voltage_uv=UNVERIFIED\n",
++            d->revision,d->speedbin,d->limitation,d->aging,d->initcode[0],d->initcode[1],
++            d->initcode[2],d->initcode[3],d->offsetraw[1],d->offsetraw[3]);
++    } else printf("LITHIUM GPU fuse decode valid=0 reason=missing_or_unstable_rows voltage_uv=UNVERIFIED\n");
++}
++static void lg1_capture_rail(const struct lgs_io *io,unsigned index)
++{
++    const struct lgs_rail *rail=&lgs_rails[index];
++    struct lgs_result *r=&lg1.transaction;
++    enum lgs_error error=lgs_probe(io,rail->sid,rail->base,r);
++    printf("LITHIUM GPU supply route rail=%s sid=%u base=0x%x error=%u version=0x%08x apid=%u mapping=0x%08x matches=%u observer_pa=0x%llx\n",
++        rail->name,rail->sid,rail->base,error,r->route.version,r->route.apid,
++        r->route.mapping_raw,r->matches,(unsigned long long)r->route.observer_pa);
++    if (error) goto done;
++    lg1.routes[index]=r->route;
++    if (!lg1_map(&lg1.observer,r->route.observer_pa,r->route.observer_bytes)) {
++        error=LGS_ARGUMENT;
++        goto done;
++    }
++    lg1.observer_pa=r->route.observer_pa;
++    for(unsigned pass=0;pass<2;++pass) {
++        for(unsigned field=0;field<LGS_FIELD_COUNT;++field) {
++            const unsigned offset=lgs_fields[field].offset;
++            lg1.allowed_cmd=(1u<<27)|(offset<<4);
++            error=lgs_read(io,&lg1.routes[index],rail->sid,rail->base+offset,1,r);
++            lg1.allowed_cmd=0;
++            if (r->data_valid) {
++                lg1.rail_raw[index][pass][field]=r->data[0];
++                lg1.rail_valid[index][pass]|=1u<<field;
++            }
++            if (r->data_valid)
++                printf("LITHIUM GPU supply pass=%u rail=%s sid=%u reg=%s addr=0x%x valid=1 raw=0x%02x error=%u phase=%u status_valid=%u status=0x%x attempted=%u completed=%u polls=%u\n",
++                    pass,rail->name,rail->sid,lgs_fields[field].name,rail->base+offset,r->data[0],error,r->phase,
++                    r->status_valid,r->status_raw,r->cmd_attempted,r->cmd_completed,r->polls);
++            else
++                printf("LITHIUM GPU supply pass=%u rail=%s sid=%u reg=%s addr=0x%x valid=0 raw=UNREAD error=%u phase=%u status_valid=%u status=0x%x attempted=%u completed=%u polls=%u\n",
++                    pass,rail->name,rail->sid,lgs_fields[field].name,rail->base+offset,error,r->phase,
++                    r->status_valid,r->status_raw,r->cmd_attempted,r->cmd_completed,r->polls);
++            if (error) goto done;
++        }
++        if (!pass && lg1_delay(NULL,1000)) { error=LGS_DELAY_ERROR; goto done; }
++    }
++done:
++    lg1.rail_error[index]=error;
++    for(unsigned field=0;field<LGS_FIELD_COUNT;++field) {
++        unsigned bit=1u<<field;
++        if ((lg1.rail_valid[index][0]&lg1.rail_valid[index][1]&bit) &&
++            lg1.rail_raw[index][0][field]==lg1.rail_raw[index][1][field])
++            lg1.rail_stable[index]|=bit;
++    }
++    lg1_unmap(&lg1.observer);
++    lg1.observer_pa=0;
++    lg1.allowed_cmd=0;
++}
++static __attribute__((noinline)) void lithium_gpu_g1_precheck(void)
++{
++    if (!lg0_adapter_admit() || !__sync_bool_compare_and_swap(&lg1.used,0,1)) {
++        printf("LITHIUM GPU supply blocked=1 reason=once_ram_profile mmio=0\n");
++        return;
++    }
++    struct lithium_touch_cpu_scope scope;
++    if (!lithium_touch_cpu_enter(&scope)) {
++        printf("LITHIUM GPU supply blocked=1 reason=cpu_bind mmio=0\n");
++        return;
++    }
++    lg1.start_us=lg1.last_us=lg1_now();
++    for(unsigned i=0;i<LGS_RAIL_COUNT;++i) lg1.rail_error[i]=LGS_ARGUMENT;
++    printf("LITHIUM GPU supply begin logical=%d affinity=0x%llx gpu_power_diag=1 max_commands=%u budget_us=%llu gpu_writes=0 regulator_writes=0 spmi_operation=EXT_READL ownership=UNVERIFIED\n",
++        cpu_number(),(unsigned long long)LITHIUM_PERIPHERAL_AFFINITY(),LG1_COMMAND_CAP,
++        (unsigned long long)LG1_BUDGET_US);
++    lg1_capture_fuses();
++    if (lg1_map(&lg1.core,LGS_CORE_PA,LGS_CORE_BYTES)) {
++        const struct lgs_io io={NULL,lg1_read32,lg1_read_command,lg1_time,lg1_delay};
++        for(unsigned i=0;i<LGS_RAIL_COUNT && !lg1.poisoned;++i) lg1_capture_rail(&io,i);
++    }
++    lg1_unmap(&lg1.core);
++    printf("LITHIUM GPU supply end fuse_valid0=0x%x fuse_valid1=0x%x fuse_stable=0x%x gfx_valid0=0x%x gfx_valid1=0x%x gfx_stable=0x%x gfx_error=%u mx_valid0=0x%x mx_valid1=0x%x mx_stable=0x%x mx_error=%u reads=%u fuse_reads=%u observer_cmd_writes=%u poisoned=%u gpu_writes=0 regulator_writes=0 settled=UNVERIFIED chip_id=UNREAD\n",
++        lg1.fuse_valid[0],lg1.fuse_valid[1],lg1.fuse_stable,
++        lg1.rail_valid[0][0],lg1.rail_valid[0][1],lg1.rail_stable[0],lg1.rail_error[0],
++        lg1.rail_valid[1][0],lg1.rail_valid[1][1],lg1.rail_stable[1],lg1.rail_error[1],
++        lg1.reads,lg1.fuse_reads,lg1.writes,(unsigned)lg1.poisoned);
++    lithium_touch_cpu_leave(&scope);
++}
++#endif
+--- /dev/null
++++ b/ports/hakios-lithium/gpu/g1-spmi-read.h
+@@ -0,0 +1,323 @@
++/* G1 bounded SPMI observer read core, derived from the unchanged R38 core.
++ * Callback convention: 0 succeeds, any other rc is preserved as an error.
++ * Physical addresses only. Adapter owns mapped core/observer allocations,
++ * serialization through RDATA, barriers, affinity, and fault-aware callbacks.
++ * A stalled callback cannot be interrupted by this software deadline.
++ * Probe reads core only. A read scans all 128 mappings, compares the supplied
++ * rail/route and rechecks version/mapping; CONFIG must equal zero.
++ * Only observer CMD is written, exactly one EXT_READL attempt. No WDATA,
++ * PMIC register write, config/IRQ/ownership/reset change or automatic retry.
++ * DONE and errors precede the pending-command deadline, as proven in R38.
++ * Raw digital setpoint and status are not analog voltage or settled permission.
++ * Source records/anchors: evidence/gpu-g1-20261123/spmi/.
++ */
++#ifndef LITHIUM_GPU_G1_SPMI_READ_H
++#define LITHIUM_GPU_G1_SPMI_READ_H
++#include <stdint.h>
++
++#define LGS_CORE_PA UINT64_C(0x0400f000)
++#define LGS_CORE_BYTES UINT32_C(0x1000)
++#define LGS_OBSERVER_PA UINT64_C(0x04c00000)
++#define LGS_OBSERVER_BYTES UINT32_C(0x800000)
++#define LGS_WINDOW_BYTES UINT32_C(0x1000)
++#define LGS_V2_VERSION UINT32_C(0x20010000)
++#define LGS_EE UINT32_C(0)
++#define LGS_CHANNELS 128u
++#define LGS_POLLS 100u
++#define LGS_TIMEOUT_US UINT64_C(100)
++#define LGS_RAIL_COUNT 2u
++#define LGS_FIELD_COUNT 7u
++
++enum lgs_rail_id { LGS_GFX = 0, LGS_MX = 1 };
++struct lgs_rail { const char *name; uint32_t sid, base, ppid; };
++/* Stock SID1/SID3, and pinned Linux qcom_spmi-regulator.c:2345-2347,
++ * 2443-2445: S2 is 0x1700 on BOTH PM8994 and PMI8994. 0x1400 is S1.
++ */
++static const struct lgs_rail lgs_rails[LGS_RAIL_COUNT] = {
++    { "GFX_PMI8994_S2", 3u, UINT32_C(0x1700), UINT32_C(0x317) },
++    { "MX_PM8994_S2",   1u, UINT32_C(0x1700), UINT32_C(0x117) }
++};
++struct lgs_field { const char *name; uint32_t offset; };
++/* MiCode qpnp-regulator.c:117-139 common layout; raw offsets only.
++ * STATUS is not in that source layout and is not guessed as 0x08.
++ * Interpretation of RANGE/VSET and STEP requires captured TYPE/SUBTYPE.
++ */
++static const struct lgs_field lgs_fields[LGS_FIELD_COUNT] = {
++    { "TYPE", 0x04u }, { "SUBTYPE", 0x05u },
++    { "RANGE", 0x40u }, { "VSET", 0x41u },
++    { "MODE", 0x45u }, { "ENABLE", 0x46u }, { "STEP", 0x61u }
++};
++static const uint32_t lgs_rail_count = LGS_RAIL_COUNT;
++static const uint32_t lgs_field_count = LGS_FIELD_COUNT;
++
++enum lgs_error {
++    LGS_OK = 0, LGS_ARGUMENT, LGS_VERSION,
++    LGS_NO_MAPPING, LGS_DUPLICATE_MAPPING, LGS_ROUTE_CHANGED,
++    LGS_READ_ERROR, LGS_WRITE_ERROR, LGS_TIME_ERROR,
++    LGS_DELAY_ERROR, LGS_CONFIG_UNSUPPORTED,
++    LGS_TIMEOUT, LGS_DENIED,
++    LGS_FAILURE, LGS_DROPPED, LGS_UNKNOWN_STATUS
++};
++enum lgs_phase {
++    LGS_VALIDATE = 0, LGS_DISCOVER, LGS_RECHECK,
++    LGS_CONFIG, LGS_CLOCK, LGS_COMMAND,
++    LGS_POLL, LGS_DATA
++};
++struct lgs_io {
++    void *context;
++    int (*read32)(void *, uint64_t physical, uint32_t *);
++    int (*write32)(void *, uint64_t physical, uint32_t);
++    int (*time_us)(void *, uint64_t *);
++    int (*delay_us)(void *, uint32_t);
++};
++struct lgs_route {
++    uint32_t sid, base, ppid;
++    uint32_t version, apid, mapping_raw, observer_bytes;
++    uint64_t observer_pa;
++};
++struct lgs_result {
++    enum lgs_error error;
++    enum lgs_phase phase;
++    struct lgs_route route;
++    int callback_rc;
++    uint64_t access_pa, start_us, last_us;
++    uint32_t reads, writes, mapping_reads, matches;
++    uint32_t version_recheck, mapping_recheck;
++    uint32_t config_raw, config_valid;
++    uint32_t sid, base, addr, len, cmd, cmd_attempted, cmd_completed;
++    uint32_t status_raw, status_or, status_valid, polls;
++    uint32_t data_raw[2], data_words_valid, data_valid;
++    uint8_t data[8];
++};
++
++static inline enum lgs_error
++lgs_fail(struct lgs_result *r, enum lgs_error error)
++{
++    r->error = error;
++    return error;
++}
++static inline int
++lgs_read32(const struct lgs_io *io, struct lgs_result *r,
++                uint64_t pa, uint32_t *value)
++{
++    uint32_t raw = 0;
++    int rc;
++    r->access_pa = pa;
++    ++r->reads;
++    rc = io->read32(io->context, pa, &raw);
++    if (rc) {
++        r->callback_rc = rc;
++        r->error = LGS_READ_ERROR;
++        return 0;
++    }
++    *value = raw;
++    return 1;
++}
++/* Exact rail and byte allowlists: reject unsupported spans with zero I/O. */
++static inline const struct lgs_rail *
++lgs_target(uint32_t sid, uint32_t base)
++{
++    for (uint32_t i = 0; i < LGS_RAIL_COUNT; ++i)
++        if (sid == lgs_rails[i].sid && base == lgs_rails[i].base)
++            return &lgs_rails[i];
++    return 0;
++}
++static inline int
++lgs_request_valid(uint32_t sid, uint32_t addr, uint32_t len)
++{
++    uint32_t base = addr & ~UINT32_C(0xff);
++    if (!lgs_target(sid, base) || len < 1u || len > 8u ||
++        len > base + 0x100u - addr)
++        return 0;
++    for (uint32_t byte = 0; byte < len; ++byte) {
++        uint32_t offset = addr - base + byte, allowed = 0;
++        for (uint32_t i = 0; i < LGS_FIELD_COUNT; ++i)
++            if (offset == lgs_fields[i].offset)
++                allowed = 1;
++        if (!allowed)
++            return 0;
++    }
++    return 1;
++}
++
++/* Only the explicitly named v2 version is supported. The source driver uses
++ * >= V2_MIN, but provides no upper bound or proof for arbitrary later IP. */
++static inline enum lgs_error
++lgs_discover(const struct lgs_io *io, struct lgs_result *r)
++{
++    uint32_t value;
++    const struct lgs_rail *target = lgs_target(r->sid, r->base);
++    if (!target)
++        return lgs_fail(r, LGS_ARGUMENT);
++    r->route.sid = target->sid;
++    r->route.base = target->base;
++    r->route.ppid = target->ppid;
++    if (!lgs_read32(io, r, LGS_CORE_PA, &r->route.version))
++        return r->error;
++    if (r->route.version != LGS_V2_VERSION)
++        return lgs_fail(r, LGS_VERSION);
++    for (uint32_t ch = 0; ch < LGS_CHANNELS; ++ch) {
++        ++r->mapping_reads;
++        if (!lgs_read32(io, r, LGS_CORE_PA + 0x800u + 4u * ch,
++                             &value))
++            return r->error;
++        /* Match source's nonzero entry and (raw >> 8) & 0xfff. Do not
++         * reinterpret undocumented entry bits as ownership/valid flags. */
++        if (value && ((value >> 8) & 0xfffu) == target->ppid) {
++            ++r->matches;
++            r->route.apid = ch;
++            r->route.mapping_raw = value;
++        }
++    }
++    if (!r->matches)
++        return lgs_fail(r, LGS_NO_MAPPING);
++    if (r->matches != 1u)
++        return lgs_fail(r, LGS_DUPLICATE_MAPPING);
++    r->route.observer_pa = LGS_OBSERVER_PA +
++        UINT64_C(0x8000) * r->route.apid + UINT64_C(0x1000) * LGS_EE;
++    r->route.observer_bytes = LGS_WINDOW_BYTES;
++    return LGS_OK;
++}
++
++/* Core-only discovery: only read32 is needed; no observer access or CMD.
++ * On error the route is diagnostic only and MUST NOT be used for mapping. */
++static inline enum lgs_error
++lgs_probe(const struct lgs_io *io, uint32_t sid, uint32_t base,
++          struct lgs_result *r)
++{
++    if (!r)
++        return LGS_ARGUMENT;
++    *r = (struct lgs_result){0};
++    r->sid = sid;
++    r->base = base;
++    r->addr = base;
++    if (!io || !io->read32 || !lgs_target(sid, base))
++        return lgs_fail(r, LGS_ARGUMENT);
++    r->phase = LGS_DISCOVER;
++    return lgs_discover(io, r);
++}
++
++/* One EXT_READL only, explicit PPID 0x317/0x117, allowed byte spans only. Every invocation scans
++ * all 128 mapping entries again and verifies the caller's mapped route.
++ * Observer channel/EE must stay serialized through the final RDATA read.
++ * Do not retry an error: cmd_attempted means the bus action may have occurred,
++ * including when write32 itself reports an error. All raw evidence is kept. */
++static inline enum lgs_error
++lgs_read(const struct lgs_io *io, const struct lgs_route *route,
++              uint32_t sid, uint32_t addr, uint32_t len,
++              struct lgs_result *r)
++{
++    struct lgs_route expected = {0};
++    uint32_t value;
++    uint64_t now;
++    int rc;
++    if (!r)
++        return LGS_ARGUMENT;
++    /* Permit &r->route as input without clobbering it during result reset. */
++    if (route)
++        expected = *route;
++    *r = (struct lgs_result){0};
++    r->sid = sid;
++    r->base = addr & ~UINT32_C(0xff);
++    r->addr = addr;
++    r->len = len;
++    if (!io || !io->read32 || !io->write32 || !io->time_us ||
++        !io->delay_us || !route || !lgs_request_valid(sid, addr, len))
++        return lgs_fail(r, LGS_ARGUMENT);
++    r->phase = LGS_DISCOVER;
++    if (lgs_discover(io, r))
++        return r->error;
++    if (expected.sid != r->route.sid || expected.base != r->route.base ||
++        expected.ppid != r->route.ppid ||
++        expected.version != r->route.version ||
++        expected.apid != r->route.apid ||
++        expected.mapping_raw != r->route.mapping_raw ||
++        expected.observer_pa != r->route.observer_pa ||
++        expected.observer_bytes != r->route.observer_bytes)
++        return lgs_fail(r, LGS_ROUTE_CHANGED);
++    r->phase = LGS_RECHECK;
++    if (!lgs_read32(io, r, LGS_CORE_PA, &r->version_recheck) ||
++        !lgs_read32(io, r, LGS_CORE_PA + 0x800u +
++                         4u * r->route.apid, &r->mapping_recheck))
++        return r->error;
++    if (r->version_recheck != r->route.version ||
++        r->mapping_recheck != r->route.mapping_raw)
++        return lgs_fail(r, LGS_ROUTE_CHANGED);
++    r->phase = LGS_CONFIG;
++    if (!lgs_read32(io, r, r->route.observer_pa + 0x04u, &r->config_raw))
++        return r->error;
++    r->config_valid = 1;
++    if (r->config_raw != 0)
++        return lgs_fail(r, LGS_CONFIG_UNSUPPORTED);
++    r->phase = LGS_CLOCK;
++    rc = io->time_us(io->context, &r->start_us);
++    if (rc) {
++        r->callback_rc = rc;
++        return lgs_fail(r, LGS_TIME_ERROR);
++    }
++    r->last_us = r->start_us;
++    r->cmd = (UINT32_C(1) << 27) | ((addr & 0xffu) << 4) | (len - 1u);
++    r->phase = LGS_COMMAND;
++    r->access_pa = r->route.observer_pa;
++    r->cmd_attempted = 1;
++    ++r->writes;
++    rc = io->write32(io->context, r->access_pa, r->cmd);
++    if (rc) {
++        r->callback_rc = rc;
++        return lgs_fail(r, LGS_WRITE_ERROR);
++    }
++    r->phase = LGS_POLL;
++    for (uint32_t i = 0; i < LGS_POLLS; ++i) {
++        ++r->polls;
++        if (!lgs_read32(io, r, r->route.observer_pa + 0x08u, &value))
++            return r->error;
++        r->status_raw = value;
++        r->status_or |= value;
++        r->status_valid = 1;
++        rc = io->time_us(io->context, &now);
++        if (rc) {
++            r->callback_rc = rc;
++            return lgs_fail(r, LGS_TIME_ERROR);
++        }
++        if (now < r->last_us)
++            return lgs_fail(r, LGS_TIME_ERROR);
++        r->last_us = now;
++        if (value & 1u) {
++            r->cmd_completed = 1;
++            if (value & 4u)
++                return lgs_fail(r, LGS_DENIED);
++            if (value & 2u)
++                return lgs_fail(r, LGS_FAILURE);
++            if (value & 8u)
++                return lgs_fail(r, LGS_DROPPED);
++            if (value & ~UINT32_C(0xf))
++                return lgs_fail(r, LGS_UNKNOWN_STATUS);
++            break;
++        }
++        /* As in the source driver, process observed DONE/errors before
++         * timeout. Elapsed time only rejects a still-pending transaction. */
++        if (now - r->start_us >= LGS_TIMEOUT_US)
++            return lgs_fail(r, LGS_TIMEOUT);
++        if (i + 1u == LGS_POLLS)
++            return lgs_fail(r, LGS_TIMEOUT);
++        rc = io->delay_us(io->context, 1u);
++        if (rc) {
++            r->callback_rc = rc;
++            return lgs_fail(r, LGS_DELAY_ERROR);
++        }
++    }
++    r->phase = LGS_DATA;
++    for (uint32_t word = 0; word < (len + 3u) / 4u; ++word) {
++        if (!lgs_read32(io, r, r->route.observer_pa + 0x18u + 4u * word,
++                             &value))
++            return r->error;
++        r->data_raw[word] = value;
++        r->data_words_valid |= 1u << word;
++        for (uint32_t b = 0; b < 4u && word * 4u + b < len; ++b)
++            r->data[word * 4u + b] = (uint8_t)(value >> (8u * b));
++    }
++    r->data_valid = 1;
++    return LGS_OK;
++}
++
++#endif /* LITHIUM_GPU_G1_SPMI_READ_H */
+--- /dev/null
++++ b/ports/hakios-lithium/gpu/g1-fuse.h
+@@ -0,0 +1,150 @@
++/* Pure MSM8996-family MMSS fuse extraction; no I/O or write callbacks.
++ * MiCode/Xiaomi_Kernel_OpenSource @1492c8e4373b7428bb0accc4f4881e97b36508b9
++ * drivers/regulator/cpr3-mmss-regulator.c:89-126.
++ * This layout applies to MSM8996 and MSM8996 Pro, NOT MSMCOBALT.
++ * Decode success proves neither SoC identity, voltage nor power permission.
++ */
++#ifndef LITHIUM_GPU_G1_FUSE_H
++#define LITHIUM_GPU_G1_FUSE_H
++
++#include <stdbool.h>
++#include <stdint.h>
++
++#define LGF_ROW_COUNT 6u
++#define LGF_FUSE_CORNERS 4u
++#define LGF_ALL_VALID UINT32_C(0x3f)
++
++enum lgf_row_index {
++    LGF_ROW_39, LGF_ROW_41, LGF_ROW_63,
++    LGF_ROW_64, LGF_ROW_66, LGF_ROW_68
++};
++
++struct lgf_row { uint32_t rowid; };
++
++/* Adapter supplies raw[i] in this order, from base + 8 * rowid.
++ * Pinned stock DTS:10385-10387 gives fuse_base=0x74000.
++ * Two-pass validity and stability are the caller's responsibility.
++ */
++static const struct lgf_row lgf_rows[LGF_ROW_COUNT] = {
++    {39u}, {41u}, {63u}, {64u}, {66u}, {68u}
++};
++
++struct lgf_result {
++    uint32_t initcode[LGF_FUSE_CORNERS]; /* raw 5-bit sign/magnitude codes */
++    uint32_t revision;                 /* CPR fusing revision, NOT SoC ID */
++    uint32_t speedbin;                 /* raw; only Pro uses this for combo */
++    uint32_t limitation;
++    uint32_t aging;                    /* raw 6-bit quotient difference */
++    uint32_t offsetraw[LGF_FUSE_CORNERS]; /* only [1] (3b), [3] (4b) exist */
++};
++
++/* Strict mask: missing rows or bits outside the six-row contract fail.
++ * Failure clears a non-null result so stale decoded values cannot survive.
++ * No reads from raw occur before validation. A valid all-zero row is data.
++ */
++static inline bool lgf_decode(const uint64_t raw[LGF_ROW_COUNT],
++                              uint32_t validmask, struct lgf_result *result)
++{
++    struct lgf_result r = {{0u, 0u, 0u, 0u}, 0u, 0u, 0u, 0u,
++                           {0u, 0u, 0u, 0u}};
++    if (!result)
++        return false;
++    *result = r;
++    if (!raw || validmask != LGF_ALL_VALID)
++        return false;
++    r.initcode[0] = (uint32_t)((raw[LGF_ROW_63] >> 55) & UINT64_C(31));
++    r.initcode[1] = (uint32_t)((raw[LGF_ROW_63] >> 50) & UINT64_C(31));
++    r.initcode[2] = (uint32_t)((raw[LGF_ROW_63] >> 45) & UINT64_C(31));
++    r.initcode[3] = (uint32_t)((raw[LGF_ROW_63] >> 40) & UINT64_C(31));
++    r.revision = (uint32_t)((raw[LGF_ROW_39] >> 48) & UINT64_C(7));
++    r.speedbin = (uint32_t)((raw[LGF_ROW_39] >> 60) & UINT64_C(3));
++    r.limitation = (uint32_t)((raw[LGF_ROW_41] >> 31) & UINT64_C(3));
++    r.aging = (uint32_t)((raw[LGF_ROW_68] >> 26) & UINT64_C(63));
++    r.offsetraw[1] = (uint32_t)((raw[LGF_ROW_66] >> 42) & UINT64_C(7));
++    r.offsetraw[3] = (uint32_t)((raw[LGF_ROW_64] >> 58) & UINT64_C(15));
++    *result = r;
++    return true;
++}
++
++/* cpr3-util.c:247-260: sign/magnitude, including negative zero.
++ * Return signed steps only, without a rail or voltage inference.
++ */
++static inline bool lgf_signed_steps(uint32_t code, uint32_t width,
++                                    int32_t *steps)
++{
++    uint32_t sign, magnitude;
++    if (!steps)
++        return false;
++    *steps = 0;
++    if (width == 0u || width > 31u || code >= (UINT32_C(1) << width))
++        return false;
++    sign = UINT32_C(1) << (width - 1u);
++    magnitude = code & (sign - 1u);
++    *steps = (code & sign) ? -(int32_t)magnitude : (int32_t)magnitude;
++    return true;
++}
++
++/* Source match-table IDs (cpr3-mmss-regulator.c:1134-1157).
++ * These must come from verified identity/compatible, never the CPR revision.
++ */
++enum lgf_soc_variant {
++    LGF_SOC_UNKNOWN = 0, LGF_SOC_MSM8996_V1 = 1,
++    LGF_SOC_MSM8996_V2 = 2, LGF_SOC_MSM8996_V3 = 3,
++    LGF_SOC_MSM8996_PRO = 4, LGF_SOC_MSMCOBALT = 5
++};
++
++struct lgf_fuse_model {
++    uint32_t combo;
++    int32_t reference_uv[LGF_FUSE_CORNERS];
++    int32_t init_uv[LGF_FUSE_CORNERS];
++    int32_t offset_uv[LGF_FUSE_CORNERS]; /* CLOSED-loop, not open-loop trim */
++    int32_t aging_quot_diff;             /* quotient units, not microvolts */
++};
++
++/* Source arithmetic ONLY: no DTS trim, rounding/clamping, aging margin or
++ * policy readiness. A limitation=2 fuse still decodes but stock init rejects
++ * the chip; callers must enforce this separately (source:917-923).
++ * Non-Pro ignores the physical speed-bin field for combo selection (322-331).
++ * Pro speed bins 2/3 are invalid (combo >=16); Cobalt has a different layout.
++ */
++static inline bool lgf_source_model(const struct lgf_result *f,
++                                    enum lgf_soc_variant variant,
++                                    struct lgf_fuse_model *model)
++{
++    struct lgf_fuse_model m = {0u, {0, 0, 0, 0}, {0, 0, 0, 0},
++                              {0, 0, 0, 0}, 0};
++    int32_t steps;
++    uint32_t i;
++    if (!model)
++        return false;
++    *model = m;
++    if (!f || variant < LGF_SOC_MSM8996_V1 ||
++        variant > LGF_SOC_MSM8996_PRO || f->revision > 7u ||
++        f->speedbin > 3u || f->limitation > 3u || f->aging > 63u ||
++        f->offsetraw[0] != 0u || f->offsetraw[2] != 0u ||
++        f->offsetraw[1] > 7u || f->offsetraw[3] > 15u)
++        return false;
++    if (variant == LGF_SOC_MSM8996_PRO && f->speedbin > 1u)
++        return false;
++    m.combo = f->revision +
++        (variant == LGF_SOC_MSM8996_PRO ? 8u * f->speedbin : 0u);
++    m.reference_uv[0] = 670000;
++    m.reference_uv[1] = 745000;
++    m.reference_uv[2] = 905000;
++    m.reference_uv[3] = variant == LGF_SOC_MSM8996_PRO ? 1065000 : 1015000;
++    for (i = 0u; i < LGF_FUSE_CORNERS; ++i) {
++        if (!lgf_signed_steps(f->initcode[i], 5u, &steps))
++            return false;
++        m.init_uv[i] = m.reference_uv[i] + steps * 10000;
++    }
++    (void)lgf_signed_steps(f->offsetraw[1], 3u, &steps);
++    m.offset_uv[1] = steps * 10000;
++    (void)lgf_signed_steps(f->offsetraw[3], 4u, &steps);
++    m.offset_uv[3] = steps * 10000;
++    (void)lgf_signed_steps(f->aging, 6u, &steps);
++    m.aging_quot_diff = steps * 2;
++    *model = m;
++    return true;
++}
++
++#endif /* LITHIUM_GPU_G1_FUSE_H */
+--- /dev/null
++++ b/scripts/build-hakios-gpu-g1.py
+@@ -0,0 +1,78 @@
++#!/usr/bin/env python3
++"""Complete HakiOS G1 supply/fuse precheck build; no device operations."""
++import importlib.util
++import argparse
++import json
++import os
++from pathlib import Path
++import shutil
++import subprocess
++import sys
++from datetime import datetime, timezone
++
++sys.dont_write_bytecode=True
++ROOT=Path(__file__).resolve().parents[1]
++sys.path.insert(0,str(ROOT/"scripts"))
++import hakios
++spec=importlib.util.spec_from_file_location("g1_r40_build_helpers",ROOT/"scripts/build-hakios-cpu-r40.py")
++r40=importlib.util.module_from_spec(spec)
++spec.loader.exec_module(r40)
++OUT=ROOT/"evidence/gpu-g1-20261123/main"
++WORK=r40.WORK
++TREE=r40.TREE
++
++def main():
++    parser=argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--revision",choices=("01","02"),default="02")
++    args=parser.parse_args()
++    revision="gpu-g1-precheck-"+args.revision
++    frozen=WORK/("hakios-kernel."+revision)
++    hakios.require(not frozen.exists(),"frozen G1 precheck kernel already exists")
++    config=hakios.read(hakios.MANIFEST)
++    hakios.resource_check()
++    hakios.prepare(config,hakios.policy(config))
++    hakios.verify_workspace(config)
++    r40.OUT=OUT
++    r40.sync_framebuffer_overlay()
++    patches=sorted((r40.PORT/"kernel-patches-r40").glob("*.patch"))
++    hakios.require(len(patches)>=3,"preserve R40 expanded patch set")
++    for patch in patches: r40.patch_once(patch,TREE)
++    driver=WORK/"drivers/storage/hakios.ufs.c"
++    hakios.require(b"hakios_ufs_seal_for_return" in driver.read_bytes(),"preserve authoritative UFS seal")
++    env=dict(os.environ,HAKIOS_SOC="msm8996",JOBS="12",MAKEFLAGS="-j12",MAKEJOBS="--jobs=12",
++        THEOS=hakios.read(ROOT/"reports/hakios-ios16-dependencies.json")["theos_linux_path"])
++    env["PATH"]="/home/jia/ios-mix1-build/venv/bin:"+env["PATH"]
++    OUT.mkdir(parents=True,exist_ok=True)
++    log=OUT/("kernel-g1-precheck-"+args.revision+".log")
++    n=1
++    while log.exists():
++        n+=1; log=OUT/f"kernel-g1-precheck-{args.revision}-attempt{n}.log"
++    with log.open("x",encoding="utf-8") as stream:
++        result=subprocess.run(["make","kernel","SHELL=/bin/bash","MAKEJOBS=--jobs=12",
++            "DEVICE=lithium","JOBS=12"],cwd=WORK,env=env,stdout=stream,stderr=subprocess.STDOUT)
++    if result.returncode:
++        print(log.read_text(errors="replace")[-7000:])
++        raise RuntimeError("G1 precheck compile/link failed; evidence preserved")
++    kernel=WORK/"hakios-kernel"; image=kernel.read_bytes()
++    for marker in (b"LITHIUM GPU supply begin",b"LITHIUM GPU supply end",b"LITHIUM GPU fuse",
++        b"gpu_power_diag",b"LITHIUM GPU stage=0 begin",b"LITHIUM UFS RETURN phase=seal",
++        b"LITHIUM TOUCH live ready",b"8796.121.2"):
++        hakios.require(marker in image,"missing actual kernel marker: "+repr(marker))
++    disasm=subprocess.check_output(["llvm-objdump","--disassemble-symbols=_lithium_gpu_g1_precheck,_lg1_read32,_lg1_read_command",
++        str(kernel)],text=True)
++    hakios.require("<_lithium_gpu_g1_precheck>:" in disasm,"missing actual linked G1 precheck")
++    timer=subprocess.check_output(["llvm-objdump","--disassemble-symbols=_loader_return_timer",str(kernel)],text=True)
++    hakios.require("_lithium_ui_cycle_stop" in timer and "_lithium_cpu_thermal_stop" in timer,
++        "normal timer cleanup missing")
++    shutil.copyfile(kernel,frozen)
++    report=dict(passed=True,revision=revision,kernel=str(frozen),sha256=hakios.sha(frozen),bytes=len(image),
++        created_at=datetime.now(timezone.utc).isoformat(),inputs=hakios.inputs(config),
++        kernel_source=hakios.kernel_source_fingerprint(WORK),
++        extra_patches={str(p.relative_to(ROOT)):hakios.sha(p) for p in patches},
++        command_log=str(log),device_operations=0,runtime_verified=False,
++        gpu_writes=0,regulator_writes=0,spmi_read_commands=True,gpu_aperture_access=False)
++    hakios.write(OUT/("kernel-result-g1-precheck-"+args.revision+".json"),report)
++    (OUT/("g1-"+args.revision+"-linked-disassembly.txt")).write_text(disasm)
++    (OUT/("g1-"+args.revision+"-timer-disassembly.txt")).write_text(timer)
++    print(json.dumps({k:report[k] for k in ("passed","kernel","sha256","bytes")}))
++if __name__=="__main__": main()
+--- /dev/null
++++ b/scripts/package-hakios-gpu-g1.py
+@@ -0,0 +1,324 @@
++#!/usr/bin/env python3
++"""Package G1 prerequisites capture with G0 RAM codecs; never build or boot.
++
++Stage stays zero. gpu_power_diag=1 requests read transactions for SPMI GFX/MX
++digital configuration/status and read-only fuses, before any power writes.
++This precheck does not arm stage 1, load firmware or accept a GPU chip ID.
++All writes stay in a new G1 package evidence directory. Read-only modes are
++--check-inputs and --verify-package; existing partial outputs are preserved.
++"""
++from __future__ import annotations
++
++import argparse
++from contextlib import contextmanager
++import importlib.util
++import json
++from pathlib import Path
++import re
++import sys
++
++sys.dont_write_bytecode = True
++ROOT = Path(__file__).resolve().parents[1]
++
++
++def load(name, path):
++    spec = importlib.util.spec_from_file_location(name, path)
++    value = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(value)
++    return value
++
++
++G0 = load("_g1_original_g0_package", ROOT / "scripts/package-hakios-gpu-g0.py")
++CORE = load("_g1_private_g0_codecs", ROOT / "scripts/package-hakios-gpu-g0.py")
++PACKAGE_ROOT = ROOT / "evidence/gpu-g1-20261123/package"
++DEFAULT_ATTEMPT = "02"
++SUPPORTED_REVISIONS = ("01", "02")
++KERNEL_REPORT = ROOT / "evidence/gpu-g1-20261123/main/kernel-result-g1-precheck-02.json"
++FROZEN_KERNEL = Path("/home/jia/ios-mix1-build/hakios-lithium-ios16/hakios-kernel.gpu-g1-precheck-02")
++REFERENCE_G0 = G0.PACKAGE_ROOT / "g0-01"
++REFERENCE_G0_SHA = "61bc8b8220f54e8a2b0772a694690901b89e48a65b2d52463c8f962ab02c7933"
++SCHEMA = "hakios-gpu-g1-precheck-ram-package-v1"
++PROFILE = "gpu-g1-precheck-ram"
++BOOT_ARGS = G0.BOOT_ARGS.replace("gpu_wd=1", "gpu_wd=1 gpu_power_diag=1")
++NEW_KERNEL_MARKERS = (b"gpu_power_diag", b"LITHIUM GPU supply begin",
++                      b"LITHIUM GPU supply end", b"LITHIUM GPU fuse")
++KERNEL_MARKERS = G0.KERNEL_MARKERS + NEW_KERNEL_MARKERS
++require, sha, meta, read_json = G0.require, G0.sha, G0.meta, G0.read_json
++REUSED_COMPONENTS = ("root.apfs", "flashboot.apfs", "loader.efi", "fastboot-dxe.efi",
++                     "lithium.fd", "loader.fat", "ram-support.json", "ram-root.json")
++REUSED_MANIFEST_FIELDS = (
++    "passed", "package_host_ready", "ram_smp_return", "return_fastboot", "return_fastboot_delay",
++    "loader_return_after", "cpu_sanity", "perf_fixed_requested", "perf_fixed_target_hz",
++    "cpu_inherited_supply_r39", "cpu_thermal_diag", "source_log_retry", "gpu_stage", "gpu_probe",
++    "gpu_wd", "stress_requested", "regulator_writes", "TSENS_writes", "max_cpu_clock_register_writes",
++    "gpu_hardware_verified", "frequency_hardware_verified", "measured_cpu_mhz",
++    "automatic_return_hardware_verified", "runtime_verified", "normal_boot_may_write_userdata",
++    "partition_operations", "physical_ufs_provider_absent", "ufs_bridge_disabled",
++    "root_data_storage_arguments_absent", "persistent_log_disabled", "device_operations",
++    "kernel_builds", "qemu_used", "readback",
++)
++PRECHECK_FIELDS = {
++    "prerequisites_capture_only": True, "gpu_power_diag": True,
++    "gpu_supply_capture_requested": True, "gpu_fuse_capture_requested": True,
++    "capture_before_power_writes": True, "supply_values_are_digital_config_status": True,
++    "parser_owned_by_main": True, "gpu_power_diag_default": 0,
++    "stage1_armed": False, "g1_chip_id_accepted": False, "measured_gpu_chip_id": None,
++    "supply_hardware_verified": False, "fuse_hardware_verified": False,
++    "gpu_power_writes_requested": False, "gpu_aperture_access_requested": False,
++    "firmware_load_requested": False, "gpu_write_backend_requested": False,
++    "spmi_access": "read_transactions_only",
++}
++
++
++def input_paths(attempt):
++    """Pin both main inputs to the selected revision; accept no arbitrary kernel."""
++    require(attempt in SUPPORTED_REVISIONS, "supported G1 precheck revisions are 01 and 02")
++    kernel = Path("/home/jia/ios-mix1-build/hakios-lithium-ios16/"
++                  f"hakios-kernel.gpu-g1-precheck-{attempt}")
++    report = ROOT / f"evidence/gpu-g1-20261123/main/kernel-result-g1-precheck-{attempt}.json"
++    return kernel, report
++
++
++@contextmanager
++def core_revision(attempt):
++    kernel, report = input_paths(attempt)
++    previous_kernel, previous_report = CORE.FROZEN_KERNEL, CORE.KERNEL_REPORT
++    CORE.FROZEN_KERNEL, CORE.KERNEL_REPORT = kernel, report
++    try:
++        yield kernel, report
++    finally:
++        CORE.FROZEN_KERNEL, CORE.KERNEL_REPORT = previous_kernel, previous_report
++
++
++def validate_build_revision(build, attempt):
++    expected = f"gpu-g1-precheck-{attempt}"
++    require((attempt == "01" and "revision" not in build) or build.get("revision") == expected,
++            "main kernel report revision differs: " + expected)
++
++
++def report_records(expected_report):
++    """Accept the exact workspace path in either Windows or WSL spelling."""
++    relative = expected_report.relative_to(ROOT).as_posix()
++    roots = {ROOT.as_posix()}
++    windows = re.fullmatch(r"([A-Za-z]):(/.*)", ROOT.as_posix())
++    linux = re.fullmatch(r"/mnt/([a-z])(/.*)", ROOT.as_posix())
++    if windows:
++        roots.add("/mnt/" + windows[1].lower() + windows[2])
++    if linux:
++        roots.add(linux[1].upper() + ":" + linux[2])
++    return {root + "/" + relative for root in roots}
++
++
++def package_path(attempt):
++    input_paths(attempt)
++    path = PACKAGE_ROOT / f"g1-precheck-{attempt}"
++    require(path.resolve().parent == PACKAGE_ROOT.resolve() and not path.is_symlink(),
++            "G1 precheck output escaped its assigned directory")
++    return path
++
++
++def validate_args(args):
++    require(isinstance(args, str) and args == BOOT_ARGS,
++            "G1 precheck requires exact G0 RAM arguments plus gpu_power_diag=1")
++    words = args.split()
++    require(words.count("gpu_power_diag=1") == 1 and len(words) ==
++            len({w.split("=", 1)[0] for w in words}), "duplicate precheck boot argument")
++    G0.validate_args(" ".join(w for w in words if w != "gpu_power_diag=1"))
++
++
++# Configure a private import; G0 files, modules and frozen outputs are unchanged.
++CORE.BOOT_ARGS = BOOT_ARGS
++CORE.KERNEL_REPORT = KERNEL_REPORT
++CORE.FROZEN_KERNEL = FROZEN_KERNEL
++CORE.KERNEL_MARKERS = KERNEL_MARKERS
++CORE.PACKAGE_ROOT = PACKAGE_ROOT
++CORE.validate_args = validate_args
++
++
++def reference_g0():
++    verified = G0.verify_package(REFERENCE_G0, "01")
++    require(verified["image_sha256"] == REFERENCE_G0_SHA, "frozen G0 reference image differs")
++    return read_json(REFERENCE_G0 / "contract.json")
++
++
++def reused_inputs():
++    inputs = CORE.reused_inputs()
++    reference = reference_g0()
++    for name in REUSED_COMPONENTS:
++        data = (REFERENCE_G0 / name).read_bytes()
++        require(meta(data) == reference["components"][name], "G0 reference differs: " + name)
++    inputs["fat"] = (REFERENCE_G0 / "loader.fat").read_bytes()
++    require(CORE.LIVE.fat_loader(inputs["fat"]) == inputs["loader"], "G0 FAT loader differs")
++    inputs["reference"] = reference
++    return inputs
++
++
++def kernel_input(report_path=None, attempt=DEFAULT_ATTEMPT):
++    frozen_kernel, expected_report = input_paths(attempt)
++    report_path = expected_report if report_path is None else Path(report_path)
++    require(report_path.resolve() == expected_report.resolve(),
++            f"report must be the exact main G1-precheck-{attempt} report")
++    report_path = expected_report
++    require(report_path.is_file(), f"main G1 precheck kernel report pending: {report_path}")
++    build = read_json(report_path)
++    require(build.get("kernel") == frozen_kernel.as_posix(),
++            f"main must provide the frozen G1-precheck-{attempt} kernel")
++    validate_build_revision(build, attempt)
++    # Uses the unchanged Mach-O/size/hash/owner-return checks with G1 markers.
++    with core_revision(attempt):
++        return CORE.kernel_input(report_path)
++
++
++def validate_contract(contract, attempt, reference):
++    frozen_kernel, expected_report = input_paths(attempt)
++    require(contract.get("schema") == SCHEMA and contract.get("profile") == PROFILE and
++            contract.get("candidate") == f"GPU-G1-precheck-{attempt}", "G1 precheck contract rejected")
++    validate_args(contract.get("cmdline"))
++    require(contract.get("boot_args") == BOOT_ARGS, "G1 precheck boot_args differs")
++    for name in REUSED_MANIFEST_FIELDS:
++        expected = reference[name]
++        value = contract.get(name)
++        require(name in contract and type(value) is type(expected) and value == expected,
++                "G0 RAM policy/readback changed: " + name)
++    for name, expected in PRECHECK_FIELDS.items():
++        value = contract.get(name)
++        require(name in contract and type(value) is type(expected) and value == expected,
++                "G1 precheck scope differs: " + name)
++    inputs = contract.get("inputs", {})
++    require(inputs.get("frozen_g0_image_sha256") == REFERENCE_G0_SHA and
++            inputs.get("kernel") == frozen_kernel.as_posix(), "G1 frozen input binding differs")
++    report_record = inputs.get("kernel_report")
++    require(isinstance(report_record, str) and report_record.replace("\\", "/") in
++            report_records(expected_report), "G1 frozen report binding differs")
++    require((attempt == "01" and "kernel_revision" not in contract) or
++            contract.get("kernel_revision") == attempt, "G1 contract kernel revision differs")
++    for name in ("loader_sha256", "ram_fd_sha256", "fastboot_dxe_sha256",
++                 "ram_root_sha256", "frozen_r34_ram_sha256"):
++        require(inputs.get(name) == reference["inputs"][name], "G0 RAM input changed: " + name)
++
++
++def assemble(attempt=DEFAULT_ATTEMPT, kernel_report=None):
++    out = package_path(attempt)
++    require(not out.exists(), f"preserve existing precheck package/partial files: {out}")
++    frozen_kernel, expected_report = input_paths(attempt)
++    kernel_report = expected_report if kernel_report is None else Path(kernel_report)
++    require(kernel_report.resolve() == expected_report.resolve(),
++            f"report must be the exact main G1-precheck-{attempt} report")
++    kernel_report = expected_report
++    inputs = reused_inputs()
++    kernel, build, build_data = kernel_input(kernel_report, attempt)
++    old_raw, dtbs, header, previous, old_size = inputs["r34"]
++    payload = CORE.CODEC.encode_payload([
++        ("kernel", kernel), ("ramdisk", inputs["root"]), ("resident", previous["resident"]),
++        ("cmdline", BOOT_ARGS.encode("ascii") + b"\0"), ("kernel.ver", previous["kernel.ver"])])
++    require(len(payload) < CORE.PAYLOAD_LIMIT, "G1 payload exceeds reviewed bound")
++    shim, _ = CORE.LIVE.replace_copy_length(old_raw[:CORE.FD_AT], old_size, len(payload))
++    raw = shim + inputs["fd"] + payload + CORE.NOP * (((-len(payload)) % 16) // 4)
++    require(len(raw) <= CORE.IMAGE_LIMIT and len(raw) % 16 == 0, "G1 Image exceeds reviewed bound")
++    image_name = f"lithium-hakios-ios16-gpu-g1-precheck-{attempt}.img"
++    image = CORE.LIVE.make_android(raw, dtbs, inputs["fat"], header)
++    components = {name: (REFERENCE_G0 / name).read_bytes() for name in REUSED_COMPONENTS}
++    components.update({"hakios-kernel": kernel, "payload.bin": payload, "Image": raw,
++                       "boot-args.txt": (BOOT_ARGS + "\n").encode("ascii"),
++                       "kernel-result.json": build_data, image_name: image})
++    readback = CORE.verify_layers(image, components, inputs["r34"])
++    reference = inputs["reference"]
++    contract = {name: reference[name] for name in REUSED_MANIFEST_FIELDS}
++    contract.update(PRECHECK_FIELDS)
++    contract.update({"schema": SCHEMA, "profile": PROFILE, "candidate": f"GPU-G1-precheck-{attempt}",
++                     "kernel_revision": attempt,
++                     "cmdline": BOOT_ARGS, "boot_args": BOOT_ARGS,
++                     "inputs": {**reference["inputs"], "kernel": frozen_kernel.as_posix(),
++                                "kernel_report": str(kernel_report), "kernel_sha256": build["sha256"],
++                                "frozen_g0_image_sha256": REFERENCE_G0_SHA},
++                     "image": {"path": image_name, **meta(image)},
++                     "components": {name: meta(data) for name, data in components.items()}, **readback})
++    validate_contract(contract, attempt, reference)
++    out.mkdir(parents=True, exist_ok=False)
++    for name, data in components.items():
++        with (out / name).open("xb") as stream:
++            stream.write(data)
++    with (out / "contract.json").open("x", encoding="utf-8", newline="\n") as stream:
++        stream.write(json.dumps(contract, indent=2) + "\n")
++    return verify_package(out, attempt)
++
++
++def verify_package(package, attempt=None):
++    if attempt is None:
++        match = re.fullmatch(r"g1-precheck-(01|02)", package.name)
++        require(match is not None, "G1 package name must select revision 01 or 02")
++        attempt = match[1]
++    frozen_kernel, _ = input_paths(attempt)
++    require(package.name == f"g1-precheck-{attempt}" and
++            package.resolve() == package_path(attempt).resolve(), "G1 package/attempt path mismatch")
++    reference = reference_g0()
++    contract = read_json(package / "contract.json")
++    validate_contract(contract, attempt, reference)
++    image_name = f"lithium-hakios-ios16-gpu-g1-precheck-{attempt}.img"
++    expected_names = (set(reference["components"]) - {reference["image"]["path"]}) | {image_name}
++    records = contract.get("components")
++    require(isinstance(records, dict) and set(records) == expected_names, "G1 precheck component set differs")
++    components = {}
++    for name, record in records.items():
++        path = package / name
++        require(path.is_file() and not path.is_symlink() and path.resolve().parent == package.resolve(),
++                "missing or linked G1 component: " + name)
++        data = path.read_bytes()
++        require(record == meta(data), "G1 component size/hash differs: " + name)
++        if name in REUSED_COMPONENTS:
++            require(record == reference["components"][name], "reused G0 bytes changed: " + name)
++        components[name] = data
++    require(contract.get("image") == {"path": image_name, **meta(components[image_name])},
++            "G1 image metadata differs")
++    build = json.loads(components["kernel-result.json"])
++    require(build.get("passed") is True and build.get("kernel") == frozen_kernel.as_posix() and
++            build.get("sha256") == sha(components["hakios-kernel"]) and
++            type(build.get("bytes")) is int and build["bytes"] == len(components["hakios-kernel"]) and
++            build.get("device_operations") == 0, "saved main G1 kernel report does not bind kernel bytes")
++    validate_build_revision(build, attempt)
++    require(contract["inputs"].get("kernel_sha256") == build["sha256"], "G1 kernel manifest pin differs")
++    CORE.LIVE.verify_kernel(components["hakios-kernel"], "ram")
++    for marker in KERNEL_MARKERS:
++        require(marker in components["hakios-kernel"], "G1 precheck kernel marker missing: " + repr(marker))
++    actual = CORE.verify_layers(components[image_name], components)
++    for name in ("final_fv", "command_budget", "shim_copy_length"):
++        require(contract.get(name) == actual[name], "G1 actual readback differs: " + name)
++    return {"passed": True, "package": str(package), "image": str(package / image_name),
++            "image_sha256": sha(components[image_name]), "image_bytes": len(components[image_name]),
++            "cmdline": BOOT_ARGS, "kernel_revision": attempt,
++            "component_count": len(components), "final_fv": actual["final_fv"],
++            "command_budget": actual["command_budget"], "device_operations": 0,
++            "prerequisites_capture_only": True, "stage1_armed": False, "g1_chip_id_accepted": False,
++            "runtime_verified": False}
++
++
++def main(argv=None):
++    parser = argparse.ArgumentParser(description=__doc__)
++    actions = parser.add_mutually_exclusive_group()
++    actions.add_argument("--check-inputs", action="store_true")
++    actions.add_argument("--verify-package", action="store_true")
++    parser.add_argument("--attempt", choices=SUPPORTED_REVISIONS, default=DEFAULT_ATTEMPT)
++    parser.add_argument("--kernel-report", type=Path,
++                        help="optional; must equal the exact report path derived from --attempt")
++    args = parser.parse_args(argv)
++    try:
++        package_path(args.attempt)
++        if args.verify_package:
++            result = verify_package(package_path(args.attempt), args.attempt)
++        elif args.check_inputs:
++            inputs = reused_inputs()
++            kernel, _, _ = kernel_input(args.kernel_report, args.attempt)
++            result = {"passed": True, "kernel_sha256": sha(kernel), "kernel_bytes": len(kernel),
++                      "final_fv": inputs["fv_proof"], "command_budget": inputs["command_budget"],
++                      "prerequisites_capture_only": True, "stage1_armed": False, "device_operations": 0}
++        else:
++            result = assemble(args.attempt, args.kernel_report)
++        print(json.dumps(result, indent=2))
++        return 0
++    except Exception as error:
++        print(f"STOPPED; existing G1 files preserved: {error}", file=sys.stderr)
++        return 1
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+--- /dev/null
++++ b/scripts/tests/test-gpu-g1-spmi.c
+@@ -0,0 +1,394 @@
++/* Actual-header host tests. Independent address/opcode literals are sourced
++ * from stock, pinned regulator/arbiter sources; no hardware I/O occurs here.
++ */
++#include <assert.h>
++#include <inttypes.h>
++#include <stdio.h>
++#include <string.h>
++#include "../../ports/hakios-lithium/gpu/g1-spmi-read.h"
++#include "../../ports/hakios-lithium/diagnostics/cpu-spmi-read-r38.h"
++
++struct event { char op; uint64_t pa; uint32_t value; };
++struct mock {
++    uint32_t version, map[128], status[100], status_count, status_index;
++    uint32_t config, raw, reads, writes, times, delays, events;
++    uint32_t fail_at, mutate_read, mutate_value, frozen, backwards_at;
++    uint32_t probe_only;
++    uint64_t observer, clock, jump;
++    struct event log[1024];
++};
++static unsigned cases, checks;
++#define CHECK(x) do { ++checks; assert(x); } while (0)
++_Static_assert(sizeof(struct lgs_result) <= 256, "single bounded transaction result");
++
++static void init(struct mock *m, uint32_t ppid, unsigned apid)
++{
++    memset(m, 0, sizeof(*m));
++    m->version = 0x20010000;
++    m->map[apid] = ppid << 8;
++    m->observer = UINT64_C(0x04c00000) + UINT64_C(0x8000) * apid;
++    m->clock = 1000;
++    m->status[0] = 1;
++    m->status_count = 1;
++    m->raw = 0x67452301;
++}
++static int event(struct mock *m, char op, uint64_t pa, uint32_t v)
++{
++    CHECK(m->events < 1024);
++    m->log[m->events++] = (struct event){op, pa, v};
++    return m->events == m->fail_at ? -73 : 0;
++}
++static int read32(void *ctx, uint64_t pa, uint32_t *v)
++{
++    struct mock *m = ctx;
++    ++m->reads;
++    *v = 0xdeadbeef; /* a failed callback must not publish this value */
++    if (event(m, 'R', pa, 0)) return -73;
++    if (pa == UINT64_C(0x0400f000)) *v = m->version;
++    else if (pa >= UINT64_C(0x0400f800) && pa <= UINT64_C(0x0400f9fc) && !(pa & 3u))
++        *v = m->map[(pa - UINT64_C(0x0400f800)) / 4u];
++    else {
++        CHECK(!m->probe_only);
++        CHECK(pa == m->observer + 4 || pa == m->observer + 8 ||
++              pa == m->observer + 24 || pa == m->observer + 28);
++        if (pa == m->observer + 4) *v = m->config;
++        else if (pa == m->observer + 8) {
++            CHECK(m->writes == 1);
++            uint32_t i = m->status_index++;
++            *v = m->status[i < m->status_count ? i : m->status_count - 1];
++        } else {
++            CHECK(m->writes == 1 && m->status_index > 0);
++            *v = m->raw;
++        }
++    }
++    if (m->mutate_read == m->reads) *v = m->mutate_value;
++    m->log[m->events - 1].value = *v;
++    return 0;
++}
++static int write32(void *ctx, uint64_t pa, uint32_t v)
++{
++    struct mock *m = ctx;
++    ++m->writes;
++    CHECK(!m->probe_only && m->writes == 1);
++    CHECK(pa == m->observer); /* ONLY CMD, never WDATA/CONFIG/IRQ/reset */
++    CHECK((v >> 27) == 1);  /* EXT_READL */
++    CHECK((v & 0x07fff008u) == 0); /* no v1 SID/full address/non-data bits */
++    m->status_index = 0;
++    return event(m, 'W', pa, v);
++}
++static int time_us(void *ctx, uint64_t *v)
++{
++    struct mock *m = ctx;
++    ++m->times;
++    if (event(m, 'T', 0, 0)) return -73;
++    *v = m->times == m->backwards_at ? 1 :
++         m->clock + (m->times > 1 ? m->jump : 0);
++    return 0;
++}
++static int delay_us(void *ctx, uint32_t us)
++{
++    struct mock *m = ctx;
++    ++m->delays;
++    CHECK(us == 1);
++    if (event(m, 'D', 0, us)) return -73;
++    if (!m->frozen) m->clock += us;
++    return 0;
++}
++static struct lgs_io io_for(struct mock *m)
++{
++    return (struct lgs_io){m, read32, write32, time_us, delay_us};
++}
++static struct lgs_route probe(struct mock *m, uint32_t sid)
++{
++    struct lgs_io io = io_for(m);
++    struct lgs_result r;
++    m->probe_only = 1;
++    io.write32 = NULL; io.time_us = NULL; io.delay_us = NULL;
++    CHECK(lgs_probe(&io, sid, 0x1700, &r) == LGS_OK);
++    CHECK(r.reads == 129 && r.mapping_reads == 128 && r.matches == 1);
++    CHECK(!r.writes && !m->writes && !m->times && !m->delays);
++    CHECK(r.route.sid == sid && r.route.base == 0x1700);
++    CHECK(r.route.ppid == (sid == 3 ? 0x317u : 0x117u));
++    CHECK(r.route.observer_pa == m->observer && r.route.observer_bytes == 4096);
++    m->probe_only = 0; m->reads = 0; m->events = 0;
++    return r.route;
++}
++static enum lgs_error run(struct mock *m, const struct lgs_route *route,
++                          uint32_t sid, uint32_t addr, uint32_t len,
++                          struct lgs_result *r)
++{
++    struct lgs_io io = io_for(m);
++    return lgs_read(&io, route, sid, addr, len, r);
++}
++
++static void discovery(void)
++{
++    struct mock m; struct lgs_result r;
++    for (unsigned rail = 0; rail < 2; ++rail) {
++        uint32_t sid = rail ? 1 : 3, ppid = rail ? 0x117 : 0x317;
++        for (unsigned apid = 0; apid < 128; ++apid) {
++            init(&m, ppid, apid);
++            struct lgs_route route = probe(&m, sid);
++            CHECK(route.apid == apid && route.mapping_raw == (ppid << 8));
++            ++cases;
++        }
++    }
++    const uint32_t bad_versions[] = {0, 0xffffffff, 0x20000000, 0x20010001, 0x30000000};
++    for (unsigned i = 0; i < sizeof(bad_versions)/sizeof(*bad_versions); ++i) {
++        init(&m, 0x317, 17); m.version = bad_versions[i];
++        struct lgs_io io = io_for(&m);
++        CHECK(lgs_probe(&io, 3, 0x1700, &r) == LGS_VERSION);
++        CHECK(m.reads == 1 && !m.writes && r.route.version == bad_versions[i]);
++        ++cases;
++    }
++    init(&m, 0x317, 17); m.map[17] = 0;
++    struct lgs_io io = io_for(&m);
++    CHECK(lgs_probe(&io, 3, 0x1700, &r) == LGS_NO_MAPPING);
++    CHECK(r.mapping_reads == 128 && !r.route.observer_bytes && !m.writes);
++    ++cases;
++    init(&m, 0x317, 17); m.map[127] = 0x317ff;
++    CHECK(lgs_probe(&io, 3, 0x1700, &r) == LGS_DUPLICATE_MAPPING);
++    CHECK(r.matches == 2 && !r.route.observer_bytes && !m.writes);
++    ++cases;
++    init(&m, 0x317, 17); m.map[17] = 0x00011700;
++    CHECK(lgs_probe(&io, 3, 0x1700, &r) == LGS_NO_MAPPING);
++    ++cases;
++    init(&m, 0x317, 127); m.map[127] = 0xf00317a5;
++    CHECK(lgs_probe(&io, 3, 0x1700, &r) == LGS_OK);
++    CHECK(r.route.mapping_raw == 0xf00317a5 && r.route.apid == 127);
++    ++cases;
++    puts("PASS discovery both_rails all_128_channels strict_version mapping_bits missing duplicate");
++}
++
++static int source_allowed(uint32_t sid, uint32_t addr, uint32_t len)
++{
++    /* Independent source literals, deliberately not implementation macros. */
++    static const unsigned offsets[] = {4, 5, 0x40, 0x41, 0x45, 0x46, 0x61};
++    if ((sid != 1 && sid != 3) || addr < 0x1700 || addr > 0x17ff ||
++        !len || len > 8 || len > 0x1800 - addr) return 0;
++    for (unsigned i = 0; i < len; ++i) {
++        unsigned yes = 0;
++        for (unsigned j = 0; j < sizeof(offsets)/sizeof(*offsets); ++j)
++            if (addr + i == 0x1700 + offsets[j]) yes = 1;
++        if (!yes) return 0;
++    }
++    return 1;
++}
++static void field_allowlist(void)
++{
++    static const unsigned offsets[] = {4, 5, 0x40, 0x41, 0x45, 0x46, 0x61};
++    static const char *names[] = {"TYPE", "SUBTYPE", "RANGE", "VSET", "MODE", "ENABLE", "STEP"};
++    CHECK(lgs_field_count == 7 && lgs_rail_count == 2);
++    for (unsigned i = 0; i < 7; ++i) {
++        CHECK(lgs_fields[i].offset == offsets[i]);
++        CHECK(strcmp(lgs_fields[i].name, names[i]) == 0);
++    }
++    for (unsigned rail = 0; rail < 2; ++rail) {
++        uint32_t sid = rail ? 1 : 3, ppid = rail ? 0x117 : 0x317;
++        for (unsigned i = 0; i < 7; ++i) {
++            struct mock m; init(&m, ppid, 17);
++            struct lgs_route route = probe(&m, sid);
++            struct lgs_result r;
++            CHECK(run(&m, &route, sid, 0x1700 + offsets[i], 1, &r) == LGS_OK);
++            CHECK(r.cmd == (0x08000000u | (offsets[i] << 4)));
++            CHECK(m.writes == 1 && r.cmd_attempted && r.cmd_completed && r.data_valid);
++            CHECK(r.data_words_valid == 1 && r.data[0] == 1 && r.data[1] == 0);
++            CHECK(r.reads == 134 && r.polls == 1 && !r.callback_rc);
++            ++cases;
++        }
++        for (unsigned i = 0; i < 3; ++i) {
++            static const unsigned starts[] = {4, 0x40, 0x45};
++            struct mock m; init(&m, ppid, 17);
++            struct lgs_route route = probe(&m, sid);
++            struct lgs_result r;
++            CHECK(run(&m, &route, sid, 0x1700 + starts[i], 2, &r) == LGS_OK);
++            CHECK(r.cmd == (0x08000001u | (starts[i] << 4)));
++            CHECK(r.data[0] == 1 && r.data[1] == 0x23 && r.data[2] == 0);
++            ++cases;
++        }
++    }
++    /* Invalid fields/spans/SIDs: no scan, command, time or delay callback. */
++    struct mock m; init(&m, 0x317, 17);
++    struct lgs_route route = {0}; struct lgs_result r;
++    for (unsigned sid = 0; sid < 16; ++sid)
++        for (unsigned offset = 0; offset < 256; ++offset)
++            for (unsigned len = 0; len <= 9; ++len) {
++                unsigned addr = 0x1700 + offset;
++                int allowed = source_allowed(sid, addr, len);
++                CHECK(lgs_request_valid(sid, addr, len) == allowed);
++                if (!allowed) {
++                    CHECK(run(&m, &route, sid, addr, len, &r) == LGS_ARGUMENT);
++                    CHECK(!m.events && !r.cmd_attempted && !r.data_valid);
++                    ++cases;
++                }
++            }
++    const unsigned bad_addr[] = {0x1404,0x1440,0x3204,0x1742,0x1744,0x1747,0x1708,0x1760,0x1762,0xffffffff};
++    for (unsigned i = 0; i < sizeof(bad_addr)/sizeof(*bad_addr); ++i) {
++        CHECK(run(&m, &route, 1, bad_addr[i], 1, &r) == LGS_ARGUMENT);
++        CHECK(!m.events);
++        ++cases;
++    }
++    struct lgs_io io = io_for(&m);
++    CHECK(lgs_probe(&io, 1, 0x1400, &r) == LGS_ARGUMENT && !m.events);
++    CHECK(lgs_probe(&io, 3, 0x1701, &r) == LGS_ARGUMENT && !m.events);
++    cases += 2;
++    puts("PASS exact_source_fields both_rails contiguous_pairs all_sid_byte_length_rejections zero_io");
++}
++
++static void routes_and_config(void)
++{
++    for (unsigned slot = 0; slot < 8; ++slot) {
++        struct mock m; init(&m, 0x317, 17);
++        struct lgs_route route = probe(&m, 3); struct lgs_result r;
++        switch (slot) {
++        case 0: ++route.sid; break;
++        case 1: route.base = 0x1400; break;
++        case 2: route.ppid = 0x117; break;
++        case 3: ++route.version; break;
++        case 4: ++route.apid; break;
++        case 5: ++route.mapping_raw; break;
++        case 6: route.observer_pa += 4; break;
++        case 7: route.observer_bytes = 16384; break;
++        }
++        CHECK(run(&m, &route, 3, 0x1740, 1, &r) == LGS_ROUTE_CHANGED);
++        CHECK(m.reads == 129 && !m.writes && !r.config_valid);
++        ++cases;
++    }
++    for (unsigned slot = 0; slot < 2; ++slot) {
++        struct mock m; init(&m, 0x317, 17);
++        struct lgs_route route = probe(&m, 3); struct lgs_result r;
++        m.mutate_read = slot ? 131 : 130;
++        m.mutate_value = slot ? 0x31701 : 0x20010001;
++        CHECK(run(&m, &route, 3, 0x1740, 1, &r) == LGS_ROUTE_CHANGED);
++        CHECK(!m.writes && !r.config_valid && r.phase == LGS_RECHECK);
++        ++cases;
++    }
++    struct mock m; init(&m, 0x317, 17);
++    struct lgs_route route = probe(&m, 3); struct lgs_result r;
++    m.config = 1;
++    CHECK(run(&m, &route, 3, 0x1740, 1, &r) == LGS_CONFIG_UNSUPPORTED);
++    CHECK(r.config_valid && r.config_raw == 1 && m.reads == 132 && !m.writes && !m.times);
++    ++cases;
++    init(&m, 0x317, 17); route = probe(&m, 3);
++    r.route = route;
++    CHECK(run(&m, &r.route, 3, 0x1740, 1, &r) == LGS_OK);
++    CHECK(r.route.ppid == 0x317 && r.data_valid);
++    ++cases;
++    init(&m, 0x317, 17); route = probe(&m, 3);
++    m.map[17] = 0x00011700;
++    CHECK(run(&m, &route, 3, 0x1740, 1, &r) == LGS_NO_MAPPING && !m.writes);
++    ++cases;
++    puts("PASS route_all_components recheck_full_mapping version config_zero alias changed_scan");
++}
++
++static void completion(void)
++{
++    static const uint32_t status[] = {1,5,3,9,0x11,0x0f,0x80000001};
++    static const enum lgs_error errors[] = {LGS_OK,LGS_DENIED,LGS_FAILURE,LGS_DROPPED,
++                                           LGS_UNKNOWN_STATUS,LGS_DENIED,LGS_UNKNOWN_STATUS};
++    for (unsigned i = 0; i < sizeof(status)/sizeof(*status); ++i) {
++        struct mock m; init(&m, 0x317, 17);
++        struct lgs_route route = probe(&m, 3); struct lgs_result r;
++        m.status[0] = status[i]; m.jump = 101;
++        CHECK(run(&m, &route, 3, 0x1740, 1, &r) == errors[i]);
++        CHECK(r.cmd_completed && r.polls == 1 && r.status_raw == status[i]);
++        CHECK(r.last_us - r.start_us == 101 && m.writes == 1);
++        CHECK(r.data_valid == (errors[i] == LGS_OK));
++        ++cases;
++    }
++    /* Differential against the unchanged actual R38 implementation. */
++    static const uint64_t jumps[] = {0,99,100,101};
++    for (unsigned i = 0; i < sizeof(jumps)/sizeof(*jumps); ++i)
++        for (unsigned st = 0; st < 2; ++st) {
++            struct mock gpu, cpu;
++            init(&gpu,0x317,17); init(&cpu,0x132,17);
++            struct lgs_route gr = probe(&gpu,3);
++            struct r38_spmi_route cr = {0x20010000,17,0x13200,4096,0x04c88000};
++            struct lgs_result g;
++            struct r38_spmi_result c;
++            gpu.jump = cpu.jump = jumps[i];
++            gpu.status[0] = cpu.status[0] = st ? 5 : 1;
++            struct r38_spmi_io ci = {&cpu,read32,write32,time_us,delay_us};
++            enum lgs_error ge = run(&gpu,&gr,3,0x1740,1,&g);
++            enum r38_spmi_error ce = r38_spmi_read(&ci,&cr,1,0x3240,1,&c);
++            CHECK((int)ge == (int)ce && g.polls == c.polls && g.cmd == c.cmd);
++            CHECK(g.cmd_completed == c.cmd_completed && g.data_valid == c.data_valid);
++            CHECK(g.status_raw == c.status_raw && g.last_us == c.last_us);
++            CHECK(gpu.writes == cpu.writes && gpu.delays == cpu.delays);
++            ++cases;
++        }
++    struct mock m; init(&m,0x317,17);
++    struct lgs_route route = probe(&m,3); struct lgs_result r;
++    m.status[0] = 0; m.jump = 100;
++    CHECK(run(&m,&route,3,0x1740,1,&r) == LGS_TIMEOUT);
++    CHECK(r.polls == 1 && !r.cmd_completed && !r.data_valid && !m.delays);
++    ++cases;
++    init(&m,0x317,17); route=probe(&m,3);
++    m.status[0]=2; m.frozen=1;
++    CHECK(run(&m,&route,3,0x1740,1,&r) == LGS_TIMEOUT);
++    CHECK(r.polls == 100 && m.delays == 99 && r.status_or == 2 && !r.cmd_completed);
++    ++cases;
++    init(&m,0x317,17); route=probe(&m,3);
++    memset(m.status,0,sizeof(m.status)); m.status[99]=1; m.status_count=100;
++    CHECK(run(&m,&route,3,0x1740,1,&r) == LGS_OK);
++    CHECK(r.polls == 100 && m.delays == 99 && r.last_us-r.start_us == 99);
++    ++cases;
++    init(&m,0x317,17); route=probe(&m,3);
++    m.backwards_at=2;
++    CHECK(run(&m,&route,3,0x1740,1,&r) == LGS_TIME_ERROR);
++    CHECK(!r.cmd_completed && !r.data_valid && r.status_valid);
++    ++cases;
++    init(&m,0x317,17); route=probe(&m,3);
++    m.clock=UINT64_MAX-5;
++    CHECK(run(&m,&route,3,0x1740,1,&r) == LGS_OK);
++    CHECK(r.start_us == UINT64_MAX-5 && r.last_us == r.start_us);
++    ++cases;
++    puts("PASS late_done_errors R38_actual_header_differential timeout_100us frozen_100poll rollback overflow");
++}
++
++static void callback_failures(void)
++{
++    struct mock baseline; init(&baseline,0x317,17);
++    struct lgs_route route=probe(&baseline,3); struct lgs_result r;
++    baseline.status[0]=0; baseline.status[1]=1; baseline.status_count=2;
++    CHECK(run(&baseline,&route,3,0x1740,1,&r) == LGS_OK);
++    unsigned count=baseline.events;
++    CHECK(count < 1024);
++    for (unsigned at=1; at<=count; ++at) {
++        struct mock m; init(&m,0x317,17);
++        m.status[0]=0; m.status[1]=1; m.status_count=2; m.fail_at=at;
++        char op=baseline.log[at-1].op;
++        enum lgs_error want=op=='R'?LGS_READ_ERROR:op=='W'?LGS_WRITE_ERROR:
++                            op=='T'?LGS_TIME_ERROR:LGS_DELAY_ERROR;
++        CHECK(run(&m,&route,3,0x1740,1,&r) == want);
++        CHECK(r.callback_rc == -73 && m.events == at && m.writes <= 1);
++        CHECK(!r.data_valid && !r.data_words_valid && !r.data_raw[0]);
++        if (op=='W') CHECK(r.cmd_attempted && !r.cmd_completed && r.writes == 1);
++        ++cases;
++    }
++    struct mock m; init(&m,0x317,17); struct lgs_io io=io_for(&m);
++    CHECK(lgs_probe(NULL,3,0x1700,&r) == LGS_ARGUMENT);
++    CHECK(lgs_probe(&io,3,0x1700,NULL) == LGS_ARGUMENT);
++    CHECK(lgs_read(NULL,&route,3,0x1740,1,&r) == LGS_ARGUMENT);
++    CHECK(lgs_read(&io,NULL,3,0x1740,1,&r) == LGS_ARGUMENT);
++    CHECK(lgs_read(&io,&route,3,0x1740,1,NULL) == LGS_ARGUMENT);
++    for (unsigned i=0; i<4; ++i) {
++        io=io_for(&m);
++        if (i==0) io.read32=NULL;
++        if (i==1) io.write32=NULL;
++        if (i==2) io.time_us=NULL;
++        if (i==3) io.delay_us=NULL;
++        CHECK(lgs_read(&io,&route,3,0x1740,1,&r) == LGS_ARGUMENT);
++    }
++    CHECK(!m.events);
++    cases += 9;
++    puts("PASS callback_failure_every_actual_operation preserved_rc no_retry no_failed_raw null_callbacks");
++}
++
++int main(void)
++{
++    discovery(); field_allowlist(); routes_and_config(); completion(); callback_failures();
++    printf("PASS total cases=%u checks=%u result_bytes=%zu hardware_verified=0\n",
++           cases,checks,sizeof(struct lgs_result));
++    return 0;
++}
+--- /dev/null
++++ b/scripts/tests/test-gpu-g1-fuse.c
+@@ -0,0 +1,280 @@
++/* Host-only tests of the production header. Synthetic rows are never capture.
++ * Run with clang -std=c11 -Wall -Wextra -Werror -pedantic
++ * -fsanitize=address,undefined -fno-omit-frame-pointer.
++ */
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include "../../ports/hakios-lithium/gpu/g1-fuse.h"
++
++static unsigned long checks, cases;
++#define CHECK(x) do { ++checks; if (!(x)) { \
++    fprintf(stderr, "%s:%d: %s\n", __FILE__, __LINE__, #x); exit(1); \
++} } while (0)
++
++/* Bit-by-bit oracle avoids duplicating production shift/mask expressions. */
++static uint32_t bits(uint64_t word, unsigned first, unsigned last)
++{
++    uint32_t v = 0u;
++    unsigned i;
++    for (i = first; i <= last; ++i)
++        if ((word & (UINT64_C(1) << i)) != 0u)
++            v |= UINT32_C(1) << (i - first);
++    return v;
++}
++
++static void compare(const uint64_t raw[LGF_ROW_COUNT])
++{
++    struct lgf_result r;
++    unsigned i;
++    const unsigned lo[4] = {55u, 50u, 45u, 40u};
++    uint64_t before[LGF_ROW_COUNT];
++    memcpy(before, raw, sizeof(before));
++    ++cases;
++    CHECK(lgf_decode(raw, LGF_ALL_VALID, &r));
++    CHECK(memcmp(before, raw, sizeof(before)) == 0);
++    for (i = 0u; i < 4u; ++i)
++        CHECK(r.initcode[i] == bits(raw[2], lo[i], lo[i] + 4u));
++    CHECK(r.revision == bits(raw[0], 48u, 50u));
++    CHECK(r.speedbin == bits(raw[0], 60u, 61u));
++    CHECK(r.limitation == bits(raw[1], 31u, 32u));
++    CHECK(r.aging == bits(raw[5], 26u, 31u));
++    CHECK(r.offsetraw[0] == 0u);
++    CHECK(r.offsetraw[1] == bits(raw[4], 42u, 44u));
++    CHECK(r.offsetraw[2] == 0u);
++    CHECK(r.offsetraw[3] == bits(raw[3], 58u, 61u));
++}
++
++static void zero_result(const struct lgf_result *r)
++{
++    unsigned i;
++    for (i = 0u; i < 4u; ++i) {
++        CHECK(r->initcode[i] == 0u);
++        CHECK(r->offsetraw[i] == 0u);
++    }
++    CHECK(r->revision == 0u && r->speedbin == 0u &&
++          r->limitation == 0u && r->aging == 0u);
++}
++
++static void layout_and_masks(void)
++{
++    const uint32_t ids[6] = {39u, 41u, 63u, 64u, 66u, 68u};
++    const uint32_t pa[6] = {0x74138u, 0x74148u, 0x741f8u,
++                            0x74200u, 0x74210u, 0x74220u};
++    uint64_t raw[6] = {0};
++    struct lgf_result r;
++    uint32_t mask, i;
++    for (i = 0u; i < 6u; ++i) {
++        ++cases;
++        CHECK(lgf_rows[i].rowid == ids[i]);
++        CHECK(0x74000u + 8u * lgf_rows[i].rowid == pa[i]);
++    }
++    for (mask = 0u; mask < 256u; ++mask) {
++        ++cases;
++        memset(&r, 0xa5, sizeof(r));
++        CHECK(lgf_decode(raw, mask, &r) == (mask == LGF_ALL_VALID));
++        zero_result(&r);
++    }
++    for (i = 6u; i < 32u; ++i) {
++        ++cases;
++        memset(&r, 0xa5, sizeof(r));
++        CHECK(!lgf_decode(raw, LGF_ALL_VALID | (UINT32_C(1) << i), &r));
++        zero_result(&r);
++    }
++    ++cases;
++    CHECK(!lgf_decode(NULL, LGF_ALL_VALID, &r));
++    zero_result(&r);
++    CHECK(!lgf_decode(raw, LGF_ALL_VALID, NULL));
++    CHECK(!lgf_decode(NULL, 0u, NULL));
++    /* A malformed mask must fail without dereferencing raw. */
++    CHECK(!lgf_decode((const uint64_t *)(uintptr_t)1u, 0u, &r));
++    zero_result(&r);
++    compare(raw); /* valid zero is not missing capture */
++}
++
++static void extraction(void)
++{
++    uint64_t raw[6] = {0};
++    unsigned i, j;
++    uint64_t seed = UINT64_C(0x8a5306144b8996);
++    for (i = 0u; i < 6u; ++i) {
++        for (j = 0u; j < 64u; ++j) {
++            raw[i] = UINT64_C(1) << j;
++            compare(raw);
++            raw[i] = 0u;
++        }
++    }
++    for (i = 0u; i < 6u; ++i)
++        raw[i] = UINT64_MAX;
++    compare(raw);
++    for (j = 0u; j < 4096u; ++j) {
++        for (i = 0u; i < 6u; ++i) {
++            seed ^= seed << 13;
++            seed ^= seed >> 7;
++            seed ^= seed << 17;
++            raw[i] = seed;
++        }
++        compare(raw);
++    }
++    /* Saved real CPU-stage rows, row63 intentionally absent (no fabricated
++     * sixth capture). decode must fail for the five-row mask. */
++    {
++        const uint64_t partial[6] = {
++            UINT64_C(0x401103ea7ab389d6), UINT64_C(0xd4c1838e02e761f0), 0u,
++            UINT64_C(0xc1dde74d5f3995ed), UINT64_C(0xab0e61ddc60a1d04),
++            UINT64_C(0x00700000043ac54b)
++        };
++        struct lgf_result r;
++        ++cases;
++        CHECK(!lgf_decode(partial, UINT32_C(0x3b), &r));
++        zero_result(&r);
++    }
++}
++
++static void signs(void)
++{
++    static const int32_t five[32] = {
++        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
++        0, -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15
++    };
++    uint32_t width, code;
++    int32_t value;
++    for (width = 1u; width <= 6u; ++width) {
++        int32_t expected = 0;
++        uint32_t half = UINT32_C(1) << (width - 1u);
++        for (code = 0u; code < 2u * half; ++code) {
++            ++cases;
++            CHECK(lgf_signed_steps(code, width, &value));
++            if (code < half)
++                expected = (int32_t)code;
++            else
++                expected = -(int32_t)(code - half);
++            CHECK(value == expected);
++            if (width == 5u)
++                CHECK(value == five[code]);
++        }
++        ++cases;
++        CHECK(!lgf_signed_steps(2u * half, width, &value));
++        CHECK(value == 0);
++    }
++    ++cases;
++    CHECK(!lgf_signed_steps(0u, 0u, &value));
++    CHECK(!lgf_signed_steps(0u, 32u, &value));
++    CHECK(!lgf_signed_steps(0u, UINT32_MAX, &value));
++    CHECK(!lgf_signed_steps(0u, 5u, NULL));
++    CHECK(lgf_signed_steps(UINT32_C(0x3fffffff), 31u, &value));
++    CHECK(value == INT32_C(1073741823));
++    CHECK(lgf_signed_steps(UINT32_C(0x7fffffff), 31u, &value));
++    CHECK(value == -INT32_C(1073741823));
++    CHECK(!lgf_signed_steps(UINT32_MAX, 31u, &value));
++}
++
++static void zero_model(const struct lgf_fuse_model *m)
++{
++    unsigned i;
++    CHECK(m->combo == 0u && m->aging_quot_diff == 0);
++    for (i = 0u; i < 4u; ++i)
++        CHECK(m->reference_uv[i] == 0 && m->init_uv[i] == 0 &&
++              m->offset_uv[i] == 0);
++}
++
++static void variants(void)
++{
++    struct lgf_result f = {{30u, 16u, 15u, 31u}, 7u, 1u, 0u, 63u,
++                           {0u, 7u, 0u, 15u}};
++    struct lgf_fuse_model m;
++    unsigned variant, revision, bin, limitation, i, code;
++    for (variant = 0u; variant <= 6u; ++variant) {
++        for (revision = 0u; revision < 8u; ++revision) {
++            for (bin = 0u; bin < 4u; ++bin) {
++                for (limitation = 0u; limitation < 4u; ++limitation) {
++                    bool supported = variant >= 1u && variant <= 4u &&
++                                     (variant != 4u || bin < 2u);
++                    f.revision = revision;
++                    f.speedbin = bin;
++                    f.limitation = limitation;
++                    ++cases;
++                    memset(&m, 0xa5, sizeof(m));
++                    CHECK(lgf_source_model(&f, (enum lgf_soc_variant)variant,
++                                            &m) == supported);
++                    if (!supported) {
++                        zero_model(&m);
++                        continue;
++                    }
++                    CHECK(m.combo == revision + (variant == 4u ? 8u * bin : 0u));
++                    CHECK(m.reference_uv[0] == 670000 && m.init_uv[0] == 530000);
++                    CHECK(m.reference_uv[1] == 745000 && m.init_uv[1] == 745000);
++                    CHECK(m.reference_uv[2] == 905000 && m.init_uv[2] == 1055000);
++                    CHECK(m.reference_uv[3] == (variant == 4u ? 1065000 : 1015000));
++                    CHECK(m.init_uv[3] == (variant == 4u ? 915000 : 865000));
++                    CHECK(m.offset_uv[0] == 0 && m.offset_uv[1] == -30000 &&
++                          m.offset_uv[2] == 0 && m.offset_uv[3] == -70000);
++                    CHECK(m.aging_quot_diff == -62);
++                }
++            }
++        }
++    }
++    /* Sweep each init/offset/aging code through actual production helpers. */
++    memset(&f, 0, sizeof(f));
++    for (i = 0u; i < 4u; ++i) {
++        const int32_t ref[4] = {670000, 745000, 905000, 1065000};
++        for (code = 0u; code < 32u; ++code) {
++            ++cases;
++            f.initcode[i] = code;
++            CHECK(lgf_source_model(&f, LGF_SOC_MSM8996_PRO, &m));
++            CHECK(m.init_uv[i] == ref[i] +
++                  (code < 16u ? (int32_t)code : -(int32_t)(code - 16u)) * 10000);
++        }
++        f.initcode[i] = 0u;
++    }
++    for (code = 0u; code < 64u; ++code) {
++        ++cases;
++        f.aging = code;
++        f.offsetraw[1] = code % 8u;
++        f.offsetraw[3] = code % 16u;
++        CHECK(lgf_source_model(&f, LGF_SOC_MSM8996_PRO, &m));
++        CHECK(m.aging_quot_diff ==
++              (code < 32u ? (int32_t)code : -(int32_t)(code - 32u)) * 2);
++        CHECK(m.offset_uv[1] ==
++              (code % 8u < 4u ? (int32_t)(code % 8u) :
++                                -(int32_t)(code % 8u - 4u)) * 10000);
++        CHECK(m.offset_uv[3] ==
++              (code % 16u < 8u ? (int32_t)(code % 16u) :
++                                 -(int32_t)(code % 16u - 8u)) * 10000);
++    }
++    memset(&f, 0, sizeof(f));
++    for (i = 0u; i < 12u; ++i) {
++        struct lgf_result bad = f;
++        switch (i) {
++        case 0: bad.revision = 8u; break;
++        case 1: bad.speedbin = 4u; break;
++        case 2: bad.limitation = 4u; break;
++        case 3: bad.aging = 64u; break;
++        case 4: bad.offsetraw[0] = 1u; break;
++        case 5: bad.offsetraw[1] = 8u; break;
++        case 6: bad.offsetraw[2] = 1u; break;
++        case 7: bad.offsetraw[3] = 16u; break;
++        default: bad.initcode[i - 8u] = 32u; break;
++        }
++        ++cases;
++        memset(&m, 0xa5, sizeof(m));
++        CHECK(!lgf_source_model(&bad, LGF_SOC_MSM8996_PRO, &m));
++        zero_model(&m);
++    }
++    ++cases;
++    CHECK(!lgf_source_model(NULL, LGF_SOC_MSM8996_PRO, &m));
++    zero_model(&m);
++    CHECK(!lgf_source_model(&f, LGF_SOC_MSM8996_PRO, NULL));
++    CHECK(!lgf_source_model(&f, (enum lgf_soc_variant)-1, &m));
++    zero_model(&m);
++}
++
++int main(void)
++{
++    layout_and_masks();
++    extraction();
++    signs();
++    variants();
++    printf("gpu-g1-fuse: %lu cases, %lu checks PASS\n", cases, checks);
++    return 0;
++}
+--- /dev/null
++++ b/scripts/tests/test-gpu-g1-adapter.c
+@@ -0,0 +1,547 @@
++/* Actual G1 adapter/header tests with recording kernel and MMIO seams only.
++ * Run: python -B evidence/gpu-g1-20261123/adapter/run-tests.py
++ * Independent literal address/command oracles; no hardware or PMIC writes.
++ */
++#define _POSIX_C_SOURCE 200809L
++#include <stdbool.h>
++#include <stddef.h>
++#include <stdint.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <stdarg.h>
++#include "../../ports/hakios-lithium/diagnostics/cpu-mmio-window-r38.h"
++#include "../../ports/hakios-lithium/peripherals/boot-options.h"
++
++typedef uintptr_t vm_offset_t;
++static uint64_t PAGE_SIZE;
++#define VM_WIMG_IO 7
++static unsigned cases, checks;
++#define CHECK(x) do { ++checks; if (!(x)) { \
++    fprintf(stderr,"FAIL case=%u line=%d: %s\n",cases,__LINE__,#x); \
++    exit(EXIT_FAILURE); } } while (0)
++
++static const unsigned field_offsets[7] = {4,5,0x40,0x41,0x45,0x46,0x61};
++static const unsigned row_ids[6] = {39,41,63,64,66,68};
++static const uint64_t fuse_words[6] = {
++    (UINT64_C(1)<<60)|(UINT64_C(2)<<48), UINT64_C(1)<<31,
++    (UINT64_C(1)<<55)|(UINT64_C(2)<<50)|(UINT64_C(3)<<45)|(UINT64_C(4)<<40),
++    UINT64_C(9)<<58, UINT64_C(5)<<42, UINT64_C(36)<<26
++};
++struct allocation { vm_offset_t va; uint64_t pa, bytes; unsigned kind; bool live; };
++struct command { unsigned rail, field, pass; uint64_t pa; uint32_t word; };
++static struct {
++    struct allocation allocations[8];
++    struct command commands[28];
++    uint32_t version, channel[128], config[2], status;
++    unsigned apid[2], channel_reads[128], version_reads;
++    unsigned map_calls, map_success, unmap_calls, fail_map_mask;
++    unsigned loads32, loads64, stores, barriers, delays;
++    unsigned rail_commands[2], status_reads[2], data_reads[2], active_field[2], active_pass[2];
++    unsigned enter_calls, leave_calls, admit_calls, clock_calls, print_bytes;
++    unsigned mutate_mapping_at, mutate_version_at, fault_command, fault_kind;
++    unsigned rollback_at, expire_at, lose_owner_at;
++    unsigned unstable_fuse, unstable_rail, unstable_field;
++    unsigned late_command, late_fuse;
++    int logical;
++    bool profile, bind, interrupts, freeze_clock, zero_fuses, late_final;
++    uint64_t clock_us, clock_step, affinity;
++    char printed[32768];
++} mock;
++
++struct lithium_touch_cpu_scope { bool bound; };
++static bool lg0_adapter_admit(void) { ++mock.admit_calls; return mock.profile; }
++static bool lithium_touch_cpu_enter(struct lithium_touch_cpu_scope *s)
++{ ++mock.enter_calls; s->bound=mock.bind; return mock.bind; }
++static void lithium_touch_cpu_leave(struct lithium_touch_cpu_scope *s)
++{ CHECK(s->bound); ++mock.leave_calls; s->bound=false; }
++static int cpu_number(void) { return mock.logical; }
++static bool ml_get_interrupts_enabled(void) { return mock.interrupts; }
++#define LITHIUM_PERIPHERAL_AFFINITY() (mock.affinity)
++static uint64_t mach_absolute_time(void)
++{
++    ++mock.clock_calls;
++    if (mock.clock_calls==mock.rollback_at) mock.clock_us=1;
++    if (mock.clock_calls==mock.expire_at) mock.clock_us+=250000;
++    if (mock.clock_calls==mock.lose_owner_at) mock.logical=1;
++    uint64_t value=mock.clock_us;
++    if (!mock.freeze_clock) mock.clock_us+=mock.clock_step;
++    return value;
++}
++static void absolutetime_to_nanoseconds(uint64_t ticks,uint64_t *out)
++{ CHECK(out!=NULL && ticks<UINT64_MAX/1000); *out=ticks*1000; }
++
++static uint64_t observer(unsigned rail)
++{ return UINT64_C(0x04c00000)+UINT64_C(0x8000)*mock.apid[rail]; }
++static vm_offset_t ml_io_map_unmappable(uint64_t pa,uint64_t bytes,unsigned attr)
++{
++    unsigned slot=mock.map_calls++;
++    CHECK(slot<8 && attr==7 && bytes==PAGE_SIZE && pa%PAGE_SIZE==0);
++    unsigned kind=99;
++    if (pa==(UINT64_C(0x00074000)&~(PAGE_SIZE-1))) kind=0;
++    if (pa==(UINT64_C(0x0400f000)&~(PAGE_SIZE-1))) kind=1;
++    for (unsigned rail=0;rail<2;++rail)
++        if (pa==(observer(rail)&~(PAGE_SIZE-1))) kind=2+rail;
++    CHECK(kind<4); /* Never map GPU/GPUCC/SMMU/WDATA/whole observer aperture. */
++    if (mock.fail_map_mask&(1u<<slot)) return 0;
++    void *memory=NULL;
++    CHECK(posix_memalign(&memory,(size_t)PAGE_SIZE,(size_t)bytes)==0);
++    memset(memory,0,(size_t)bytes);
++    mock.allocations[slot]=(struct allocation){(uintptr_t)memory,pa,bytes,kind,true};
++    ++mock.map_success;
++    return (uintptr_t)memory;
++}
++static void ml_io_unmap(vm_offset_t va,uint64_t bytes)
++{
++    bool found=false;
++    for (unsigned i=0;i<8;++i) if (mock.allocations[i].live && mock.allocations[i].va==va) {
++        CHECK(bytes==mock.allocations[i].bytes && bytes==PAGE_SIZE && va%PAGE_SIZE==0);
++        mock.allocations[i].live=false;
++        free((void *)va); found=true; break;
++    }
++    CHECK(found); ++mock.unmap_calls;
++}
++static uint64_t physical(vm_offset_t pointer,unsigned bytes,unsigned *kind)
++{
++    for (unsigned i=0;i<8;++i) {
++        const struct allocation *a=&mock.allocations[i];
++        if (a->live && pointer>=a->va && pointer-a->va<=a->bytes-bytes) {
++            CHECK(pointer%bytes==0);
++            *kind=a->kind;
++            return a->pa+pointer-a->va;
++        }
++    }
++    CHECK(false); return 0;
++}
++static uint32_t load32(vm_offset_t pointer)
++{
++    unsigned kind;
++    uint64_t pa=physical(pointer,4,&kind);
++    ++mock.loads32;
++    if (kind==1) {
++        if (pa==UINT64_C(0x0400f000)) {
++            ++mock.version_reads;
++            return mock.version_reads==mock.mutate_version_at ? mock.version^1u : mock.version;
++        }
++        CHECK(pa>=UINT64_C(0x0400f800) && pa<=UINT64_C(0x0400f9fc));
++        unsigned ch=(unsigned)((pa-UINT64_C(0x0400f800))/4);
++        ++mock.channel_reads[ch];
++        return ch==mock.apid[0] && mock.channel_reads[ch]==mock.mutate_mapping_at ?
++            mock.channel[ch]^UINT32_C(0x80) : mock.channel[ch];
++    }
++    CHECK(kind==2 || kind==3);
++    unsigned rail=kind-2;
++    uint64_t offset=pa-observer(rail);
++    if (offset==4) return mock.config[rail];
++    CHECK(mock.rail_commands[rail]>0);
++    bool fault=mock.stores==mock.fault_command;
++    if (offset==8) {
++        ++mock.status_reads[rail];
++        if (fault && mock.fault_kind==1) return 5; /* DONE+DENIED */
++        if (fault && mock.fault_kind==2) return 3; /* DONE+FAIL (NACK-like completion) */
++        if (fault && mock.fault_kind==3) return 9; /* DONE+DROPPED */
++        if (fault && mock.fault_kind==4) return 0x11; /* DONE+unknown */
++        if (fault && mock.fault_kind==5) return 0; /* Still pending */
++        if (fault && mock.fault_kind==6) mock.clock_us+=200; /* Late DONE beats pending timeout. */
++        return 1;
++    }
++    CHECK(offset==0x18); /* Single byte must never read RDATA1 or WDATA. */
++    CHECK(!fault || mock.fault_kind==6 || mock.fault_kind==0);
++    ++mock.data_reads[rail];
++    unsigned field=mock.active_field[rail], pass=mock.active_pass[rail];
++    uint32_t value=(uint32_t)(0x20+rail*0x40+field);
++    if (mock.unstable_rail==rail+1 && mock.unstable_field==field && pass==1) value^=1;
++    if (mock.late_final && rail==1 && pass==1 && field==6) mock.clock_us+=250000;
++    return UINT32_C(0xabc10000)|value; /* RAW RDATA low byte, not STATUS data. */
++}
++static uint64_t load64(vm_offset_t pointer)
++{
++    unsigned kind;
++    uint64_t pa=physical(pointer,8,&kind);
++    CHECK(kind==0 && mock.loads64<12);
++    unsigned i=mock.loads64%6, pass=mock.loads64/6;
++    CHECK(pa==UINT64_C(0x00074000)+8u*row_ids[i]);
++    ++mock.loads64;
++    if (mock.loads64==mock.late_fuse) mock.clock_us+=250000;
++    uint64_t value=mock.zero_fuses ? 0 : fuse_words[i];
++    if (mock.unstable_fuse==i+1 && pass==1) value^=1;
++    return value;
++}
++static void store_read_command(vm_offset_t pointer,uint32_t cmd)
++{
++    unsigned kind;
++    uint64_t pa=physical(pointer,4,&kind);
++    CHECK(kind==2 || kind==3);
++    unsigned rail=kind-2, at=mock.rail_commands[rail]++;
++    CHECK(pa==observer(rail) && mock.stores<28 && at<14);
++    unsigned field=at%7, pass=at/7;
++    CHECK(cmd==(UINT32_C(0x08000000)|(field_offsets[field]<<4)));
++    CHECK((cmd>>27)==1); /* Only EXT_READL, no SID/base insertion or PMIC WRITE. */
++    mock.commands[mock.stores++]=(struct command){rail,field,pass,pa,cmd};
++    mock.active_field[rail]=field; mock.active_pass[rail]=pass;
++    if (mock.stores==mock.late_command) mock.clock_us+=250000;
++    if (mock.stores==mock.fault_command && mock.fault_kind==7) mock.clock_us=1;
++}
++static void barrier(void) { ++mock.barriers; }
++static void delay_us(unsigned us)
++{
++    CHECK(us==1 || us==1000);
++    ++mock.delays;
++    if (!mock.freeze_clock) mock.clock_us+=us;
++}
++static int record_printf(const char *format,...)
++{
++    CHECK(strstr(format,"LITHIUM GPU")!=NULL);
++    va_list args;
++    va_start(args,format);
++    int length=vsnprintf(mock.printed+mock.print_bytes,sizeof(mock.printed)-mock.print_bytes,format,args);
++    va_end(args);
++    CHECK(length>=0 && (size_t)length<sizeof(mock.printed)-mock.print_bytes);
++    mock.print_bytes+=(unsigned)length;
++    return length;
++}
++#define LG1_BARRIER() barrier()
++#define LG1_LOAD32(address) load32(address)
++#define LG1_LOAD64(address) load64(address)
++#define LG1_STORE_READ_COMMAND(address,value) store_read_command(address,value)
++#define LG1_DELAY_US(us) delay_us(us)
++#define printf record_printf
++#include "../../ports/hakios-lithium/gpu/g1-precheck.inc"
++#undef printf
++
++static void setup(uint64_t page)
++{
++    for (unsigned i=0;i<8;++i) CHECK(!mock.allocations[i].live);
++    memset(&mock,0,sizeof(mock));
++    memset(&lg1,0,sizeof(lg1));
++    PAGE_SIZE=page;
++    mock.version=UINT32_C(0x20010000);
++    mock.apid[0]=17; mock.apid[1]=29;
++    mock.channel[17]=UINT32_C(0xf00317a5);
++    mock.channel[29]=UINT32_C(0x00011700);
++    mock.profile=mock.bind=mock.interrupts=true;
++    mock.affinity=1; mock.clock_us=1000; mock.clock_step=1;
++}
++static void cleanup_check(void)
++{
++    CHECK(mock.map_success==mock.unmap_calls);
++    for (unsigned i=0;i<8;++i) CHECK(!mock.allocations[i].live);
++    CHECK(lg1.core.allocation==0 && lg1.observer.allocation==0 && lg1.fuses.allocation==0);
++    CHECK(lg1.observer_pa==0 && lg1.allowed_cmd==0);
++    CHECK(mock.stores==lg1.writes && mock.loads32==lg1.reads && mock.loads64==lg1.fuse_reads);
++    CHECK(mock.loads32+mock.loads64+mock.stores<=9000);
++    CHECK(mock.stores<=28);
++    CHECK(mock.barriers==2*(mock.loads32+mock.loads64+mock.stores));
++    CHECK(mock.leave_calls==1);
++    CHECK(strstr(mock.printed,"settled=UNVERIFIED chip_id=UNREAD")!=NULL);
++}
++static void full_rail(unsigned rail)
++{
++    CHECK(lg1.rail_valid[rail][0]==0x7f && lg1.rail_valid[rail][1]==0x7f);
++    CHECK(lg1.rail_error[rail]==LGS_OK && mock.rail_commands[rail]==14);
++    CHECK(mock.data_reads[rail]==14);
++    for (unsigned pass=0;pass<2;++pass) for (unsigned field=0;field<7;++field) {
++        unsigned value=0x20+rail*0x40+field;
++        if (mock.unstable_rail==rail+1 && mock.unstable_field==field && pass==1) value^=1;
++        CHECK(lg1.rail_raw[rail][pass][field]==value);
++    }
++}
++static void full_fuses(void)
++{
++    CHECK(lg1.fuse_valid[0]==0x3f && lg1.fuse_valid[1]==0x3f && mock.loads64==12);
++    for (unsigned pass=0;pass<2;++pass) for (unsigned row=0;row<6;++row) {
++        uint64_t value=mock.zero_fuses ? 0 : fuse_words[row];
++        if (mock.unstable_fuse==row+1 && pass==1) value^=1;
++        CHECK(lg1.fuse_raw[pass][row]==value);
++    }
++}
++static void test_success(void)
++{
++    for (unsigned page=0;page<2;++page) for (unsigned route=0;route<2;++route) {
++        setup(page?16384:4096);
++        if (route) {
++            mock.channel[17]=mock.channel[29]=0;
++            mock.apid[0]=0; mock.apid[1]=127;
++            mock.channel[0]=0xf00317a5; mock.channel[127]=0x00011700;
++        }
++        ++cases; lithium_gpu_g1_precheck(); cleanup_check(); full_fuses();
++        full_rail(0); full_rail(1);
++        CHECK(mock.map_calls==4 && mock.stores==28 && mock.loads32==4010);
++        CHECK(lg1.fuse_stable==0x3f && lg1.rail_stable[0]==0x7f && lg1.rail_stable[1]==0x7f);
++        CHECK(lg1.fuse_decoded.revision==2 && lg1.fuse_decoded.speedbin==1);
++        CHECK(lg1.fuse_decoded.limitation==1 && lg1.fuse_decoded.aging==36);
++        for (unsigned i=0;i<4;++i) CHECK(lg1.fuse_decoded.initcode[i]==i+1);
++        CHECK(lg1.fuse_decoded.offsetraw[1]==5 && lg1.fuse_decoded.offsetraw[3]==9);
++        for (unsigned rail=0;rail<2;++rail) {
++            CHECK(lg1.routes[rail].sid==(rail?1u:3u));
++            CHECK(lg1.routes[rail].base==0x1700 && lg1.routes[rail].ppid==(rail?0x117u:0x317u));
++            CHECK(lg1.routes[rail].observer_pa==observer(rail));
++        }
++        CHECK(!lg1.poisoned && lg1.used==1 && strstr(mock.printed,"reg=STATUS")==NULL);
++    }
++    puts("PASS two rails x seven source fields x two passes; v2 PPIDs317/117 distinct windows; 4K/16K cleanup; six fuse rows x two passes");
++}
++static void test_validity_stability(void)
++{
++    setup(16384); mock.zero_fuses=true; ++cases;
++    lithium_gpu_g1_precheck(); cleanup_check(); full_fuses();
++    CHECK(lg1.fuse_stable==0x3f && lg1.fuse_decoded.revision==0);
++    CHECK(strstr(mock.printed,"fuse decode valid=1")!=NULL);
++    for (unsigned row=0;row<6;++row) {
++        setup(16384); mock.unstable_fuse=row+1; ++cases;
++        lithium_gpu_g1_precheck(); cleanup_check(); full_fuses();
++        CHECK(lg1.fuse_stable==(0x3fu^(1u<<row)));
++        CHECK(strstr(mock.printed,"fuse decode valid=0")!=NULL);
++        CHECK(lg1.fuse_decoded.revision==0);
++    }
++    for (unsigned rail=0;rail<2;++rail) for (unsigned field=0;field<7;++field) {
++        setup(16384); mock.unstable_rail=rail+1; mock.unstable_field=field; ++cases;
++        lithium_gpu_g1_precheck(); cleanup_check(); full_rail(0); full_rail(1);
++        CHECK(lg1.rail_stable[rail]==(0x7fu^(1u<<field)));
++        CHECK(lg1.rail_stable[1-rail]==0x7f);
++    }
++    puts("PASS valid zero fuse data, every fuse-row/rail-field stability difference and no stale fuse decode");
++}
++static void test_map_failures(void)
++{
++    for (unsigned page=0;page<2;++page) for (unsigned fail=0;fail<4;++fail) {
++        setup(page?16384:4096); mock.fail_map_mask=1u<<fail; ++cases;
++        lithium_gpu_g1_precheck(); cleanup_check();
++        CHECK(mock.map_calls==(fail==1?2u:4u));
++        if (fail==0) CHECK(lg1.fuse_valid[0]==0 && lg1.fuse_valid[1]==0 && mock.loads64==0);
++        if (fail==1) CHECK(mock.loads32==0 && mock.stores==0);
++        if (fail>=2) {
++            unsigned rail=fail-2;
++            CHECK(lg1.rail_valid[rail][0]==0 && lg1.rail_valid[rail][1]==0);
++            CHECK(lg1.rail_error[rail]==LGS_ARGUMENT && mock.rail_commands[rail]==0);
++            full_rail(1-rail);
++        }
++    }
++    setup(16384); mock.fail_map_mask=0xff; ++cases;
++    lithium_gpu_g1_precheck(); cleanup_check();
++    CHECK(mock.map_calls==2 && mock.map_success==0 && mock.loads32==0 && mock.loads64==0 && mock.stores==0);
++    puts("PASS each partial map failure, all mapping failures and exact successful-allocation cleanup");
++}
++static void test_routes(void)
++{
++    for (unsigned rail=0;rail<2;++rail) for (unsigned failure=0;failure<3;++failure) {
++        setup(16384); ++cases;
++        if (failure==0) mock.channel[mock.apid[rail]]=0;
++        if (failure==1) mock.channel[100]=(rail?0x117u:0x317u)<<8;
++        if (failure==2) mock.channel[mock.apid[rail]]=0x14000; /* S1/wrong PPID */
++        lithium_gpu_g1_precheck(); cleanup_check();
++        CHECK(lg1.rail_error[rail]==(failure==1?LGS_DUPLICATE_MAPPING:LGS_NO_MAPPING));
++        CHECK(mock.rail_commands[rail]==0 && lg1.rail_valid[rail][0]==0);
++        full_rail(1-rail);
++    }
++    const uint32_t versions[]={0,0x20000000,0x20010001,0xffffffff};
++    for (unsigned i=0;i<4;++i) {
++        setup(16384); mock.version=versions[i]; ++cases;
++        lithium_gpu_g1_precheck(); cleanup_check();
++        CHECK(lg1.rail_error[0]==LGS_VERSION && lg1.rail_error[1]==LGS_VERSION && mock.stores==0);
++    }
++    for (unsigned at=2;at<=3;++at) {
++        setup(16384); mock.mutate_mapping_at=at; ++cases;
++        lithium_gpu_g1_precheck(); cleanup_check();
++        CHECK(lg1.rail_error[0]==LGS_ROUTE_CHANGED && mock.rail_commands[0]==0);
++        full_rail(1);
++        setup(16384); mock.mutate_version_at=at; ++cases;
++        lithium_gpu_g1_precheck(); cleanup_check();
++        CHECK(lg1.rail_error[0]==(at==2?LGS_VERSION:LGS_ROUTE_CHANGED));
++        CHECK(mock.rail_commands[0]==0); full_rail(1);
++    }
++    for (unsigned rail=0;rail<2;++rail) {
++        setup(16384); mock.config[rail]=1; ++cases;
++        lithium_gpu_g1_precheck(); cleanup_check();
++        CHECK(lg1.rail_error[rail]==LGS_CONFIG_UNSUPPORTED && mock.rail_commands[rail]==0);
++        full_rail(1-rail);
++    }
++    puts("PASS missing/duplicate/wrong PPID, exact version, route/version changes and CONFIG rejection before READCMD");
++}
++static void test_completions(void)
++{
++    const unsigned errors[]={LGS_DENIED,LGS_FAILURE,LGS_DROPPED,LGS_UNKNOWN_STATUS,LGS_TIMEOUT};
++    for (unsigned rail=0;rail<2;++rail) for (unsigned kind=1;kind<=5;++kind) {
++        setup(16384); mock.fault_kind=kind; mock.fault_command=rail?15:1; ++cases;
++        lithium_gpu_g1_precheck(); cleanup_check();
++        CHECK(lg1.rail_error[rail]==errors[kind-1] && mock.rail_commands[rail]==1);
++        CHECK(lg1.rail_valid[rail][0]==0 && lg1.rail_valid[rail][1]==0 && mock.data_reads[rail]==0);
++        CHECK(mock.status_reads[rail]>=1 && mock.status_reads[rail]<=100);
++        full_rail(1-rail);
++    }
++    for (unsigned rail=0;rail<2;++rail) for (unsigned slot=0;slot<14;++slot) {
++        setup(16384); mock.fault_kind=2; mock.fault_command=(rail?14:0)+slot+1; ++cases;
++        lithium_gpu_g1_precheck(); cleanup_check();
++        CHECK(lg1.rail_error[rail]==LGS_FAILURE && mock.rail_commands[rail]==slot+1);
++        CHECK(lg1.rail_valid[rail][0]==(slot>=7?0x7fu:(1u<<slot)-1u));
++        CHECK(lg1.rail_valid[rail][1]==(slot<7?0u:(1u<<(slot-7))-1u));
++        CHECK(mock.data_reads[rail]==slot); full_rail(1-rail);
++    }
++    setup(16384); mock.fault_kind=6; mock.fault_command=1; ++cases;
++    lithium_gpu_g1_precheck(); cleanup_check(); full_rail(0); full_rail(1);
++    setup(16384); mock.freeze_clock=true; mock.fault_kind=5; mock.fault_command=1; ++cases;
++    lithium_gpu_g1_precheck(); cleanup_check();
++    CHECK(lg1.rail_error[0]==LGS_TIMEOUT && mock.status_reads[0]==100 && !lg1.poisoned);
++    full_rail(1);
++    setup(16384); mock.fault_kind=7; mock.fault_command=1; ++cases;
++    lithium_gpu_g1_precheck(); cleanup_check();
++    CHECK(lg1.poisoned && mock.stores==1 && mock.data_reads[0]==0);
++    CHECK(lg1.rail_error[0]==LGS_WRITE_ERROR && lg1.rail_valid[0][0]==0);
++    CHECK(lg1.transaction.cmd_attempted==1 && lg1.transaction.cmd_completed==0);
++    CHECK(lg1.transaction.callback_rc==-3 && mock.status_reads[0]==0);
++    puts("PASS DENIED, FAIL/NACK-like, DROPPED, unknown, pending timeout, every partial failure slot, late DONE and frozen-clock poll cap");
++}
++static void test_gates_and_clock(void)
++{
++    setup(16384); mock.profile=false; ++cases;
++    lithium_gpu_g1_precheck(); CHECK(!lg1.used && mock.map_calls==0 && mock.enter_calls==0);
++    mock.profile=true; lithium_gpu_g1_precheck(); cleanup_check();
++    unsigned maps=mock.map_calls, reads=mock.loads32, writes=mock.stores, times=mock.clock_calls;
++    lithium_gpu_g1_precheck(); CHECK(mock.map_calls==maps && mock.loads32==reads && mock.stores==writes);
++    CHECK(mock.clock_calls==times && mock.enter_calls==1 && mock.leave_calls==1);
++    setup(16384); mock.bind=false; ++cases;
++    lithium_gpu_g1_precheck(); CHECK(lg1.used==1 && mock.map_calls==0 && mock.leave_calls==0);
++    mock.bind=true; lithium_gpu_g1_precheck(); CHECK(mock.enter_calls==1 && mock.map_calls==0);
++    for (unsigned owner=0;owner<3;++owner) {
++        setup(16384); ++cases;
++        if (owner==0) mock.logical=1;
++        if (owner==1) mock.affinity=0x100;
++        if (owner==2) mock.interrupts=false;
++        lithium_gpu_g1_precheck(); cleanup_check(); CHECK(lg1.poisoned && mock.map_calls==0);
++    }
++    const unsigned points[]={2,4,16,150,1600,3000};
++    for (unsigned i=0;i<sizeof(points)/sizeof(*points);++i) for (unsigned mode=0;mode<3;++mode) {
++        setup(16384); ++cases;
++        if (mode==0) mock.rollback_at=points[i];
++        if (mode==1) mock.expire_at=points[i];
++        if (mode==2) mock.lose_owner_at=points[i];
++        lithium_gpu_g1_precheck(); cleanup_check(); CHECK(lg1.poisoned);
++        CHECK(mock.stores<28 && mock.loads64<=12 && mock.loads32<4010);
++    }
++    puts("PASS profile/CPU rejection, consumed once gate, live owner checks, rollback and overall deadline with partial cleanup");
++}
++static void direct_maps(void)
++{
++    lg1.start_us=lg1.last_us=1000;
++    CHECK(lg1_map(&lg1.core,0x0400f000,4096));
++    CHECK(lg1_map(&lg1.observer,observer(0),4096));
++    CHECK(lg1_map(&lg1.fuses,0x00074000,4096));
++    lg1.observer_pa=observer(0); lg1.allowed_cmd=0x08000040;
++}
++static void direct_cleanup(void)
++{
++    lg1_unmap(&lg1.core); lg1_unmap(&lg1.observer); lg1_unmap(&lg1.fuses);
++    CHECK(mock.unmap_calls==mock.map_success);
++    for (unsigned i=0;i<8;++i) CHECK(!mock.allocations[i].live);
++}
++static void test_access_allowlist_and_caps(void)
++{
++    setup(16384); direct_maps(); ++cases;
++    const uint64_t bad_reads[]={0x00b00000,0x00b40000,0x008c4034,0x0400f004,0x0400f7fc,0x0400fa00,
++        0x0400f801,0x00074138,0x04c00000,0x04c88000,0x04c88010,0x04c8800c,0x04c88020};
++    uint32_t value=0;
++    unsigned before=mock.loads32;
++    for (unsigned i=0;i<sizeof(bad_reads)/sizeof(*bad_reads);++i)
++        CHECK(lg1_read32(NULL,bad_reads[i],&value)!=0 && mock.loads32==before);
++    CHECK(lg1_read32(NULL,0x0400f000,NULL)!=0 && mock.loads32==before);
++    const uint32_t bad_commands[]={0,0x18000040,0x08000041,0x08000080,0x08317040,0xffffffff};
++    for (unsigned i=0;i<sizeof(bad_commands)/sizeof(*bad_commands);++i)
++        CHECK(lg1_read_command(NULL,observer(0),bad_commands[i])!=0 && mock.stores==0);
++    CHECK(lg1_read_command(NULL,observer(0)+4,0x08000040)!=0 && mock.stores==0);
++    CHECK(lg1_read_command(NULL,observer(1),0x08000040)!=0 && mock.stores==0);
++    CHECK(lg1_delay(NULL,1001)!=0 && mock.delays==0);
++    CHECK(lg1_time(NULL,NULL)!=0);
++    direct_cleanup();
++    setup(16384); direct_maps(); ++cases;
++    lg1.reads=8999; CHECK(lg1_read32(NULL,0x0400f000,&value)==-3 && lg1.reads==9000);
++    before=mock.loads32; CHECK(lg1_read32(NULL,0x0400f000,&value)!=0 && lg1.poisoned && mock.loads32==before);
++    direct_cleanup();
++    setup(16384); direct_maps(); ++cases;
++    lg1.reads=8999; CHECK(lg1_read_command(NULL,observer(0),0x08000040)==-3);
++    CHECK(lg1_read_command(NULL,observer(0),0x08000040)!=0 && lg1.poisoned && mock.stores==1);
++    direct_cleanup();
++    setup(16384); direct_maps(); ++cases;
++    lg1.writes=27; CHECK(lg1_read_command(NULL,observer(0),0x08000040)==0 && lg1.writes==28);
++    CHECK(lg1_read_command(NULL,observer(0),0x08000040)!=0 && mock.stores==1);
++    direct_cleanup();
++    puts("PASS adapter read/CMD pointer allowlists, exact READCMD words, 9000 combined access cap and 28-command cap (counter fault injection)");
++}
++static void test_parser(void)
++{
++    struct lithium_peripheral_options o;
++    const char good[]="gpu_probe=1 gpu_stage=0 gpu_power_diag=1";
++    ++cases; CHECK(lithium_peripheral_options_parse(good,sizeof(good)-1,&o));
++    CHECK(o.gpu_probe && o.gpu_power_diag && o.gpu_stage==0);
++    const char *bad[]={"gpu_power_diag=1","gpu_stage=0 gpu_power_diag=1",
++      "gpu_probe=1 gpu_power_diag=1","gpu_probe=0 gpu_stage=0 gpu_power_diag=1",
++      "gpu_probe=1 gpu_stage=1 gpu_power_diag=1","gpu_probe=1 gpu_stage=0 gpu_power_diag=2",
++      "gpu_probe=1 gpu_stage=0 gpu_power_diag=1 gpu_power_diag=1",
++      "gpu_probe=1 gpu_stage=0 gpu_power_diag=1 touch=1",
++      "gpu_probe=1 gpu_stage=0 gpu_power_diag=1 touch_stage=0"};
++    for (unsigned i=0;i<sizeof(bad)/sizeof(*bad);++i) {
++        ++cases; CHECK(!lithium_peripheral_options_parse(bad[i],strlen(bad[i]),&o));
++        CHECK(!o.gpu_power_diag);
++    }
++    ++cases; CHECK(lithium_peripheral_options_parse(NULL,0,&o) && !o.gpu_power_diag && !o.gpu_probe);
++    puts("PASS actual parser explicit default-off G0 power diagnostic admission and malformed/mixed/higher-stage rejection");
++}
++static void test_returning_access_crossings(void)
++{
++    setup(16384); mock.late_final=true; ++cases;
++    lithium_gpu_g1_precheck(); cleanup_check(); full_rail(0);
++    CHECK(mock.clock_us-lg1.start_us>=250000 && lg1.poisoned);
++    CHECK(lg1.rail_valid[1][0]==0x7f && lg1.rail_valid[1][1]==0x3f);
++    CHECK(lg1.rail_stable[1]==0x3f && lg1.rail_error[1]==LGS_READ_ERROR);
++    CHECK(lg1.rail_raw[1][1][6]==0);
++    CHECK(lg1.transaction.phase==LGS_DATA && lg1.transaction.callback_rc==-3);
++    CHECK(!lg1.transaction.data_valid && !lg1.transaction.data_words_valid);
++    CHECK(mock.stores==28 && mock.data_reads[1]==14 && mock.loads32==4010);
++    for (unsigned page=0;page<2;++page) {
++        for (unsigned position=0;position<2;++position) {
++            setup(page?16384:4096); mock.late_command=position?28:1; ++cases;
++            lithium_gpu_g1_precheck(); cleanup_check();
++            CHECK(lg1.poisoned && mock.stores==mock.late_command);
++            CHECK(lg1.transaction.error==LGS_WRITE_ERROR && lg1.transaction.phase==LGS_COMMAND);
++            CHECK(lg1.transaction.cmd_attempted==1 && lg1.transaction.cmd_completed==0);
++            CHECK(lg1.transaction.writes==1 && lg1.transaction.callback_rc==-3);
++            CHECK(!lg1.transaction.status_valid && !lg1.transaction.data_valid);
++            if (position) {
++                full_rail(0);
++                CHECK(lg1.rail_valid[1][0]==0x7f && lg1.rail_valid[1][1]==0x3f);
++                CHECK(lg1.rail_error[1]==LGS_WRITE_ERROR && mock.data_reads[1]==13);
++            } else {
++                CHECK(lg1.rail_valid[0][0]==0 && lg1.rail_valid[0][1]==0);
++                CHECK(lg1.rail_error[0]==LGS_WRITE_ERROR && mock.status_reads[0]==0);
++            }
++        }
++        for (unsigned at=1;at<=12;++at) {
++            setup(page?16384:4096); mock.late_fuse=at; ++cases;
++            lithium_gpu_g1_precheck(); cleanup_check();
++            CHECK(lg1.poisoned && mock.loads64==at && lg1.fuse_reads==at);
++            CHECK(mock.map_calls==1 && mock.map_success==1 && mock.loads32==0 && mock.stores==0);
++            unsigned before=at-1;
++            unsigned valid0=before>=6?0x3fu:(1u<<before)-1u;
++            unsigned valid1=before<=6?0u:(1u<<(before-6))-1u;
++            CHECK(lg1.fuse_valid[0]==valid0 && lg1.fuse_valid[1]==valid1);
++            CHECK(lg1.fuse_stable==(valid0&valid1));
++            CHECK(lg1.fuse_decoded.revision==0 && strstr(mock.printed,"fuse decode valid=0")!=NULL);
++            for (unsigned i=0;i<12;++i)
++                CHECK(lg1.fuse_raw[i/6][i%6]==(i<at?fuse_words[i%6]:0));
++            /* The returning late row is retained as raw but never valid. */
++            CHECK((lg1.fuse_valid[(at-1)/6]&(1u<<((at-1)%6)))==0);
++        }
++    }
++    puts("PASS post-access250ms rejection: final RDATA invalid/error/poisoned, first/final READCMD attempted retained, every returning fuse slot invalid; 4K/16K cleanup");
++}
++int main(void)
++{
++    CHECK(LGS_RAIL_COUNT==2 && LGS_FIELD_COUNT==7 && LGF_ROW_COUNT==6);
++    CHECK(lgs_rails[0].base==0x1700 && lgs_rails[1].base==0x1700);
++    for (unsigned i=0;i<7;++i) CHECK(lgs_fields[i].offset==field_offsets[i]);
++    for (unsigned i=0;i<6;++i) CHECK(lgf_rows[i].rowid==row_ids[i]);
++    test_success(); test_validity_stability(); test_map_failures(); test_routes();
++    test_completions(); test_gates_and_clock(); test_access_allowlist_and_caps();
++    test_parser(); test_returning_access_crossings();
++    printf("SUMMARY cases=%u checks=%u result=PASS hardware_operations=0\n",cases,checks);
++    return EXIT_SUCCESS;
++}
+--- /dev/null
++++ b/scripts/tests/test-gpu-g1-options.c
+@@ -0,0 +1,29 @@
++#include <assert.h>
++#include <stdio.h>
++#include <string.h>
++#include "../../ports/hakios-lithium/peripherals/boot-options.h"
++int main(void)
++{
++    const char *accepted[]={"", "gpu_stage=0", "gpu_stage=0 gpu_probe=1 gpu_wd=0",
++        "gpu_stage=0 gpu_probe=1 gpu_power_diag=0",
++        "gpu_stage=0 gpu_probe=1 gpu_wd=1 gpu_power_diag=1"};
++    const char *rejected[]={"gpu_power_diag=1", "gpu_probe=1 gpu_power_diag=1",
++        "gpu_stage=1 gpu_probe=1 gpu_power_diag=1",
++        "gpu_stage=0 gpu_probe=0 gpu_power_diag=1",
++        "gpu_stage=0 gpu_probe=1 gpu_power_diag=2",
++        "gpu_stage=0 gpu_probe=1 gpu_power_diag=1 gpu_power_diag=1",
++        "gpu_stage=0 gpu_probe=1 gpu_power_diag=1 touch=1",
++        "gpu_stage=0 gpu_probe=1 gpu_power_diag=1 touch_stage=0"};
++    for(unsigned i=0;i<sizeof(accepted)/sizeof(*accepted);++i) {
++        struct lithium_peripheral_options o;
++        assert(lithium_peripheral_options_parse(accepted[i],strlen(accepted[i]),&o));
++        assert(o.gpu_power_diag==(i==4));
++        if(i<2) assert(!o.gpu_probe);
++    }
++    for(unsigned i=0;i<sizeof(rejected)/sizeof(*rejected);++i) {
++        struct lithium_peripheral_options o;
++        assert(!lithium_peripheral_options_parse(rejected[i],strlen(rejected[i]),&o));
++    }
++    puts("PASS G1 options 13 cases; default GPU off, G0 unchanged, precheck cannot arm stage1");
++    return 0;
++}
+--- /dev/null
++++ b/scripts/tests/test-gpu-g1-package.py
+@@ -0,0 +1,336 @@
++#!/usr/bin/env python3
++"""G1 packaging delta tests; no repeat of G0's 22-case regression suite.
++
++The fixture reuses the actual frozen G0 support/FAT/APFS/Boot, adding marker
++strings to a disposable kernel copy. Only the runner uses fake Fastboot/USB;
++no compiler, kernel build, firmware tool or actual device process is allowed.
++All test artifacts stay under the assigned G1 package evidence directory.
++"""
++from __future__ import annotations
++
++from contextlib import ExitStack, contextmanager
++from datetime import datetime, timedelta
++import importlib.util
++import json
++from pathlib import Path
++import subprocess
++import sys
++import tempfile
++import unittest
++from unittest import mock
++
++sys.dont_write_bytecode = True
++ROOT = Path(__file__).resolve().parents[2]
++
++
++def load(name, path):
++    spec = importlib.util.spec_from_file_location(name, path)
++    value = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(value)
++    return value
++
++
++PKG = load("_g1_delta_package", ROOT / "scripts/package-hakios-gpu-g1.py")
++RUN = load("_g1_delta_runner", ROOT / "reports/local/run-gpu-g1.py")
++
++
++class RevisionPinTests(unittest.TestCase):
++    def test_exact_input_pairs_for_both_revisions(self):
++        for attempt in ("01", "02"):
++            with self.subTest(attempt=attempt):
++                kernel, report = PKG.input_paths(attempt)
++                self.assertEqual(kernel.as_posix(),
++                                 "/home/jia/ios-mix1-build/hakios-lithium-ios16/"
++                                 f"hakios-kernel.gpu-g1-precheck-{attempt}")
++                self.assertEqual(report, ROOT / "evidence/gpu-g1-20261123/main" /
++                                 f"kernel-result-g1-precheck-{attempt}.json")
++        for attempt in ("03", "99", "../02", "2"):
++            with self.subTest(attempt=attempt), self.assertRaises(RuntimeError):
++                PKG.input_paths(attempt)
++
++    def test_each_reader_uses_its_pins_then_restores_private_core(self):
++        prior = PKG.CORE.FROZEN_KERNEL, PKG.CORE.KERNEL_REPORT
++        for attempt in ("01", "02"):
++            kernel, report = PKG.input_paths(attempt)
++            build = {"kernel": kernel.as_posix(), "revision": f"gpu-g1-precheck-{attempt}"}
++
++            def read_core(selected):
++                self.assertEqual(selected, report)
++                self.assertEqual((PKG.CORE.FROZEN_KERNEL, PKG.CORE.KERNEL_REPORT), (kernel, report))
++                return b"fixture", build, b"fixture-report"
++
++            with mock.patch.object(Path, "is_file", return_value=True), \
++                 mock.patch.object(PKG, "read_json", return_value=build), \
++                 mock.patch.object(PKG.CORE, "kernel_input", side_effect=read_core):
++                self.assertEqual(PKG.kernel_input(report, attempt)[0], b"fixture")
++            self.assertEqual((PKG.CORE.FROZEN_KERNEL, PKG.CORE.KERNEL_REPORT), prior)
++
++    def test_cross_revision_and_arbitrary_inputs_are_rejected_before_readback(self):
++        kernel01, report01 = PKG.input_paths("01")
++        kernel02, report02 = PKG.input_paths("02")
++        with mock.patch.object(PKG.CORE, "kernel_input", side_effect=AssertionError("no kernel read")):
++            for attempt, wrong in (("02", report01), ("01", report02),
++                                   ("02", ROOT / "arbitrary-kernel-result.json")):
++                with self.subTest(attempt=attempt, report=wrong), self.assertRaisesRegex(RuntimeError, "exact main"):
++                    PKG.kernel_input(wrong, attempt)
++            for attempt, report, wrong_kernel in (("02", report02, kernel01), ("01", report01, kernel02),
++                                                  ("02", report02, Path("/tmp/arbitrary-kernel"))):
++                with mock.patch.object(Path, "is_file", return_value=True), \
++                     mock.patch.object(PKG, "read_json", return_value={"kernel": wrong_kernel.as_posix()}), \
++                     self.subTest(attempt=attempt, kernel=wrong_kernel), \
++                     self.assertRaisesRegex(RuntimeError, "frozen G1-precheck"):
++                    PKG.kernel_input(report, attempt)
++            with mock.patch.object(Path, "is_file", return_value=True), \
++                 mock.patch.object(PKG, "read_json", return_value={
++                     "kernel": kernel02.as_posix(), "revision": "gpu-g1-precheck-01"}), \
++                 self.assertRaisesRegex(RuntimeError, "report revision differs"):
++                PKG.kernel_input(report02, "02")
++
++    def test_defaults_select_02_and_legacy_01_contract_stays_exact(self):
++        self.assertEqual(PKG.DEFAULT_ATTEMPT, "02")
++        self.assertEqual(RUN.DEFAULT_ATTEMPT_ID, "gpu-g1-precheck-02")
++        reference = PKG.read_json(PKG.REFERENCE_G0 / "contract.json")
++        legacy = PKG.read_json(ROOT / "evidence/gpu-g1-20261123/package/g1-precheck-01/contract.json")
++        PKG.validate_contract(legacy, "01", reference)
++        self.assertEqual(PKG.BOOT_ARGS, legacy["cmdline"])
++        changed = {**legacy, "inputs": {**legacy["inputs"], "kernel": PKG.input_paths("02")[0].as_posix()}}
++        with self.assertRaisesRegex(RuntimeError, "frozen input binding differs"):
++            PKG.validate_contract(changed, "01", reference)
++        changed.update(candidate="GPU-G1-precheck-02", kernel_revision="02")
++        with self.assertRaisesRegex(RuntimeError, "frozen report binding differs"):
++            PKG.validate_contract(changed, "02", reference)
++        changed["inputs"]["kernel_report"] = str(PKG.input_paths("02")[1])
++        PKG.validate_contract(changed, "02", reference)
++        changed["kernel_revision"] = "01"
++        with self.assertRaisesRegex(RuntimeError, "contract kernel revision differs"):
++            PKG.validate_contract(changed, "02", reference)
++        with mock.patch.object(RUN.PKG, "verify_package", return_value={"passed": True}) as admission:
++            self.assertEqual(RUN.main([]), 0)
++            admission.assert_called_once_with(RUN.PKG.package_path("02"), "02")
++
++
++class ArgumentDeltaTests(unittest.TestCase):
++    def test_only_new_argument_is_default_off_power_capture_request(self):
++        self.assertEqual([w for w in PKG.BOOT_ARGS.split() if w != "gpu_power_diag=1"],
++                         PKG.G0.BOOT_ARGS.split())
++        PKG.validate_args(PKG.BOOT_ARGS)
++        self.assertIn("gpu_stage=0 gpu_probe=1 gpu_wd=1 gpu_power_diag=1", PKG.BOOT_ARGS)
++        self.assertEqual(PKG.PRECHECK_FIELDS["gpu_power_diag_default"], 0)
++        self.assertFalse(PKG.PRECHECK_FIELDS["stage1_armed"])
++        self.assertFalse(PKG.PRECHECK_FIELDS["g1_chip_id_accepted"])
++        self.assertEqual(PKG.KERNEL_MARKERS, PKG.G0.KERNEL_MARKERS + PKG.NEW_KERNEL_MARKERS)
++
++    def test_rejects_old_args_disabled_duplicate_or_stage1_power_request(self):
++        cases = (PKG.G0.BOOT_ARGS, PKG.BOOT_ARGS.replace("gpu_power_diag=1", "gpu_power_diag=0"),
++                 PKG.BOOT_ARGS + " gpu_power_diag=1", PKG.BOOT_ARGS + " gpu_power_diag=0",
++                 PKG.BOOT_ARGS.replace("gpu_stage=0", "gpu_stage=1"),
++                 PKG.BOOT_ARGS.replace("gpu_power_diag=1", "gpu_power_diag_extra=1"),
++                 PKG.BOOT_ARGS + " gpu_power_write=1")
++        for args in cases:
++            with self.subTest(args=args), self.assertRaises(RuntimeError):
++                PKG.validate_args(args)
++        for attempt in ("gpu-g0-01", "gpu-g1-01", "gpu-g1-precheck-../01"):
++            with self.subTest(attempt=attempt), self.assertRaises(RUN.RunnerError):
++                RUN.validate_attempt_id(attempt)
++
++
++class PrecheckHostDeltaTests(unittest.TestCase):
++    @classmethod
++    def setUpClass(cls):
++        PKG.PACKAGE_ROOT.mkdir(parents=True, exist_ok=True)
++        cls.temporary = tempfile.TemporaryDirectory(prefix="delta-tests-", dir=PKG.PACKAGE_ROOT)
++        cls.top = Path(cls.temporary.name)
++        cls.stack = ExitStack()
++        cls.addClassCleanup(cls.temporary.cleanup)
++        cls.addClassCleanup(cls.stack.close)
++        cls.inputs = PKG.reused_inputs()
++        cls.original_index = PKG.sha((ROOT / ".git/index").read_bytes())
++        cls.protected_sources = {name: PKG.sha((ROOT / name).read_bytes()) for name in (
++            "scripts/package-hakios-gpu-g0.py", "scripts/tests/test-gpu-g0-package.py",
++            "reports/local/run-gpu-g0.py")}
++        cls.old_kernel = (PKG.REFERENCE_G0 / "hakios-kernel").read_bytes()
++        cls.new_kernel = cls.old_kernel + b"\0" + b"\0".join(PKG.NEW_KERNEL_MARKERS) + b"\0"
++        cls.kernel = cls.top / "fixture-kernel-g1-precheck"
++        cls.kernel.write_bytes(cls.new_kernel)
++        cls.report = cls.top / "fixture-main-result.json"
++        cls.report.write_text(json.dumps({"passed": True, "kernel": cls.kernel.as_posix(),
++                                         **PKG.meta(cls.new_kernel), "device_operations": 0,
++                                         "revision": "gpu-g1-precheck-02",
++                                         "fixture_only": True}) + "\n", encoding="utf-8")
++        cls.packages = cls.top / "packages"
++        for module in (PKG, RUN.PKG):
++            cls.stack.enter_context(mock.patch.object(module, "PACKAGE_ROOT", cls.packages))
++            original_paths = module.input_paths
++
++            def fixture_paths(attempt, original=original_paths):
++                return (cls.kernel, cls.report) if attempt == "02" else original(attempt)
++
++            cls.stack.enter_context(mock.patch.object(module, "input_paths", side_effect=fixture_paths))
++        cls.stack.enter_context(mock.patch.object(RUN, "PACKAGE_ROOT", cls.packages))
++        with mock.patch.object(subprocess, "run", side_effect=AssertionError("no host/device subprocess")), \
++             mock.patch.object(subprocess, "Popen", side_effect=AssertionError("no process")):
++            cls.result = PKG.assemble("02", cls.report)
++        cls.package = cls.packages / "g1-precheck-02"
++
++    def setUp(self):
++        self.temporary_case = tempfile.TemporaryDirectory(prefix="case-", dir=self.top)
++        self.addCleanup(self.temporary_case.cleanup)
++        self.work = Path(self.temporary_case.name)
++
++    @contextmanager
++    def changed_contract(self, fields):
++        path = self.package / "contract.json"
++        original = path.read_bytes()
++        contract = json.loads(original)
++        contract.update(fields)
++        path.write_text(json.dumps(contract), encoding="utf-8")
++        try:
++            yield
++        finally:
++            path.write_bytes(original)
++
++    def test_actual_new_payload_and_fd_readback_reuses_exact_g0_bytes(self):
++        result = PKG.verify_package(self.package, "02")
++        contract = PKG.read_json(self.package / "contract.json")
++        self.assertTrue(result["prerequisites_capture_only"])
++        self.assertFalse(result["stage1_armed"])
++        self.assertFalse(result["g1_chip_id_accepted"])
++        self.assertEqual(result["final_fv"], self.inputs["fv_proof"])
++        for name in PKG.REUSED_COMPONENTS:
++            self.assertEqual((self.package / name).read_bytes(), (PKG.REFERENCE_G0 / name).read_bytes())
++        baseline_budget = self.inputs["reference"]["command_budget"]
++        self.assertEqual(result["command_budget"]["reserved_bytes"],
++                         baseline_budget["reserved_bytes"] + len(" gpu_power_diag=1"))
++        raw, _, _, _ = PKG.CORE.CODEC.decode_android(Path(result["image"]).read_bytes())
++        payload_bytes = contract["shim_copy_length"]["payload_bytes"]
++        entries = PKG.CORE.CODEC.parse_payload(raw[PKG.CORE.XNUP_AT:PKG.CORE.XNUP_AT + payload_bytes])
++        self.assertEqual(entries["cmdline"], PKG.BOOT_ARGS.encode("ascii") + b"\0")
++        self.assertEqual(entries["kernel"], self.new_kernel)
++        self.assertEqual(RUN.validate_package(self.package, self.package / "contract.json",
++                                             RUN.PHASE, "gpu-g1-precheck-02")["image_sha256"],
++                         result["image_sha256"])
++
++    def test_old_g0_kernel_and_each_missing_new_marker_are_rejected(self):
++        original_kernel, original_report = self.kernel.read_bytes(), self.report.read_bytes()
++        self.addCleanup(self.kernel.write_bytes, original_kernel)
++        self.addCleanup(self.report.write_bytes, original_report)
++        for missing in (None, *PKG.NEW_KERNEL_MARKERS):
++            data = self.old_kernel if missing is None else self.old_kernel + b"\0" + b"\0".join(
++                m for m in PKG.NEW_KERNEL_MARKERS if m != missing) + b"\0"
++            self.kernel.write_bytes(data)
++            self.report.write_text(json.dumps({"passed": True, "kernel": self.kernel.as_posix(),
++                                               **PKG.meta(data), "device_operations": 0,
++                                               "revision": "gpu-g1-precheck-02"}), encoding="utf-8")
++            with self.subTest(missing=missing), self.assertRaisesRegex(RuntimeError, "missing"):
++                PKG.kernel_input(self.report, "02")
++        # A valid original G0 report cannot authorize the new frozen kernel path.
++        with self.assertRaisesRegex(RuntimeError, "exact main G1-precheck-02"):
++            PKG.kernel_input(PKG.G0.KERNEL_REPORT, "02")
++
++    def test_contract_cannot_claim_chip_acceptance_power_writes_or_firmware(self):
++        for fields in ({"stage1_armed": True}, {"g1_chip_id_accepted": True},
++                       {"gpu_power_writes_requested": True}, {"firmware_load_requested": True},
++                       {"gpu_aperture_access_requested": True}, {"gpu_write_backend_requested": True},
++                       {"gpu_power_diag": False}, {"gpu_power_diag_default": 1}):
++            with self.subTest(fields=fields), self.changed_contract(fields), \
++                 self.assertRaisesRegex(RuntimeError, "scope differs"):
++                PKG.validate_contract(PKG.read_json(self.package / "contract.json"), "02",
++                                      self.inputs["reference"])
++
++    def test_runner_rejects_old_bootargs_and_unqualified_g1_package(self):
++        for fields in ({"cmdline": PKG.G0.BOOT_ARGS}, {"profile": "gpu-g1-ram"}):
++            with self.changed_contract(fields), self.assertRaises(RuntimeError):
++                RUN.validate_package(self.package, self.package / "contract.json",
++                                     RUN.PHASE, "gpu-g1-precheck-02")
++
++    def test_pending_kernel_and_partial_output_are_preserved(self):
++        pending_report = self.work / "not-yet-provided.json"
++        with mock.patch.object(PKG, "PACKAGE_ROOT", self.work / "packages"), \
++             mock.patch.object(PKG, "input_paths", return_value=(self.kernel, pending_report)):
++            with self.assertRaisesRegex(RuntimeError, "precheck kernel report pending"):
++                PKG.assemble("02")
++            self.assertFalse(PKG.package_path("02").exists())
++            partial = PKG.package_path("02")
++            partial.mkdir(parents=True)
++            sentinel = partial / "prior-partial.txt"
++            sentinel.write_bytes(b"keep")
++            with self.assertRaisesRegex(RuntimeError, "preserve existing"):
++                PKG.assemble("02")
++            self.assertEqual(sentinel.read_bytes(), b"keep")
++
++    def test_precheck_runner_mock_one_shot_and_default_check_no_devices(self):
++        with mock.patch.object(subprocess, "run", side_effect=AssertionError("no command")), \
++             mock.patch.object(subprocess, "Popen", side_effect=AssertionError("no process")):
++            self.assertEqual(RUN.main(["--attempt-id", "gpu-g1-precheck-02"]), 0)
++        fastboot, usb_python, receiver, target = (self.work / name for name in
++                                                ("mock-fastboot.exe", "mock-python.exe",
++                                                 "mock-receiver.py", "target.json"))
++        fastboot.write_bytes(b"host-mock")
++        usb_python.write_bytes(b"host-mock")
++        receiver.write_text("# fake receiver\n", encoding="utf-8")
++        target.write_text(json.dumps({"serial": "mock123", "product": "MSM8996_A8"}), encoding="utf-8")
++        events, calls = [], []
++
++        def invoke(argv, **kwargs):
++            calls.append(list(map(str, argv)))
++            tail = tuple(map(str, argv[1:]))
++            if tail == ("devices",):
++                events.append("query")
++                return subprocess.CompletedProcess(argv, 0, "mock123\tfastboot\n", "")
++            if tail[-2:] == ("oem", "device-info"):
++                events.append("query")
++                return subprocess.CompletedProcess(argv, 0, "Device unlocked: true\n", "")
++            if tail[-2] == "getvar":
++                events.append("query")
++                value = {"product": "MSM8996_A8", "battery-soc-ok": "yes",
++                         "max-download-size": "0x4000000"}[tail[-1]]
++                return subprocess.CompletedProcess(argv, 0, f"{tail[-1]}: {value}\n", "")
++            if tail[-2] == "boot":
++                events.append("boot")
++                return subprocess.CompletedProcess(argv, 0, "", "Booting OKAY\n")
++            raise AssertionError(f"forbidden mock command: {argv}")
++
++        def capture(argv, **kwargs):
++            events.append("usb")
++            Path(argv[argv.index("--status") + 1]).write_text('{"status":"mock"}', encoding="utf-8")
++            process = mock.Mock(pid=771)
++            process.poll.return_value = None
++            return process
++
++        local = self.work / "run"
++        options = {"attempt_id": "gpu-g1-precheck-02", "local": local, "target_path": target,
++                   "fastboot": fastboot, "usb_python": usb_python, "usb_source": receiver,
++                   "usb_source_sha": PKG.sha(receiver.read_bytes()), "command_invoke": invoke,
++                   "popen": capture}
++        self.assertTrue(RUN.boot(**options)["command_accepted"])
++        self.assertEqual(events, ["query"] * 5 + ["usb", "boot"])
++        with self.assertRaises(RUN.RunnerError):
++            RUN.boot(**options)
++        self.assertEqual(len(calls), 6)
++        state = PKG.read_json(local / "result.json")
++        state["accepted_at"] = (datetime.now().astimezone() - timedelta(seconds=300)).isoformat()
++        RUN.BASE.save_json(local / "result.json", state)
++        return_options = {"attempt_id": "gpu-g1-precheck-02", "local": local, "target_path": target,
++                          "fastboot": fastboot, "command_invoke": invoke}
++        endpoint = RUN.verify_return(**return_options)
++        self.assertTrue(endpoint["passed"])
++        self.assertEqual((endpoint["devices_query_count"], endpoint["product_query_count"]), (1, 1))
++        with self.assertRaises(RUN.RunnerError):
++            RUN.verify_return(**return_options)
++        self.assertEqual(len(calls), 8)
++
++    def test_preserves_g0_sources_frozen_reference_and_index(self):
++        self.assertEqual(PKG.sha((ROOT / ".git/index").read_bytes()), self.original_index)
++        for name, digest in self.protected_sources.items():
++            self.assertEqual(PKG.sha((ROOT / name).read_bytes()), digest)
++        self.assertEqual(PKG.G0.verify_package(PKG.REFERENCE_G0, "01")["image_sha256"], PKG.REFERENCE_G0_SHA)
++        legacy = ROOT / "evidence/gpu-g1-20261123/package/g1-precheck-01"
++        # Explicit and inferred 01 stay pinned to 01 after selecting the 02 fixture.
++        with mock.patch.object(PKG, "PACKAGE_ROOT", legacy.parent):
++            result = PKG.verify_package(legacy)
++        self.assertEqual(result["kernel_revision"], "01")
++        self.assertEqual(result["image_sha256"], "9bb657ecc8486109ddbd2e8533b88c0a67ec0bac5db025b6dfa459b1eb541497")
++
++
++if __name__ == "__main__":
++    unittest.main(verbosity=2)
+--- /dev/null
++++ b/reports/local/run-gpu-g1.py
+@@ -0,0 +1,123 @@
++#!/usr/bin/env python3
++"""One-shot G1 prerequisites capture runner. Default/--check is host-only.
++
++Only a future explicit main invocation of --boot or --verify-return permits
++device access. Reuse G0/R37 preflight, USB-before-boot, consumed guards and
++240..900s return window. Stage 1 and chip-ID acceptance stay disabled.
++"""
++from __future__ import annotations
++
++import argparse
++import importlib.util
++import json
++from pathlib import Path
++import re
++import sys
++
++sys.dont_write_bytecode = True
++ROOT = Path(__file__).resolve().parents[2]
++
++
++def load(name, path):
++    spec = importlib.util.spec_from_file_location(name, path)
++    value = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(value)
++    return value
++
++
++G0 = load("_g1_private_g0_runner", ROOT / "reports/local/run-gpu-g0.py")
++BASE = G0.BASE
++PKG = load("_g1_precheck_package_admission", ROOT / "scripts/package-hakios-gpu-g1.py")
++RunnerError = BASE.RunnerError
++PACKAGE_ROOT = PKG.PACKAGE_ROOT
++ATTEMPTS_ROOT = PACKAGE_ROOT / "runs"
++DEFAULT_ATTEMPT_ID = "gpu-g1-precheck-02"
++PHASE = "g1-precheck"
++
++
++def validate_attempt_id(attempt_id, phase=PHASE):
++    BASE.require(phase == PHASE and re.fullmatch(r"gpu-g1-precheck-[0-9]{2}", attempt_id) is not None,
++                 "use a new prerequisites capture attempt: gpu-g1-precheck-NN")
++    BASE.require(attempt_id.rsplit("-", 1)[1] in PKG.SUPPORTED_REVISIONS,
++                 "supported G1 precheck revisions are 01 and 02")
++
++
++def attempt_suffix(attempt_id, phase=PHASE):
++    validate_attempt_id(attempt_id, phase)
++    return attempt_id.rsplit("-", 1)[1]
++
++
++def package_for_attempt(attempt_id, phase=PHASE, artifacts_root=PACKAGE_ROOT):
++    return artifacts_root / f"g1-precheck-{attempt_suffix(attempt_id, phase)}"
++
++
++def resolve_package(phase, attempt_id, package, contract_path, artifacts_root=PACKAGE_ROOT):
++    expected = package_for_attempt(attempt_id, phase, artifacts_root)
++    selected = expected if package is None else Path(package)
++    BASE.require(selected.resolve() == expected.resolve(), "G1 precheck package/attempt mismatch")
++    contract = selected / "contract.json" if contract_path is None else Path(contract_path)
++    BASE.require(contract.resolve() == (selected / "contract.json").resolve(), "G1 contract mismatch")
++    return selected, contract
++
++
++def validate_package(package, contract_path, phase, attempt_id):
++    validate_attempt_id(attempt_id, phase)
++    BASE.require(contract_path == package / "contract.json", "G1 contract must be package-local")
++    result = PKG.verify_package(package, attempt_suffix(attempt_id, phase))
++    contract = BASE.load_json(contract_path)
++    BASE.validate_no_physical_ufs_proof(contract)
++    return {"contract": contract, "image": Path(result["image"]), "image_sha256": result["image_sha256"],
++            "image_bytes": result["image_bytes"], "cmdline": result["cmdline"],
++            "component_count": result["component_count"], "profile": contract["profile"],
++            "candidate": contract["candidate"]}
++
++
++BASE.validate_attempt_id = validate_attempt_id
++BASE.attempt_suffix = attempt_suffix
++BASE.package_for_attempt = package_for_attempt
++BASE.resolve_package = resolve_package
++BASE.validate_package = validate_package
++
++
++def boot(*, attempt_id=DEFAULT_ATTEMPT_ID, **kwargs):
++    validate_attempt_id(attempt_id)
++    return BASE.boot(phase=PHASE, attempt_id=attempt_id, attempts_root=ATTEMPTS_ROOT,
++                     artifacts_root=PACKAGE_ROOT, **kwargs)
++
++
++def verify_return(*, attempt_id=DEFAULT_ATTEMPT_ID, **kwargs):
++    validate_attempt_id(attempt_id)
++    local = kwargs.get("local") or ATTEMPTS_ROOT / attempt_id
++    target_path = kwargs.get("target_path", BASE.TARGET)
++    BASE.require((local / "target-at-boot.json").is_file(), "boot target snapshot missing; no query")
++    BASE.require(BASE.load_json(target_path) == BASE.load_json(local / "target-at-boot.json"),
++                 "configured target changed since boot; no return query")
++    return BASE.verify_return(phase=PHASE, attempt_id=attempt_id, attempts_root=ATTEMPTS_ROOT,
++                              artifacts_root=PACKAGE_ROOT, **kwargs)
++
++
++def main(argv=None):
++    parser = argparse.ArgumentParser(description=__doc__)
++    actions = parser.add_mutually_exclusive_group()
++    actions.add_argument("--check", action="store_true", help="host-only precheck package readback")
++    actions.add_argument("--boot", action="store_true", help="future explicit main invocation only")
++    actions.add_argument("--verify-return", action="store_true", help="future one-shot endpoint check")
++    parser.add_argument("--attempt-id", default=DEFAULT_ATTEMPT_ID)
++    args = parser.parse_args(argv)
++    try:
++        validate_attempt_id(args.attempt_id)
++        if args.boot:
++            boot(attempt_id=args.attempt_id)
++        elif args.verify_return:
++            return 0 if verify_return(attempt_id=args.attempt_id).get("passed") is True else 1
++        else:
++            print(json.dumps(PKG.verify_package(PKG.package_path(attempt_suffix(args.attempt_id)),
++                                                 attempt_suffix(args.attempt_id)), indent=2))
++        return 0
++    except Exception as error:
++        print(f"STOPPED WITHOUT RETRY: {error}", file=sys.stderr)
++        return 1
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+--- /dev/null
++++ b/reports/hakios-ios16-gpu-g1-precheck-prepared.md
+@@ -0,0 +1,88 @@
++# A530 G1 供电前置包 — 2026-11-23
++
++**G1 前置采集代码已实际构建并冻结。** 本包补齐 133 MHz 最低活跃 GPU 档所需的 GFX/MX 数字供电配置与本机 GFX fuse，不打开 GPU、不读取 chip ID。CPU 保持用户选定的 614.4 MHz 配置模型，复用已验 G0 的隔离 RAM、三核与 180 秒正常结束/自动返回路径。**本阶段尚未查询或启动手机，G1 上电验收未完成。**
++
++## 为什么先采集这些数据
++
++G0 的两遍实机读数已经确认 CX/GX GDSCR 均为 `0x00222001`，PWR_ON 未置位，SW_COLLAPSE 置位，四个 GPU 时钟分支均报 off。打开电源域前必须先确认两条供电路径：
++
++| 路径 | 指定设备/接口 | 本包新增的实机输入 |
++|---|---|---|
++| GFX | PMI8994 S2，SPMI SID3 / peripheral 0x1700；stock CPR3 | TYPE/SUBTYPE、0x40/0x41 数字设定、MODE、ENABLE、STEP，两遍 |
++| MX | PM8994 S2，SPMI SID1 / peripheral 0x1700；RPM smpa/2 corner4，S12 为两相配置 | 同上；该读数不能代替 RPM vote/ack 或共享资源所有权 |
++| GFX CPR fuses | QFPROM base 0x74000 | rows39/41/63/64/66/68，完整 64-bit 双遍 |
++
++固定 Linux/MiCode 源码核对确认两路 S2 均为 0x1700，**0x1400 是 S1**。CPR3 的初始电压字段在 row63，之前 CPU 调试只采了其余五行；新的六行一次补齐。
++
++从历史有效五行可解得 MMSS CPR revision1/bin0/limitation0/aging raw1，但缺 row63，计算器保持 `modelready=false, computed=null`。本机 133 MHz 电压不能从 stock 520–670mV 区间任选，也不能借用 CPU S11=905mV。实际读数返回后，以固定来源和 stock DT 算出 corner2 的 open-loop 模型，独立比较 GFX 数字设定。
++
++## 实际实现
++
++- [g1-spmi-read.h](/F:/IOS-MIX1/ports/hakios-lithium/gpu/g1-spmi-read.h)：仅允许 SID3/1 的 S2、指定七字段；按实际 PPID0x317/0x117 搜索唯一映射，重新核对 version/route/config，100 µs、最多100 poll，不重试。
++- [g1-fuse.h](/F:/IOS-MIX1/ports/hakios-lithium/gpu/g1-fuse.h)：六行完整位提取、sign/magnitude 算术、Pro/非Pro 来源模型；无 MMIO 或写回调。stock trim、aging 和 floor/ceiling 由主机计算器单独处理。
++- [g1-precheck.inc](/F:/IOS-MIX1/ports/hakios-lithium/gpu/g1-precheck.inc)：普通线程绑定 logical0/affinity1，单次 latch，精确地址/命令白名单，完整 PAGE_SIZE allocation/extent 配对释放；保留 raw/valid/error/status/attempted/completed/polls 和局部结果。
++- [boot-options.h](/F:/IOS-MIX1/ports/hakios-lithium/peripherals/boot-options.h)：默认关闭 `gpu_power_diag=1`，要求显式 `gpu_stage=0 gpu_probe=1`，拒绝 higher stage/触摸混合/重复或畸形参数；[kernel.inc](/F:/IOS-MIX1/ports/hakios-lithium/peripherals/kernel.inc) 在 G0 快照后单独调度前置采集。
++
++SPMI observer CMD 的 MMIO 写入仅发送 **EXT_READL**；没有 PMIC register WRITE/WDATA、配置/中断/复位/所有权写操作。每路七字段各两遍，最多 **28 个 READ 命令**。外层全局 returning-access 预算250,000µs、9,000访问上限；超时停止新增访问并释放已获完整映射。时钟停滞、外部 abort 或永久总线挂死不能由软件预算救回。三个 CPU 的 PMIC/cpufreq 驱动当前禁用与单次 worker 仅减少 XNU 内部并发；路由复核不证明 TZ/固件独占。
++
++七字段是固定来源的 common layout，数字电压需按实际 TYPE/SUBTYPE 解释。没有用猜测的 0x08 STATUS 位；controller STATUS 是 SPMI 传输完成证据，**不是 regulator 的模拟供电 settled 状态**。未采的状态不填 0 充当实测。本包不会尝试补写未知的 regulator 使能/电压。
++
++六行 fuse 两遍总12个64位读取。row39 的 MMSS revision 位48–50 与先前 CPU revision 位51–53不同，不混用；有效的全零 row 仍作为数据，无效或不一致 row 拒绝模型就绪。记录为 `LITHIUM GPU fuse` 与 `LITHIUM GPU supply`。
++
++## 构建、冻结与验证
++
++实际完整 HakiOS / XNU8796.121.2 / arm64 内核已链接，未删功能，保留真实触摸、R40 UFS seal、默认行为与正常 cleanup。新内核 SHA256：
++
++```text
++7c63f434fcae955c07299cf135025fb6b349bab854df3e7d8acf2c974ca090e8
++```
++
++冻结 [G1 precheck 镜像](/F:/IOS-MIX1/evidence/gpu-g1-20261123/package/g1-precheck-02/lithium-hakios-ios16-gpu-g1-precheck-02.img)：**16,371,712 字节**，SHA256：
++
++```text
++24f53f36277df2ccdd4cb2bc5e4226ea5edda403435820ff55a7a586d5b4bc6a
++```
++
++G0 的 Mu/loader/FAT/Fastboot DXE、两个4MiB RAM APFS 卷和 DTBs 逐字节复用。实际 Android/SHA1/gzip/FAT/XNUP/APFS/BootShim 读回，最终压缩嵌套 FV 确认无物理 UFS provider、Fastboot DXE 完全一致；Windows runner `--check` 通过。唯一参数增量为 `gpu_power_diag=1`；新内核专用标记和 SHA 绑定，旧 G0 内核不能冒充前置包。
++
++| 模块 | 子代理/主代理 | 验证与复核 |
++|---|---|---|
++| SPMI exact S2 read core、数字设定解码 | Pasteur | 实际核心 ASan/UBSan 41,419 场景 / 186,408 检查；主代理核对 SID/base、common layout、Late-DONE 分支、测试/构建源哈希 |
++| fuse decoder、stock133 calculator | Raman | 实际 C ASan/UBSan 6,006 场景 / 73,234 检查，AArch64 freestanding；317计算器检查；主代理核对 row63 与固定 stock 查表/trim/aging，不使用假 row |
++| 实际适配器专项与来源审查 | Bacon | 修正版实际 adapter ASan/UBSan **158场景 / 1,183,442检查**，覆盖4K/16K释放、READ命令、错误/超时/拒绝/一次执行；主代理核对测试与真实内核源hash/linked读写指令 |
++| RAM package 与一次 runner | Kepler | 首版9个增量专项，修正版7个针对性检查通过，不重复 G0 的22项；主代理生成生产包并逐层读回/Windows准入 |
++| 默认开关、共享接入、完整构建 | 主代理 | 13 个实际 parser ASan/UBSan正负用例，实际内核链接；linked precheck 局部帧384字节，数据静态保留 |
++
++所有测试与模型均属主机验证。**未测 GFX/MX 原始值、fuse row63、133MHz GPU 运行、chip ID、CP/fence 或 GPU 加速。** 本阶段设备操作0，计数仍97/66；原索引及 R20/614.4桌面/low01/G0冻结保持。
++
++首版测试实际暴露最后一次 RDATA 返回超过250ms仍被记录为成功的边界。主代理补上32-bit读、READCMD写与64-bit fuse读的访问后预算检查，保留实际attempted计数/错误，超预算数据不设valid；修正版158场景通过并绑定新02内核。旧01内核/镜像/结果保持归档，尚未上机；本次只申请02，不覆盖或启动旧包。软件无法打断永不返回的MMIO，mapping/logging/cleanup本身不声称都落在250ms内。
++
++实际命令：
++
++```text
++scripts/build-hakios-gpu-g1.py --revision 02（WSL内14GiB/CPU1200%/JOBS12，完整HakiOS增量链接）
++wsl -d Ubuntu -u jia --exec python3 -B /mnt/f/IOS-MIX1/scripts/package-hakios-gpu-g1.py --attempt 02
++python -B reports/local/run-gpu-g1.py --check --attempt-id gpu-g1-precheck-02
++```
++
++## 一次实机采集与后续
++
++获准后运行已冻存包，不重建、不混入fb2或触摸/GPU命令变量：
++
++```text
++bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_sanity=1 cpu_perf_fixed=1 cpu_perf_hz=614400000 cpu_thermal_diag=1 cpu_inherited_supply_r39=1 gpu_stage=0 gpu_probe=1 gpu_wd=1 gpu_power_diag=1 lithium_log_retry=1
++```
++
++`run-gpu-g1.py --boot --attempt-id gpu-g1-precheck-02` 执行五项预检、先开USB接收、单次临时 boot。接受后240–900秒只做一次 `--verify-return`，独立重放保存帧，核对全部 raw/valid/stability、命令数、错误、timer/drain/source0 与同机 Fastboot。正常约3分钟结束、摘要10秒后返回；不要求用户守屏。
++
++真实输入返回后：
++
++1. 对支持的实际 TYPE/SUBTYPE 解码 S2 数字设定/ENABLE，而非模拟电压或 settled 权限。
++2. 六行实际64-bit双遍一致后，用固定 stock133计算器得本机 GFX corner2 模型；若 rail 数字设定与目标要求不一致，准备来源明确的下一步调整方案。
++3. 继续补齐 RPM/bus vote/ack、GDSC/clamp/PLL与真正 regulator 状态；满足时才允许G1受控上电，读取0x05030004并逆序退场。不因 precheck通过就解除GPU aperture禁读。
++
++回退采用配套文本补丁与 before快照，不含本地固件/Apple/Qualcomm/Xiaomi二进制。
++
++设备操作前暂停源自用户 GPU计划§0：**“任何设备操作（boot/查询/重启/分区/刷写）都要事先得到用户批准”**。当前申请为已冻存的 **G1供电/fuse前置RAM采集一次**，GPU上电与G2仍另行说明、确认。
++
++证据：[实际构建](/F:/IOS-MIX1/evidence/gpu-g1-20261123/main/kernel-result-g1-precheck-02.json) · [stock133模型](/F:/IOS-MIX1/evidence/gpu-g1-20261123/fuses/stock133-model.json) · [供电解码](/F:/IOS-MIX1/evidence/gpu-g1-20261123/spmi/decode_digital_setpoint.py) · [实际适配器复核](/F:/IOS-MIX1/evidence/gpu-g1-20261123/adapter/review-02.md)
+--- /dev/null
++++ b/reports/hakios-ios16-gpu-g1-precheck-prepared.json
+@@ -0,0 +1,44 @@
++{
++  "schema": "hakios-gpu-g1-precheck-host-v1",
++  "prepared": true,
++  "revision": "02",
++  "created_at": "2026-11-22T20:35:35.615924+00:00",
++  "image": "evidence\\gpu-g1-20261123\\package\\g1-precheck-02\\lithium-hakios-ios16-gpu-g1-precheck-02.img",
++  "image_sha256": "24f53f36277df2ccdd4cb2bc5e4226ea5edda403435820ff55a7a586d5b4bc6a",
++  "image_bytes": 16371712,
++  "kernel_sha256": "7c63f434fcae955c07299cf135025fb6b349bab854df3e7d8acf2c974ca090e8",
++  "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_sanity=1 cpu_perf_fixed=1 cpu_perf_hz=614400000 cpu_thermal_diag=1 cpu_inherited_supply_r39=1 gpu_stage=0 gpu_probe=1 gpu_wd=1 gpu_power_diag=1 lithium_log_retry=1",
++  "cpu_baseline_model_hz": 614400000,
++  "physical_ufs_provider_absent": true,
++  "device_operations": 0,
++  "device_approval_required": true,
++  "max_spmi_read_commands": 28,
++  "regulator_writes": 0,
++  "gpu_writes": 0,
++  "gpu_aperture_access": false,
++  "stage1_armed": false,
++  "chip_id": null,
++  "runtime_verified": false,
++  "missing_historical_fuse_row": 63,
++  "voltage_model_ready": false,
++  "computed_voltage_uv": null,
++  "tests": {
++    "spmi_cases": 41419,
++    "spmi_checks": 186408,
++    "fuse_cases": 6006,
++    "fuse_checks": 73234,
++    "stock_calculator_checks": 317,
++    "adapter_cases": 158,
++    "adapter_checks": 1183442,
++    "package_delta_tests": 7,
++    "parser_cases": 13
++  },
++  "code_fix": "post-access budget check after returning MMIO; old frozen01 unbooted retained",
++  "index_sha256": "fdf775be66b9e456182cd10df6271edadef7f977b6d0b02fa275030f985d1eb2",
++  "accepted_boot_counts": {
++    "hakios": 97,
++    "ios16": 66
++  },
++  "report": "reports/hakios-ios16-gpu-g1-precheck-prepared.md",
++  "next": "One approved supply/fuse RAM capture; compute source-backed stock133 policy before power writes"
++}
+--- /dev/null
++++ b/evidence/gpu-g1-20261123/fuses/calculate-stock133.py
+@@ -0,0 +1,304 @@
++"""Host-only pinned stock corner2 calculator. No device access or rail writes.
++
++python -B evidence/gpu-g1-20261123/fuses/calculate-stock133.py
++python -B evidence/gpu-g1-20261123/fuses/calculate-stock133.py \
++    --capture <two-pass-capture.json> --output <filename-in-fuses.json>
++
++Capture schema is demonstrated by pending-raw-input.json. Every valid row
++must cite a line of an existing captured console whose full SHA256 matches.
++Outputs stay in this script's directory. Missing rows produce no voltage.
++"""
++import argparse
++import hashlib
++import json
++from pathlib import Path
++import re
++import sys
++
++sys.dont_write_bytecode = True
++HERE = Path(__file__).resolve().parent
++ROOT = HERE.parents[2]
++ROWS = (39, 41, 63, 64, 66, 68)
++PIN = "1492c8e4373b7428bb0accc4f4881e97b36508b9"
++G0 = ROOT / "evidence/gpu-g0-20261123/power-zap"
++EXPECTED = {
++    G0 / "sources/micode/drivers/regulator/cpr3-mmss-regulator.c":
++        "8864d338a4fc011b4ab3d5f2394d16e3589eccccb67b7b3a8a1877621d667fcf",
++    HERE / "micode-cpr3-util.c":
++        "46187dd2028533b6459d5506ab72c738c49039a3f3363f8b46b16d3c14cefe8a",
++    G0 / "sources/micode/drivers/regulator/cpr3-regulator.c":
++        "a8d2efa596f6a4d47dd4c1a000373eacc16285b918e3d58cb764e9a1f0382c06",
++    G0 / "sources/stock/lithium-stock.dts":
++        "2252e2fb6c8b28c4d5db6e390e3618e5e6a0a42d51779822f16d0ea640c45df8",
++    ROOT / "artifacts/stock/V9.5.2.0.NAHCNFA/dtbs/03.dtb":
++        "93dc50ef24a5a6e56c19346ce5c1aa43c11f1e1842970d150020cde6c3b79985",
++}
++
++
++def sha(data):
++    return hashlib.sha256(data).hexdigest()
++
++
++def uint(value, width):
++    if isinstance(value, bool) or not isinstance(value, (int, str)):
++        raise ValueError("unsigned integer required")
++    value = int(value, 0) if isinstance(value, str) else value
++    if not 0 <= value < (1 << width):
++        raise ValueError(f"value does not fit uint{width}")
++    return value
++
++
++def signed_steps(code, width):
++    code = uint(code, width)
++    sign = 1 << (width - 1)
++    return -(code & (sign - 1)) if code & sign else code
++
++
++def cells(text, name):
++    m = re.search(r"(?m)^\s*" + re.escape(name) + r"\s*=\s*<([^>]+)>;", text)
++    if not m:
++        raise ValueError("missing pinned property " + name)
++    return [uint(x, 32) for x in m.group(1).split()]
++
++
++def array_property(values, size, combo, speedbin, combos=16, bins=2):
++    # Source cpr3-util.c:323-330 precedence, not guessed revision indexing.
++    if len(values) == size:
++        offset, selector = 0, "shared"
++    elif len(values) == size * combos:
++        offset, selector = size * combo, "fuse_combo"
++    elif len(values) == size * bins:
++        offset, selector = size * speedbin, "speed_bin"
++    else:
++        raise ValueError("invalid pinned DT array length")
++    return values[offset:offset + size], {"selector": selector, "offset": offset,
++                                        "cells": len(values), "tuple_size": size}
++
++
++def pinned_policy():
++    verified = {}
++    for path, expected in EXPECTED.items():
++        actual = sha(path.read_bytes())
++        if actual != expected:
++            raise ValueError("source pin mismatch: " + str(path))
++        verified[path.relative_to(ROOT).as_posix()] = actual
++    text = (G0 / "sources/stock/lithium-stock.dts").read_text()
++    begin = text.index("cpr3-ctrl@838000 {")
++    end = text.index("\n\t\t};", begin)
++    node = text[begin:end]
++    compatible = re.search(r'compatible = "([^"]+)";', node).group(1)
++    if compatible != "qcom,cpr3-msm8996pro-mmss-regulator":
++        raise ValueError("stock133 policy requires verified Pro compatible")
++    mmss = (G0 / "sources/micode/drivers/regulator/cpr3-mmss-regulator.c").read_text()
++    match = re.search(r"msm8996pro_mmss_fuse_ref_volt[^=]*=\s*\{([^}]+)\}", mmss)
++    refs = [int(x) for x in re.findall(r"\d+", match.group(1))]
++    if refs != [670000, 745000, 905000, 1065000]:
++        raise ValueError("unexpected pinned reference table")
++    if cells(node, "reg") != [0x838000, 0x4000, 0x74000, 0x1000]:
++        raise ValueError("unexpected fuse aperture")
++    if cells(node, "qcom,cpr-fuse-combos") != [16] or \
++            cells(node, "qcom,cpr-speed-bins") != [2] or \
++            cells(node, "qcom,cpr-corners") != [9] * 16 or \
++            cells(node, "qcom,cpr-speed-bin-corners") != [9, 9]:
++        raise ValueError("unsupported stock corner layout")
++    if "qcom,cpr-scaled-open-loop-voltage-as-ceiling;" not in node:
++        raise ValueError("unexpected ceiling policy")
++    if "qcom,cpr-open-loop-voltage-adjustment =" in node:
++        raise ValueError("unimplemented per-corner open-loop trim")
++    if "qcom,cpr-aging-derate =" in node:
++        raise ValueError("unimplemented aging derate")
++    return node, refs, verified, compatible
++
++
++def capture_rows(capture):
++    provenance = capture["provenance"]
++    if provenance["kind"] not in ("saved_console_partial", "captured_console"):
++        raise ValueError("actual console capture provenance required")
++    source = Path(provenance["source"])
++    if not source.is_absolute():
++        source = ROOT / source
++    data = source.read_bytes()
++    if sha(data) != provenance["sha256"]:
++        raise ValueError("capture source SHA256 mismatch")
++    lines = data.decode("utf-8").splitlines()
++    passes = capture["passes"]
++    if len(passes) != 2 or [p["pass"] for p in passes] != [0, 1]:
++        raise ValueError("exactly ordered pass0/pass1 required")
++    values, masks = [], []
++    last_line = 0
++    for p in passes:
++        if [r["rowid"] for r in p["rows"]] != list(ROWS):
++            raise ValueError("exact six-row order required")
++        decoded, actualmask = {}, 0
++        for index, row in enumerate(p["rows"]):
++            if uint(row["physical"], 64) != 0x74000 + 8 * row["rowid"]:
++                raise ValueError("row/address mismatch")
++            if row["bits"] != 64 or type(row["valid"]) is not bool:
++                raise ValueError("actual 64-bit validity required")
++            if not row["valid"]:
++                if row["raw"] is not None:
++                    raise ValueError("invalid rows cannot contain substitute raw")
++                continue
++            raw = uint(row["raw"], 64)
++            line_no = row["line"]
++            if type(line_no) is not int or not last_line < line_no <= len(lines):
++                raise ValueError("capture lines must be ordered and in range")
++            last_line = line_no
++            line = lines[line_no - 1]
++            fields = dict(re.findall(r"\b(pass|pa|bits|valid|raw)=([^\s]+)", line))
++            if any(uint(fields[key], width) != expected for key, width, expected in
++                   [("pass", 32, p["pass"]), ("pa", 64, 0x74000 + 8 * row["rowid"]),
++                    ("bits", 32, 64), ("valid", 32, 1), ("raw", 64, raw)]):
++                raise ValueError("raw row does not match actual cited log line")
++            decoded[row["rowid"]] = raw
++            actualmask |= 1 << index
++        if uint(p["validmask"], 32) != actualmask:
++            raise ValueError("declared validity differs from actual rows")
++        values.append(decoded)
++        masks.append(actualmask)
++    stable = {row for row in ROWS if row in values[0] and row in values[1]
++              and values[0][row] == values[1][row]}
++    unstable = [row for row in ROWS if row in values[0] and row in values[1]
++                and values[0][row] != values[1][row]]
++    return {row: values[0][row] for row in stable}, masks, unstable
++
++
++def decode(rows):
++    result = {}
++    if 39 in rows:
++        result.update(revision=(rows[39] >> 48) & 7, speedbin=(rows[39] >> 60) & 3)
++    if 41 in rows:
++        result["limitation"] = (rows[41] >> 31) & 3
++    if 63 in rows:
++        result["initcode"] = [(rows[63] >> i) & 31 for i in (55, 50, 45, 40)]
++    if 64 in rows:
++        result["offsetraw_turbo"] = (rows[64] >> 58) & 15
++    if 66 in rows:
++        result["offsetraw_svs"] = (rows[66] >> 42) & 7
++    if 68 in rows:
++        result["aging"] = (rows[68] >> 26) & 63
++        result["aging_init_quot_diff"] = signed_steps(result["aging"], 6) * 2
++    return result
++
++
++def target_policy(node, refs, fields):
++    combo = fields["revision"] + 8 * fields["speedbin"]
++    if fields["speedbin"] >= 2 or combo >= 16:
++        raise ValueError("invalid Pro speedbin/combo")
++    selections = {}
++
++    def select(name, size):
++        selected, meta = array_property(cells(node, name), size, combo, fields["speedbin"])
++        selections[name] = dict(meta, selected=selected)
++        return selected
++
++    fmax = select("qcom,cpr-corner-fmax-map", 4)
++    floor = select("qcom,cpr-voltage-floor", 9)
++    ceiling = select("qcom,cpr-voltage-ceiling", 9)
++    frequencies = select("qcom,corner-frequencies", 9)
++    trims = select("qcom,cpr-open-loop-voltage-fuse-adjustment", 4)
++    trims = [x if x < 2**31 else x - 2**32 for x in trims]
++    selections["qcom,cpr-open-loop-voltage-fuse-adjustment"]["selected_signed_uv"] = trims
++    ranges = select("qcom,cpr-floor-to-ceiling-max-range", 9)
++    aging = select("qcom,cpr-aging-max-voltage-adjustment", 1)[0]
++    aging_allowed = select("qcom,allow-aging-voltage-adjustment", 1)[0]
++    aging_open = select("qcom,allow-aging-open-loop-voltage-adjustment", 1)[0]
++    step = cells(node, "qcom,voltage-step")[0]
++    if frequencies[1] != 133000000 or fmax[0] != 2 or \
++            refs[0] != 670000 or trims[0] != -85000 or step != 5000 or \
++            floor[:2] != [400000, 520000] or ceiling[:2] != [400000, 670000] or \
++            ranges[:2] != [0, 70000] or aging != 15000 or \
++            aging_allowed != 1 or aging_open != 1:
++        raise ValueError("pinned target formula invariants changed")
++    return {"soc_variant": "MSM8996 Pro", "soc_match_table_id": 4,
++            "combo": combo, "revision": fields["revision"],
++            "speedbin": fields["speedbin"], "stock_corner": 2,
++            "array_index": 1, "frequency_hz": 133000000, "fuse_corner_index": 0,
++            "interpolation_at_target": False, "array_selection": selections,
++            "reference_uv": refs, "fuse_adjustment_uv": trims,
++            "round_up_step_uv": step, "absolute_ceiling_uv": ceiling[1],
++            "initial_dt_floor_uv": floor[1], "max_floor_to_ceiling_range_uv": ranges[1],
++            "maximum_startup_aging_uv": aging,
++            "formula": {
++                "signed_steps": "(code & 0x10) ? -(code & 0xf) : (code & 0xf)",
++                "decoded_fuse_uv": "670000 + signed_steps * 10000",
++                "trimmed_fuse_uv": "decoded_fuse_uv - 85000",
++                "unaged_open_loop_uv": "clamp(round_up_5000(trimmed_fuse_uv), 520000, 670000)",
++                "unaged_ceiling_uv": "unaged_open_loop_uv",
++                "unaged_floor_uv": "max(520000, round_up_5000(unaged_ceiling_uv - 70000))",
++                "aged_ceiling_uv": "min(unaged_ceiling_uv + 15000, 670000)",
++                "aged_floor_uv": "min(unaged_floor_uv + 15000, aged_ceiling_uv)",
++                "aged_open_loop_uv": "min(unaged_open_loop_uv + 15000, aged_ceiling_uv)"
++            }}
++
++
++def compute(code):
++    steps = signed_steps(code, 5)
++    fused = 670000 + steps * 10000
++    trimmed = fused - 85000
++    rounded = ((trimmed + 4999) // 5000) * 5000
++    unaged = min(670000, max(520000, rounded))
++    floor = max(520000, ((unaged - 70000 + 4999) // 5000) * 5000)
++    aged_ceiling = min(670000, unaged + 15000)
++    return {"initcode0": code, "signed_steps": steps, "decoded_fuse_uv": fused,
++            "dt_fused_trim_uv": -85000, "trimmed_fuse_uv": trimmed,
++            "unaged": {"floor_uv": floor, "open_loop_uv": unaged, "ceiling_uv": unaged},
++            "maximum_aging_added_uv": 15000,
++            "stock_startup": {"floor_uv": min(floor + 15000, aged_ceiling),
++                              "open_loop_uv": aged_ceiling, "ceiling_uv": aged_ceiling}}
++
++
++def calculate(capture):
++    node, refs, hashes, compatible = pinned_policy()
++    rows, masks, unstable = capture_rows(capture)
++    fields = decode(rows)
++    missing = [row for row in ROWS if row not in rows]
++    result = {"schema": "gpu-g1-stock133-model-v1", "source_pin": PIN,
++              "source_hashes_verified": hashes, "stock_compatible": compatible,
++              "variant_basis": "pinned stock DTB03 (saved live root identity matches G0 manifest)",
++              "capture_provenance": capture["provenance"],
++              "raw_rows": {str(k): f"0x{v:016x}" for k, v in sorted(rows.items())},
++              "validmasks": masks, "missing_rows": missing, "unstable_rows": unstable,
++              "decoded": fields, "modelready": False, "computed": None,
++              "measured_rail_uv": None, "required_rail_write_uv": None,
++              "gpu_write_permission": False, "device_operations": 0,
++              "cpu_baseline_config_hz": 614400000}
++    if "revision" in fields and fields["speedbin"] < 2:
++        result["stock_policy"] = target_policy(node, refs, fields)
++    if unstable:
++        result["state"] = "blocked_unstable_capture"
++    elif fields.get("speedbin", 0) >= 2:
++        result["state"] = "blocked_invalid_pro_speedbin"
++    elif fields.get("limitation") == 2:
++        result["state"] = "blocked_unsupported_chip_limitation2"
++    elif missing or masks != [0x3f, 0x3f]:
++        result["state"] = "pending_raw_capture"
++    elif capture["provenance"]["kind"] != "captured_console":
++        result["state"] = "blocked_capture_kind"
++    else:
++        result["computed"] = compute(fields["initcode"][0])
++        result["modelready"] = True
++        result["state"] = "computed_stock_policy_only"
++        result["limitation_policy"] = (
++            "no CPR/interpolation (stock limitation3)" if fields["limitation"] == 3 else
++            "accepted by pinned stock driver (limitation1 has no separate rejection)" if
++            fields["limitation"] == 1 else "no stock fuse limitation")
++    return result
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--capture", type=Path, default=HERE / "pending-raw-input.json")
++    parser.add_argument("--output", type=Path, default=HERE / "stock133-model.json")
++    args = parser.parse_args()
++    output = args.output.resolve()
++    if not output.is_relative_to(HERE):
++        raise ValueError("output must remain in the exclusive fuses directory")
++    result = calculate(json.loads(args.capture.read_text()))
++    output.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
++    print(json.dumps({"state": result["state"], "modelready": result["modelready"],
++                      "missing_rows": result["missing_rows"], "computed": result["computed"]}))
++
++
++if __name__ == "__main__":
++    main()
+--- /dev/null
++++ b/evidence/gpu-g1-20261123/spmi/decode_digital_setpoint.py
+@@ -0,0 +1,147 @@
++"""Host-only interpretation of valid G1 raw bytes; never hardware/analog proof.
++
++Pinned MiCode 1492c8e4373b7428bb0accc4f4881e97b36508b9:
++  qpnp-regulator.c:67-109 (types/subtypes), 117-139 (layouts),
++  417-429,457-459 (ranges), 932-954,1139-1144 (actual get_voltage),
++  1637,1665-1667,1693-1694 (all-revision matches), 1697-1743 (selection).
++
++JSON input: {"sid":3,"base":5888,"fields":{"TYPE":3,"SUBTYPE":8,
++"RANGE":0,"VSET":42},"valid_fields":["TYPE","SUBTYPE","RANGE","VSET"]}
++Invoke with --input FILE, or run --self-check for source-literal cases.
++No production integration; no register writes or guessed chip subtype.
++"""
++import argparse
++import json
++
++REQUIRED = {"TYPE", "SUBTYPE", "RANGE", "VSET"}
++# (min_uV, step_uV, max_uV, preferred_min_uV, preferred_max_uV)
++LAYOUTS = {
++    (0x03, 0x08): ("SMPS/common", {
++        0: (375000, 12500, 1562500, 375000, 1562500),
++        1: (1550000, 25000, 3125000, 1575000, 3125000)}),
++    (0x1c, 0x08): ("FTSMPS/common", {
++        0: (0, 5000, 1275000, 350000, 1275000),
++        1: (0, 10000, 2040000, 1280000, 2040000)}),
++    (0x1c, 0x09): ("FTSMPS2p5/common", {
++        0: (80000, 5000, 1355000, 350000, 1355000),
++        1: (160000, 10000, 2200000, 1360000, 2200000)}),
++    (0x1c, 0x0a): ("FTSMPS426/common2-millivolts", {
++        0: (0, 4000, 1352000, 320000, 1352000)})
++}
++
++
++def byte(value):
++    return type(value) is int and 0 <= value <= 255
++
++
++def decode(capture):
++    result = dict(decoded=False, digital_setpoint_uv=None, analog_voltage_uv=None,
++        settled_permission=False, hardware_verified=False,
++        coherent_cross_field_snapshot_verified=False,
++        source="MiCode 1492c8e4373b7428bb0accc4f4881e97b36508b9 qpnp-regulator.c")
++    if not isinstance(capture, dict):
++        return dict(result, error="argument")
++    sid, base = capture.get("sid"), capture.get("base")
++    if type(sid) is not int or type(base) is not int or sid not in (1, 3) or base != 0x1700:
++        return dict(result, error="unsupported_rail")
++    fields = capture.get("fields")
++    valid = capture.get("valid_fields")
++    if not isinstance(fields, dict) or not isinstance(valid, list) or not all(isinstance(v, str) for v in valid):
++        return dict(result, error="explicit_valid_fields_required")
++    missing = sorted(REQUIRED - (set(valid) & set(fields)))
++    if missing:
++        return dict(result, error="missing_valid_fields", missing=missing)
++    if not all(byte(fields[name]) for name in REQUIRED):
++        return dict(result, error="invalid_raw_byte")
++    pair = (fields["TYPE"], fields["SUBTYPE"])
++    if pair not in LAYOUTS:
++        return dict(result, error="unsupported_type_subtype", type=pair[0], subtype=pair[1])
++    layout, ranges = LAYOUTS[pair]
++    if pair == (0x1c, 0x0a):
++        # The frozen table's RANGE/VSET labels mean LSB/MSB on common2.
++        uv = (fields["RANGE"] | fields["VSET"] << 8) * 1000
++        selector = None
++        limits = ranges[0]
++        interpretation = "0x40=millivolt LSB; 0x41=millivolt MSB"
++    else:
++        selector = fields["RANGE"]
++        if selector not in ranges:
++            return dict(result, error="unknown_voltage_range", layout=layout, range=selector)
++        limits = ranges[selector]
++        uv = limits[0] + fields["VSET"] * limits[1]
++        interpretation = "0x40=range selector; 0x41=8-bit voltage code"
++    minimum, step, maximum, preferred_minimum, preferred_maximum = limits
++    # Reproduce the source's read arithmetic even for off/unusual raw codes;
++    # report range/grid violations separately instead of silently clamping.
++    result.update(decoded=True, error=None, sid=sid, base=base, layout=layout,
++        register_interpretation=interpretation, range_selector=selector,
++        digital_setpoint_uv=uv,
++        programmable_range_and_grid_valid=(minimum <= uv <= maximum and
++                                           (uv - minimum) % step == 0),
++        preferred_selector_valid=(preferred_minimum <= uv <= preferred_maximum and
++                                   (uv - minimum) % step == 0))
++    stable = capture.get("stable_fields", [])
++    result["required_bytes_two_pass_stable"] = (isinstance(stable, list) and
++        all(isinstance(v, str) for v in stable) and REQUIRED <= set(stable))
++    if "ENABLE" in valid and byte(fields.get("ENABLE")):
++        # QPNP_COMMON_ENABLE_MASK = 0x80, source:174-175.
++        result["digital_sw_enable_bit"] = bool(fields["ENABLE"] & 0x80)
++    for name in ("MODE", "ENABLE", "STEP"):
++        if name in valid and byte(fields.get(name)):
++            result[name.lower() + "_raw"] = fields[name]
++    return result
++
++
++def self_check():
++    def raw(typ, sub, a, b, **kwargs):
++        fields = dict(TYPE=typ, SUBTYPE=sub, RANGE=a, VSET=b, **kwargs)
++        return dict(sid=3, base=0x1700, fields=fields, valid_fields=list(fields))
++    vectors = [
++        (3, 8, 0, 0, 375000), (3, 8, 0, 42, 900000),
++        (3, 8, 0, 95, 1562500), (3, 8, 1, 0, 1550000),
++        (3, 8, 1, 63, 3125000), (0x1c, 8, 0, 181, 905000),
++        (0x1c, 8, 1, 128, 1280000), (0x1c, 9, 0, 165, 905000),
++        (0x1c, 9, 1, 120, 1360000), (0x1c, 0x0a, 0xb0, 4, 1200000),
++        (0x1c, 0x0a, 0x89, 3, 905000)]
++    for t, s, a, b, expected in vectors:
++        r = decode(raw(t, s, a, b))
++        assert r["decoded"] and r["digital_setpoint_uv"] == expected
++        assert r["analog_voltage_uv"] is None and not r["settled_permission"]
++    assert not decode(raw(3, 8, 0, 96))["programmable_range_and_grid_valid"]
++    assert not decode(raw(3, 8, 1, 0))["preferred_selector_valid"]
++    assert not decode(raw(0x1c, 0x0a, 0x89, 3))["programmable_range_and_grid_valid"]
++    for typ, sub in [(3, 9), (3, 0x0a), (0x1c, 7), (0, 0), (0x21, 8)]:
++        assert decode(raw(typ, sub, 0, 42))["error"] == "unsupported_type_subtype"
++    assert decode(raw(3, 8, 2, 42))["error"] == "unknown_voltage_range"
++    assert decode(raw(3, 8, 0, 256))["error"] == "invalid_raw_byte"
++    assert decode(raw(3, 8, 0, True))["error"] == "invalid_raw_byte"
++    c = raw(3, 8, 0, 42); c["valid_fields"].remove("VSET")
++    assert decode(c)["error"] == "missing_valid_fields"
++    c = raw(3, 8, 0, 42); c["base"] = 0x1400
++    assert decode(c)["error"] == "unsupported_rail"
++    c = raw(3, 8, 0, 42, ENABLE=0x80)
++    assert decode(c)["digital_sw_enable_bit"]
++    c["fields"]["ENABLE"] = 0
++    assert not decode(c)["digital_sw_enable_bit"]
++    c["stable_fields"] = [{}]
++    assert not decode(c)["required_bytes_two_pass_stable"]
++    c["stable_fields"] = sorted(REQUIRED)
++    assert decode(c)["required_bytes_two_pass_stable"]
++    return dict(passed=True, source_literal_vectors=len(vectors), edge_checks=17,
++        hardware_verified=False, analog_voltage_measured=False)
++
++
++if __name__ == "__main__":
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--input")
++    parser.add_argument("--self-check", action="store_true")
++    args = parser.parse_args()
++    if args.self_check:
++        value = self_check()
++    elif args.input:
++        with open(args.input, encoding="utf8") as stream:
++            value = json.load(stream)
++        value = [decode(c) for c in value] if isinstance(value, list) else decode(value)
++    else:
++        parser.error("provide --input JSON or --self-check")
++    print(json.dumps(value, indent=2))

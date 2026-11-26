@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+"""Generate a repeatable, stage-safe native TTBR1 framebuffer diagnostic.
+
+Reconstruct the input in a temporary Git index so rerunning this generator
+does not add another copy of the diagnostic to an already patched build tree.
+No device operations or emulation are performed.
+"""
+import difflib
+import os
+from pathlib import Path
+import subprocess
+import tempfile
+ROOT=Path(__file__).resolve().parents[1]
+SRC=Path.home()/'ios-mix1-build/xnu7195-lithium/src'
+TARGET=ROOT/'ports/lithium/patches/xnu-7195/0015-lithium-native-alias-probe.patch'
+
+def baseline(path, target=TARGET):
+    patches=sorted((ROOT/'ports/lithium/patches/xnu-7195-build').glob('*.patch'))
+    patches += [p for p in sorted(target.parent.glob('*.patch')) if p.name < target.name]
+    with tempfile.TemporaryDirectory(prefix='lithium-alias-') as temp:
+        env=dict(os.environ, GIT_INDEX_FILE=str(Path(temp)/'index'))
+        subprocess.run(['git','-C',SRC,'read-tree','HEAD'],env=env,check=True)
+        for patch in patches:
+            subprocess.run(['git','-C',SRC,'apply','--cached',patch],env=env,check=True)
+        return subprocess.check_output(['git','-C',SRC,'show',':'+path],env=env,text=True)
+
+def main():
+    path='osfmk/arm64/arm_vm_init.c'
+    old=baseline(path); new=old
+    anchor='\tset_mmu_ttb_alternate(cpu_ttep & TTBR_BADDR_MASK);'
+    assert new.count(anchor)==1
+    new=new.replace(anchor,'''#if defined(LITHIUM)
+    lithium_early_hex("VM final TTBR1", cpu_ttep);
+    lithium_early_hex("VM screen VA", LITHIUM_EARLY_FB_VA + 0x1401000);
+    {
+        const vm_map_address_t va = LITHIUM_EARLY_FB_VA;
+        tt_entry_t l1 = cpu_tte[(va & ARM_TT_L1_INDEX_MASK) >> ARM_TT_L1_SHIFT];
+        pmap_paddr_t l2_pa = l1 & ARM_TTE_TABLE_MASK;
+        lithium_early_hex("VM screen L1", l1);
+        assert((l1 & (ARM_TTE_VALID | ARM_TTE_TYPE_MASK)) ==
+            (ARM_TTE_VALID | ARM_TTE_TYPE_TABLE));
+        assert(l2_pa >= gPhysBase && l2_pa - gPhysBase < real_phys_size);
+        /* ptov_table already describes the FINAL physmap, but the old
+         * TTBR1 is still active. Use the bootstrap linear mapping here. */
+        vm_map_address_t l2_va = l2_pa - gPhysBase + gVirtBase;
+        uint64_t par;
+        __asm__ volatile("at s1e1r, %1\\n\\tisb\\n\\tmrs %0, par_el1" : "=r"(par) : "r"(l2_va) : "memory");
+        lithium_early_hex("VM table PAR", par);
+        if ((par & 1) || (par & 0x0000fffffffff000ULL) != l2_pa) {
+            lithium_early_mark(8, "VM21 bootstrap table translation failed");
+            for (;;) __asm__ volatile("wfe");
+        }
+        tt_entry_t *l2 = (tt_entry_t *)(uintptr_t)l2_va;
+        lithium_early_hex("VM screen L2", l2[(va & ARM_TT_L2_INDEX_MASK) >> ARM_TT_L2_SHIFT]);
+    }
+#endif
+''' + anchor)
+    anchor='    lithium_early_relocate(LITHIUM_EARLY_FB_VA + 0x1401000);'
+    assert new.count(anchor)==1
+    new=new.replace(anchor,'''    {
+        uint64_t screen = LITHIUM_EARLY_FB_VA + 0x1401000, par, tcr, ttbr1;
+        __asm__ volatile("mrs %0, tcr_el1" : "=r"(tcr));
+        __asm__ volatile("mrs %0, ttbr1_el1" : "=r"(ttbr1));
+        __asm__ volatile("at s1e1w, %1\\n\\tisb\\n\\tmrs %0, par_el1" : "=r"(par) : "r"(screen) : "memory");
+        lithium_early_hex("VM live TCR", tcr);
+        lithium_early_hex("VM live TTBR1", ttbr1);
+        lithium_early_hex("VM PAR before TLBI", par);
+        /* A TTBR write alone does not invalidate cached translations or
+         * intermediate walk entries. The normal XNU flush is later, after
+         * TTBR0 removal; our console needs the new alias before that point. */
+        lithium_early_mark(8, "VM22 flushing old translations");
+        __asm__ volatile("dsb ishst" ::: "memory");
+        flush_mmu_tlb();
+        __asm__ volatile("isb" ::: "memory");
+        __asm__ volatile("at s1e1w, %1\\n\\tisb\\n\\tmrs %0, par_el1" : "=r"(par) : "r"(screen) : "memory");
+        lithium_early_hex("VM screen PAR", par);
+        if (par & 1) {
+            lithium_early_mark(8, "VM23 framebuffer alias translation failed");
+            for (;;) __asm__ volatile("wfe");
+        }
+        if ((par & 0x0000fffffffff000ULL) != 0x83401000ULL) {
+            lithium_early_mark(8, "VM23 framebuffer alias physical mismatch");
+            for (;;) __asm__ volatile("wfe");
+        }
+        lithium_early_mark(8, "VM23 alias writable; testing pixel");
+        *(volatile uint8_t *)(uintptr_t)screen = 0xff;
+        __asm__ volatile("dsb sy" ::: "memory");
+        lithium_early_mark(8, "VM24 alias pixel written; relocating");
+    }
+''' + anchor)
+    patch=f'Subject: lithium: stage-safe TTBR1 alias translation and pixel probe\n\ndiff --git a/{path} b/{path}\n'
+    patch+=''.join(difflib.unified_diff(old.splitlines(True),new.splitlines(True),fromfile='a/'+path,tofile='b/'+path))
+    TARGET.write_text(patch); print(TARGET)
+if __name__=='__main__': main()

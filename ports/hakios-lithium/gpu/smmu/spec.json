@@ -1,0 +1,186 @@
+{
+  "schema": "hakios.g3-g4.smmu.host-core.v2",
+  "stage": 1,
+  "format": "AArch64 LPAE TTBR0",
+  "granule_bytes": 4096,
+  "pool_bytes": 33554432,
+  "pool_pages": 8192,
+  "table_capacity": 24,
+  "table_capacity_worst_case_used": 22,
+  "iova_bits": [
+    25,
+    48
+  ],
+  "pa_widths": [
+    32,
+    36,
+    40,
+    42,
+    44,
+    48
+  ],
+  "mair": "0xf404ff44",
+  "blocks": false,
+  "ttbr1": false,
+  "permissions": {
+    "read_required": true,
+    "write_only": false,
+    "execute": false,
+    "device": false,
+    "physical_alias": false
+  },
+  "pool_model": "pinned contiguous data pool; pinned separate table arena; suballocate contiguous ranges",
+  "functions": [
+    "gs_init",
+    "gs_build_pool",
+    "gs_bind_callbacks",
+    "gs_layout",
+    "gs_table_view",
+    "gs_publish",
+    "gs_map",
+    "gs_map_pool",
+    "gs_alloc",
+    "gs_lookup",
+    "gs_unmap",
+    "gs_fault_decode"
+  ],
+  "offline_generation": {
+    "entry": "gs_build_pool",
+    "callback_calls": 0,
+    "final_state": "GS_OFFLINE",
+    "mapped_pages": 8192,
+    "export": "gs_table_view",
+    "relocatable": false
+  },
+  "transaction_publish": [
+    "begin",
+    "prebuilt_data_to_device",
+    "clean_all_tables",
+    "write_barrier",
+    "invalidate_complete_context",
+    "tlb_sync",
+    "end"
+  ],
+  "transaction_map": [
+    "preflight",
+    "begin",
+    "data_to_device",
+    "write_leaf",
+    "clean_tables",
+    "write_barrier",
+    "invalidate_complete_context",
+    "tlb_sync",
+    "allocate_physical_bits",
+    "end"
+  ],
+  "transaction_unmap": [
+    "preflight_and_retirement_journal",
+    "begin_quiesce_dma",
+    "clear_leaf",
+    "clean_tables",
+    "write_barrier",
+    "invalidate_complete_context",
+    "tlb_sync",
+    "data_to_cpu",
+    "free_physical_bits",
+    "end"
+  ],
+  "failure_before_pte": "retryable without leaf edits",
+  "failure_after_pte": "quarantine entire pool and arena; no reuse",
+  "intended_stream_sid": 0,
+  "context_or_sid_default": null,
+  "context_ownership_proven": false,
+  "mmio": false,
+  "device": false,
+  "g3_hardware_pass": false,
+  "g4_hardware_pass": false,
+  "deferred": [
+    "IRQ/TZ/stream ownership",
+    "hardware attachment",
+    "coherency/TLB callback implementation",
+    "A530 submit",
+    "arbitrary external pages/scatter-gather",
+    "GEM handles and userclient lifecycle"
+  ],
+  "linux_commit": "adc218676eef25575469234709c2d87185ca223a",
+  "source_refs": [
+    {
+      "source": "evidence/gpu-metal-20261123/smmu/sources/linux/io-pgtable-arm.c",
+      "first_line": 67,
+      "last_line": 130,
+      "claim": "4KiB descriptors and MAIR",
+      "sha256": "f20d2ab8dda80567fb586cd6d4a2b2557db762591a9e4f5154e1e5f9ca18ce94"
+    },
+    {
+      "source": "evidence/gpu-metal-20261123/smmu/sources/linux/io-pgtable-arm.c",
+      "first_line": 270,
+      "last_line": 283,
+      "claim": "noncoherent table sync",
+      "sha256": "ed3788183027074c19efc79b3c57919a31e7e338303b61a5b27a311ed341239a"
+    },
+    {
+      "source": "evidence/gpu-metal-20261123/smmu/sources/linux/io-pgtable-arm.c",
+      "first_line": 433,
+      "last_line": 528,
+      "claim": "stage1 permission/cache/XN; map barrier",
+      "sha256": "40d1c1181eb5e4353b2f2877de62feb99595865e886d94e50321b39d3d1a69df"
+    },
+    {
+      "source": "evidence/gpu-metal-20261123/smmu/sources/linux/io-pgtable-arm.c",
+      "first_line": 633,
+      "last_line": 689,
+      "claim": "walk invalidation and leaf invalidation before free",
+      "sha256": "3ad3a8ca186f5ef5bafb92714aead1fd2b19d1f92af3f00d44ca7426928a2f74"
+    },
+    {
+      "source": "evidence/gpu-metal-20261123/smmu/sources/linux/io-pgtable-arm.c",
+      "first_line": 906,
+      "last_line": 914,
+      "claim": "start level from input width",
+      "sha256": "cc7646506682b321d0a3a56e034c201104d33830ce5abfc6f1fe0dc2c3168e71"
+    },
+    {
+      "source": "evidence/gpu-metal-20261123/smmu/sources/linux/io-pgtable-arm.c",
+      "first_line": 973,
+      "last_line": 1009,
+      "claim": "output widths and MAIR",
+      "sha256": "f24d7415baddaf2eeb435db2323b327e1cfe11d4753d48b856087055aba54a3a"
+    },
+    {
+      "source": "evidence/gpu-metal-20261123/smmu/sources/linux/arm-smmu-qcom.c",
+      "first_line": 179,
+      "last_line": 229,
+      "claim": "allocator chooses CB0 only under Linux allocation; msm8996 TTBR1 disabled",
+      "sha256": "a0a50377ddbd1499f5032d728012b557d2ba10a7cc3e34a5d8298124cb91b0d1"
+    },
+    {
+      "source": "evidence/gpu-metal-20261123/smmu/sources/linux/arm-smmu-qcom.c",
+      "first_line": 314,
+      "last_line": 333,
+      "claim": "firmware S2CR quirks and reserved bypass context",
+      "sha256": "1f1a5219d4c2188acb8b9b93ca7c01ef8663f040438eb7e5100883e26925d15d"
+    },
+    {
+      "source": "evidence/gpu-metal-20261123/smmu/sources/linux/arm-smmu-qcom.c",
+      "first_line": 358,
+      "last_line": 363,
+      "claim": "TZ protected banks",
+      "sha256": "dfbb0d7c54ab4c115c961a1d865dbed09052bfb7bdb62584cefc2a27e00e1f86"
+    },
+    {
+      "source": "evidence/gpu-metal-20261123/smmu/sources/linux/arm-smmu.h",
+      "first_line": 138,
+      "last_line": 139,
+      "claim": "observed SID field, no routing or ownership decision",
+      "sha256": "3da092c4b6d561da0b4abdd86e7322608f40d7cfb8fb022fe259751e45a65e12"
+    },
+    {
+      "source": "evidence/gpu-metal-20261123/smmu/sources/linux/arm-smmu.h",
+      "first_line": 197,
+      "last_line": 234,
+      "claim": "fault masks and syndrome fields",
+      "sha256": "0cbf02200bde6b3bcb021af34fea98c5fafbd06ddf96c0509286c638d36d2ef6"
+    }
+  ],
+  "validation": "evidence/gpu-metal-20261123/smmu/results.json"
+}

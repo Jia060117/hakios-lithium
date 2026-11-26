@@ -1,0 +1,497 @@
+{
+  "kernel_sha256": "4586526ac7bca61f302e59560b5307b0b1cf93926e24b7287b2240abf20f9344",
+  "kernel_file_validation": {
+    "path": "/home/jia/ios-mix1-build/xnu7195-lithium/obj/DEVELOPMENT_ARM64_LITHIUM/mach.development.lithium.unstripped",
+    "bytes": 13620664,
+    "sha256": "4586526ac7bca61f302e59560b5307b0b1cf93926e24b7287b2240abf20f9344",
+    "format": "ARM64 MH_EXECUTE, subtype 0 (no PAC)",
+    "entry": "0xfffffff00730f488",
+    "undefined_symbols": [],
+    "symbol_count": 141099,
+    "important_symbols": {
+      "_kernel_bootstrap": "0xfffffff0071e27f0",
+      "_arm_init": "0xfffffff00779a5d8",
+      "_pe_init_fiq": "0xfffffff00777ce78",
+      "_version": "0xfffffff00703f92b"
+    },
+    "version": "Darwin Kernel Version 20.6.0: Fri Nov 13 00:50:00 CST 2026; jia:obj/DEVELOPMENT_ARM64_LITHIUM",
+    "segments": [
+      {
+        "name": "__TEXT",
+        "vmaddr": "0xfffffff007004000",
+        "vmsize": 983040,
+        "fileoff": 0,
+        "filesize": 983040,
+        "protection": 5
+      },
+      {
+        "name": "__DATA_CONST",
+        "vmaddr": "0xfffffff0070f4000",
+        "vmsize": 540672,
+        "fileoff": 983040,
+        "filesize": 540672,
+        "protection": 1
+      },
+      {
+        "name": "__TEXT_EXEC",
+        "vmaddr": "0xfffffff007178000",
+        "vmsize": 6455296,
+        "fileoff": 1523712,
+        "filesize": 6455296,
+        "protection": 5
+      },
+      {
+        "name": "__KLD",
+        "vmaddr": "0xfffffff0077a0000",
+        "vmsize": 16384,
+        "fileoff": 7979008,
+        "filesize": 16384,
+        "protection": 5
+      },
+      {
+        "name": "__LASTDATA_CONST",
+        "vmaddr": "0xfffffff0077a4000",
+        "vmsize": 16384,
+        "fileoff": 7995392,
+        "filesize": 16384,
+        "protection": 1
+      },
+      {
+        "name": "__LAST",
+        "vmaddr": "0xfffffff0077a8000",
+        "vmsize": 0,
+        "fileoff": 0,
+        "filesize": 0,
+        "protection": 5
+      },
+      {
+        "name": "__KLDDATA",
+        "vmaddr": "0xfffffff0077a8000",
+        "vmsize": 16384,
+        "fileoff": 8011776,
+        "filesize": 16384,
+        "protection": 3
+      },
+      {
+        "name": "__DATA",
+        "vmaddr": "0xfffffff0077ac000",
+        "vmsize": 917504,
+        "fileoff": 8028160,
+        "filesize": 245760,
+        "protection": 3
+      },
+      {
+        "name": "__BOOTDATA",
+        "vmaddr": "0xfffffff00788c000",
+        "vmsize": 245760,
+        "fileoff": 8273920,
+        "filesize": 245760,
+        "protection": 3
+      },
+      {
+        "name": "__PRELINK_TEXT",
+        "vmaddr": "0xfffffff004004000",
+        "vmsize": 0,
+        "fileoff": 8519680,
+        "filesize": 0,
+        "protection": 5
+      },
+      {
+        "name": "__PRELINK_INFO",
+        "vmaddr": "0xfffffff0078c8000",
+        "vmsize": 0,
+        "fileoff": 8519680,
+        "filesize": 0,
+        "protection": 3
+      },
+      {
+        "name": "__PLK_TEXT_EXEC",
+        "vmaddr": "0xfffffff0078c8000",
+        "vmsize": 0,
+        "fileoff": 8519680,
+        "filesize": 0,
+        "protection": 3
+      },
+      {
+        "name": "__PRELINK_DATA",
+        "vmaddr": "0xfffffff0078c8000",
+        "vmsize": 0,
+        "fileoff": 8519680,
+        "filesize": 0,
+        "protection": 3
+      },
+      {
+        "name": "__PLK_DATA_CONST",
+        "vmaddr": "0xfffffff0078c8000",
+        "vmsize": 0,
+        "fileoff": 8519680,
+        "filesize": 0,
+        "protection": 3
+      },
+      {
+        "name": "__PLK_LLVM_COV",
+        "vmaddr": "0xfffffff0078c8000",
+        "vmsize": 0,
+        "fileoff": 8519680,
+        "filesize": 0,
+        "protection": 3
+      },
+      {
+        "name": "__PLK_LINKEDIT",
+        "vmaddr": "0xfffffff0078c8000",
+        "vmsize": 0,
+        "fileoff": 8519680,
+        "filesize": 0,
+        "protection": 3
+      },
+      {
+        "name": "__LINKINFO",
+        "vmaddr": "0xfffffff0078c8000",
+        "vmsize": 262144,
+        "fileoff": 8519680,
+        "filesize": 262144,
+        "protection": 1
+      },
+      {
+        "name": "__LINKEDIT",
+        "vmaddr": "0xfffffff007908000",
+        "vmsize": 4849664,
+        "fileoff": 8781824,
+        "filesize": 4838840,
+        "protection": 1
+      }
+    ],
+    "file_validation_passed": true,
+    "hardware_boot_verified": false,
+    "ios_userspace_started": false
+  },
+  "reference_commit": "6f27e41ff249f2680540ebe8ee5ab982c5e641c9",
+  "payload": {
+    "cputype": "0x100000c",
+    "cpusub": 0,
+    "fixups": 0,
+    "virt_base": "0xfffffff006000000",
+    "entry": "0xfffffff00730f488",
+    "kernel_end": "0xfffffff007da8000",
+    "ramdisk": null,
+    "size": 13625936,
+    "segs": [
+      [
+        "__TEXT",
+        "0xfffffff007004000",
+        "0xf0000"
+      ],
+      [
+        "__DATA_CONST",
+        "0xfffffff0070f4000",
+        "0x84000"
+      ],
+      [
+        "__TEXT_EXEC",
+        "0xfffffff007178000",
+        "0x628000"
+      ],
+      [
+        "__KLD",
+        "0xfffffff0077a0000",
+        "0x4000"
+      ],
+      [
+        "__LASTDATA_CONST",
+        "0xfffffff0077a4000",
+        "0x4000"
+      ],
+      [
+        "__KLDDATA",
+        "0xfffffff0077a8000",
+        "0x4000"
+      ],
+      [
+        "__DATA",
+        "0xfffffff0077ac000",
+        "0xe0000"
+      ],
+      [
+        "__BOOTDATA",
+        "0xfffffff00788c000",
+        "0x3c000"
+      ],
+      [
+        "__LINKINFO",
+        "0xfffffff0078c8000",
+        "0x40000"
+      ],
+      [
+        "__LINKEDIT",
+        "0xfffffff007908000",
+        "0x4a0000"
+      ]
+    ]
+  },
+  "qemu_command": [
+    "qemu-system-aarch64",
+    "-M",
+    "virt,gic-version=3",
+    "-cpu",
+    "cortex-a76",
+    "-smp",
+    "1",
+    "-m",
+    "4G",
+    "-nographic",
+    "-serial",
+    "file:/home/jia/ios-mix1-build/xnu7195-lithium/qemu/serial.txt",
+    "-monitor",
+    "none",
+    "-nic",
+    "none",
+    "-no-reboot",
+    "-S",
+    "-gdb",
+    "tcp:127.0.0.1:40952",
+    "-d",
+    "int,guest_errors,unimp",
+    "-D",
+    "/home/jia/ios-mix1-build/xnu7195-lithium/qemu/qemu.log",
+    "-device",
+    "loader,file=/home/jia/ios-mix1-build/xnu7195-lithium/qemu/ram.bin,addr=0xb0000000,force-raw=on",
+    "-device",
+    "loader,file=/home/jia/ios-mix1-build/xnu7195-lithium/qemu/stub.bin,addr=0x40200000,force-raw=on",
+    "-device",
+    "loader,addr=0x40200000,cpu-num=0"
+  ],
+  "checkpoints": [
+    {
+      "name": "XNU physical entry",
+      "expected_pc": "0xb130f488",
+      "actual_pc": "0xb130f488",
+      "stop_packet": "T05thread:01;",
+      "timeout": false,
+      "reached": true
+    },
+    {
+      "name": "bootstrap tables",
+      "expected_pc": "0xb1311268",
+      "actual_pc": "0xb1311268",
+      "stop_packet": "T05thread:01;",
+      "timeout": false,
+      "reached": true
+    },
+    {
+      "name": "arm_init",
+      "expected_pc": "0xfffffff00779a5d8",
+      "actual_pc": "0xfffffff00779a5d8",
+      "stop_packet": "T05thread:01;",
+      "timeout": false,
+      "reached": true
+    },
+    {
+      "name": "kernel_bootstrap",
+      "expected_pc": "0xfffffff0071e27f0",
+      "actual_pc": "0xfffffff0071e27f0",
+      "stop_packet": "T05thread:01;",
+      "timeout": false,
+      "reached": true
+    },
+    {
+      "name": "PRNG initialization",
+      "expected_pc": "0xfffffff0072e8908",
+      "actual_pc": "0xfffffff0072e8908",
+      "stop_packet": "T05thread:01;",
+      "timeout": false,
+      "reached": true
+    },
+    {
+      "name": "PRNG first generation",
+      "expected_pc": "0xfffffff0072e8830",
+      "actual_pc": "0xfffffff0072e8830",
+      "stop_packet": "T05thread:01;",
+      "timeout": false,
+      "reached": true
+    },
+    {
+      "name": "kernel random use",
+      "expected_pc": "0xfffffff0072e8d9c",
+      "actual_pc": "0xfffffff0072e8d9c",
+      "stop_packet": "T05thread:01;",
+      "timeout": false,
+      "reached": true
+    },
+    {
+      "name": "bsd_init",
+      "expected_pc": "0xfffffff0075bde1c",
+      "actual_pc": "0xfffffff0075bde1c",
+      "stop_packet": "T05thread:01;",
+      "timeout": false,
+      "reached": true
+    },
+    {
+      "name": "root-device discovery",
+      "expected_pc": "0xfffffff00775f9e4",
+      "actual_pc": "0xfffffff007796730",
+      "stop_packet": "T05thread:01;",
+      "timeout": false,
+      "reached": false
+    }
+  ],
+  "hardware_boot_verified": false,
+  "ios_userspace_started": false,
+  "bootstrap_snapshot": {
+    "registers": {
+      "x22": "0xfffffff007004000",
+      "x23": "0xb1004000",
+      "x24": "0x4bffc000",
+      "x25": "0xb110c000"
+    },
+    "tcr": "0x226519a519",
+    "root0": [
+      "0xb1114003",
+      "0x0",
+      "0x0",
+      "0x0",
+      "0x0",
+      "0x0",
+      "0x0",
+      "0x0"
+    ],
+    "root1": [
+      "0x0",
+      "0x0",
+      "0x0",
+      "0x0",
+      "0x0",
+      "0x0",
+      "0x0",
+      "0xb1118003"
+    ],
+    "identity_entry": "010600b000000000",
+    "kernel_entry": "010600b000000000"
+  },
+  "prng_test_inputs": {
+    "seed": "e9d7bbf446b4d2f62c87ce7a24b68c2af8308ff4710082286f845f8511ca9fef",
+    "nonce": "104c980000000000",
+    "scope": "QEMU-only captured seed; never a hardware entropy input"
+  },
+  "prng_output_validation": {
+    "bytes": 8,
+    "actual": "5526e37af41747de",
+    "expected": "5526e37af41747de",
+    "passed": true
+  },
+  "prng_snapshot": {
+    "ready": "01000000",
+    "functions": "24852e07f0ffffff28862e07f0ffffffb0862e07f0ffffff24872e07f0ffffff30882e07f0ffffff08892e07f0ffffff"
+  },
+  "stopped_registers": {
+    "x0": "0xfffffff0070ab59b",
+    "x1": "0xfffffff0077da708",
+    "x2": "0xfffffff0071d6464",
+    "x3": "0x4",
+    "x4": "0x0",
+    "x5": "0x10",
+    "x6": "0x0",
+    "x7": "0x0",
+    "x8": "0x0",
+    "x9": "0x1",
+    "x10": "0x0",
+    "x11": "0xfffffff21f9c0638",
+    "x12": "0x80",
+    "x13": "0xfffffff0077e6408",
+    "x14": "0xfffffff0077e6420",
+    "x15": "0xffffffff",
+    "x16": "0x0",
+    "x17": "0x0",
+    "x18": "0x1004000",
+    "x19": "0xfffffff0078321f8",
+    "x20": "0xfffffff00713ff38",
+    "x21": "0xfffffff007832000",
+    "x22": "0xfffffff007101548",
+    "x23": "0xfffffff00713f000",
+    "x24": "0xfffffff00785d1a8",
+    "x25": "0x0",
+    "x26": "0x0",
+    "x27": "0x0",
+    "x28": "0x0",
+    "x29": "0xfffffff005e7bbd0",
+    "x30": "0xfffffff0075b7ad8"
+  },
+  "stopped_frames": [
+    {
+      "address": "0xfffffff007796730",
+      "symbol": "_panic",
+      "offset": "0x0"
+    },
+    {
+      "address": "0xfffffff0075b7ad8",
+      "symbol": "_pth_proc_hashinit",
+      "offset": "0x0"
+    },
+    {
+      "address": "0xfffffff0075be728",
+      "symbol": "_bsd_init",
+      "offset": "0x90c"
+    },
+    {
+      "address": "0xfffffff0071e3768",
+      "symbol": "_kernel_bootstrap_thread",
+      "offset": "0x644"
+    },
+    {
+      "address": "0xfffffff0073114c0",
+      "symbol": "_Call_continuation",
+      "offset": "0x40"
+    }
+  ],
+  "panic_format": "\"pthread kernel extension not loaded (function table is NULL).\"",
+  "stopped_pc": "0xfffffff007796730",
+  "system_registers": {
+    "SCTLR": "0x3454593d",
+    "ELR_EL1": "0xfffffff0076425e8",
+    "ID_AA64MMFR0_EL1": "0x101122",
+    "TTBR0_EL1": "0xb1db0000",
+    "TCR_EL1": "0x226519a519",
+    "TTBR1_EL1": "0xb1db4000",
+    "MAIR_EL1": "0xc08044f00bb44ff",
+    "ESR_EL1": "0x0",
+    "FAR_EL1": "0x0"
+  },
+  "initialization_checkpoints_passed": true,
+  "selected_checkpoints_passed": false,
+  "bsd_initialization_reached": true,
+  "root_device_discovery_reached": false,
+  "qemu_log": "/home/jia/ios-mix1-build/xnu7195-lithium/qemu/qemu.log",
+  "first_diagnostics": [
+    "Taking exception 5 [IRQ] on CPU 0",
+    "...from EL1 to EL1",
+    "...with ESR 0x0/0x3880000",
+    "...with ELR 0xfffffff00731240c",
+    "...to EL1 PC 0xfffffff00730b080 PSTATE 0x4003c5",
+    "Exception return from AArch64 EL1 to AArch64 EL1 PC 0xfffffff00731240c",
+    "Taking exception 5 [IRQ] on CPU 0",
+    "...from EL1 to EL1",
+    "...with ESR 0x0/0x3880000",
+    "...with ELR 0xfffffff0073a52b4",
+    "...to EL1 PC 0xfffffff00730b080 PSTATE 0x4003c5",
+    "Exception return from AArch64 EL1 to AArch64 EL1 PC 0xfffffff0073a52b4",
+    "Taking exception 5 [IRQ] on CPU 0",
+    "...from EL1 to EL1",
+    "...with ESR 0x0/0x3880000",
+    "...with ELR 0xfffffff0073a52b4",
+    "...to EL1 PC 0xfffffff00730b080 PSTATE 0x4003c5",
+    "Exception return from AArch64 EL1 to AArch64 EL1 PC 0xfffffff0073a52b4",
+    "Taking exception 5 [IRQ] on CPU 0",
+    "...from EL1 to EL1",
+    "...with ESR 0x0/0x3880000",
+    "...with ELR 0xfffffff0073a52dc",
+    "...to EL1 PC 0xfffffff00730b080 PSTATE 0x4003c5",
+    "Exception return from AArch64 EL1 to AArch64 EL1 PC 0xfffffff0073a52dc",
+    "Taking exception 5 [IRQ] on CPU 0",
+    "...from EL1 to EL1",
+    "...with ESR 0x0/0x3880000",
+    "...with ELR 0xfffffff0073a52b4",
+    "...to EL1 PC 0xfffffff00730b080 PSTATE 0x4003c5",
+    "Exception return from AArch64 EL1 to AArch64 EL1 PC 0xfffffff0073a52b4"
+  ],
+  "fault_diagnostics": [],
+  "irq_count": 108
+}

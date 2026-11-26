@@ -1,0 +1,30 @@
+{
+  "passed": true,
+  "revision": 19,
+  "image_sha256": "2f74a8da0fe182d39c66a86db398f9816067cb05cce8a6a774398700ed38f60a",
+  "actual_guard_script_sha256": "68ea0a7c776acbd2f33354f83ec85a93db21d88c59498c4f651c65e1ea002742",
+  "mode": "--offline",
+  "stdout": "PASS: offline iOS16 R19 package readiness (host checks only).\n",
+  "phone_target_read_blocked": true,
+  "only_git_subprocesses_allowed": true,
+  "local_entries_unchanged": true,
+  "boot_intent_created": false,
+  "device_operations": false,
+  "hardware_verified": false,
+  "git_subprocesses": [
+    [
+      "git",
+      "-C",
+      "F:\\IOS-MIX1\\upstream\\hakios-xnu-kernel",
+      "rev-parse",
+      "HEAD"
+    ],
+    [
+      "git",
+      "-C",
+      "F:\\IOS-MIX1\\upstream\\hakios-xnu-kernel",
+      "status",
+      "--porcelain"
+    ]
+  ]
+}

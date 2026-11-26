@@ -1,0 +1,133 @@
+Subject: crypto: backport sailfish portable SHA1 to the 7195 legacy API
+
+Source: 6f27e41ff249f2680540ebe8ee5ab982c5e641c9, patch 0032.
+BearSSL is staged at its pinned commit by the isolated build script.
+
+--- a/libkern/crypto/corecrypto_sha1.c
++++ b/libkern/crypto/corecrypto_sha1.c
+@@ -15,6 +15,62 @@
+ {
+ 	ctx->c.b64[0] = count;
+ }
++
++#if defined(ARM64_BOARD_CONFIG_LITHIUM)
++/*
++ * LITHIUM has no corecrypto kext (g_crypto_funcs stays NULL). SHA-1 uses
++ * BearSSL's portable implementation (libkern/crypto/lithium_sha1.c), with
++ * SHA1_CTX carrying exactly its state: chaining value, byte count and the
++ * partial block, converted around each call like the corecrypto path does.
++ */
++#include "lithium_bearssl/inc/bearssl_hash.h"
++
++static void
++SHA1ToBr(SHA1_CTX *sha1_ctx, br_sha1_context *br_ctx)
++{
++	br_sha1_init(br_ctx);
++	memcpy(br_ctx->val, sha1_ctx->h.b32, sizeof(br_ctx->val));
++	br_ctx->count = getCount(sha1_ctx);
++	memcpy(br_ctx->buf, sha1_ctx->m.b8, sizeof(br_ctx->buf));
++}
++
++static void
++BrToSHA1(const br_sha1_context *br_ctx, SHA1_CTX *sha1_ctx)
++{
++	memcpy(sha1_ctx->h.b32, br_ctx->val, sizeof(sha1_ctx->h.b32));
++	setCount(sha1_ctx, br_ctx->count);
++	memcpy(sha1_ctx->m.b8, br_ctx->buf, sizeof(sha1_ctx->m.b8));
++}
++
++void
++SHA1Init(SHA1_CTX *ctx)
++{
++	br_sha1_context br_ctx;
++
++	br_sha1_init(&br_ctx);
++	BrToSHA1(&br_ctx, ctx);
++}
++
++void
++SHA1Update(SHA1_CTX *ctx, const void *data, size_t len)
++{
++	br_sha1_context br_ctx;
++
++	SHA1ToBr(ctx, &br_ctx);
++	br_sha1_update(&br_ctx, data, len);
++	BrToSHA1(&br_ctx, ctx);
++}
++
++void
++SHA1Final(void *digest, SHA1_CTX *ctx)
++{
++	br_sha1_context br_ctx;
++
++	SHA1ToBr(ctx, &br_ctx);
++	br_sha1_out(&br_ctx, digest);
++}
++
++#else /* !ARM64_BOARD_CONFIG_LITHIUM */
+ 
+ /* Copy a ccdigest ctx into a legacy SHA1 context */
+ static void
+@@ -69,6 +125,8 @@
+ 	ccdigest_final(di, di_ctx, digest);
+ }
+ 
++#endif /* !ARM64_BOARD_CONFIG_LITHIUM */
++
+ #ifdef XNU_KERNEL_PRIVATE
+ void
+ SHA1UpdateUsePhysicalAddress(SHA1_CTX *ctx, const void *data, size_t len)
+--- a/libkern/conf/files
++++ b/libkern/conf/files
+@@ -90,6 +90,9 @@
+ libkern/crypto/register_crypto.c		optional crypto
+ libkern/crypto/corecrypto_sha2.c		standard
+ libkern/crypto/corecrypto_sha1.c		optional crypto
++libkern/crypto/lithium_sha1.c	optional crypto
++libkern/crypto/lithium_dec32be.c	optional crypto
++libkern/crypto/lithium_enc32be.c	optional crypto
+ libkern/crypto/corecrypto_md5.c			optional crypto
+ libkern/crypto/corecrypto_des.c			optional crypto
+ libkern/crypto/corecrypto_aes.c			optional crypto
+--- a/libkern/conf/Makefile.template
++++ b/libkern/conf/Makefile.template
+@@ -18,6 +18,18 @@
+ #
+ CFLAGS+= -include meta_features.h -DLIBKERN_KERNEL_PRIVATE -DOSALLOCDEBUG=1
+ SFLAGS+= -include meta_features.h
++
++
++# Pinned BearSSL; prevent SIMD use in the kernel SHA1 path.
++ifeq ($(CURRENT_MACHINE_CONFIG),LITHIUM)
++lithium_sha1.o_INCFLAGS = -I$(SOURCE_DIR)/libkern/crypto/lithium_bearssl/inc -I$(SOURCE_DIR)/libkern/crypto/lithium_bearssl/src $(LITHIUM_EMPTY)
++lithium_sha1.o_CFLAGS_ADD += -mgeneral-regs-only
++lithium_dec32be.o_INCFLAGS = -I$(SOURCE_DIR)/libkern/crypto/lithium_bearssl/inc -I$(SOURCE_DIR)/libkern/crypto/lithium_bearssl/src $(LITHIUM_EMPTY)
++lithium_dec32be.o_CFLAGS_ADD += -mgeneral-regs-only
++lithium_enc32be.o_INCFLAGS = -I$(SOURCE_DIR)/libkern/crypto/lithium_bearssl/inc -I$(SOURCE_DIR)/libkern/crypto/lithium_bearssl/src $(LITHIUM_EMPTY)
++lithium_enc32be.o_CFLAGS_ADD += -mgeneral-regs-only
++corecrypto_sha1.o_CFLAGS_ADD += -mgeneral-regs-only
++endif
+ 
+ # Runtime support functions don't interact well with LTO (9294679)
+ stack_protector.o_CFLAGS_ADD += $(CFLAGS_NOLTO_FLAG)
+--- /dev/null
++++ b/libkern/crypto/lithium_sha1.c
+@@ -0,0 +1,4 @@
++/* BearSSL 7bea48e5e850ab4cafbe68d3765cdaba13a86d6f; MIT license staged alongside. */
++#if defined(ARM64_BOARD_CONFIG_LITHIUM)
++#include "lithium_bearssl/src/hash/sha1.c"
++#endif
+--- /dev/null
++++ b/libkern/crypto/lithium_dec32be.c
+@@ -0,0 +1,4 @@
++/* BearSSL 7bea48e5e850ab4cafbe68d3765cdaba13a86d6f; MIT license staged alongside. */
++#if defined(ARM64_BOARD_CONFIG_LITHIUM)
++#include "lithium_bearssl/src/codec/dec32be.c"
++#endif
+--- /dev/null
++++ b/libkern/crypto/lithium_enc32be.c
+@@ -0,0 +1,4 @@
++/* BearSSL 7bea48e5e850ab4cafbe68d3765cdaba13a86d6f; MIT license staged alongside. */
++#if defined(ARM64_BOARD_CONFIG_LITHIUM)
++#include "lithium_bearssl/src/codec/enc32be.c"
++#endif

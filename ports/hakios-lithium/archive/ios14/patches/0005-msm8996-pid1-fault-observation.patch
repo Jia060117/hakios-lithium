@@ -1,0 +1,77 @@
+--- a/xnu/files/osfmk/arm64/user_exception_trace.c
++++ b/xnu/files/osfmk/arm64/user_exception_trace.c
+@@ -57,6 +57,25 @@
+ 	if (task == kernel_task || state == NULL || !is_saved_state64(state)) {
+ 		return;
+ 	}
++#if defined(LITHIUM_ARMV8_0)
++	/* Reuse this upstream exception hook and return log before any diagnostic copyin. */
++	proc = get_bsdtask_info(task);
++	if (proc != NULL && proc_pid(proc) == 1) {
++		char line[192];
++		extern void loader_log_line(const char *line);
++		snprintf(line, sizeof(line), "LITHIUM P2 FAULT pid=1 exc=%d code=%llx sub=%llx\n",
++		    exception, count > 0 ? (unsigned long long)code[0] : 0,
++		    count > 1 ? (unsigned long long)code[1] : 0);
++		loader_log_line(line);
++		snprintf(line, sizeof(line), "LITHIUM P2 STATE pc=%llx lr=%llx sp=%llx\n",
++		    (unsigned long long)get_saved_state_pc(state), (unsigned long long)get_saved_state_lr(state),
++		    (unsigned long long)get_saved_state_sp(state));
++		loader_log_line(line);
++		snprintf(line, sizeof(line), "LITHIUM P2 ABORT esr=%x far=%llx\n",
++		    get_saved_state_esr(state), (unsigned long long)get_saved_state_far(state));
++		loader_log_line(line);
++	}
++#endif
+ 	region = vm_shared_region_get(task);
+ 	if (region != NULL) {
+ 		slide = region->sr_slide;
+--- a/xnu/files/bsd/miscfs/apfs/apfs_vnops.c
++++ b/xnu/files/bsd/miscfs/apfs/apfs_vnops.c
+@@ -745,6 +745,15 @@
+ 		}
+ 	}
+ 	if (error) {
++#if defined(LITHIUM_ARMV8_0)
++		{
++			char line[192];
++			extern void loader_log_line(const char *line);
++			snprintf(line, sizeof(line), "LITHIUM P2 PAGEIN error=%d offset=%llx size=%llx flags=%x\n",
++			    error, (unsigned long long)offset, (unsigned long long)ap->a_size, ap->a_flags);
++			loader_log_line(line);
++		}
++#endif
+ 		if (!(ap->a_flags & UPL_NOCOMMIT)) {
+ 			ubc_upl_abort_range(upl, upl_offset, (upl_size_t)ap->a_size,
+ 			    UPL_ABORT_FREE_ON_EMPTY | UPL_ABORT_ERROR);
+@@ -819,6 +828,17 @@
+ 			ubc_upl_commit_range(upl, upl_offset, (upl_size_t)ap->a_size,
+ 			    UPL_COMMIT_CLEAR_DIRTY | UPL_COMMIT_FREE_ON_EMPTY);
+ 		}
++	}
++	if (error) {
++#if defined(LITHIUM_ARMV8_0)
++		{
++			char line[192];
++			extern void loader_log_line(const char *line);
++			snprintf(line, sizeof(line), "LITHIUM P2 PAGEIN error=%d offset=%llx size=%llx flags=%x\n",
++			    error, (unsigned long long)offset, (unsigned long long)ap->a_size, ap->a_flags);
++			loader_log_line(line);
++		}
++#endif
+ 	}
+ 	return error;
+ }
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -394,6 +394,10 @@
+ 	    "LITHIUM P2 UNMOUNT ", "LITHIUM P2 RESULT "};
+ 	for (unsigned i=0; i<sizeof(p2)/sizeof(p2[0]); i++)
+ 	    lithium_show_line(lithium_last_line(log, bytes, p2[i]), log + bytes);
++	static const char *faults[] = {"LITHIUM P2 PAGEIN ", "LITHIUM P2 FAULT ",
++	    "LITHIUM P2 STATE ", "LITHIUM P2 ABORT ", "exectrace: ", "systrace: "};
++	for (unsigned i=0; i<sizeof(faults)/sizeof(faults[0]); i++)
++	    lithium_show_line(lithium_last_line(log, bytes, faults[i]), log + bytes);
+ 	const char *panic_line = lithium_last_line(log, bytes, "panic(cpu ");
+ 	const char *timed = lithium_last_line(log, bytes, "--- loader_return_after expired ---");
+ 	print(panic_line != NULL ? "KERNEL PANIC CAUSE:\n" :

@@ -1,0 +1,241 @@
+--- a/xnu/files/osfmk/arm64/gic_v3_irq.c
++++ b/xnu/files/osfmk/arm64/gic_v3_irq.c
+@@ -95,6 +95,17 @@
+ uint64_t        gic_unhandled_count;
+ uint32_t        gic_last_unhandled;
+ 
++#if defined(LITHIUM_ARMV8_0)
++/* Board bring-up observation: only an acknowledged timer PPI increments this. */
++static _Atomic uint64_t lithium_vtimer_irqs;
++uint64_t lithium_vtimer_irq_count(void);
++uint64_t
++lithium_vtimer_irq_count(void)
++{
++	return os_atomic_load(&lithium_vtimer_irqs, relaxed);
++}
++#endif
++
+ /*
+  * The attached SPIs. A slot is filled before its interrupt is enabled and emptied after it has
+  * been disabled and no handler of it runs any more (busy), so the handler path reads the table
+@@ -312,6 +323,9 @@
+ 		gic_active_iar[cpu] = iar | GIC_IAR_TAKEN;
+ 
+ 		if (intid == GIC_INTID_VTIMER) {
++#if defined(LITHIUM_ARMV8_0)
++			os_atomic_inc(&lithium_vtimer_irqs, relaxed);
++#endif
+ 			/* same sequence as the FIQ path in sleh_fiq() */
+ 			getCpuDatap()->cpu_decrementer = -1; /* Large */
+ 			rtclock_intr(TRUE);
+--- a/xnu/files/osfmk/arm64/loader_return.c
++++ b/xnu/files/osfmk/arm64/loader_return.c
+@@ -40,6 +40,9 @@
+ #if defined(GENERIC_GIC_V3_IRQ)
+ extern void gic_v3_irq_quiesce(void);
+ extern void gic_v3_irq_cpu_shutdown(void);
++#if defined(LITHIUM_ARMV8_0)
++extern uint64_t lithium_vtimer_irq_count(void);
++#endif
+ #endif
+ 
+ void loader_log_putc(char c);
+@@ -560,6 +563,10 @@
+ 
+ 	hakios_memory_line(line, sizeof(line));
+ 	printf("%s", line);
++#if defined(LITHIUM_ARMV8_0) && defined(GENERIC_GIC_V3_IRQ)
++	printf("LITHIUM TIMER ppi27=%llu heartbeat=%llu\n",
++	    (unsigned long long)lithium_vtimer_irq_count(), (unsigned long long)loader_live.heartbeat);
++#endif
+ 	hakios_adreno_minute();                /* (and how warm the GPU is, if it is in use) */
+ }
+ 
+--- a/userland/build.sh
++++ b/userland/build.sh
+@@ -149,7 +149,7 @@
+ 	done
+ 	cp obj/hello hello
+ else
+-	$CC $LD -o hello src/hello.c
++	$CC ${HELLO_CFLAGS:-} $LD -o hello src/hello.c
+ 	$CC -Ilibmini -c libmini/mini.c -o obj/mini.o
+ 	$CC -c libmini/start.S -o obj/start.o
+ 	for prog in init child stage0 var_store; do
+--- a/userland/src/hello.c
++++ b/userland/src/hello.c
+@@ -40,6 +40,15 @@
+ #define SYS_getpid  20
+ #define SYS_getuid  24
+ #define SYS_select  93
++#if defined(HAKIOS_LITHIUM_P1)
++#define SYS_gettimeofday 116
++#define SYS_getrusage 117
++
++/* The pinned XNU user64_timeval and user64_rusage ABI (bsd/sys/resource.h). */
++struct lithium_timeval { long sec; int usec; int pad; };
++struct lithium_rusage { struct lithium_timeval user, system; long counters[14]; };
++_Static_assert(sizeof(struct lithium_rusage) == 144, "user64_rusage ABI");
++#endif
+ #define SYS_sysctlbyname 274
+ #define O_RDWR      2
+ 
+@@ -129,6 +138,33 @@
+ 	return 0;
+ }
+ 
++#if defined(HAKIOS_LITHIUM_P1)
++static long
++clock_us(void)
++{
++	struct lithium_timeval tv = { 0, 0, 0 };
++	if (syscall3(SYS_gettimeofday, (long)&tv, 0, 0) != 0) return -1;
++	return tv.sec * 1000000 + tv.usec;
++}
++
++static void
++show_progress(int fd, long wakes, long errors, long begun)
++{
++	struct lithium_rusage usage = { 0 };
++	long now = clock_us();
++	put(fd, "LITHIUM SELECT wakes="); put_number(fd, wakes);
++	put(fd, " errors="); put_number(fd, errors);
++	put(fd, " elapsed_ms=");
++	if (begun < 0 || now < begun) put(fd, "unavailable");
++	else put_number(fd, (now - begun) / 1000);
++	if (syscall3(SYS_getrusage, 0, (long)&usage, 0) == 0) {
++		put(fd, " nvcsw="); put_number(fd, usage.counters[12]);
++		put(fd, " nivcsw="); put_number(fd, usage.counters[13]);
++	} else put(fd, " rusage=unavailable");
++	put(fd, "\n");
++}
++#endif
++
+ void
+ start(void)
+ {
+@@ -167,16 +203,44 @@
+ 	 * hello_wait=N: stay N seconds, and say once in five how warm the SoC is. Process 1 is not supposed to exit (doing so
+ 	 * panics the kernel, which ends the test run), so this is also how a run is made to last.
+ 	 */
++#if defined(HAKIOS_LITHIUM_P1)
++	long begun = clock_us(), wakes = 0, errors = 0;
++	put(fd, "LITHIUM HELLO timed select observation started; PID1 remains alive after wait\n");
++#endif
+ 	for (long second = 0, wait = wait_seconds(); second < wait; second++) {
+ 		long tv[2] = { 1, 0 };
+ 
++#if defined(HAKIOS_LITHIUM_P1)
++		long status = syscall6(SYS_select, 0, 0, 0, 0, (long)tv, 0);
++		if (status == 0) wakes++;
++		else {
++			errors++;
++			put(fd, "LITHIUM SELECT ERROR status="); put_number(fd, status); put(fd, "\n");
++			break;
++		}
++		if (wakes % 60 == 0) show_progress(fd, wakes, errors, begun);
++#else
+ 		syscall6(SYS_select, 0, 0, 0, 0, (long)tv, 0);
++#endif
+ 		if (second % 5 == 4) {
+ 			show_int(fd, "kern.hakios.thermal_max_mc");
+ 			show_string(fd, "kern.hakios.thermal_hottest");
+ 		}
+ 	}
+ 
++#if defined(HAKIOS_LITHIUM_P1)
++	show_progress(fd, wakes, errors, begun);
++	put(fd, errors ? "LITHIUM HELLO wait stopped on select error; keeping PID1 alive\n" :
++	    "LITHIUM HELLO wait complete; keeping PID1 alive for loader timed return\n");
++	/* Keep the upstream init alive; the existing kernel timed-return service ends this test. */
++	for (;;) {
++		long tv[2] = { 1, 0 };
++		if (syscall6(SYS_select, 0, 0, 0, 0, (long)tv, 0) != 0) {
++			put(fd, "LITHIUM HELLO hold select failed; exiting PID1\n");
++			break;
++		}
++	}
++#endif
+ 	/* Process 1 is not supposed to exit; doing so panics the kernel, which ends the test run. */
+ 	syscall3(SYS_exit, 0, 0, 0);
+ 	for (;;) {
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -350,6 +350,48 @@
+ }
+ 
+ static int hc_list_is_uefis(void);
++#if defined(HAKIOS_LITHIUM)
++/* Raw logs stay in compose_logs(). The screen needs bounded text, not stackshot bytes. */
++static const char *
++lithium_last_line(const char *log, uint64_t bytes, const char *prefix)
++{
++	const char *found = NULL;
++	uint64_t width = str_len(prefix);
++	for (uint64_t i = 0; i + width <= bytes; i++) {
++		if ((i == 0 || log[i - 1] == '\n') && memcmp(log + i, prefix, width) == 0) found = log + i;
++	}
++	return found;
++}
++
++static void
++lithium_show_line(const char *line, const char *end)
++{
++	if (line == NULL) return;
++	for (unsigned i = 0; line < end && *line != '\n' && i < 400; line++, i++) {
++		unsigned char c = (unsigned char)*line;
++		put_char(c >= 32 && c < 127 ? (char)c : '.');
++	}
++	put_char('\n');
++}
++
++static void
++lithium_return_screen(const char *log, uint64_t bytes)
++{
++	((efi_status (EFIAPI *)(efi_text_output *, uint8_t))ST->con_out->reset)(ST->con_out, 0);
++	print("LITHIUM RETURN LOG %d BYTES\n", bytes);
++	if (log == NULL) return;
++	const char *panic_line = lithium_last_line(log, bytes, "panic(cpu ");
++	const char *timed = lithium_last_line(log, bytes, "--- loader_return_after expired ---");
++	print(panic_line != NULL ? "KERNEL PANIC CAUSE:\n" :
++	    timed != NULL ? "KERNEL TIMED RETURN OBSERVED\n" : "RETURN CAUSE NOT CAPTURED\n");
++	lithium_show_line(panic_line, log + bytes);
++	lithium_show_line(lithium_last_line(log, bytes, "LITHIUM TIMER "), log + bytes);
++	lithium_show_line(lithium_last_line(log, bytes, "LITHIUM SELECT "), log + bytes);
++	lithium_show_line(lithium_last_line(log, bytes, "LITHIUM HELLO "), log + bytes);
++	print("RAW LOG RETAINED IN RAM; SCREEN SHOWS TEXT SUMMARY\n");
++}
++#endif
++
+ static int hc_log_skips;                /* logs not written this run (said twice at most) */
+ static void hc_print_state(const char *when);
+ static void hc_take_back(const char *when);
+@@ -362,6 +404,9 @@
+ 	compose_logs(klog, klog_len);
+ 	if (bio == NULL) {
+ 		/* No log partition (QEMU): echo the returned kernel log on the console instead. */
++#if defined(HAKIOS_LITHIUM)
++		if (klog != NULL) lithium_return_screen(klog, klog_len);
++#else
+ 		if (klog != NULL) {
+ 			print("\n== KERNEL LOG ==\n");
+ 			for (uint64_t i = 0; i < klog_len; i++) {
+@@ -369,6 +414,7 @@
+ 			}
+ 			print("\n== END OF LOG ==\n");
+ 		}
++#endif
+ 		return;
+ 	}
+ 	uint64_t bs = bio->media->block_size;
+--- a/Makefile
++++ b/Makefile
+@@ -97,7 +97,7 @@
+ hello:
+ 	. ./xnu-env.sh && xnu-clang -arch arm64 -Os -static -nostdlib -ffreestanding \
+ 		-fno-stack-protector -fno-builtin -Wl,-e,_start -Wl,-pagezero_size,0x100000000 \
+-		-o userland/hello userland/src/hello.c
++		$(HELLO_CFLAGS) -o userland/hello userland/src/hello.c
+ 
+ qemu-open: kernel loader-open hello
+ 	mkdir -p logs

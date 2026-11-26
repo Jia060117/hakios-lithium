@@ -1,0 +1,19 @@
+From: ios14-lithium
+Subject: [build] keep the MIG-sized stack array an integer constant expression
+
+In C a const local variable is not an integer constant expression. Upstream
+Clang correctly treats this as a VLA and rejects the earlier goto across it.
+An enum retains the exact same bound while making the array fixed-size.
+
+diff --git a/osfmk/ipc/mach_kernelrpc.c b/osfmk/ipc/mach_kernelrpc.c
+--- a/osfmk/ipc/mach_kernelrpc.c
++++ b/osfmk/ipc/mach_kernelrpc.c
+@@ -319,7 +319,7 @@
+ #define MACH_PORT_INFO_STACK_LIMIT 80 // current size is 68 == 17 * sizeof(integer_t)
+ 	_Static_assert(sizeof(MACH_PORT_INFO_OUT) < MACH_PORT_INFO_STACK_LIMIT,
+ 	    "mach_port_info_t has grown significantly, reevaluate stack usage");
+-	const mach_msg_type_number_t max_count = (sizeof(MACH_PORT_INFO_OUT) / sizeof(MACH_PORT_INFO_OUT[0]));
++	enum { max_count = sizeof(MACH_PORT_INFO_OUT) / sizeof(MACH_PORT_INFO_OUT[0]) };
+ 	typeof(MACH_PORT_INFO_OUT[0]) info[max_count];
+ 
+ 	/*

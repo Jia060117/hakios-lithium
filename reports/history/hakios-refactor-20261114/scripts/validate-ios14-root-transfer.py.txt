@@ -1,0 +1,62 @@
+#!/usr/bin/env python3
+"""Reject transfer corruption and skipped-byte semantics using a real fixture."""
+import importlib.util
+import json
+from pathlib import Path
+import struct
+import tempfile
+
+ROOT=Path(__file__).resolve().parents[1]
+
+def main():
+    spec=importlib.util.spec_from_file_location('root_transfer',ROOT/'scripts/prepare-ios14-root-transfer.py')
+    m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+    base=Path('/home/jia/ios-mix1-build/transfer-fixture-v2')
+    record=json.loads((base/'root-transfer.json').read_text())
+    source=Path(record['sparse_path']);data=source.read_bytes()
+    size=record['root_image_bytes'];sha=record['root_image_sha256']
+    assert struct.unpack_from('<H',data,28)[0]==0xcac1
+    m.verify_sparse(source,size,sha)
+    cases={}
+    corrupt=bytearray(data);corrupt[40+1024]^=1;cases['changed raw data']=bytes(corrupt)
+    corrupt=bytearray(data);struct.pack_into('<H',corrupt,28,0xcac3);cases['DONT_CARE old-data retention']=bytes(corrupt)
+    cases['truncated payload']=data[:-1]
+    cases['trailing data']=data+b'bad'
+    rejected=[]
+    archive_checks=[]
+    with tempfile.TemporaryDirectory(prefix='lithium-sparse-') as d:
+        directory=Path(d);p=directory/'bad.img'
+        for name,payload in cases.items():
+            p.write_bytes(payload)
+            try:m.verify_sparse(p,size,sha)
+            except (ValueError,AssertionError,struct.error):rejected.append(name)
+            else:raise AssertionError('accepted '+name)
+        original=directory/'original.img';archive=directory/'archive.img'
+        payload=bytes(range(256))*((10*1048576)//256)+b'end'
+        original.write_bytes(payload);expected=m.digest(original)
+        archive.write_bytes(payload[:8*1048576+137])
+        m.archive_file(original,archive,expected,resume=True)
+        assert m.digest(archive)==expected and not archive.with_name('archive.img.partial').exists()
+        archive_checks.append('interrupted named archive continued after prefix verification')
+        m.archive_file(original,archive,expected,resume=True)
+        archive_checks.append('complete matching archive reused')
+        partial=directory/'second.img.partial';destination=directory/'second.img'
+        partial.write_bytes(payload[:1048576+7])
+        m.archive_file(original,destination,expected,resume=True)
+        assert m.digest(destination)==expected and not partial.exists()
+        archive_checks.append('staged partial published after completion')
+        corrupt=directory/'corrupt.img';wrong=b'bad'+payload[3:1048576]
+        corrupt.write_bytes(wrong)
+        try:m.archive_file(original,corrupt,expected,resume=True)
+        except AssertionError:pass
+        else:raise AssertionError('accepted corrupt archive prefix')
+        assert corrupt.read_bytes()==wrong and not corrupt.with_name('corrupt.img.partial').exists()
+        archive_checks.append('corrupt prefix rejected without modifying existing file')
+    result=dict(passed=True,real_fixture_accepted=True,rejected=rejected,
+        archive_recovery_checks=archive_checks,
+        validator_sha256=m.digest(ROOT/'scripts/prepare-ios14-root-transfer.py'),
+        fixture_sparse_sha256=m.digest(source),device_operations=False,qemu_used=False)
+    (ROOT/'reports/ios14-root-transfer-validation.json').write_text(json.dumps(result,indent=2)+'\n')
+    print(json.dumps(result))
+
+if __name__=='__main__':main()

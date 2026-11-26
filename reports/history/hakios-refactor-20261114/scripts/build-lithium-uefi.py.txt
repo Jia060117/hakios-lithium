@@ -1,0 +1,97 @@
+"""Build the pinned minimal lithium Mu overlay in WSL. No device operations.
+
+Run under WSL using /home/jia/ios-mix1-build/venv/bin/python.
+The upstream source checkouts remain unchanged; generated build products live
+in a separate ext4 workspace. CLANGPDB is selected explicitly on the build CLI.
+"""
+import argparse
+import hashlib
+import importlib.util
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import time
+
+ROOT=Path(__file__).resolve().parents[1]
+BASE=Path('/home/jia/ios-mix1-build')
+MU=BASE/'Mu-Silicium'
+PIN='6b3d90b79e191e08171bfedd3980234a7e49d340'
+
+def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+def run(args,**kwargs):
+    subprocess.run(list(map(str,args)),check=True,**kwargs)
+
+def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--prepare-only',action='store_true')
+    parser.add_argument('--qemu',action='store_true')
+    parser.add_argument('--jobs',type=int,default=2)
+    args=parser.parse_args()
+    if args.jobs < 1:parser.error('--jobs must be positive')
+    assert sys.platform=='linux', 'Use the WSL venv Python'
+    assert subprocess.check_output(['git','-C',str(MU),'rev-parse','HEAD'],text=True).strip()==PIN
+    work=BASE/('lithium-qemu-workspace' if args.qemu else 'lithium-workspace')
+    work.mkdir(exist_ok=True)
+    # Overlay copying is repeatable and never deletes arbitrary paths.
+    for src in (ROOT/'firmware/lithiumPkg').rglob('*'):
+        if src.is_file():
+            dst=work/'lithiumPkg'/src.relative_to(ROOT/'firmware/lithiumPkg')
+            dst.parent.mkdir(parents=True,exist_ok=True)
+            shutil.copy2(src,dst)
+    common=MU/'Silicon/Silicium/SiliciumPkg/SiliciumPkg.dsc.inc'
+    content=common.read_text().split('[Components]',1)[0]
+    # Omit unused dynamic UI policy; this platform has no MsGraphics consumer.
+    content=content.replace('  gMsGraphicsPkgTokenSpaceGuid.PcdPostBackgroundColoringSkipCount|0\n','')
+    content=content.replace('  RELEASE_CLANGPDB_*_CC_FLAGS = -D MDEPKG_NDEBUG\n','')
+    inc=work/'lithiumPkg/Include/Common.dsc.inc'
+    inc.write_text('# Generated prefix; original copyright and license below.\n'+content)
+    conf=work/'Conf'
+    conf.mkdir(exist_ok=True)
+    for name in ('target','tools_def','build_rule'):
+        shutil.copy2(MU/f'Mu_Basecore/BaseTools/Conf/{name}.template',conf/f'{name}.txt')
+    out=ROOT/'out/uefi'/('qemu' if args.qemu else 'lithium')
+    out.mkdir(parents=True,exist_ok=True)
+    spec=importlib.util.spec_from_file_location('payload',ROOT/'scripts/prepare-uefi-payload.py')
+    payload_module=importlib.util.module_from_spec(spec); spec.loader.exec_module(payload_module)
+    payload=payload_module.prepare(ROOT,out,work/'lithiumPkg/Include')
+    packages=[work,ROOT/'upstream/UniXNU/package',MU/'Mu_Basecore',MU/'Common/Mu',MU/'Common/Mu_OEM_Sample',MU/'Silicon/Silicium']
+    env=os.environ.copy()
+    env.update(WORKSPACE=str(work),PACKAGES_PATH=':'.join(map(str,packages)),
+        EDK_TOOLS_PATH=str(MU/'Mu_Basecore/BaseTools'),CONF_PATH=str(conf),
+        PYTHON_COMMAND=sys.executable,CLANG_BIN='/usr/bin/')
+    env['PATH']=':'.join([str(Path(sys.executable).parent),str(MU/'Mu_Basecore/BaseTools/BinWrappers/PosixLike'),str(MU/'Mu_Basecore/BaseTools/Source/C/bin'),env['PATH']])
+    sources={p.relative_to(ROOT).as_posix():sha(p) for p in (ROOT/'firmware').rglob('*')
+        if p.is_file() and p.suffix.lower() in ('.c','.h','.s','.inf','.dsc','.fdf','.dec')}
+    build_tag=hashlib.sha256(json.dumps(dict(sources=sources,payload=payload),sort_keys=True).encode()).hexdigest()[:16]
+    build=['build','-p','lithiumPkg/lithium.dsc','-a','AARCH64','-t','CLANGPDB',
+        '-b','RELEASE','-n',str(args.jobs),'-y',str(out/'build-report.txt')]
+    build+=['-D','LITHIUM_BUILD_TAG=0x'+build_tag]
+    if args.qemu: build+=['-D','LITHIUM_QEMU=1']
+    manifest={'schema':1,'mu_commit':PIN,'mu_path':str(MU),'workspace':str(work),
+        'common_dsc_source_sha256':sha(common),'common_dsc_rule':'prefix before first [Components]; omit unused MsGraphics dynamic UI PCD and RELEASE MDEPKG_NDEBUG define to retain RAM diagnostics; copyright retained',
+        'build_command':build,'qemu_variant':args.qemu,
+        'sources':sources,'payload':payload,'journal_build_tag':'0x'+build_tag,
+        'recursive_submodules':subprocess.check_output(['git','-C',str(MU),'submodule','status','--recursive'],text=True).splitlines()}
+    (out/'inputs.json').write_text(json.dumps(manifest,indent=2)+'\n')
+    if args.prepare_only: return
+    start=time.monotonic()
+    if not (MU/'Mu_Basecore/BaseTools/Source/C/bin/GenFw').exists():
+        with (out/'basetools.log').open('w') as log:
+            run(['make','-C',MU/'Mu_Basecore/BaseTools',f'-j{args.jobs}'],env=env,stdout=log,stderr=subprocess.STDOUT)
+    with (out/'build.log').open('w') as log:
+        result=subprocess.run(build,cwd=work,env=env,stdout=log,stderr=subprocess.STDOUT)
+    logtext=(out/'build.log').read_text()
+    if result.returncode:
+        print('\n'.join(line for line in logtext.splitlines() if any(s in line.lower() for s in (' error:','error f','failed','undefined symbol','warning:')))[-10000:])
+        raise SystemExit(result.returncode)
+    fd=work/'Build/lithiumPkg/RELEASE_CLANGPDB/FV/SILICIUM_UEFI.fd'
+    assert fd.stat().st_size==0x300000
+    shutil.copy2(fd,out/'lithium.fd')
+    manifest.update(fd_sha256=sha(fd),fd_bytes=fd.stat().st_size,build_seconds=round(time.monotonic()-start,2),build_success=True)
+    (out/'inputs.json').write_text(json.dumps(manifest,indent=2)+'\n')
+    print(json.dumps({k:manifest[k] for k in ('build_success','fd_bytes','fd_sha256','build_seconds')},indent=2))
+
+if __name__=='__main__': main()

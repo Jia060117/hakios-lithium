@@ -1,0 +1,71 @@
+Subject: lithium: explicit read-only UFS root selection for built-in HFS
+
+Adapt the root hook from pinned sailfish 0028 to XNU7195; preserve ordinary matching.
+diff --git a/iokit/bsddev/IOKitBSDInit.cpp b/iokit/bsddev/IOKitBSDInit.cpp
+--- a/iokit/bsddev/IOKitBSDInit.cpp
++++ b/iokit/bsddev/IOKitBSDInit.cpp
+@@ -696,6 +696,22 @@
+     }
+ #endif
+ 
++#if defined(ARM64_BOARD_CONFIG_LITHIUM)
++    if (strcmp(rdBootVar, "ufsroot0") == 0) {
++        int error = lithium_ufs_rootdev(root);
++        if (error) {
++            panic("LITHIUM UFS: requested root unavailable, error %d", error);
++        }
++        OSSafeReleaseNULL(matching);
++        strlcpy(rootName, "ufsroot0", rootNameSize);
++        *oflags = 0;
++        IOLog("BSD root: %s, major %d, minor %d (read-only UFS)\n",
++            rootName, major(*root), minor(*root));
++        IOFree(str, kMaxPathBuf + kMaxBootVar);
++        goto iofrootx;
++    }
++#endif
++
+ //
+ //	Now check if we are trying to root on a memory device
+ //
+diff --git a/bsd/dev/lithium_ufs.c b/bsd/dev/lithium_ufs.c
+--- a/bsd/dev/lithium_ufs.c
++++ b/bsd/dev/lithium_ufs.c
+@@ -544,6 +544,15 @@
+     error=ufs_read_blocks(su.first_block,1);
+     if(error) return error;
+     const uint8_t *sb=(const uint8_t *)(su.dma+DMA_BOUNCE+1024);
++    uint32_t expected_crc = 0;
++    if (PE_parse_boot_argn("lithium_root_crc", &expected_crc, sizeof(expected_crc))) {
++        uint32_t actual_crc=lg_crc((const uint8_t *)(su.dma+DMA_BOUNCE),4096,0);
++        if (actual_crc != expected_crc || sb[0] != 'H' || sb[1] != 'X' || sb[2] != 0 || sb[3] != 5) {
++            printf("LITHIUM UFS: root header rejected, actual 0x%x expected 0x%x\n", actual_crc, expected_crc);
++            return EIO;
++        }
++        printf("LITHIUM UFS: HFSX root header CRC32 verified 0x%x\n", actual_crc);
++    }
+     printf("LITHIUM UFS: userdata first block CRC32 0x%x; superblock 0x%x ext magic 0x%x\n",
+         lg_crc((const uint8_t *)(su.dma+DMA_BOUNCE),4096,0),lg_le32(sb),
+         (unsigned)sb[56]|(unsigned)sb[57]<<8);
+diff --git a/bsd/kern/bsd_init.c b/bsd/kern/bsd_init.c
+--- a/bsd/kern/bsd_init.c
++++ b/bsd/kern/bsd_init.c
+@@ -936,6 +936,9 @@
+ 
+ 		bsd_init_kprintf("vfs_mountroot\n");
+ 		if (0 == (err = vfs_mountroot())) {
++#if defined(ARM64_BOARD_CONFIG_LITHIUM)
++            printf("LITHIUM ROOT: vfs_mountroot succeeded\n");
++#endif
+ 			break;
+ 		}
+ 		rootdevice[0] = '\0';
+@@ -974,6 +977,9 @@
+ 	set_rootvnode(init_rootvnode);
+ 	lck_rw_unlock_exclusive(&rootvnode_rw_lock);
+ 	init_rootvnode = NULLVP;  /* use rootvnode after this point */
++#if defined(ARM64_BOARD_CONFIG_LITHIUM)
++    printf("LITHIUM ROOT: root vnode installed; continuing BSD initialization\n");
++#endif
+ 
+ 
+ 	if (!bsd_rooted_ramdisk()) {

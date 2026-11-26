@@ -1,0 +1,147 @@
+{
+  "baseline_commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+  "source_sha256": {
+    "sysimage/unpack.sh": "e28c513b054a379c374c4c8e9715c671fce0f36e5cb2dbcda9df2abeeaacc5fc",
+    "sysimage/select-system.py": "1224e46719be478a2ee3c1319d8e41bb6438300b36a90fa66445ed0377122d37",
+    "userland/build.sh": "48500c2b0602d7b5d71e9c63369851d9fe39ec76a4edc83b4f8775c34896ded3",
+    "docs/getting-started/phone.md": "ca82bc0696bc2f51f5def7dd854a17fed125573bbb168dd734869fed2987cd5d",
+    "userland/src/init.c": "564e948ac7aa9ecab0da54b932df184f357efbd35d76dbe8591b3cf5c149c157"
+  },
+  "ipsw_inputs": [
+    {
+      "path": "D:\\iPhone10,3,iPhone10,6_16.5_20F66_Restore.ipsw",
+      "file_bytes": 6165698198,
+      "version": "16.5",
+      "build": "20F66",
+      "board": "d22ap",
+      "manifest_sha256": "7dd041dc7ac05f2e1f041013024f9062b8166d916c708ff8b46aca5e089e091f",
+      "components": {
+        "Cryptex1,AppOS": {
+          "member": "096-03536-083.dmg",
+          "zip_uncompressed_member_bytes": 10485760,
+          "zip_compressed_member_bytes": 2379179
+        },
+        "Cryptex1,SystemOS": {
+          "member": "096-04666-078.dmg",
+          "zip_uncompressed_member_bytes": 2726297600,
+          "zip_compressed_member_bytes": 1094826706
+        },
+        "OS": {
+          "member": "096-04088-077.dmg",
+          "zip_uncompressed_member_bytes": 4728546953,
+          "zip_compressed_member_bytes": 4728546953
+        },
+        "RestoreRamDisk": {
+          "member": "096-03566-084.dmg",
+          "zip_uncompressed_member_bytes": 106954779,
+          "zip_compressed_member_bytes": 91944502
+        }
+      },
+      "full_ipsw_payload_hash_measured": false
+    },
+    {
+      "path": "E:\\i4Tools9\\Firmware\\iPhone_4.7_P3_14.8_18H17_Restore.ipsw",
+      "file_bytes": 5042962813,
+      "version": "14.8",
+      "build": "18H17",
+      "board": "d20ap",
+      "manifest_sha256": "bccabec682b7fbc080cf4e853b125b4f3c38228bef7dfbf6c87c4da6c5bec65e",
+      "components": {
+        "OS": {
+          "member": "018-62062-016.dmg",
+          "zip_uncompressed_member_bytes": 4681242228,
+          "zip_compressed_member_bytes": 4681242228
+        },
+        "RestoreRamDisk": {
+          "member": "018-61747-017.dmg",
+          "zip_uncompressed_member_bytes": 105531419,
+          "zip_compressed_member_bytes": 71580713
+        }
+      },
+      "full_ipsw_payload_hash_measured": false
+    }
+  ],
+  "selection_audit": {
+    "selection_stdout": "select-system: 36586 files, 2095 MB; 48837 entries in the manifest",
+    "counts": {
+      "original_regular_files": 238674,
+      "original_regular_bytes": 8651900353,
+      "unmodified_selector_files": 36586,
+      "unmodified_selector_file_bytes": 2197153372,
+      "candidate_with_explicit_core_retention_files": 36587,
+      "candidate_with_explicit_core_retention_file_bytes": 4415481436,
+      "cache_bytes": 2218328064
+    },
+    "required_core_files": {
+      "System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64": {
+        "exists": true,
+        "unmodified_selector_keeps": false
+      },
+      "usr/lib/dyld": {
+        "exists": true,
+        "unmodified_selector_keeps": true
+      },
+      "sbin/launchd": {
+        "exists": true,
+        "unmodified_selector_keeps": true
+      },
+      "bin/ps": {
+        "exists": true,
+        "unmodified_selector_keeps": true
+      },
+      "bin/df": {
+        "exists": true,
+        "unmodified_selector_keeps": true
+      },
+      "sbin/mount": {
+        "exists": true,
+        "unmodified_selector_keeps": true
+      },
+      "usr/sbin/notifyd": {
+        "exists": true,
+        "unmodified_selector_keeps": true
+      },
+      "usr/sbin/cfprefsd": {
+        "exists": true,
+        "unmodified_selector_keeps": true
+      },
+      "System/Library/CoreServices/SpringBoard.app/SpringBoard": {
+        "exists": true,
+        "unmodified_selector_keeps": true
+      }
+    },
+    "unmodified_16_5_selector_is_not_14_8_recipe": true,
+    "compressed_apfs_size_measured": false,
+    "candidate_image_built": false,
+    "candidate_dependency_closure_verified": false,
+    "kernel_source": {
+      "bsd/dev/mem.c": {
+        "source_path": "/home/jia/ios-mix1-build/hakios-lithium/xnu-src/xnu-8796.121.2/bsd/dev/mem.c",
+        "archived_path": "/mnt/f/IOS-MIX1/reports/local/r26-system-image-audit/bsd_dev_mem.c",
+        "sha256": "04c36eb5964a87b99ee3a936da07f1299eca4bce93ac5d02ea8711124819c89a"
+      },
+      "bsd/dev/arm64/conf.c": {
+        "source_path": "/home/jia/ios-mix1-build/hakios-lithium/xnu-src/xnu-8796.121.2/bsd/dev/arm64/conf.c",
+        "archived_path": "/mnt/f/IOS-MIX1/reports/local/r26-system-image-audit/bsd_dev_arm64_conf.c",
+        "sha256": "c00c75c45463af2c6d2468a089b7cbea0fbb7f353061453bebb0c7bce26ad51d"
+      }
+    },
+    "actual_mmioctl_unknown_query_errno": "ENODEV=19",
+    "linux_tcgetattr_test_did_not_verify_darwin_device_errno": true,
+    "source_manifest_sha256": "ce4dc27edf99ad111dccbc90b6e6263b240d694775f03ed7f927ec5f4ee72b4f",
+    "listing_sha256": "19ac8367df2c29beaf1c1ff34e8b1af3fded19d844463ef733128f6cc9bc6932",
+    "selector_sha256": "1224e46719be478a2ee3c1319d8e41bb6438300b36a90fa66445ed0377122d37"
+  },
+  "existing_userdata_root_volume_bytes": 17179869184,
+  "installed_ios_partition_names": [
+    "userdata"
+  ],
+  "current_lithium_xnu_window_bytes": 536870912,
+  "current_lithium_payload_window_bytes": 67108864,
+  "system_ramdisk_boot_hardware_verified": false,
+  "new_kernel_compiled": false,
+  "new_image_packaged": false,
+  "temporary_boot_issued": false,
+  "partition_writes_performed": false,
+  "qemu_used": false
+}

@@ -1,0 +1,114 @@
+{
+  "schema": 1,
+  "recorded_at": "2026-11-19T22:26:14.157964+08:00",
+  "revision": "R27-touch-id",
+  "phase": "host_prepared_before_device_operations",
+  "image_path": "artifacts/hakios/lithium-ios16/phase4-r27-touch-id/lithium-hakios-ios16-r27-touch-id.img",
+  "image_sha256": "a029ad76623e957661988893ca84b885a1162f771cf21ae90dad1d110d6ff7f3",
+  "image_bytes": 16277504,
+  "kernel_sha256": "ea03026bd06e72ee074673ec709bb0f273e2b454287df1acb8e009eb98377df5",
+  "payload_boot_args": "bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 touch_stage=1 touch_clock_init=1 touch_diag=1 touch_id_probe=1",
+  "package_contract": "artifacts/hakios/lithium-ios16/phase4-r27-touch-id/contract.json",
+  "package_contract_sha256": "c094de47f503da3fa3f8e28f5c036279ccdcbbdcddf0c715868c2d0e635343f5",
+  "display_baseline": "R20-display",
+  "full_hakios_build": true,
+  "normal_mu_d22ap_build": true,
+  "launchd_jobs": 413,
+  "instruction_scans": 46,
+  "source_review_checks": 82,
+  "base_suites": 19,
+  "followup_suites": 17,
+  "total_suites": 36,
+  "sanitizers": [
+    "ASan",
+    "UBSan"
+  ],
+  "id_core_scenarios": 1838,
+  "id_adapter_scenarios": 21884,
+  "clock_scenarios": 5241,
+  "unchanged_stage1_scenarios": 351,
+  "diagnostic_init_scenarios": 370,
+  "isolated_package_test_groups": 11,
+  "merged_source_hashes": 90,
+  "source_review": {
+    "passed": true,
+    "revision": "R27-touch-id",
+    "display_baseline": "R20-display",
+    "exact_post_r26_source_delta": [
+      "peripherals/boot-options.h",
+      "peripherals/contract.json",
+      "peripherals/kernel.inc",
+      "peripherals/touch-id-core.h",
+      "peripherals/touch-id.inc"
+    ],
+    "hardware_verified": false,
+    "physical_touch_backend": false,
+    "one_shot_id_experiment": true,
+    "physical_ownership_verified": false,
+    "device_operations": false
+  },
+  "stage1_and_init_patch_unchanged": true,
+  "physical_ufs_provider_absent": true,
+  "persistent_log_disabled": true,
+  "new_features_default_off": true,
+  "quiescent_handoff_verified": false,
+  "physical_ownership_verified": false,
+  "physical_touch_verified": false,
+  "hardware_verified": false,
+  "device_queries": 0,
+  "device_boots": 0,
+  "partition_operations": 0,
+  "adb_commands": 0,
+  "qemu": false,
+  "r19_retested": false,
+  "r26_retried": false,
+  "historical_aggregate_passed": false,
+  "historical_aggregate_note": "Existing R9 geometry hash gate remains unresolved; not rerun or relabelled passed",
+  "build_notes": [
+    "Normal upstream wrapper retains existing kext-symbol-set exit2 after successful kernel link; no new compiler/linker error",
+    "Initial Windows PowerShell5 stderr handling stopped host wrapper before synchronization; read-back confirmed no new port files, reran with installed PowerShell7",
+    "Initial pre-final-review normal build is archived; final build reran after parser/adapter corrections"
+  ],
+  "parallel_execution": [
+    {
+      "agent": "Nash",
+      "scope": "fixed vendor protocol evidence",
+      "main_review": "Inspected vendor FIFO/count/state/clock lines; rejected promotion of split candidate and unsupported ownership claims"
+    },
+    {
+      "agent": "Plato",
+      "scope": "new production I2C core and 1838-case fixture",
+      "main_review": "Verified final source SHA and independently reran enabled/default tests and full regression; conservative pre-load flag stop retained"
+    },
+    {
+      "agent": "Goodall",
+      "scope": "independent parser/topology audit and new packager",
+      "main_review": "Fixed reproduced separator/duplicate-rd gaps; corrected base report schema predicate; independently reran 11 package unit groups"
+    },
+    {
+      "agent": "Godel",
+      "scope": "GIC audit and 21884-case actual adapter test",
+      "main_review": "Checked address arithmetic and actual GIC source; confirmed/fixed late barrier accesses, kept strict checks, independently reran full regression"
+    }
+  ],
+  "unverified": [
+    "Actual I2C acknowledgment/raw chip ID and target power/reset/electrical readiness",
+    "No-SW_RESET inherited clean-state equivalence, hidden sequencer state and hardware FIFO/tag/STOP behavior",
+    "Secure-world ownership/exclusion and full GIC security visibility; a disabled readback is only an observation",
+    "Actual nominal XO/SCL frequency and duty cycle",
+    "Permanent MMIO/map/barrier stalls, external abort/SError/XPU are uncontained by software deadlines",
+    "Initial userspace boot_arg read failure can miss the opt-in and follow normal init; unchanged R26 caveat",
+    "IRQ wire GPIO105/125, physical reports/HID/backboardd/UI input are unverified"
+  ],
+  "evidence_sha256": {
+    "evidence/touch-r27-20261119/main/final-offline-preflight.json": "61fd75295f234c0a59dbce294935c5f3637d3881f4ac9ba59557facd7ed1b21a",
+    "evidence/touch-r27-20261119/main/agent-review.json": "24396a7d4c6bf11b0ed7d66e56577c1d97b6b74c05e72d98c9b02b00a8da72e6",
+    "evidence/touch-r27-20261119/main/cross-parser-fixed.json": "329410363f468f30f1400e4735e2d0bdfe8e0965147301f981795161f1a7ba7d",
+    "evidence/touch-r27-20261119/main/review-corrections.json": "4dcc10c78a57502513013fca876ab748d4edb2ac4e5ec733286e699cf17c4447",
+    "evidence/touch-r27-20261119/main/packager-tests.json": "bbb246d327ffec2b6f8578d9b9a27f7a79b531d6c571106a83db7ca7ec8553d1",
+    "evidence/touch-r27-20261119/protocol/findings.md": "6259c3de698698a158d5c004d3dc9245bfce752e28e929dee4ce5879fc6339a2",
+    "evidence/touch-r27-20261119/core/final.json": "aaee4d6fad68fd096421759e46480038c099c5b8c02acca945b2410c2f97a630",
+    "evidence/touch-r27-20261119/gic/adapter-run-3/result.json": "d9a9bb66c79702e5f13a7fd7183871555594bc9a571062c2c5b6a79497c7140f",
+    "evidence/touch-r27-20261119/gic/adapter-review.md": "8b117d1e6c87614f55b0376c6db1e3bfffb777675108bfa2c6a310bd0c733c81"
+  }
+}

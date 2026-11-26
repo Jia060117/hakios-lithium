@@ -1,0 +1,48 @@
+--- a/userland/src/init.c
++++ b/userland/src/init.c
+@@ -1514,6 +1514,9 @@
+ 
+ #if defined(HAKIOS_LITHIUM)
+ #include "../../devices/lithium/tests/ios14_dynamic.h"
++#if defined(HAKIOS_LITHIUM_LAUNCHD)
++#include "../../devices/lithium/tests/ios14_launchd.h"
++#endif
+ #endif
+ 
+ int
+@@ -1534,6 +1537,10 @@
+ 	}
+ 	/* Not process 1: a command runner, "init FILE" (this is how a launchd job runs a list of commands). */
+ 	if (getpid() != 1) {
++#if defined(HAKIOS_LITHIUM_LAUNCHD)
++		if (argc == 2 && strcmp(argv[1], "--lithium-launchd-observer") == 0)
++			return lithium_ios14_launchd_observer();
++#endif
+ 		if (argc > 1) {
+ 			run_rc(argv[1]);
+ 		}
+@@ -1542,6 +1549,9 @@
+ 
+ 	printf("\n=== init: process %d, started as %s ===\n", getpid(), argc > 0 ? argv[0] : "?");
+ #if defined(HAKIOS_LITHIUM)
++#if defined(HAKIOS_LITHIUM_LAUNCHD)
++	if (boot_arg("lithium_launchd_test") != NULL) return lithium_ios14_launchd();
++#endif
+ 	if (boot_arg("lithium_ios14_test") != NULL) return lithium_ios14_dynamic();
+ #endif
+ 	{
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -407,6 +407,12 @@
+ 	lithium_show_line(lithium_last_line(log_buf, log_len, "LITHIUM P2 STOP "), log_buf + log_len);
+ 	if (log == NULL) { print("KERNEL NOT STARTED; STORAGE/PSCI STOP\n"); return; }
+ 	print("P2 STORAGE KERNEL:\n");
++	static const char *launch[] = {"LITHIUM P2 LAUNCHSTART ", "LITHIUM P2 LAUNCHROOT ",
++	    "LITHIUM P2 DYNFILE LAUNCHD ", "LITHIUM P2 LAUNCHMOUNTS ", "LITHIUM P2 LAUNCHHANDOFF ",
++	    "LITHIUM P2 LAUNCHJOB ", "LITHIUM P2 LAUNCHPROC PID1 ",
++	    "LITHIUM P2 LAUNCHPROC NOTIFYD ", "LITHIUM P2 LAUNCHPROC CFPREFSD ", "LITHIUM P2 LAUNCHRESULT "};
++	for (unsigned i=0; i<sizeof(launch)/sizeof(launch[0]); i++)
++	    lithium_show_line(lithium_last_line(log, bytes, launch[i]), log + bytes);
+ 	static const char *dynamic[] = {"LITHIUM P2 DYNBUDGET DF ", "LITHIUM P2 DYNBUDGET MOUNT ", "LITHIUM P2 DYNSTART ", "LITHIUM P2 DYNROOT ",
+ 	    "LITHIUM P2 DYNCACHE ", "LITHIUM P2 SR438 ", "LITHIUM P2 DYNEXEC ",
+ 	    "LITHIUM P2 MACH14 ",

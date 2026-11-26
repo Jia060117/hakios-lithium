@@ -1,0 +1,198 @@
+{
+  "schema": 1,
+  "patch_path": "reports/hakios-ios16-return-fastboot-r33-prepared.patch",
+  "patch_sha256": "dd22692aa185116a4132904263135384d2b38100f9d949d322f8ba57132d92f5",
+  "files": 46,
+  "forward_exact": true,
+  "reverse_exact": true,
+  "git_staging_modified": false,
+  "firmware_binaries_in_patch": false,
+  "device_operations": 0,
+  "source_files": {
+    "AGENTS.md": {
+      "before_sha256": "dab764714739a360e3a646f0b150ab46c7f9c00795ba008cf588c15bd2d12568",
+      "after_sha256": "e0b86e4adddf8364e36f3b75b8db6573a040610565c560ed5f6401c0a16c29d4"
+    },
+    "OPERATIONS.md": {
+      "before_sha256": "0c4aca1f67e667677f90c3b2f3951c1aff05db9dd27f7b3b1ab9e8e7b1b65f70",
+      "after_sha256": "75fb1374c644f0648d6c45283cba3818041e6ed51a677ddbf1deef80e9149476"
+    },
+    "PLAN.md": {
+      "before_sha256": "6ce52e52052a0a8c6a42e7159bbc9ef4a3c2849d6093fedf1099c07b05929e41",
+      "after_sha256": "7a3005e792104bb4ecd6a3c93156b013e6a54bf1eeb9372753f28308f34717f7"
+    },
+    "evidence/fastboot-return-impl-20261120/main/common-transform.json": {
+      "before_sha256": null,
+      "after_sha256": "b67e55e228138bdfa0f9355c551e37fa54ced8c4521c64b9970933bc2d94b729"
+    },
+    "evidence/fastboot-return-impl-20261120/main/final-offline-readback.json": {
+      "before_sha256": null,
+      "after_sha256": "774a67299f2b3fad3858b3ead8f1af433699daf65427d4730868d8170cfb07ad"
+    },
+    "evidence/fastboot-return-impl-20261120/main/linked-feature-review.json": {
+      "before_sha256": null,
+      "after_sha256": "489df2868162f5e0c26b924b1b92bb395c094127fd1def3cea1dc6a47589dd1f"
+    },
+    "ports/hakios-lithium/drivers/usb/hakios.lithium_usb.c": {
+      "before_sha256": "d3a8f21ba0fa005b91aa7f2a338a310bdec8fb5fe6d750aba6c4564e39495c4e",
+      "after_sha256": "aead98757e0f98094585e818e45763f7efdc517c488902370eca940d3e821b5a"
+    },
+    "ports/hakios-lithium/firmware/lithiumPkg/Drivers/LithiumFastbootDxe/LithiumFastbootDxe.c": {
+      "before_sha256": null,
+      "after_sha256": "44fd61d2f3b6faf1725098080f9665fa6354e1d0ac19d9afdbfe7cd67a2ece40"
+    },
+    "ports/hakios-lithium/firmware/lithiumPkg/Drivers/LithiumFastbootDxe/LithiumFastbootDxe.inf": {
+      "before_sha256": null,
+      "after_sha256": "81806663cfb20b37268ae8b291b040f8f014f8a53e5edac241858e124d712252"
+    },
+    "ports/hakios-lithium/firmware/lithiumPkg/Library/MemoryMapLib/MemoryMap.c": {
+      "before_sha256": "53abf2caedf13aaa37162f5dc5f73520e5a2c0453245af1a7e31055eb054c908",
+      "after_sha256": "f3ae181304999e44ba26295b06e7dc592c0f1651e4acd564565ba65a3e6afa6b"
+    },
+    "ports/hakios-lithium/firmware/lithiumPkg/lithium.dsc": {
+      "before_sha256": "0318dfa842b1a5d24a66fb749bb6230392d2ef2c3fafaf4e282b622cbd88916d",
+      "after_sha256": "048e94813a3afccbae87767f84fbfd6165166e98edadbf908a865bdae186a7f0"
+    },
+    "ports/hakios-lithium/firmware/lithiumPkg/lithium.fdf": {
+      "before_sha256": "5c41783fcbc813819d915d4ab35189047f6cd57e9d869a05e84c73094672eebb",
+      "after_sha256": "a44cf2b4863ebc2de66d862937619b705893b675a9f9423a55dab67078005076"
+    },
+    "ports/hakios-lithium/patches/0023-lithium-return-fastboot.patch": {
+      "before_sha256": null,
+      "after_sha256": "961a62d1b2f6ca09db8d7f30ca2a0d61a976436c46482244c4459ac1b1b397ea"
+    },
+    "ports/hakios-lithium/return-fastboot/contract.h": {
+      "before_sha256": null,
+      "after_sha256": "dca2e5477799b250be8ce88ebe9e725061cf47577b090775ef16662c0489ea52"
+    },
+    "ports/hakios-lithium/return-fastboot/firmware-protocol.h": {
+      "before_sha256": null,
+      "after_sha256": "7cfcc3ef6bcdbc45a396412ff6bb0d6f2503847900fd8e064803fec301811b8b"
+    },
+    "ports/hakios-lithium/return-fastboot/init.inc": {
+      "before_sha256": null,
+      "after_sha256": "46c92fc2a9a8dd51ba8bb1a22e2f8cca25adaec2378d8dcb8c2eb69c6f251dce"
+    },
+    "ports/hakios-lithium/return-fastboot/kernel.inc": {
+      "before_sha256": null,
+      "after_sha256": "742bb5892b13f99bca354f6e290892e61be5441e5b93546ebdfc076bf0a6be63"
+    },
+    "ports/hakios-lithium/return-fastboot/loader.inc": {
+      "before_sha256": null,
+      "after_sha256": "33c4ad175e3e618762888960f3a17292ef85ca86cd0034d7e42c72e12869c7ae"
+    },
+    "ports/hakios-lithium/return-fastboot/profile.h": {
+      "before_sha256": null,
+      "after_sha256": "15f47d8ad1753bf2ef9e7ae522bbc2e368d62e3e8c93c700adcc1e6bf7817c35"
+    },
+    "ports/hakios-lithium/return-fastboot/reset-core.h": {
+      "before_sha256": null,
+      "after_sha256": "7f28adbbc8f38a0338fb697c172d65226ac789fc0eba7c96630962ee5d791930"
+    },
+    "ports/hakios-lithium/return-fastboot/source-contract.json": {
+      "before_sha256": null,
+      "after_sha256": "421c808062135574a9aa794ce773c30a350cf56d490906d38024ef5773f5e0b4"
+    },
+    "ports/hakios-lithium/return-fastboot/storage.inc": {
+      "before_sha256": null,
+      "after_sha256": "0cf69353ce2c941e5aab228b410ee1de1b88fc1e49a3c3ad0dc21835a97a0fb4"
+    },
+    "project.json": {
+      "before_sha256": "9fc54ad8bfea68aa096bf8b3107da4224a4632378b611bdaae3fff8258ff886b",
+      "after_sha256": "eb2508aa8402263c083bf972951909d17e672e03fddde1ed4ea92fb3c5ded08e"
+    },
+    "reports/hakios-ios16-return-fastboot-build-checks.json": {
+      "before_sha256": null,
+      "after_sha256": "7ba81a3cdbb5487b84a11347aa814f1193fe470db85ce2ce5406d0095ada3240"
+    },
+    "reports/hakios-ios16-return-fastboot-build.json": {
+      "before_sha256": null,
+      "after_sha256": "9f97f50f00dab7231ed288b93798e02266ff6128167abc338d7df1571a5f6f70"
+    },
+    "reports/hakios-ios16-return-fastboot-r33-prepared.json": {
+      "before_sha256": null,
+      "after_sha256": "3315a157e020224f560c611e97339be2930e18d8b452d91a6fbebbf934b9133a"
+    },
+    "reports/hakios-ios16-return-fastboot-r33-prepared.md": {
+      "before_sha256": null,
+      "after_sha256": "00dd681e6d399f4c8190226e246504056445bd798d07b7e1f2e1f19b7376a611"
+    },
+    "scripts/build-hakios-return-fastboot.py": {
+      "before_sha256": null,
+      "after_sha256": "4d234d8a8cd4bf67701cbeea6d64aa0bb6dbfc3fdec38179b21fb46ab7bd57c4"
+    },
+    "scripts/build-hakios-support.py": {
+      "before_sha256": "7ce7b7577ae3d33c244757fa2bc660b556d89c7e1811b32073d5a8d55f00e0b3",
+      "after_sha256": "bb1e41a6e2b0f6bf024bd8ae6467c63ece706939110b25b31a5cf66a2bb7841d"
+    },
+    "scripts/check-hakios-ios16-build.py": {
+      "before_sha256": "36e3c63ab399d09d749c7cc73d91344b76bd239d0b25d9fe2b295d14e8223e4d",
+      "after_sha256": "e1c9f07b5cb3656c90750fe30041f9f2e81cf89b7320db1a3066d9e9a40c31ec"
+    },
+    "scripts/check-hakios-return-fastboot-offline.py": {
+      "before_sha256": null,
+      "after_sha256": "0e16437cead6cfa84de3da1e93cc414ef0beb3ea2e944d8bd4d6408fb3d0ca71"
+    },
+    "scripts/export-hakios-return-fastboot-checkpoint.py": {
+      "before_sha256": null,
+      "after_sha256": "ba1ac4daa8e35edfc7621f78f8b101ef242e38e585486a54130e92495a85cf65"
+    },
+    "scripts/finalize-hakios-return-fastboot-build.py": {
+      "before_sha256": null,
+      "after_sha256": "82002aa5414932ef0a6b00be6a3e3c23da76106307645f1244c6b7558c36f519"
+    },
+    "scripts/hakios_return_fastboot.py": {
+      "before_sha256": null,
+      "after_sha256": "8eb9f2f976c145ee9e72bebb9e7dd565a4915cde485116ccfcc686827d5639ef"
+    },
+    "scripts/package-hakios-return-fastboot.py": {
+      "before_sha256": null,
+      "after_sha256": "4f7b3cab20a1cf91a1c8b167c19be1c9f3f146145115c61d17a1e55930cfb00f"
+    },
+    "scripts/prepare-hakios-return-fastboot.py": {
+      "before_sha256": null,
+      "after_sha256": "037a4a682bf72adf599a3927b696bacef7621ceb80c4fdc3407b21699d67dff5"
+    },
+    "scripts/refresh-hakios-return-fastboot-package-gate.py": {
+      "before_sha256": null,
+      "after_sha256": "b257f0f6e7c8f124490dbc92fa9bc233cd349057aa52d99f865962a6a003e3d0"
+    },
+    "scripts/report-hakios-return-fastboot.py": {
+      "before_sha256": null,
+      "after_sha256": "9e14b4946ed68ea251887b4758b3dc2e5e4491f42286b5c237a17f6d9a06b00a"
+    },
+    "scripts/review-hakios-ios16.py": {
+      "before_sha256": "1adbcc4b5b9fb38d1a01f078255d2fc8b4089e467ba71fbd4051a023cfcc850c",
+      "after_sha256": "83ed4d7b6bd1ca2b4e8df4427923c750e240fa5ead193b9c72bb5e0c4785458e"
+    },
+    "scripts/test-hakios-return-fastboot-contract.py": {
+      "before_sha256": null,
+      "after_sha256": "bc2206c4ae7bac003668d3d3221fcd2fade09b527d6971962f9d612789a218ad"
+    },
+    "scripts/test-hakios-return-fastboot-firmware.py": {
+      "before_sha256": null,
+      "after_sha256": "2c203d720bf97c068cc915e940d48cdb6288380366f672a29d47f762389e21fb"
+    },
+    "scripts/test-hakios-return-fastboot-init.py": {
+      "before_sha256": null,
+      "after_sha256": "8735a74a6a2ddffce24f1a9d23eb40653c797cf495e34cf121f5a457419a5477"
+    },
+    "scripts/test-hakios-return-fastboot-integration.py": {
+      "before_sha256": null,
+      "after_sha256": "60971a0887bed99c138af27cd5f3de10b13d6edbaa6381d8e4c5e7bb325f69c6"
+    },
+    "scripts/test-hakios-return-fastboot-package.py": {
+      "before_sha256": null,
+      "after_sha256": "deef3dad87e8532f481bf073f41ae7fc379c905d8d729c4642025bf476c5e494"
+    },
+    "scripts/test-hakios-return-fastboot-reset.py": {
+      "before_sha256": null,
+      "after_sha256": "563bc19d4b2c04f172b4ae72ab308a139c0b8a692f13b4b04f87cb5c72e593d4"
+    },
+    "scripts/test-hakios-return-fastboot.py": {
+      "before_sha256": null,
+      "after_sha256": "1561e436377403c1ac2ff7a25be4c1b8f566e86e964e9b33a8bf4f694b948156"
+    }
+  },
+  "scope": "Exact source/project-document rollback; local logs and frozen firmware remain archived"
+}

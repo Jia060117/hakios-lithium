@@ -1,0 +1,17 @@
+diff --git a/userland/src/inject.c b/userland/src/inject.c
+--- a/userland/src/inject.c
++++ b/userland/src/inject.c
+@@ -643,7 +643,10 @@
+  * no touch that is not so marked, whatever its path. All we have is where the finger landed.
+  */
+-#define EDGE_SIDE       (16.0 / 375)
+-#define EDGE_TOP        (16.0 / 812)
+-#define EDGE_BOTTOM     (34.0 / 812)    /* the strip below the applications' content, where the home bar is */
++/* R20-display uses 360x680 points for the 1080x2040 panel at scale 3. */
++#define R20_DISPLAY_WIDTH_POINTS  360.0
++#define R20_DISPLAY_HEIGHT_POINTS 680.0
++#define EDGE_SIDE       (16.0 / R20_DISPLAY_WIDTH_POINTS)
++#define EDGE_TOP        (16.0 / R20_DISPLAY_HEIGHT_POINTS)
++#define EDGE_BOTTOM     (34.0 / R20_DISPLAY_HEIGHT_POINTS) /* the strip below the applications' content, where the home bar is */
+ 
+ static struct {

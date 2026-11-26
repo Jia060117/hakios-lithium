@@ -1,0 +1,120 @@
+#!/usr/bin/env python3
+"""Generate the opt-in volatile UFS overlay patch; physical SCSI stays read-only."""
+import difflib
+import importlib.util
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+PATCH = ROOT / 'ports/lithium/patches/xnu-7195/0026-lithium-volatile-root.patch'
+
+
+def main():
+    spec = importlib.util.spec_from_file_location('alias', ROOT / 'scripts/prepare-ios14-native-alias-probe.py')
+    helper = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(helper)
+    edits = {}
+    path = 'bsd/dev/lithium_ufs.c'
+    old = helper.baseline(path, PATCH)
+    new = old
+    def replace(a, b):
+        nonlocal new
+        assert new.count(a) == 1, a
+        new = new.replace(a, b)
+    replace('#include <kern/clock.h>', '#include <kern/clock.h>\n#include <kern/kalloc.h>')
+    replace('#include "lithium_ufs_gpt.h"', '#include "lithium_ufs_gpt.h"\n#include "lithium_ufs_cow.h"')
+    replace('static LCK_GRP_DECLARE', 'static struct lc_cow root_cow;\nstatic bool cow_enabled;\n\nstatic LCK_GRP_DECLARE')
+    replace('static int\nlithium_ufs_open', (ROOT / 'ports/lithium/native/ufs_cow_adapter.inc').read_text() + '\nstatic int\nlithium_ufs_open')
+    replace('return (flags & FWRITE) ? EROFS : 0;', 'return ((flags & FWRITE) && !cow_enabled) ? EROFS : 0;')
+    start = new.index('static void\nlithium_ufs_strategy(')
+    end = new.index('\nstatic int\nlithium_ufs_ioctl(', start)
+    new = new[:start] + r'''static void
+lithium_ufs_strategy(buf_t bp)
+{
+    int error = 0;
+    caddr_t vaddr = NULL;
+    uint32_t count = buf_count(bp), completed = 0;
+    uint64_t sector = (uint64_t)buf_blkno(bp), off;
+    uint64_t bytes = cow_enabled ? LC_ROOT_BYTES : su.nblocks * UFS_BLOCK;
+    bool reading = (buf_flags(bp) & B_READ) != 0;
+    buf_setresid(bp, count);
+    if (!su.ready) { error = ENXIO; goto done; }
+    if (!reading && !cow_enabled) { error = EROFS; goto done; }
+    if (!su.secsize || sector > bytes / su.secsize) { error = EINVAL; goto done; }
+    off = sector * su.secsize;
+    if (off > bytes || count > bytes - off) { error = EINVAL; goto done; }
+    if (!count) goto done;
+    if (buf_map(bp, &vaddr)) { error = EIO; goto done; }
+    lck_mtx_lock(&lithium_ufs_lock);
+    if (su.failed) error = EIO;
+    else if (cow_enabled) {
+        error = reading ? lc_read(&root_cow, off, count, vaddr, &completed) :
+            lc_write(&root_cow, off, count, vaddr, &completed);
+    } else {
+        error = ufs_lower_read(NULL, off, count, vaddr);
+        if (!error) completed = count;
+    }
+    if (error && !reading)
+        printf("LITHIUM COW: write error %d used=%u/%u blocks\n", error, root_cow.used, root_cow.limit);
+    lck_mtx_unlock(&lithium_ufs_lock);
+    buf_setresid(bp, count - completed);
+    buf_unmap(bp);
+done:
+    if (error) buf_seterror(bp, error);
+    buf_biodone(bp);
+}
+''' + new[end:]
+    replace('*o = su.nblocks * UFS_BLOCK / su.secsize;', '*o = (cow_enabled ? LC_ROOT_BYTES : su.nblocks * UFS_BLOCK) / su.secsize;')
+    replace('case DKIOCISWRITABLE:\n\t\t*f = 0;', 'case DKIOCISWRITABLE:\n\t\t*f = cow_enabled ? 1 : 0;')
+    replace('case DKIOCGETMAXBLOCKCOUNTWRITE:\n\t\t*o = 0;', 'case DKIOCGETMAXBLOCKCOUNTWRITE:\n\t\t*o = cow_enabled ? BOUNCE_SIZE / su.secsize : 0;')
+    replace('\tdefault:\n\t\treturn ENOTTY;', '''    case DKIOCSYNCHRONIZECACHE:
+        /* Synchronous CPU copies are already visible under this lock.
+         * Durability is RAM lifetime only, as for a volatile memory disk. */
+        if (!cow_enabled) return EROFS;
+        lck_mtx_lock(&lithium_ufs_lock);
+        int error = su.failed ? EIO : 0;
+        lck_mtx_unlock(&lithium_ufs_lock);
+        return error;
+\tdefault:
+\t\treturn ENOTTY;''')
+    replace('MIN(su.nblocks * UFS_BLOCK / su.secsize, INT_MAX)', 'MIN((cow_enabled ? LC_ROOT_BYTES : su.nblocks * UFS_BLOCK) / su.secsize, INT_MAX)')
+    replace('lithium_ufs_write(__unused dev_t dev, __unused struct uio *uio, __unused int ioflag)\n{\n\treturn EROFS;\n}', '''lithium_ufs_write(dev_t dev, struct uio *uio, __unused int ioflag)
+{
+    if (!cow_enabled) return EROFS;
+    return physio(lithium_ufs_strategy, NULL, dev, B_WRITE, minphys, uio, (int)su.secsize);
+}''')
+    replace('\treturn 0;\n}\n\n/* Future read-only root hook;', '''    uint32_t cow = 0;
+    if (PE_parse_boot_argn("lithium_root_cow", &cow, sizeof(cow)) && cow) {
+        if (cow != 1 || expected_crc != 0x6143e5cf || !expected_crc) return EINVAL;
+        error = ufs_cow_init(node);
+        if (error) return error;
+    }
+\treturn 0;
+}
+
+/* Future read-only root hook;''')
+    edits[path] = (old, new)
+    edits['bsd/dev/lithium_ufs_cow.h'] = ('', (ROOT / 'ports/lithium/native/ufs_cow.h').read_text())
+    path = 'bsd/vfs/vfs_subr.c'
+    old = helper.baseline(path, PATCH)
+    anchor = '\t\tmp = vfs_rootmountalloc_internal(vfsp, "root_device");\n\t\tmp->mnt_devvp = rootvp;\n'
+    assert old.count(anchor) == 1
+    new = old.replace(anchor, anchor + '''#if defined(ARM64_BOARD_CONFIG_LITHIUM)
+        extern int lithium_ufs_root_is_writable(dev_t);
+        if (lithium_ufs_root_is_writable(vnode_specrdev(rootvp))) {
+            mp->mnt_flag &= ~MNT_RDONLY;
+            printf("LITHIUM ROOT: mounting volatile HFS root read-write\\n");
+        }
+#endif
+''')
+    edits[path] = (old, new)
+    patch = 'Subject: lithium: bounded volatile root overlay and preboot seed\n\nPhysical UFS commands remain READ-only. Opt-in via lithium_root_cow=1.\n'
+    for path, (old, new) in edits.items():
+        patch += f'diff --git a/{path} b/{path}\n'
+        if not old: patch += 'new file mode 100644\n'
+        patch += ''.join(difflib.unified_diff(old.splitlines(True), new.splitlines(True), fromfile='a/'+path if old else '/dev/null', tofile='b/'+path))
+    PATCH.write_text(patch)
+    print(PATCH)
+
+
+if __name__ == '__main__':
+    main()

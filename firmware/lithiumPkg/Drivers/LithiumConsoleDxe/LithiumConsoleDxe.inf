@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+[Defines]
+  INF_VERSION = 0x00010005
+  BASE_NAME = LithiumConsoleDxe
+  FILE_GUID = C98923BB-206F-45BC-A028-58B326562659
+  MODULE_TYPE = DXE_DRIVER
+  VERSION_STRING = 0.1
+  ENTRY_POINT = LithiumConsoleEntry
+[Sources]
+  LithiumConsoleDxe.c
+[Packages]
+  MdePkg/MdePkg.dec
+  lithiumPkg/lithiumPkg.dec
+[LibraryClasses]
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  CacheMaintenanceLib
+  DebugLib
+[Protocols]
+  gEfiSimpleTextOutProtocolGuid
+[Depex]
+  TRUE

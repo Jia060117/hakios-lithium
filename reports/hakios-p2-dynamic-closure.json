@@ -1,0 +1,126 @@
+{
+  "schema": 1,
+  "baseline": {
+    "project": "HakiOS",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2"
+  },
+  "attempt": "HakiOS lithium R24",
+  "package": {
+    "image_sha256": "4f8946ab4b69cfd4eeeb39d8bf954243bc93d8b2b0b18c3a1af92205931d1bc0",
+    "image_bytes": 15740928,
+    "kernel_sha256": "648320e505088c834eff8c8c0cb17b4ee29ba6d96a4c7da8aba1554fbe063748",
+    "loader_sha256": "0beadf5f05ebbaea739effd75d02909c9a883629c02b07a17a6e66e26f6ed96d",
+    "fd_sha256": "5db5b29ad6da2ebd71e6a601e134ab08760b6461a89f4e3ddb605129a63f9886",
+    "payload_sha256": "c9e37fd67234ce3e68119543abc6ed68bf7b39454855a1af84ff27f091307872",
+    "cmdline": "bootcpu=1 cpus=1 serial=3 -v ufs=2 lithium_storage_test=1 systrace=2 systrace_name=df loader_return_after=120 lithium_ios14_test=1",
+    "stock_dtb_table_sha256": "ab929abf55ad4822ae83489a58d6b550b7b24ea8398ce8ead1de7b1d2caed6aa",
+    "test_profile": "p2-ios14-dynamic",
+    "ramdisk_sha256": "930088ab68d52ac6b3d551299b3c0815ed132b6772697e86f8e2fb3fe14529ee",
+    "dynamic_init_sha256": "84f5f0211a47be09dc5eea3ff736f44d899712f7a4a5d4392437d702951fb0a8",
+    "loader_identity": {
+      "target": "iPhone10,1 / D20AP",
+      "source_sha256": "1827dfc68e87b822c43e86781872caa6a5d490efc5145a2a60feba0e2bd54b93",
+      "generator_sha256": "ae6cebdcfa22994661211e0bc35fd14770484173f951ceef6a65e9b84ad3ff99",
+      "header_sha256": "71874512c290ec24d799173f2aa10131c6f61573d598c0e281252e373c5b6630",
+      "placeholder": false
+    }
+  },
+  "dynamic_tools_passed": true,
+  "P2_overall_passed": false,
+  "launchd_verified": false,
+  "ios14_compatibility_verified": false,
+  "original_18H17_binaries_unmodified": true,
+  "measurements": {
+    "root_switch_rc": 0,
+    "root_readonly": true,
+    "cache_header_match": true,
+    "shared_region_mapping_count": 3,
+    "shared_region_slide": 337739776,
+    "shared_region_rc": 0,
+    "legacy_mach_platform": 2,
+    "legacy_mach_sdk": "0x000e0800",
+    "legacy_mach_message_id": 200,
+    "legacy_mach_allowed": true,
+    "child_budgets_seconds": {
+      "DF": 60,
+      "MOUNT": 30
+    },
+    "result": "PASS",
+    "children": {
+      "DF": {
+        "pid": 2,
+        "waited": true,
+        "exit_code": 0,
+        "signal": 0,
+        "timeout": false,
+        "wait_errno": 0,
+        "cleanup": "NONE",
+        "kill_sent": false,
+        "kill_rc": 0,
+        "kill_errno": 0,
+        "elapsed_ms": 31908,
+        "clock_valid": true,
+        "polls": 257,
+        "wait_status": 0,
+        "fork_errno": 0,
+        "reason_namespace": 0,
+        "reason_code": "0x0",
+        "csflags": "0x22000001"
+      },
+      "MOUNT": {
+        "pid": 3,
+        "waited": true,
+        "exit_code": 0,
+        "signal": 0,
+        "timeout": false,
+        "wait_errno": 0,
+        "cleanup": "NONE",
+        "kill_sent": false,
+        "kill_rc": 0,
+        "kill_errno": 0,
+        "elapsed_ms": 5209,
+        "clock_valid": true,
+        "polls": 46,
+        "wait_status": 0,
+        "fork_errno": 0,
+        "reason_namespace": 0,
+        "reason_code": "0x0",
+        "csflags": "0x22000001"
+      }
+    },
+    "clock_ticks_start": 1689352837,
+    "clock_ticks_end": 3997885006,
+    "frequency_hz": 19200000,
+    "hardware_elapsed_ms": 120236,
+    "clock_valid": true,
+    "ppi27_start": 0,
+    "ppi27_end": 11055,
+    "irq_delta": 11055,
+    "samples": 2,
+    "stalled": 0,
+    "min_step": 3490,
+    "last_timer_ppi27": 10457,
+    "last_timer_heartbeat": 12,
+    "last_timer_elapsed_ms": 110181
+  },
+  "bounded_legacy_abi_verified": [
+    "shared_region_438",
+    "exact_ios14_8_legacy_mach_msg"
+  ],
+  "acceptance_scope": "Original dyld/cache and original DF/MOUNT both exit0 without cleanup, timeout or panic",
+  "limitations": [
+    "No launchd/basic service/graphics/touch/SpringBoard acceptance",
+    "DF took31.908s; prior30s budget was too short; cold-start root cause not established",
+    "DF BSD trace summary not visible; raw kernel log not captured"
+  ],
+  "evidence_sha256": {
+    "reports/hakios-device-r24.json": "032d98cbda193e287b7aff17149e26d10d99cdabce1f1fadda0ce2dc54e6e3e8",
+    "reports/local/20261116-002710-811022-hakios-preflight/r24-original-df-mount-pass.jpg": "ef582ebb654958e1e8e26f022e23e707e7553dd08902172ee1c7bc6d76cc0551",
+    "reports/local/20261116-002710-811022-hakios-preflight/r24-screen-transcription.txt": "31530a0f95d06a8eba42c5885973fda47d3d327ac73c3057571f5846a7a3a4b7",
+    "reports/local/20261116-002710-811022-hakios-preflight/test-contract.json": "b27ff1337142d33c16df96d8e60d5007dc5ffbcc2286645cddc81e3666c37935"
+  },
+  "qemu_used": false,
+  "legacy_7195_used": false,
+  "archival_device_operations": false
+}

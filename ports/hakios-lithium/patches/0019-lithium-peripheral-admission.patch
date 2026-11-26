@@ -1,0 +1,23 @@
+--- a/drivers/input/hakios.input.c
++++ b/drivers/input/hakios.input.c
+@@ -272,6 +272,10 @@
+ 	.d_mmap = eno_mmap, .d_strategy = eno_strat, .d_type = 0
+ };
+ 
++#if defined(LITHIUM_ARMV8_0)
++#include "../../../../devices/lithium/peripherals/kernel.inc"
++#endif
++
+ void
+ hakios_input_init(void)
+ {
+@@ -281,6 +285,9 @@
+ 		printf("hakios-touch: cannot create the device\n");
+ 	}
+ 	exit_call = thread_call_allocate(exit_hold_elapsed, NULL);
++#if defined(LITHIUM_ARMV8_0)
++	lithium_peripheral_init();
++#endif
+ 	hakios_cpufreq_init();
+ 	hakios_virtio_input_init();
+ 	hakios_goodix_init();

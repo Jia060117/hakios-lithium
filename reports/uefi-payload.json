@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "target": "iOS 14.8 / 18H17",
+  "loader_efi_sha256": "9af607ab2aebeb3bd60f4fbcf87c7ce0b49bdf7eba5c99f19db941647e358386",
+  "payload": {
+    "sha256": "de86d99a23e702b4ecad3d9f0d8035730218c68f21d867d951c982ff7c7bb46f",
+    "bytes": 1048576,
+    "base": "0x44d00000",
+    "end_exclusive": "0x44e00000",
+    "loader_sha256": "9af607ab2aebeb3bd60f4fbcf87c7ce0b49bdf7eba5c99f19db941647e358386",
+    "loader_bytes": 36352,
+    "loader_fnv64": "0x75f981c4a004af25",
+    "mtools_file_roundtrip_verified": true,
+    "generator_sha256": "c7dae76e97d529feec9a5fa63a81a15d32da28c3a61124a5d097f2847cd86eb3",
+    "generated_header_sha256": "37d9369ddd0693ebf2eafdfadb955e75ac54f2438b93a69c44b9745b5ea1703f"
+  },
+  "build_tag": "0x23523fa6b21e4e74",
+  "hardware_image_sha256": "f3d3f4b0fc89dc12c2fb183b2c3f000c41a3696cec62e274597160ef70251636",
+  "qemu_image_sha256": "c04f330cee03513c863b1aa82c2329b262d55adf342e34a4a08ddd9b40c492a8",
+  "qemu_fat_read_and_efi_entry_verified": true,
+  "qemu_protocol_revision": "0x20000",
+  "normal_qemu_passed": true,
+  "strict_alignment_qemu_passed": true,
+  "corrupt_efi_rejected": true,
+  "runtime_file_check": "FNV64; host inputs use SHA-256 and independent mtools readback",
+  "host_filesystem_roundtrip_verified": true,
+  "hardware_efi_execution_verified": true,
+  "hardware_status": "Attempt 8: EFI entry and protocol verified visually; five cyan blocks, no red; Linux body and automatic Android return remain unverified",
+  "xnu_boot_performed": false,
+  "ios_userspace_started": false,
+  "source_pins": {
+    "Mu": "6b3d90b79e191e08171bfedd3980234a7e49d340",
+    "DarwinBoot": "5243c68ec332a227fe3680cd5da6d5a0e127035c",
+    "XNU7195reference": "776661b72c2db9861865df68d309f6f35faccff4"
+  },
+  "reports": [
+    "reports/local/20261112-214855-574819-uefi/validation/uefi-qemu.json",
+    "reports/local/20261112-214855-574819-uefi/validation/uefi-qemu-strict-align.json",
+    "reports/local/20261112-214855-574819-uefi/validation/uefi-qemu-payload-reject.json"
+  ],
+  "hardware_verification_scope": "Visual conditional FAT FILE AND EFI PASS on attempt 8; user text, no photograph or recovered same-boot binary journal",
+  "hardware_same_boot_journal_verified": false,
+  "hardware_attempt_report": "reports/uefi-device-attempt-08.json",
+  "executing_cpu_stock_copy_comparison_passed_visually": true,
+  "current_linux_early_candidate_report": "reports/uefi-linux-early.json"
+}

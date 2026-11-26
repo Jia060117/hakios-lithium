@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "revision": "R38-perf-fixed03",
+  "attempt_id": "r37-frequency-12",
+  "package": "artifacts/hakios/lithium-ios16/phase4-r37-ram-frequency-12",
+  "image": {
+    "path": "lithium-hakios-ios16-r37-ram-frequency-12.img",
+    "bytes": 16334848,
+    "sha256": "e5dd2cd4d7fd35a18ca47ad6cc2626effa559c9036ca88ce33debe09ffbe0e43"
+  },
+  "inputs": {
+    "kernel": "/home/jia/ios-mix1-build/hakios-lithium-ios16/hakios-kernel.r38-clock-power05",
+    "kernel_sha256": "eb5b407451e41be6b2b14ff4c6b7d24d034b1ba30470e396de0d989c35a83a4a",
+    "loader_sha256": "bc36c414f78f75b7bc082e35c6db70fb3d04ec5e9981ba4ae845b3b7c2bad7bf",
+    "ram_fd_sha256": "630655ed21110e44e69077dc40ffe7b06e17155a8766acc7383c15b7df9094be",
+    "ram_root_sha256": "133d35b30af8f59c667b64aafe618b29f95355b84e7fde7e723863045ff332b8",
+    "frozen_r34_ram_sha256": "d1bbc6bf94defeacacf3ffbbae32bd3e227b70ef74bb1ceda2fb5539f8ad0d3b"
+  },
+  "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_clock_diag=1 cpu_power_diag=1 cpu_freq_pmu_setup=0 cpu_sanity=1 cpu_spmi_diag=1 cpu_perf_fixed=1 cpu_freq_diag=1",
+  "host_build_passed": true,
+  "package_readback": {
+    "android_header_and_sha1": true,
+    "xnup_exact_entries": true,
+    "fat_loader": true,
+    "mu_fd": true,
+    "resident_ram_volume_unchanged": true,
+    "smp_pid1_hold": true,
+    "seeded_uefi_owner": true,
+    "shim_copy_length": true,
+    "modeled_relocation_exact": true
+  },
+  "physical_ufs_provider_absent": true,
+  "same_args_kernel_ram_payload_as_frequency11": true,
+  "only_new_hardware_acceptance_change": "Ignore primary MODE ACTIVE bit30 when comparing writable configuration; LOCK bit31 still separately required",
+  "new_clock_write_values": false,
+  "max_clock_writes": 11,
+  "regulator_writes": 0,
+  "clock_voltage_fix_applied": false,
+  "measured_cpu_mhz": null,
+  "xnu_four_cpu_verified": false,
+  "new_device_operations": 0,
+  "booted": false,
+  "test_result": "evidence/cpu-r38-20261121/pll-bit30-tests/results.json",
+  "source_review": "evidence/cpu-r38-20261121/pll-bit30-source/report.json",
+  "main_review": "evidence/cpu-r38-20261121/pll-bit30-main/main-source-recheck.json",
+  "build_command": "scripts/build-hakios-r37-ram-support.py --revision perf-fixed03",
+  "package_command": "scripts/package-hakios-cpu-r38-clock.py --perf-active",
+  "target_cpu_hz": 307200000,
+  "target_is_initial_low_rate_validation_not_final_performance": true,
+  "normal_return": "180s kernel timer plus USB drain/proof,10s UEFI delay/Fastboot; pre-XNU failure retains screen",
+  "host_tests_passed": true,
+  "host_test_counts": {
+    "base_core_checks": 466,
+    "base_helper_cases": 103,
+    "base_helper_checks": 23169,
+    "new_core_cases": 14,
+    "new_core_checks": 953,
+    "new_helper_cases": 12,
+    "new_helper_checks": 6689,
+    "negative_controls": 2
+  },
+  "main_test_review": "evidence/cpu-r38-20261121/pll-bit30-main/main-test-review.json",
+  "authors": {
+    "main": "production mask/build/package/integration/photo/runtime record",
+    "Zeno": "independent primary-bit30 source chain review",
+    "Curie": "focused actual core/helper regression fixtures and ASan/UBSan execution"
+  }
+}

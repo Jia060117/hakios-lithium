@@ -1,0 +1,241 @@
+diff --git a/scripts/test-hakios-lithium-peripherals-next.py b/scripts/test-hakios-lithium-peripherals-next.py
+new file mode 100644
+index 0000000..b8008c6
+--- /dev/null
++++ b/scripts/test-hakios-lithium-peripherals-next.py
+@@ -0,0 +1,132 @@
++#!/usr/bin/env python3
++"""Test isolated touch follow-ups without changing frozen display baselines or hardware."""
++
++import argparse
++from contextlib import nullcontext
++import hashlib
++import json
++import os
++from pathlib import Path
++import subprocess
++import sys
++import tempfile
++import time
++
++ROOT = Path(__file__).resolve().parents[1]
++SOURCE = ROOT / 'maintenance/hakios-lithium/peripherals-next'
++R20_IMAGE = ROOT / 'artifacts/hakios/lithium-ios16/phase4-r20-display/lithium-hakios-ios16-r20-display.img'
++R20_SHA256 = '3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82'
++R20_REPORT = ROOT / 'reports/hakios-ios16-device-r20-display.json'
++R20_PACKAGE_CHECKS = ROOT / 'reports/hakios-ios16-display-r20-checks.json'
+warning: in the working copy of 'scripts/test-hakios-lithium-peripherals-next.py', LF will be replaced by CRLF the next time Git touches it
++R15_IMAGE = ROOT / 'artifacts/hakios/lithium-ios16/baseline-desktop-r15.img'
++R15_SHA256 = 'ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55'
++SUITES = ('qup-combined', 'touch-delivery', 'irq-affinity-audit', 'a5xx-fence-packet',
++          'ft5x46-frame')
++
++
++def digest(path):
++    return hashlib.sha256(path.read_bytes()).hexdigest()
++
++
++def frozen_check():
++    if digest(R20_IMAGE) != R20_SHA256:
++        raise RuntimeError('Frozen R20-display baseline image changed')
++    if digest(R15_IMAGE) != R15_SHA256:
++        raise RuntimeError('Frozen R15 desktop baseline changed')
++    report = json.loads(R20_REPORT.read_text(encoding='utf-8'))
++    checks = json.loads(R20_PACKAGE_CHECKS.read_text(encoding='utf-8'))
++    if (report.get('revision') != 'R20-display' or
++            report.get('image_sha256') != R20_SHA256 or
++            report.get('display_acceptance', {}).get('passed') is not True):
++        raise RuntimeError('R20-display hardware acceptance record does not match the frozen image')
++    if (checks.get('candidate') != 'R20-display' or
++            checks.get('image_sha256') != R20_SHA256 or checks.get('passed') is not True):
++        raise RuntimeError('R20-display package-check record does not match the frozen image')
++    if report.get('physical_touch_verified', False) is not False:
++        raise RuntimeError('R20 report must keep physical touch unverified')
++    return {'r20_image_sha256': R20_SHA256, 'r20_display_acceptance': True,
++            'r15_image_sha256': R15_SHA256, 'frozen_baselines_unchanged': True}
++
++
++def sources(selected):
++    files = [SOURCE / (suite + suffix) for suite in selected
++             for suffix in ('.h', '-test.c')]
++    previous = ROOT / 'reports/overnight-20261118/accepted-host-tests/passed.json'
++    names = json.loads(previous.read_text(encoding='utf-8'))['source_sha256']
++    files += [ROOT / name for name in names]
++    files += [Path(__file__).resolve()]
++    return {p.relative_to(ROOT).as_posix(): digest(p) for p in files}
++
++
++def run(argv, timeout, env):
++    started = time.monotonic()
++    result = subprocess.run(argv, capture_output=True, text=True, timeout=timeout, env=env)
++    print(result.stdout, end='', flush=True)
++    if result.stderr:
++        print(result.stderr, end='', file=sys.stderr, flush=True)
++    return {'argv': argv, 'exit_code': result.returncode, 'stdout': result.stdout,
++            'stderr': result.stderr, 'elapsed_seconds': time.monotonic() - started}
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('--compiler', default='clang')
++    parser.add_argument('--suite', choices=SUITES, action='append')
++    parser.add_argument('--skip-existing', action='store_true',
++                        help='Run only the selected new suites; not a full regression')
++    parser.add_argument('--build-dir', type=Path, help='New directory for retained local evidence')
++    args = parser.parse_args()
++    selected = args.suite or list(SUITES)
++    before = frozen_check()
++    for suite in selected:
++        if not (SOURCE / (suite + '-test.c')).is_file():
++            parser.error('Missing test source: ' + suite)
++    original = sources(selected)
++    if args.build_dir:
++        output = args.build_dir.resolve()
++        output.mkdir(parents=True, exist_ok=False)
++        destination = nullcontext(output)
++    else:
++        destination = tempfile.TemporaryDirectory(prefix='lithium-touch-next-')
++    env = {**os.environ, 'ASAN_OPTIONS': 'halt_on_error=1',
++           'UBSAN_OPTIONS': 'halt_on_error=1:print_stacktrace=1',
++           'PYTHONDONTWRITEBYTECODE': '1'}
++    with destination as directory:
++        output = Path(directory)
++        checks = []
++        if not args.skip_existing:
++            print('RUN existing 14 peripheral suites', flush=True)
++            checks.append(run([sys.executable, '-B', str(ROOT / 'scripts/test-hakios-lithium-peripherals.py'),
++                               '--compiler', args.compiler, '--build-dir', str(output / 'previous')],
++                              300, env))
++        for suite in selected:
++            binary = output / (suite + '-test')
++            print('BUILD ' + suite, flush=True)
++            build = run([args.compiler, '-std=c11', '-pedantic', '-Wall', '-Wextra', '-Werror',
++                         '-g', '-O1', '-fno-omit-frame-pointer', '-fsanitize=address,undefined',
++                         str(SOURCE / (suite + '-test.c')), '-o', str(binary)], 60, env)
++            checks.append(build)
++            if build['exit_code'] == 0:
++                test = run([str(binary)], 30, env)
++                test.update(suite=suite, binary_sha256=digest(binary))
++                checks.append(test)
++        after = frozen_check()
++        if original != sources(selected):
++            raise RuntimeError('Sources changed during tests; no pass evidence published')
++        passed = all(c['exit_code'] == 0 for c in checks) and before == after
++        evidence = {'scope': 'isolated host-only QUP, FT5x46 frame/state, touch delivery, IRQ affinity policy, and A5xx packet models; no hardware',
++                    'passed': passed, 'full_existing_regression': not args.skip_existing,
++                    'new_suites': selected, 'checks': checks, 'source_sha256': original,
++            'frozen_before': before, 'frozen_after': after,
++                    'production_kernel_integration': False, 'device_operations': False,
++                    'physical_touch_verified': False, 'gpu_hardware_verified': False}
++        if args.build_dir:
++            (output / ('passed.json' if passed else 'failed.json')).write_text(
++                json.dumps(evidence, indent=2) + chr(10), encoding='utf-8')
++        print(('PASS' if passed else 'FAIL') + ': isolated next-phase host tests; R20/R15 baselines preserved')
++        if not passed:
++            raise SystemExit(1)
++
++
++if __name__ == '__main__':
++    main()
+warning: in the working copy of 'reports/hakios-ios16-touch-step4-host.md', LF will be replaced by CRLF the next time Git touches it
+diff --git a/reports/hakios-ios16-touch-step4-host.md b/reports/hakios-ios16-touch-step4-host.md
+new file mode 100644
+index 0000000..bb4d551
+--- /dev/null
++++ b/reports/hakios-ios16-touch-step4-host.md
+@@ -0,0 +1,41 @@
++# HakiOS iOS 16 lithium touch: Step 4 host gate and R20 baseline
++
++Date: 2026-11-19. Scope: continue touch work from the user-confirmed R20-display baseline. No phone query/boot/reboot, ADB/Fastboot device command, partition or userdata operation, or QEMU was performed.
++
++## Baseline decision
++
++The user clarified that R19 was tested but its display resolution was wrong, and asked to stop spending time on R19. R19 is excluded from touch acceptance and from this host test runner's freeze gate. R20-display is the active display reference: 1080x2040 BGR24, 360x680 points at scale 3. The R20 image's actual SHA256 is 3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82, matching its hardware acceptance report. The preserved R15 desktop image also still matches its recorded SHA256.
++
++## Host changes and checks
++
++Updated scripts/test-hakios-lithium-peripherals-next.py:1,17-48 so the next-phase host tests guard the immutable R20-display and R15 desktop images, and cross-check R20's hardware display acceptance and package-check reports. It no longer requires the obsolete R19 evidence snapshots to match the live working tree. It does not update or bypass the R19 contract; that contract remains a historical frozen record.
++
++Commands and results:
++
++- WSL full host runner: wsl.exe -d Ubuntu --exec python3 -B /mnt/f/IOS-MIX1/scripts/test-hakios-lithium-peripherals-next.py --compiler clang — PASS. The existing 14 peripheral suites and 5 next-stage suites passed under ASan/UBSan. Coverage included QUP combined-transfer models and fault sweeps, FT5x46 frame/state parsing, delivery state machine, IRQ-affinity policy, A5xx fence packet model, and coordinate/queue behavior.
++- Exact patch harness: WSL Python test-touch-batch-patch.py with Clang, ASan and UBSan — PASS. It compiled and exercised the exact hakios_touch_post_batch candidate from patch 0020 with HakiOS touch_feel_add and count_fingers helpers.
++- Python syntax compilation for the adjusted runner — PASS.
++- The runner verified the R20-display and R15 image hashes before and after its tests. No image, production kernel source, or userdata image was changed.
++
++## Production integration remains blocked
++
++There is still no production FT5x46/QUP6 backend. ports/hakios-lithium/peripherals/kernel.inc:29-31 intentionally reports platform_backend_unverified with mmio=0, irq_attached=0, and hid_events=0. The upstream /dev/hakios-touch producer/consumer route exists, and patch 0020 only adds batched queue posting; neither fact means physical input is wired to it.
++
++The QUP candidate is not yet safe as the first hardware transaction: maintenance/hakios-lithium/peripherals-next/qup-combined.h:104-115 fails closed unless every platform ownership attestation is present, then writes QUP SW_RESET at line 115. The board's QUP ownership, live clock and pinmux state are not verified, so static DT data cannot justify enabling those attestations or issuing that reset. The DTS also contains a GPIO105/125 interrupt conflict (artifacts/stock/V9.5.2.0.NAHCNFA/lithium-stock.dts:4866-4867,4882), while reset GPIO89 and shared display-related supply ownership must remain untouched until verified. Runtime controller ID/firmware, split-report consistency, IRQ delivery and the end-to-end queue/backboardd/SpringBoard path are all unverified.
++
++Thus this step clears a stale R19 test gate and confirms the host models; it does not produce a flashable or bootable touch package, and does not claim physical touch support.
++
++## Next steps
++
++1. Review the pinned QUPv2 transfer source and implement/test a non-reset initial transaction path, including bounded cleanup that never falsely releases a poisoned controller. Keep hardware MMIO unreachable until platform ownership prerequisites are independently established.
++2. Add a default-off lithium FT5x46 producer in the active HakiOS port, using the existing queue API and the R20 1080x2040 mapping. Keep IRQ and polling controls separate; do not select GPIO105 or GPIO125 as proven until runtime evidence resolves the conflict.
++3. Run the full HakiOS build, integration/static/package checks and freeze the resulting candidate before any device test. Only then use the authorized temporary-boot path; do not write partitions or userdata.
++4. First device round should collect only bounded controller identity, QUP result/error counters and IRQ counts, without reset, rail toggles or HID injection. Proceed to raw frames and then UI events only if each prior result is valid.
++
++## Parallel execution record
++
++Four read-only audit agents were started in bounded, disjoint scopes covering QUP first-transfer safety, GPIO/IRQ/GIC routing, HakiOS input integration and R19/R20 freeze status. None returned a reviewable deliverable within the bounded wait windows; all were closed and no agent result or code change was used. Two initial spawn attempts were rejected while the session agent-thread limit was full; the audits were started after capacity became available. The main agent independently checked the admission hook, QUP reset gate, queue patch, R20 acceptance record and host-test results. No patch conflict or agent-authored change was merged.
++
++## Verification boundary
++
++R20 display acceptance is confirmed by prior user report/photo and its device report. Physical touch, QUP ownership/clock/pads, FT5x46 runtime identity, GPIO interrupt source, shared-power handoff, and input events on the screen remain unverified. No host model is treated as a substitute for those hardware checks.
+diff --git a/reports/hakios-ios16-touch-step4-host.json b/reports/hakios-ios16-touch-step4-host.json
+new file mode 100644
+index 0000000..410e1e0
+--- /dev/null
++++ b/reports/hakios-ios16-touch-step4-host.json
+@@ -0,0 +1,48 @@
++{
++  "date": "2026-11-19",
++  "scope": "touch host gate; R20-display baseline",
++  "r19_used_as_gate": false,
++  "r19_display_acceptance": "excluded at user direction; tested but incorrect resolution",
++  "r20_baseline": {
++    "image": "artifacts/hakios/lithium-ios16/phase4-r20-display/lithium-hakios-ios16-r20-display.img",
++    "sha256": "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82",
++    "display_acceptance": true,
++    "geometry": "1080x2040 BGR24; 360x680 points at scale 3"
++  },
++  "r15_baseline_sha256": "ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55",
++  "changes": [
++    "scripts/test-hakios-lithium-peripherals-next.py now verifies R20-display and R15 baselines rather than requiring current R19 live evidence to match historical snapshots"
++  ],
++  "host_tests": {
++    "existing_peripheral_suites": {"count": 14, "result": "pass", "sanitizers": ["ASan", "UBSan"]},
++    "next_stage_suites": {"count": 5, "result": "pass", "sanitizers": ["ASan", "UBSan"]},
++    "exact_patch_0020_host_harness": "pass",
++    "python_syntax": "pass",
++    "elapsed_seconds": {"full_regression": 19.5, "exact_queue_harness": 10.9}
++  },
++  "hardware": {
++    "phone_queried": false,
++    "phone_booted": false,
++    "partition_or_userdata_written": false,
++    "qemu_used": false,
++    "physical_touch_verified": false,
++    "production_touch_backend_integrated": false,
++    "touch_package_built_or_frozen": false
++  },
++  "unverified": [
++    "QUP6 ownership, clock and pad state",
++    "FT5x46 runtime identity and firmware",
++    "GPIO105 versus GPIO125 IRQ selection and delivery",
++    "reset GPIO89 and shared L14/LAB/IBB power ownership",
++    "split 32+31-byte report consistency",
++    "physical event delivery through HakiOS queue, backboardd and SpringBoard"
++  ],
++  "parallel_execution": {
++    "agents_started": 4,
++    "agents_returned_deliverable": 0,
++    "agents_closed_after_bounded_wait": 4,
++    "initial_spawn_attempts_blocked_by_thread_limit": 2,
++    "agent_changes_merged": 0
++  },
++  "next_gate": "complete default-off production QUP6/FT5x46 integration, full HakiOS build/check/freeze, then controlled temporary-boot diagnostics"
++}

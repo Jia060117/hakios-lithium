@@ -1,0 +1,188 @@
+--- a/userland/src/init.c
++++ b/userland/src/init.c
+@@ -89,6 +89,169 @@
+ 	}
+ 	return NULL;
+ }
++
++/* LITHIUM TOUCH diagnostic init: begin. */
++/*
++ * An opt-in PID1 hold in the existing init, not another init or a service.
++ * boot_arg() remains unchanged for every existing caller. Its first-value,
++ * fixed-length result is only the opt-in hint; admission checks a complete
++ * snapshot as well, before any root/Data operation in main.
++ */
++static unsigned
++lithium_touch_diag_arg(const char *args, const char *name, const char **value, size_t *length)
++{
++	unsigned count = 0;
++	size_t wanted = strlen(name);
++
++	*value = NULL;
++	*length = 0;
++	for (const char *p = args; *p;) {
++		while (*p == ' ') {
++			p++;
++		}
++		const char *word = p, *key_end;
++		while (*p && *p != ' ') {
++			p++;
++		}
++		for (key_end = word; key_end < p && *key_end != '='; key_end++) {
++		}
++		if ((size_t)(key_end - word) == wanted && strncmp(word, name, wanted) == 0) {
++			count++;
++			*value = key_end < p ? key_end + 1 : NULL;
++			*length = key_end < p ? (size_t)(p - key_end - 1) : 0;
++		}
++	}
++	return count;
++}
++
++static int
++lithium_touch_diag_is(const char *value, size_t length, const char *wanted)
++{
++	return value != NULL && length == strlen(wanted) && strncmp(value, wanted, length) == 0;
++}
++
++static int
++lithium_touch_diag_storage(const char *args)
++{
++	static const char *const names[] = {
++		"root_apfs", "rootdev", "root_device", "apfs_volume",
++		"hfs_bench", "hfsdiag", "fsdiag", "lsdbfinal",
++	};
++	const char *value;
++	size_t length;
++
++	for (unsigned i = 0; i < sizeof(names) / sizeof(names[0]); i++) {
++		if (lithium_touch_diag_arg(args, names[i], &value, &length) != 0) {
++			return 1; /* Presence, including an empty value or =0, is forbidden. */
++		}
++	}
++	for (const char *p = args; *p;) {
++		while (*p == ' ') {
++			p++;
++		}
++		if (strncmp(p, "ufs_", 4) == 0 || strncmp(p, "var_", 4) == 0) {
++			return 1;
++		}
++		while (*p && *p != ' ') {
++			p++;
++		}
++	}
++	/* The loader's usual rd=md0 is allowed; a flash root is not. */
++	unsigned roots = lithium_touch_diag_arg(args, "rd", &value, &length);
++	return roots > 1 || (roots == 1 && !lithium_touch_diag_is(value, length, "md0"));
++}
++
++/*
++ * Boolean routing admission: 0 keeps the original main; 1 enters a hold.
++ * A NULL reason admits a RAM diagnostic session. A non-NULL reason rejects
++ * its configuration but still holds: never fall through to mount or halt.
++ * No assignment (or one exact touch_diag=0) leaves the normal init intact.
++ */
++static int
++lithium_touch_diag_admission(const char **reason, unsigned *seconds)
++{
++	const char *requested = boot_arg("touch_diag"), *value;
++	char args[1024];
++	size_t length, size = sizeof(args);
++
++	*reason = NULL;
++	*seconds = 0;
++	if (requested == NULL) {
++		return 0;
++	}
++	*reason = "bootargs_unavailable";
++	if (sysctlbyname("kern.bootargs", args, &size, NULL, 0) != 0) {
++		return 1;
++	}
++	*reason = "bootargs_invalid_or_truncated";
++	if (size == 0 || size >= sizeof(args) || args[size - 1] != 0) {
++		return 1;
++	}
++	for (size_t i = 0; i + 1 < size; i++) {
++		if ((unsigned char)args[i] < 0x20 || (unsigned char)args[i] > 0x7e) {
++			return 1; /* No embedded NUL, quotes-as-whitespace or control separators. */
++		}
++	}
++	unsigned count = lithium_touch_diag_arg(args, "touch_diag", &value, &length);
++	if (count == 1 && strcmp(requested, "0") == 0 && lithium_touch_diag_is(value, length, "0")) {
++		return 0;
++	}
++	*reason = "touch_diag_invalid_or_duplicate";
++	if (count != 1 || strcmp(requested, "1") != 0 ||
++	    !lithium_touch_diag_is(value, length, "1")) {
++		return 1;
++	}
++	*reason = "touch_stage_requires_exact_1";
++	if (lithium_touch_diag_arg(args, "touch_stage", &value, &length) != 1 ||
++	    !lithium_touch_diag_is(value, length, "1")) {
++		return 1;
++	}
++	*reason = "ufs_requires_exact_0";
++	if (lithium_touch_diag_arg(args, "ufs", &value, &length) != 1 ||
++	    !lithium_touch_diag_is(value, length, "0")) {
++		return 1;
++	}
++	*reason = "storage_configuration_present";
++	if (lithium_touch_diag_storage(args)) {
++		return 1;
++	}
++	*reason = "loader_timer_invalid_or_duplicate";
++	if (lithium_touch_diag_arg(args, "loader_return_after", &value, &length) != 1 ||
++	    value == NULL || length == 0 || value[0] < '1' || value[0] > '9') {
++		return 1;
++	}
++	unsigned n = 0;
++	for (size_t i = 0; i < length; i++) {
++		unsigned digit = (unsigned char)value[i] - (unsigned)'0';
++		if (digit > 9 || n > (UINT32_MAX - digit) / 10) {
++			return 1;
++		}
++		n = n * 10 + digit;
++	}
++	*seconds = n;
++	*reason = NULL;
++	return 1;
++}
++
++static int
++lithium_touch_diag_wait(const char *reason, unsigned seconds)
++{
++	if (reason != NULL) {
++		printf("LITHIUM TOUCH session state=blocked reason=%s\n", reason);
++	} else {
++		printf("LITHIUM TOUCH session state=ready pid=1 ram_only=1 timer_seconds=%u\n", seconds);
++	}
++	printf("LITHIUM TOUCH session state=wait owner=kernel_loader_return_after\n");
++	/*
++	 * No local countdown or shutdown. This function must not return to main:
++	 * the existing kernel timer owns the end of this boot. A broken timer
++	 * cannot be repaired here. Interrupted sleeps are simply retried.
++	 */
++	for (;;) {
++		(void)usleep(1000000);
++	}
++}
++/* LITHIUM TOUCH diagnostic init: end. */
+ 
+ /* A directory of this image (or anything else) shown in place of one of the volume's: bindfs. */
+ static int
+@@ -1536,6 +1699,15 @@
+ 		return 0;
+ 	}
+ 
++	{
++		const char *reason;
++		unsigned seconds;
++
++		if (lithium_touch_diag_admission(&reason, &seconds)) {
++			return lithium_touch_diag_wait(reason, seconds);
++		}
++	}
++
+ 	printf("\n=== init: process %d, started as %s ===\n", getpid(), argc > 0 ? argv[0] : "?");
+ 	{
+ 		const char *dev = boot_arg("root_apfs");

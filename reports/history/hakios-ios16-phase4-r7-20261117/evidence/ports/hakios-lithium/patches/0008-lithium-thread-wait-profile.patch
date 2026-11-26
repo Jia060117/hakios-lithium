@@ -1,0 +1,183 @@
+--- a/xnu/files/osfmk/arm64/user_exception_trace.c
++++ b/xnu/files/osfmk/arm64/user_exception_trace.c
+@@ -183,13 +183,19 @@
+ extern void bsd_getthreadname(void *uth, char *buffer);
+ extern void loader_log_line(const char *line);
+ 
++#if defined(LITHIUM_ARMV8_0)
++#include "../../../../devices/lithium/diagnostics/thread-wait-observer.inc"
++#endif
++
+ static void
+ ustacks_say(const char *line)
+ {
+ 	printf("%s", line);
++#if !defined(LITHIUM_ARMV8_0)
+ 	if (ustacks_tname[0] != 0) {
+ 		loader_log_line(line);
+ 	}
++#endif
+ }
+ 
+ static void
+@@ -197,10 +203,17 @@
+ {
+ 	static struct {
+ 		uint64_t tid, pc, lr, fp;
++#if defined(LITHIUM_ARMV8_0)
++		uint64_t x0, x1, x2, x3, x16;
++#endif
+ 		int state;
+ 		char name[64];          /* (bsd_getthreadname() copies MAXTHREADNAMESIZE, 64) */
+ 	} snap[USTACKS_MAX_THREADS];
++#if defined(LITHIUM_ARMV8_0)
++	char line[1024];
++#else
+ 	char line[512];
++#endif
+ 	int at;
+ 	vm_shared_region_t region;
+ 	vm_map_t map, old_map;
+@@ -229,6 +242,13 @@
+ 		snap[count].pc = get_saved_state_pc(state);
+ 		snap[count].lr = get_saved_state_lr(state);
+ 		snap[count].fp = get_saved_state_fp(state);
++#if defined(LITHIUM_ARMV8_0)
++		snap[count].x0 = get_saved_state_reg(state, 0);
++		snap[count].x1 = get_saved_state_reg(state, 1);
++		snap[count].x2 = get_saved_state_reg(state, 2);
++		snap[count].x3 = get_saved_state_reg(state, 3);
++		snap[count].x16 = get_saved_state_reg(state, 16);
++#endif
+ 		count++;
+ 	}
+ 	map = task->map;
+@@ -263,6 +283,16 @@
+ 		at = snprintf(line, sizeof(line), "ustacks:  thread 0x%llx%s%s%s%s: 0x%llx 0x%llx", (unsigned long long)snap[i].tid,
+ 		    snap[i].name[0] ? " \"" : "", snap[i].name, snap[i].name[0] ? "\"" : "",
+ 		    (snap[i].state & TH_RUN) ? " (running)" : "", (unsigned long long)snap[i].pc, (unsigned long long)snap[i].lr);
++#if defined(LITHIUM_ARMV8_0)
++		struct lithium_wait_context wait = lithium_ustacks_wait(task, snap[i].x0, snap[i].x1,
++		    snap[i].x2, snap[i].x16, snap[i].state);
++		at += snprintf(line + at, sizeof(line) - at, " state=0x%x x0=0x%llx x1=0x%llx x2=0x%llx x3=0x%llx x16=0x%llx",
++		    snap[i].state, snap[i].x0, snap[i].x1, snap[i].x2, snap[i].x3, snap[i].x16);
++		if (wait.recognized) {
++			at += snprintf(line + at, sizeof(line) - at, " ulock_op=%u word=0x%llx copy=%d matches=%u owner_port=0x%x owner_tid=0x%llx owner_same_task=%u lookup=%d",
++			    wait.opcode, wait.word, wait.copy_error, wait.word_matches, wait.owner_port, wait.owner_tid, wait.same_task, wait.lookup_error);
++		}
++#endif
+ 		for (int depth = 0; depth < USTACKS_MAX_FRAMES && plausible_user_address(fp) && (fp & 7) == 0; depth++) {
+ 			if (copyin((user_addr_t)fp, frame, sizeof(frame)) != 0) {
+ 				break;
+@@ -371,6 +401,11 @@
+ 	unsigned count = 0;
+ 	task_t task;
+ 
++#if defined(LITHIUM_ARMV8_0)
++	uint64_t lithium_began = mach_absolute_time(), lithium_ns;
++	printf("LITHIUM USTACKS begin sequence=%u\n", ++lithium_ustacks_sequence);
++	if (lithium_ustacks_top) ustacks_top();
++#endif
+ 	if (strcmp(ustacks_name, "top") == 0) {
+ 		ustacks_top();
+ 		goto again;
+@@ -379,7 +414,11 @@
+ 	queue_iterate(&tasks, task, task_t, tasks) {
+ 		struct proc *proc = get_bsdtask_info(task);
+ 
+-		if (count < 8 && proc != NULL && strncmp(proc_name_address(proc), ustacks_name, sizeof(ustacks_name)) == 0) {
++		if (count < 8 && proc != NULL && (strncmp(proc_name_address(proc), ustacks_name, sizeof(ustacks_name)) == 0
++#if defined(LITHIUM_ARMV8_0)
++		    || lithium_ustacks_match(proc_name_address(proc))
++#endif
++		    )) {
+ 			task_reference(task);
+ 			found[count++] = task;
+ 		}
+@@ -397,6 +436,10 @@
+ 		task_deallocate(found[i]);
+ 	}
+ again:
++#if defined(LITHIUM_ARMV8_0)
++	absolutetime_to_nanoseconds(mach_absolute_time() - lithium_began, &lithium_ns);
++	printf("LITHIUM USTACKS end sequence=%u processes=%u wall_us=%llu\n", lithium_ustacks_sequence, count, lithium_ns / NSEC_PER_USEC);
++#endif
+ 	if (ustacks_count != 0 && --ustacks_count == 0) {
+ 		return;
+ 	}
+@@ -435,6 +478,14 @@
+ 	PE_parse_boot_argn("ustacks_threads", &ustacks_threads, sizeof(ustacks_threads));
+ 	PE_parse_boot_argn("ustacks_tname", ustacks_tname, sizeof(ustacks_tname));
+ 	PE_parse_boot_argn("ustacks_count", &ustacks_count, sizeof(ustacks_count));
++#if defined(LITHIUM_ARMV8_0)
++	PE_parse_boot_argn("ustacks_related", lithium_ustacks_related, sizeof(lithium_ustacks_related));
++	PE_parse_boot_argn("ustacks_top", &lithium_ustacks_top, sizeof(lithium_ustacks_top));
++	if (lithium_ustacks_related[0] != 0 && !lithium_ustacks_bounds(ustacks_threads, ustacks_count, ustacks_every)) {
++		printf("LITHIUM USTACKS: invalid finite limits; disabled\n");
++		return;
++	}
++#endif
+ 	ustacks_call = thread_call_allocate(ustacks_fire, NULL);
+ 	clock_interval_to_deadline(at, NSEC_PER_SEC, &deadline);
+ 	thread_call_enter_delayed(ustacks_call, deadline);
+--- a/xnu/files/iokit/Kernel/MiniIOMobileFramebuffer.cpp
++++ b/xnu/files/iokit/Kernel/MiniIOMobileFramebuffer.cpp
+@@ -39,6 +39,9 @@
+ #include <IOKit/IOBufferMemoryDescriptor.h>
+ 
+ #include "MiniIOSurface.h"
++#if defined(LITHIUM_ARMV8_0)
++#include "../../../../devices/lithium/diagnostics/framebuffer-profile.inc"
++#endif
+ 
+ extern "C" void hakios_tl(const char * format, ...) __printflike(1, 2);
+ 
+@@ -1115,6 +1118,9 @@
+ 	RowJob job;
+ #if defined(LITHIUM_ARMV8_0)
+ 	uint64_t lithium_setup_began = mach_absolute_time();
++	bool lithium_profile = fSwapID <= 8;
++	struct lithium_display_stamp lithium_setup = { 0, 0 };
++	if (lithium_profile) lithium_setup = lithium_display_stamp_now();
+ #endif
+ 
+ 	if (sw <= 0 || sh <= 0) {
+@@ -1225,14 +1231,38 @@
+ #if defined(LITHIUM_ARMV8_0)
+ 		uint64_t lithium_rows_began = mach_absolute_time();
+ #endif
++#if defined(LITHIUM_ARMV8_0)
++		struct lithium_display_stamp bands_begin[8], bands_end[8], lithium_rows = { 0, 0 };
++		int32_t bands_y0[8], bands_y1[8];
++		unsigned bands = 0;
++		if (lithium_profile) {
++			lithium_rows = lithium_display_stamp_now();
++			for (int32_t y = job.ry0; y < job.ry1 && bands < 8; bands++) {
++				int32_t end = bands == 7 || job.ry1 - y <= 512 ? job.ry1 : y + 512;
++				bands_y0[bands] = y; bands_y1[bands] = end;
++				bands_begin[bands] = lithium_display_stamp_now();
++				drawRows(&job, y, end, fBlendRow);
++				bands_end[bands] = lithium_display_stamp_now();
++				y = end;
++			}
++		} else {
++			drawRows(&job, job.ry0, job.ry1, fBlendRow);
++		}
++#else
+ 		drawRows(&job, job.ry0, job.ry1, fBlendRow);
++#endif
+ #if defined(LITHIUM_ARMV8_0)
+ 		if (fSwapID <= 8) {
++			struct lithium_display_stamp lithium_done = lithium_display_stamp_now();
+ 			uint64_t setup_ns, rows_ns;
+ 			absolutetime_to_nanoseconds(lithium_rows_began - lithium_setup_began, &setup_ns);
+ 			absolutetime_to_nanoseconds(mach_absolute_time() - lithium_rows_began, &rows_ns);
+ 			IOLog("LITHIUM DISPLAY SPLIT swap=%u setup_us=%llu rows_us=%llu rows=%d cols=%d filter=%d unscaled=%d; includes scheduling\n",
+ 			    fSwapID, setup_ns / 1000, rows_ns / 1000, job.ry1 - job.ry0, cx1 - cx0, filter, job.unscaled);
++			lithium_display_span(fSwapID, 0, job.ry0, job.ry1, lithium_setup, lithium_rows);
++			lithium_display_span(fSwapID, 1, job.ry0, job.ry1, lithium_rows, lithium_done);
++			for (unsigned i = 0; i < bands; i++)
++				lithium_display_span(fSwapID, i + 2, bands_y0[i], bands_y1[i], bands_begin[i], bands_end[i]);
+ 		}
+ #endif
+ 		return;

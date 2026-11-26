@@ -1,0 +1,252 @@
+{
+  "attempt": {
+    "schema": 1,
+    "revision": "R37-ram-measure",
+    "phase": "frequency",
+    "attempt_id": "r37-frequency-20",
+    "started_at": "2026-11-21T23:16:49.652217+08:00",
+    "package": "F:\\IOS-MIX1\\artifacts\\hakios\\lithium-ios16\\phase4-r37-ram-frequency-20",
+    "candidate": "R37-frequency-20",
+    "profile": "r37-frequency",
+    "image_sha256": "0fb0ed316f9c24c38ed45dc77301d393a26fc3ea0586032c1cb1021234ca6319",
+    "image_bytes": 16347136,
+    "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_clock_diag=1 cpu_power_diag=1 cpu_freq_pmu_setup=0 cpu_sanity=1 cpu_spmi_diag=1 cpu_perf_fixed=1 cpu_thermal_diag=1 cpu_perf_hz=384000000 cpu_inherited_supply_r39=1 cpu_rate_soak=1 cpu_rate_soak_parallel=1 lithium_log_retry=1 cpu_freq_diag=1",
+    "preflight_passed": true,
+    "boot_attempted": true,
+    "command_accepted": true,
+    "automatic_retry": false,
+    "partition_commands": 0,
+    "flash_commands": 0,
+    "erase_commands": 0,
+    "adb_commands": 0,
+    "android_recovery_boots": 0,
+    "qemu": false,
+    "preflight": {
+      "passed": true,
+      "finished_at": "2026-11-21T23:16:49.856040+08:00",
+      "device_commands": 5,
+      "retry": false
+    },
+    "private_image": "F:\\IOS-MIX1\\reports\\local\\r37-attempts\\r37-frequency-20\\lithium-hakios-ios16-r37-ram-frequency-20.img",
+    "usb_capture_started_at": "2026-11-21T23:16:50.421034+08:00",
+    "boot_output": "Sending 'boot.img' (15964 KB)                      OKAY [  0.386s]\nBooting                                            OKAY [  0.835s]\nFinished. Total time: 1.227s\n",
+    "boot_returncode": 0,
+    "accepted_at": "2026-11-21T23:16:51.671592+08:00",
+    "outcome": "boot_accepted_observation_pending",
+    "boot_counts": {
+      "hakios": 81,
+      "ios16": 50
+    },
+    "r39_screening_status": "thermal_limit_stopped"
+  },
+  "analysis": {
+    "passed": false,
+    "scope": "three_core_parallel_screen_not_final_stability",
+    "attempt": "r37-frequency-20",
+    "accepted_at": "2026-11-21T23:16:51.671592+08:00",
+    "image_sha256": "0fb0ed316f9c24c38ed45dc77301d393a26fc3ea0586032c1cb1021234ca6319",
+    "boot_args": "bootcpu=1 cpus=3 serial=3 -v ufs=0 ram_smp_return=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 return_fastboot=1 return_fastboot_delay=10 cpu_clock_diag=1 cpu_power_diag=1 cpu_freq_pmu_setup=0 cpu_sanity=1 cpu_spmi_diag=1 cpu_perf_fixed=1 cpu_thermal_diag=1 cpu_perf_hz=384000000 cpu_inherited_supply_r39=1 cpu_rate_soak=1 cpu_rate_soak_parallel=1 lithium_log_retry=1 cpu_freq_diag=1",
+    "normal_return_and_stream": true,
+    "fastboot_endpoint_verified": true,
+    "correctness_soak_passed": false,
+    "soak": {
+      "result": "3",
+      "reason": "hotstop",
+      "created_mask": "0x7",
+      "ready_mask": "0x7",
+      "done_mask": "0x7",
+      "joined": "1",
+      "errors": "2",
+      "hotstop": "1",
+      "thermal_errors": "0",
+      "samples": "30",
+      "elapsed_ms": "29668",
+      "parent_binding_changed": "0",
+      "hard_wall_bound": "0"
+    },
+    "core_results": [
+      {
+        "logical": "0",
+        "affinity": "0x1",
+        "batches": "214016",
+        "integer_ok": "214016",
+        "copy_ok": "214016",
+        "checksum": "0x9c885aaf6f76200",
+        "expected": "0x9c885aaf6f76200",
+        "valid": "1"
+      },
+      {
+        "logical": "1",
+        "affinity": "0x100",
+        "batches": "68107",
+        "integer_ok": "68107",
+        "copy_ok": "68107",
+        "checksum": "0x659e81b7c6eef327",
+        "expected": "0x659e81b7c6eef327",
+        "valid": "1"
+      },
+      {
+        "logical": "2",
+        "affinity": "0x101",
+        "batches": "68108",
+        "integer_ok": "68108",
+        "copy_ok": "68108",
+        "checksum": "0xa4aa1e34bc0e571e",
+        "expected": "0xa4aa1e34bc0e571e",
+        "valid": "1"
+      }
+    ],
+    "temperature": {
+      "0x0": {
+        "min_mC": 45400,
+        "max_mC": 65600,
+        "samples": 74
+      },
+      "0x1": {
+        "min_mC": 42200,
+        "max_mC": 75500,
+        "samples": 74
+      },
+      "0x100": {
+        "min_mC": 39700,
+        "max_mC": 62700,
+        "samples": 74
+      },
+      "0x101": {
+        "min_mC": 40000,
+        "max_mC": 64000,
+        "samples": 74
+      }
+    },
+    "stop_temperature_rows": 4,
+    "temperature_samples": 296,
+    "benchmarks": [
+      {
+        "test": "integer",
+        "logical": "0",
+        "count": "5",
+        "errors": "0",
+        "min_us": "2441",
+        "avg_us": "2450",
+        "max_us": "2457",
+        "ns_per_iteration": "2",
+        "cntvct_min": "46876",
+        "cntvct_avg": "47045",
+        "cntvct_max": "47174",
+        "checksum": "0x1ccc1ea74481e979"
+      },
+      {
+        "test": "memcpy",
+        "logical": "0",
+        "count": "5",
+        "errors": "0",
+        "min_us": "9481",
+        "avg_us": "9604",
+        "max_us": "9673",
+        "MBps_min": "3468",
+        "MBps_avg": "3493",
+        "MBps_max": "3538",
+        "warm_cache": "1"
+      },
+      {
+        "test": "integer",
+        "logical": "1",
+        "count": "5",
+        "errors": "0",
+        "min_us": "7843",
+        "avg_us": "7849",
+        "max_us": "7863",
+        "ns_per_iteration": "7",
+        "cntvct_min": "150584",
+        "cntvct_avg": "150706",
+        "cntvct_max": "150973",
+        "checksum": "0x1ccc1ea74481e979"
+      },
+      {
+        "test": "memcpy",
+        "logical": "1",
+        "count": "5",
+        "errors": "0",
+        "min_us": "13830",
+        "avg_us": "13904",
+        "max_us": "13949",
+        "MBps_min": "2405",
+        "MBps_avg": "2413",
+        "MBps_max": "2426",
+        "warm_cache": "1"
+      },
+      {
+        "test": "integer",
+        "logical": "2",
+        "count": "5",
+        "errors": "0",
+        "min_us": "7830",
+        "avg_us": "7849",
+        "max_us": "7866",
+        "ns_per_iteration": "7",
+        "cntvct_min": "150329",
+        "cntvct_avg": "150710",
+        "cntvct_max": "151036",
+        "checksum": "0x1ccc1ea74481e979"
+      },
+      {
+        "test": "memcpy",
+        "logical": "2",
+        "count": "5",
+        "errors": "0",
+        "min_us": "13696",
+        "avg_us": "13835",
+        "max_us": "13945",
+        "MBps_min": "2406",
+        "MBps_avg": "2425",
+        "MBps_max": "2449",
+        "warm_cache": "1"
+      }
+    ],
+    "panic_seen": false,
+    "source_writer_contention_dropped_bytes": 0,
+    "transport": {
+      "raw_bytes": 135228,
+      "console_bytes": 119740,
+      "frames": 484,
+      "raw_sha256": "c9552a9d89753b828867e9210a4ae7ae68f9ef846ee7f68aa550c8ca136f0337",
+      "console_sha256": "1709fa5bb5ec05e01f328b1b9503ebd4d3453bcf820bdf74e455315436add40f",
+      "first_offset": 0,
+      "final_offset": 119740,
+      "missing_bytes": 0,
+      "duplicate_bytes": 0,
+      "incomplete_frame_bytes": 0,
+      "device_lost_max": 0,
+      "frames_reporting_device_loss": 0,
+      "independent_parser_agrees_with_frozen_receiver": true,
+      "frozen_redecode_equals_complete_console": true,
+      "transport_verified": true,
+      "kernel_banner_offset": 0,
+      "timer_offset": 118266,
+      "normal_return_offset": 119623,
+      "drain_success": true,
+      "drain_records": [
+        {
+          "offset": 119690,
+          "drained": 1,
+          "target": 119690
+        }
+      ],
+      "emitted_kernel_stream_through_timer_verified": true,
+      "all_firmware_daemon_and_original_printf_logs_complete": false,
+      "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
+    },
+    "device_operations": 0,
+    "simultaneous_load_tested": true,
+    "stress_active_affinities": [
+      "0x1",
+      "0x100",
+      "0x101"
+    ],
+    "pwr_housekeeping_only": false,
+    "sustained_desktop_tested": false,
+    "measured_cpu_mhz": null
+  },
+  "screening_only": true,
+  "final_sweet_spot_verified": false
+}

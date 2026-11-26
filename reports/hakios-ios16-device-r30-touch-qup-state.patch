@@ -1,0 +1,5457 @@
+diff --git a/AGENTS.md b/AGENTS.md
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -1,3 +1,7 @@
++2026-11-20 R30真机结案：2026-11-20T00:40:16.391122+08:00单次临时boot接受，实际affinity1/bootcpu1/cpus1。Stage1为26读3写314us；新核心270读16写398us/poll3、适配层330读16写。base/setup完成，首次STATE RUN写返回，terminal STATE11d/OP0/ERROR0/STATUS0c110000；与setup仅STATE/OP/STATUS变化。现有整值STATUS==0c000000策略以i2c_status_not_exact_idle停止，checked RUN/CLK/PAUSE未执行，非MMIO或超时失败，无新FIFO端口/tag/ID。bit16/20语义/物理总线/所有权未验证。五组170项valid/stable、三组102项unread；terminal GIC明确unread。正常180秒timer/drain1、187帧/46498控制台字节独立重解码一致，缺口/重复/残帧/lost/源争用丢均0；Pipe error在排空后。物理结束屏未目视确认；RAM error2为lookup非UFS故障。无启动后查询/分区/刷写/ADB/QEMU/重试，计数54/iOS16为23；R30已消费。R20基线/旧冻结字节/原索引保持。下一主机修订核对按阶段STATUS检查及真实RUN差异，不直接放宽未知位或自动新启动。见reports/hakios-ios16-device-r30-touch-qup-state.md/json。下方启动待观察记录为历史。
++
++2026-11-20 R30已临时启动一次：2026-11-20T00:40:16.391122+08:00 Fastboot接受冻结镜像fb7c575ec377dd8854786479cb1448f35974071c2ef19010b186eda1df1f92ae；5项只读预检通过、USB接收器已启动，内核/状态机/CPU/timer/drain及物理屏幕尚待核验。隔离RAM/ufs0/180秒，不发新FIFO标签或ID，首次RUN可能恢复继承活动，未验证物理总线静默。计数54/iOS16为23；R30已消费，无启动后设备查询/分区/ADB/QEMU或自动重试，保持同次运行并读取保存日志。R20显示基线/旧冻结字节/原索引保留。见reports/hakios-ios16-device-r30-touch-qup-state.md/json。
++
+ 2026-11-20 R30状态机主机包已冻结：SHA256 fb7c575ec377dd8854786479cb1448f35974071c2ef19010b186eda1df1f92ae；默认关闭touch_qup_state=1，隔离RAM/ufs0/affinity1单核/180秒。独立RESET/base/setup/首次RUN/CLK/PAUSE前置观察，最多八组272字段；无新FIFO端口/tag/ID，首次RUN可能恢复继承活动，物理I2C静默/所有权未验证。旧Stage1/ID/snapshot/init/0022字节不变。完整HakiOS/Mu/D22AP/413job、82来源/46扫描、46套回归（core9766、adapter34104、独立boundary、PID1 376）、108打包测试/106源闭包及实际APFS/整包读回通过；独立审查两处边界已修正并全量重构建/复测，旧候选保留。terminal_gic明确unread；历史R9总门禁未解决。R20显示基线/旧冻结字节/原索引保持。本轮无手机查询/启动/分区/ADB/QEMU，计数53/iOS16为22不变；等待用户恢复并确认Fastboot及对应实验范围，不自动上机/重试。见reports/hakios-ios16-touch-r30-prepared.md/json。
+ 
+ 2026-11-19 R29真机结案：用户重新连接后新会话预检通过，23:50:42临时boot同冻结镜像一次获接受；实际affinity0x1/bootcpu1/cpus1。Stage1为26读3写326us；新模块145读6写226us/poll2，适配层175读6写；一次SW_RESET请求/VALID_RESET和CONFIG207/ERREN3c/OPMASK300/MASTER1读回通过。四组双轮17项共136读全部valid/stable，但OP始终0xc0，以operational_nonzero_before_id逻辑停止，未发I2C/未读ID，不能认定芯片无应答。正常180秒timer/drain1，125帧/30602控制台字节独立重解码一致，缺口/重复/残帧/lost/争用丢均0；Pipe error在排空后，2条描述符API异常保留且最终身份验证通过。物理结束屏未目视确认，内部reset效应/所有权/full语义仍未验证；RAM error2为lookup非UFS故障。先前空枚举记录、R20基线/全部冻结字节/原索引保留；计数53/iOS16为22，R29已消费不重试。下一步核对RESET阶段自定义OP0准入与上游RUN/PAUSE/FIFO状态机，不直接掩码放宽、不自动新启动。见reports/hakios-ios16-device-r29-touch-qup-init-runtime.md/json。下方预检等待状态为历史。
+diff --git a/OPERATIONS.md b/OPERATIONS.md
+--- a/OPERATIONS.md
++++ b/OPERATIONS.md
+@@ -1,3 +1,7 @@
++2026-11-20 R30真机结案：2026-11-20T00:40:16.391122+08:00单次临时boot接受，实际affinity1/bootcpu1/cpus1。Stage1为26读3写314us；新核心270读16写398us/poll3、适配层330读16写。base/setup完成，首次STATE RUN写返回，terminal STATE11d/OP0/ERROR0/STATUS0c110000；与setup仅STATE/OP/STATUS变化。现有整值STATUS==0c000000策略以i2c_status_not_exact_idle停止，checked RUN/CLK/PAUSE未执行，非MMIO或超时失败，无新FIFO端口/tag/ID。bit16/20语义/物理总线/所有权未验证。五组170项valid/stable、三组102项unread；terminal GIC明确unread。正常180秒timer/drain1、187帧/46498控制台字节独立重解码一致，缺口/重复/残帧/lost/源争用丢均0；Pipe error在排空后。物理结束屏未目视确认；RAM error2为lookup非UFS故障。无启动后查询/分区/刷写/ADB/QEMU/重试，计数54/iOS16为23；R30已消费。R20基线/旧冻结字节/原索引保持。下一主机修订核对按阶段STATUS检查及真实RUN差异，不直接放宽未知位或自动新启动。见reports/hakios-ios16-device-r30-touch-qup-state.md/json。下方启动待观察记录为历史。
++
++2026-11-20 R30已临时启动一次：2026-11-20T00:40:16.391122+08:00 Fastboot接受冻结镜像fb7c575ec377dd8854786479cb1448f35974071c2ef19010b186eda1df1f92ae；5项只读预检通过、USB接收器已启动，内核/状态机/CPU/timer/drain及物理屏幕尚待核验。隔离RAM/ufs0/180秒，不发新FIFO标签或ID，首次RUN可能恢复继承活动，未验证物理总线静默。计数54/iOS16为23；R30已消费，无启动后设备查询/分区/ADB/QEMU或自动重试，保持同次运行并读取保存日志。R20显示基线/旧冻结字节/原索引保留。见reports/hakios-ios16-device-r30-touch-qup-state.md/json。
++
+ 2026-11-20 R30状态机主机包已冻结：SHA256 fb7c575ec377dd8854786479cb1448f35974071c2ef19010b186eda1df1f92ae；默认关闭touch_qup_state=1，隔离RAM/ufs0/affinity1单核/180秒。独立RESET/base/setup/首次RUN/CLK/PAUSE前置观察，最多八组272字段；无新FIFO端口/tag/ID，首次RUN可能恢复继承活动，物理I2C静默/所有权未验证。旧Stage1/ID/snapshot/init/0022字节不变。完整HakiOS/Mu/D22AP/413job、82来源/46扫描、46套回归（core9766、adapter34104、独立boundary、PID1 376）、108打包测试/106源闭包及实际APFS/整包读回通过；独立审查两处边界已修正并全量重构建/复测，旧候选保留。terminal_gic明确unread；历史R9总门禁未解决。R20显示基线/旧冻结字节/原索引保持。本轮无手机查询/启动/分区/ADB/QEMU，计数53/iOS16为22不变；等待用户恢复并确认Fastboot及对应实验范围，不自动上机/重试。见reports/hakios-ios16-touch-r30-prepared.md/json。
+ 
+ 2026-11-19 R29真机结案：用户重新连接后新会话预检通过，23:50:42临时boot同冻结镜像一次获接受；实际affinity0x1/bootcpu1/cpus1。Stage1为26读3写326us；新模块145读6写226us/poll2，适配层175读6写；一次SW_RESET请求/VALID_RESET和CONFIG207/ERREN3c/OPMASK300/MASTER1读回通过。四组双轮17项共136读全部valid/stable，但OP始终0xc0，以operational_nonzero_before_id逻辑停止，未发I2C/未读ID，不能认定芯片无应答。正常180秒timer/drain1，125帧/30602控制台字节独立重解码一致，缺口/重复/残帧/lost/争用丢均0；Pipe error在排空后，2条描述符API异常保留且最终身份验证通过。物理结束屏未目视确认，内部reset效应/所有权/full语义仍未验证；RAM error2为lookup非UFS故障。先前空枚举记录、R20基线/全部冻结字节/原索引保留；计数53/iOS16为22，R29已消费不重试。下一步核对RESET阶段自定义OP0准入与上游RUN/PAUSE/FIFO状态机，不直接掩码放宽、不自动新启动。见reports/hakios-ios16-device-r29-touch-qup-init-runtime.md/json。下方预检等待状态为历史。
+diff --git a/PLAN.md b/PLAN.md
+--- a/PLAN.md
++++ b/PLAN.md
+@@ -1,3 +1,7 @@
++2026-11-20 R30真机结案：2026-11-20T00:40:16.391122+08:00单次临时boot接受，实际affinity1/bootcpu1/cpus1。Stage1为26读3写314us；新核心270读16写398us/poll3、适配层330读16写。base/setup完成，首次STATE RUN写返回，terminal STATE11d/OP0/ERROR0/STATUS0c110000；与setup仅STATE/OP/STATUS变化。现有整值STATUS==0c000000策略以i2c_status_not_exact_idle停止，checked RUN/CLK/PAUSE未执行，非MMIO或超时失败，无新FIFO端口/tag/ID。bit16/20语义/物理总线/所有权未验证。五组170项valid/stable、三组102项unread；terminal GIC明确unread。正常180秒timer/drain1、187帧/46498控制台字节独立重解码一致，缺口/重复/残帧/lost/源争用丢均0；Pipe error在排空后。物理结束屏未目视确认；RAM error2为lookup非UFS故障。无启动后查询/分区/刷写/ADB/QEMU/重试，计数54/iOS16为23；R30已消费。R20基线/旧冻结字节/原索引保持。下一主机修订核对按阶段STATUS检查及真实RUN差异，不直接放宽未知位或自动新启动。见reports/hakios-ios16-device-r30-touch-qup-state.md/json。下方启动待观察记录为历史。
++
++2026-11-20 R30已临时启动一次：2026-11-20T00:40:16.391122+08:00 Fastboot接受冻结镜像fb7c575ec377dd8854786479cb1448f35974071c2ef19010b186eda1df1f92ae；5项只读预检通过、USB接收器已启动，内核/状态机/CPU/timer/drain及物理屏幕尚待核验。隔离RAM/ufs0/180秒，不发新FIFO标签或ID，首次RUN可能恢复继承活动，未验证物理总线静默。计数54/iOS16为23；R30已消费，无启动后设备查询/分区/ADB/QEMU或自动重试，保持同次运行并读取保存日志。R20显示基线/旧冻结字节/原索引保留。见reports/hakios-ios16-device-r30-touch-qup-state.md/json。
++
+ 2026-11-20 R30状态机主机包已冻结：SHA256 fb7c575ec377dd8854786479cb1448f35974071c2ef19010b186eda1df1f92ae；默认关闭touch_qup_state=1，隔离RAM/ufs0/affinity1单核/180秒。独立RESET/base/setup/首次RUN/CLK/PAUSE前置观察，最多八组272字段；无新FIFO端口/tag/ID，首次RUN可能恢复继承活动，物理I2C静默/所有权未验证。旧Stage1/ID/snapshot/init/0022字节不变。完整HakiOS/Mu/D22AP/413job、82来源/46扫描、46套回归（core9766、adapter34104、独立boundary、PID1 376）、108打包测试/106源闭包及实际APFS/整包读回通过；独立审查两处边界已修正并全量重构建/复测，旧候选保留。terminal_gic明确unread；历史R9总门禁未解决。R20显示基线/旧冻结字节/原索引保持。本轮无手机查询/启动/分区/ADB/QEMU，计数53/iOS16为22不变；等待用户恢复并确认Fastboot及对应实验范围，不自动上机/重试。见reports/hakios-ios16-touch-r30-prepared.md/json。
+ 
+ 2026-11-19 R29真机结案：用户重新连接后新会话预检通过，23:50:42临时boot同冻结镜像一次获接受；实际affinity0x1/bootcpu1/cpus1。Stage1为26读3写326us；新模块145读6写226us/poll2，适配层175读6写；一次SW_RESET请求/VALID_RESET和CONFIG207/ERREN3c/OPMASK300/MASTER1读回通过。四组双轮17项共136读全部valid/stable，但OP始终0xc0，以operational_nonzero_before_id逻辑停止，未发I2C/未读ID，不能认定芯片无应答。正常180秒timer/drain1，125帧/30602控制台字节独立重解码一致，缺口/重复/残帧/lost/争用丢均0；Pipe error在排空后，2条描述符API异常保留且最终身份验证通过。物理结束屏未目视确认，内部reset效应/所有权/full语义仍未验证；RAM error2为lookup非UFS故障。先前空枚举记录、R20基线/全部冻结字节/原索引保留；计数53/iOS16为22，R29已消费不重试。下一步核对RESET阶段自定义OP0准入与上游RUN/PAUSE/FIFO状态机，不直接掩码放宽、不自动新启动。见reports/hakios-ios16-device-r29-touch-qup-init-runtime.md/json。下方预检等待状态为历史。
+diff --git a/evidence/touch-r30-20261119/runtime/findings.json b/evidence/touch-r30-20261119/runtime/findings.json
+new file mode 100644
+--- /dev/null
++++ b/evidence/touch-r30-20261119/runtime/findings.json
+@@ -0,0 +1,1407 @@
++{
++  "schema_version": 1,
++  "review": "R30 independent static and runtime interpretation",
++  "reviewed_on": "2026-11-20",
++  "timezone": "Asia/Shanghai",
++  "status": "runtime_analysis_complete_transport_audit_delegated_to_main",
++  "scope": {
++    "authored_files": [
++      "evidence/touch-r30-20261119/runtime/findings.md",
++      "evidence/touch-r30-20261119/runtime/findings.json"
++    ],
++    "device_queries": false,
++    "device_commands": false,
++    "usb_operations": false,
++    "receiver_control": false,
++    "network": false,
++    "build_or_tests": false,
++    "git_status_index_checkout": false,
++    "local_git_reads_only": [
++      "show fixed Linux commit:path"
++    ],
++    "production_or_frozen_evidence_edits": false,
++    "main_shared_log_or_report_edits": false,
++    "final_frame_audit": "main only"
++  },
++  "sources": [
++    {
++      "key": "K",
++      "path": "ports/hakios-lithium/peripherals/touch-qup-state-core.h",
++      "sha256": "72792553f4429910c05d124453d8e2f094bad6470f60ccbea60b893b7b7c3a66",
++      "bytes": 19038,
++      "line_count": 471,
++      "reviewed_ranges_1based": [
++        [
++          1,
++          471
++        ]
++      ]
++    },
++    {
++      "key": "A",
++      "path": "ports/hakios-lithium/peripherals/touch-qup-state.inc",
++      "sha256": "eabc05c5dddf5572f396741a7b2b436d4bc46bdf7100b5c4335fc1f41221df7e",
++      "bytes": 9146,
++      "line_count": 172,
++      "reviewed_ranges_1based": [
++        [
++          1,
++          172
++        ]
++      ]
++    },
++    {
++      "key": "S",
++      "path": "ports/hakios-lithium/peripherals/touch-snapshot-core.h",
++      "sha256": "8f8e37552b2c05989a748827bda456a6b242398b4db797961099584bd6125b4f",
++      "bytes": 7699,
++      "line_count": 212,
++      "reviewed_ranges_1based": [
++        [
++          39,
++          81
++        ],
++        [
++          123,
++          212
++        ]
++      ]
++    },
++    {
++      "key": "O",
++      "path": "ports/hakios-lithium/peripherals/touch-id.inc",
++      "sha256": "09c9700fd95dae41630f31d0942a9f3066ae4262b204d1f136e28f8a4b654b90",
++      "bytes": 8968,
++      "line_count": 198,
++      "reviewed_ranges_1based": [
++        [
++          24,
++          111
++        ]
++      ]
++    },
++    {
++      "key": "P",
++      "path": "evidence/touch-r30-20261119/protocol/findings.md",
++      "sha256": "fd87becb92a7a0e7e221b3359955a8e6b74331332a3b9bb0f97636163f9af2e1",
++      "bytes": 13868,
++      "line_count": 60,
++      "reviewed_ranges_1based": [
++        [
++          1,
++          60
++        ]
++      ]
++    },
++    {
++      "key": "P_manifest",
++      "path": "evidence/touch-r30-20261119/protocol/source-manifest.json",
++      "sha256": "61ef9756a58afc4fcddf868eb755304231de2b96a617efcaf805ed4e6f5cf533",
++      "bytes": 12480,
++      "line_count": 440,
++      "reviewed_ranges_1based": []
++    },
++    {
++      "key": "H",
++      "path": "evidence/touch-stage1-20261119/board/sources/i2c-msm-v2.h",
++      "sha256": "2b8d8ef3070516fc8afff4b82545d2241d1afe6c40591a215d9450e0c90743f8",
++      "bytes": 21898,
++      "line_count": 661,
++      "reviewed_ranges_1based": [
++        [
++          41,
++          178
++        ],
++        [
++          611,
++          661
++        ]
++      ]
++    },
++    {
++      "key": "C",
++      "path": "evidence/touch-stage1-20261119/clocks/primary/micode/drivers/i2c/busses/i2c-msm-v2.c",
++      "sha256": "c64d72734e67b45d72c732491cdc3e8a3ef8b2fc7424faf0df9fbd4cc0ee5f53",
++      "bytes": 81092,
++      "line_count": 2977,
++      "reviewed_ranges_1based": [
++        [
++          21,
++          115
++        ],
++        [
++          215,
++          295
++        ],
++        [
++          299,
++          390
++        ],
++        [
++          394,
++          470
++        ],
++        [
++          667,
++          724
++        ],
++        [
++          1501,
++          1528
++        ],
++        [
++          1870,
++          1903
++        ],
++        [
++          1718,
++          1764
++        ]
++      ]
++    },
++    {
++      "key": "R29",
++      "path": "evidence/touch-r29-20261119/runtime/findings.md",
++      "sha256": "a37f9cb18f3644d786e2e7800bf3e6268d8d051d715715152376b4a12a77e746",
++      "bytes": 11350,
++      "line_count": 68,
++      "reviewed_ranges_1based": [
++        [
++          1,
++          68
++        ]
++      ]
++    },
++    {
++      "key": "L",
++      "kind": "local_git_object",
++      "repository": "artifacts/reference-source/overnight-20261118/linux-v6.12",
++      "commit": "adc218676eef25575469234709c2d87185ca223a",
++      "git_path": "drivers/i2c/busses/i2c-qup.c",
++      "sha256": "cb273214ed20a28e423c1d55299b0481ee30458296b43607985e1a5280c03769",
++      "bytes": 49820,
++      "line_count": 1990,
++      "reviewed_ranges_1based": [
++        [
++          26,
++          150
++        ],
++        [
++          280,
++          310
++        ],
++        [
++          376,
++          432
++        ]
++      ],
++      "network_disabled": true,
++      "index_or_status_operations": false
++    }
++  ],
++  "static": {
++    "named_phases": [
++      {
++        "phase": "pre",
++        "full_path_write_prefix": "0",
++        "predicates": "Both passes and a fresh guard exactly match: VERSION `20060000`, STATE `11c`, CONFIG `0`, IO `a5`, OP `c0`, ERROR `0`, ERREN `3c`, OPMASK `0`, six counts `0`, MASTER `0`, CLK `0`, STATUS `0c000000` (K:144–148,317–321,423–426).",
++        "stop_implications": "Signature/stability mismatch blocks this core's first reset write. It does not diagnose the owner, target chip, or actual FIFO occupancy."
++      },
++      {
++        "phase": "post_reset",
++        "full_path_write_prefix": "1",
++        "predicates": "After sole SW_RESET and VALID+RESET polling: STATE low0; IO with PACK/UNPACK bits removed equals `a5`; both FIFO counters and all four MX counters `0`; CLK `0`; CONFIG `0`; MASTER `0/1`; ERREN `0/3c`; OPMASK `0/300` (K:325–340,426–428). Master-generation is not required yet.",
++        "stop_implications": "Reset was requested if traced. A mismatch may violate conservative policy; it does not establish failed internal reset. No base writes follow failed admission."
++      },
++      {
++        "phase": "base",
++        "full_path_write_prefix": "6",
++        "predicates": "Ordinary STATE RESET was checked before writes 3–6. VALID+RESET+master-generation; CONFIG `207`, MASTER `1`, ERREN `3c`, OPMASK `300`; IO geometry `a5` with PACK/UNPACK optional; all six counts `0`, CLK `0` (K:325–345,430–434).",
++        "stop_implications": "Source-shaped base admission is incomplete/failed. A base flag0 may coexist with some/all base writes; use trace, not flags, for issued writes. ERREN `3c` enables core error sources."
++      },
++      {
++        "phase": "setup",
++        "full_path_write_prefix": "15",
++        "predicates": "VALID+RESET+master-generation; CONFIG `207`, MASTER `1`, ERREN `0`, mask `300`, IO **exactly `c0a5`**; OUT/IN FIFO counts `0`, MX_OUTPUT/MX_INPUT `0`, MX_READ **3**, MX_WRITE **9**; CLK `0` (K:327–345,436–439).",
++        "stop_implications": "Setup not admitted. Nonzero 3/9 are intentional aggregate byte counts, not FIFO occupancy or a sent transaction. No first RUN follows a failed setup gate."
++      },
++      {
++        "phase": "run",
++        "full_path_write_prefix": "16",
++        "predicates": "Same configured fields/counts as setup, STATE low1 VALID+master-generation, CLK still `0`; transition polling accepts only low state0 or1 and the known envelope (K:371–395,441–444).",
++        "stop_implications": "Write16 may already have entered RUN even if `run_observed=0`. Activity/status/error before own tags is unexpected evidence, not an ID response. No cleanup PAUSE/RESET is attempted on this failure."
++      },
++      {
++        "phase": "clock",
++        "full_path_write_prefix": "17",
++        "predicates": "Preserve checked RUN/setup fields and counts; CLK **`003e007c`**, with exact readback (K:334–345,446–449).",
++        "stop_implications": "Divider may have been written before a flag0/stop. It is a MiCode nominal100kHz choice, not a measured SCL frequency or confirmation of stock-board rate (C:408–456,461–470)."
++      },
++      {
++        "phase": "pause",
++        "full_path_write_prefix": "18",
++        "predicates": "Preserve clock/setup fields/counts; STATE low3 VALID+master-generation; transition accepts only low1 or3 (K:371–395,451–455).",
++        "stop_implications": "PAUSE request is not PAUSE observation. Even a passed gate leaves raw full-bit/ownership semantics unresolved. No FIFO data, second RUN, or cleanup reset follows."
++      },
++      {
++        "phase": "terminal",
++        "full_path_write_prefix": "existing prefix",
++        "predicates": "If no earlier failure, requires the same predicates as pause and successful pair capture. If already logically stopped, it is **capture only**: the `!w.failed` short circuit skips terminal predicate admission. Poisoned I/O/time/cap paths skip capture entirely (K:456–463).",
++        "stop_implications": "An early-stop terminal may show RESET/RUN/other state; do not relabel it PAUSE. Only full success yields `observed/prefifo_pause_observed_no_new_tags`. `terminal_gic=unread` remains explicit (A:163–171)."
++      }
++    ],
++    "write_sequence": [
++      {
++        "trace_index": 0,
++        "ordinal": 1,
++        "register": "SW_RESET",
++        "offset": "0x00c",
++        "value": "0x00000001",
++        "observed": true,
++        "matches_expected_and_returned_on_time": true,
++        "log_line": 403
++      },
++      {
++        "trace_index": 1,
++        "ordinal": 2,
++        "register": "STATE_RESET",
++        "offset": "0x004",
++        "value": "0x00000000",
++        "observed": true,
++        "matches_expected_and_returned_on_time": true,
++        "log_line": 404
++      },
++      {
++        "trace_index": 2,
++        "ordinal": 3,
++        "register": "CONFIG",
++        "offset": "0x000",
++        "value": "0x00000207",
++        "observed": true,
++        "matches_expected_and_returned_on_time": true,
++        "log_line": 405
++      },
++      {
++        "trace_index": 3,
++        "ordinal": 4,
++        "register": "ERROR_FLAGS_EN",
++        "offset": "0x020",
++        "value": "0x0000003c",
++        "observed": true,
++        "matches_expected_and_returned_on_time": true,
++        "log_line": 406
++      },
++      {
++        "trace_index": 4,
++        "ordinal": 5,
++        "register": "OPERATIONAL_MASK",
++        "offset": "0x028",
++        "value": "0x00000300",
++        "observed": true,
++        "matches_expected_and_returned_on_time": true,
++        "log_line": 407
++      },
++      {
++        "trace_index": 5,
++        "ordinal": 6,
++        "register": "MASTER_CONFIG",
++        "offset": "0x408",
++        "value": "0x00000001",
++        "observed": true,
++        "matches_expected_and_returned_on_time": true,
++        "log_line": 408
++      },
++      {
++        "trace_index": 6,
++        "ordinal": 7,
++        "register": "ERROR_FLAGS_EN",
++        "offset": "0x020",
++        "value": "0x00000000",
++        "observed": true,
++        "matches_expected_and_returned_on_time": true,
++        "log_line": 409
++      },
++      {
++        "trace_index": 7,
++        "ordinal": 8,
++        "register": "OPERATIONAL_MASK",
++        "offset": "0x028",
++        "value": "0x00000300",
++        "observed": true,
++        "matches_expected_and_returned_on_time": true,
++        "log_line": 410
++      },
++      {
++        "trace_index": 8,
++        "ordinal": 9,
++        "register": "MX_INPUT",
++        "offset": "0x200",
++        "value": "0x00000000",
++        "observed": true,
++        "matches_expected_and_returned_on_time": true,
++        "log_line": 411
++      },
++      {
++        "trace_index": 9,
++        "ordinal": 10,
++        "register": "MX_OUTPUT",
++        "offset": "0x100",
++        "value": "0x00000000",
++        "observed": true,
++        "matches_expected_and_returned_on_time": true,
++        "log_line": 412
++      },
++      {
++        "trace_index": 10,
++        "ordinal": 11,
++        "register": "MX_READ",
++        "offset": "0x208",
++        "value": "0x00000003",
++        "observed": true,
++        "matches_expected_and_returned_on_time": true,
++        "log_line": 413
++      },
++      {
++        "trace_index": 11,
++        "ordinal": 12,
++        "register": "MX_WRITE",
++        "offset": "0x150",
++        "value": "0x00000009",
++        "observed": true,
++        "matches_expected_and_returned_on_time": true,
++        "log_line": 414
++      },
++      {
++        "trace_index": 12,
++        "ordinal": 13,
++        "register": "CONFIG",
++        "offset": "0x000",
++        "value": "0x00000207",
++        "observed": true,
++        "matches_expected_and_returned_on_time": true,
++        "log_line": 415
++      },
++      {
++        "trace_index": 13,
++        "ordinal": 14,
++        "register": "IO_MODES",
++        "offset": "0x008",
++        "value": "0x0000c0a5",
++        "observed": true,
++        "matches_expected_and_returned_on_time": true,
++        "log_line": 416
++      },
++      {
++        "trace_index": 14,
++        "ordinal": 15,
++        "register": "MASTER_CONFIG",
++        "offset": "0x408",
++        "value": "0x00000001",
++        "observed": true,
++        "matches_expected_and_returned_on_time": true,
++        "log_line": 417
++      },
++      {
++        "trace_index": 15,
++        "ordinal": 16,
++        "register": "STATE_RUN",
++        "offset": "0x004",
++        "value": "0x00000001",
++        "observed": true,
++        "matches_expected_and_returned_on_time": true,
++        "log_line": 418
++      },
++      {
++        "trace_index": 16,
++        "ordinal": 17,
++        "register": "CLK_CTL",
++        "offset": "0x400",
++        "value": "0x003e007c",
++        "observed": false,
++        "matches_expected_and_returned_on_time": null,
++        "log_line": null
++      },
++      {
++        "trace_index": 17,
++        "ordinal": 18,
++        "register": "STATE_PAUSE",
++        "offset": "0x004",
++        "value": "0x00000003",
++        "observed": false,
++        "matches_expected_and_returned_on_time": null,
++        "log_line": null
++      }
++    ],
++    "stop_dictionary": [
++      {
++        "status_reason": "`disabled/experimental_disabled`; `invalid_io/missing_callbacks`",
++        "interpretation": "No core experiment; production adapter compiles experimental code but runtime invocation/context remains separate (K:56–64,408–419; A:9–13)."
++      },
++      {
++        "status_reason": "`guard_stop/entry_not_exact_r29`",
++        "interpretation": "Exact pre fingerprint mismatch, including full bits; first core write blocked when this is the initial failure (K:317–321,423–426)."
++      },
++      {
++        "status_reason": "`guard_stop/snapshot_changed_between_passes`",
++        "interpretation": "Any pre difference, or any later difference outside OP full bits. Pair may be complete yet inadmissible (K:279–285)."
++      },
++      {
++        "status_reason": "`wrong_version/unsupported_raw_version`; `guard_stop/unsupported_raw_version`",
++        "interpretation": "Snapshot stops immediately after preserving a successfully read mismatching VERSION; live/wait path rejects it too. No unsupported-silicon diagnosis beyond the observed mismatch (S:193–199; K:298–299)."
++      },
++      {
++        "status_reason": "`guard_stop/new_core_error`",
++        "interpretation": "Any nonzero raw ERROR_FLAGS, including bits outside named vendor masks. Do not identify a chip-ID error or W1C it (K:300–301)."
++      },
++      {
++        "status_reason": "`guard_stop/i2c_status_not_exact_idle`",
++        "interpretation": "Any deviation from exact status `0c000000`: may include activity, low line, known error, or unknown bit. Decode the actual raw status; equality failure alone does not identify which cause (K:302–303; H:127–171)."
++      },
++      {
++        "status_reason": "`guard_stop/unknown_operational_bits`; `guard_stop/unexpected_prefifo_activity`",
++        "interpretation": "Bits outside known `3ff0`, or activity bits `3f30`, respectively. Full bits6/7 alone never prove occupancy/emptiness/safe FIFO access (K:304–307)."
++      },
++      {
++        "status_reason": "`guard_stop/require_known_valid_current_state`",
++        "interpretation": "Snapshot/live state validity, phase-low-state or opaque-envelope policy failed; no implicit corrective state write (K:325–326)."
++      },
++      {
++        "status_reason": "`guard_stop/unexpected_transition_state`; `guard_stop/require_i2c_master_generation`",
++        "interpretation": "Transition poll saw an unreviewed envelope/low state outside from/target, or target VALID without required master-generation. Merely staying in the allowed prior state is polled until a budget/cap stops it (K:371–395)."
++      },
++      {
++        "status_reason": "`guard_stop/require_observed_64byte_geometry`",
++        "interpretation": "IO fields outside PACK/UNPACK do not equal reviewed `a5`. Compatibility restriction, not proof of wrong capacity on this board (K:327–328; P:25)."
++      },
++      {
++        "status_reason": "`guard_stop/prefifo_counts_not_exact`",
++        "interpretation": "FIFO/block count not0, or MX_READ/MX_WRITE not phase-appropriate0/0 or3/9. Read counts are observations, not occupancy certification (K:329–333)."
++      },
++      {
++        "status_reason": "`guard_stop/clock_readback_not_exact`",
++        "interpretation": "CLK differs from0 before clock phase or `003e007c` afterward (K:334–335)."
++      },
++      {
++        "status_reason": "`guard_stop/conservative_post_reset_policy`",
++        "interpretation": "CONFIG, MASTER, ERREN or OPMASK failed specifically the optional post-reset envelope; not an architectural reset-failure verdict (K:336–340)."
++      },
++      {
++        "status_reason": "`guard_stop/configuration_readback_not_exact`",
++        "interpretation": "Base/setup/later exact CONFIG/MASTER/master-generation/mask/ERREN/IO predicate failed (K:341–345)."
++      },
++      {
++        "status_reason": "`mmio_error/read_callback_failed` or `write_callback_failed`",
++        "interpretation": "Callback rejected, which may originate from outer board/GIC/time/access policy rather than a physical bus fault. A write may already have taken effect. Check `adapter_reason`, trace, first-failed access/offset; core is poisoned and skips terminal capture (K:198–238; A:54–76)."
++      },
++      {
++        "status_reason": "`clock_error/clock_rollback`; `timeout/overall_deadline` or `phase_deadline`; `access_cap/aggregate_access_cap`; `poll_cap/aggregate_poll_cap`",
++        "interpretation": "Poison and stop external core callbacks; no cleanup/retry/capture. Inner limits:200000us overall,20000us per phase,8192 aggregate read/write attempts,512 aggregate polls,10us poll delay. Outer100000us/4096 physical-access bound includes board/GIC reads and can stop sooner (K:44–54,66–70,162–185,250–257,375–394; O:31–69). These bounds cannot recover a nonreturning MMIO/abort/SError/XPU fault."
++      },
++      {
++        "status_reason": "`internal_error/read_not_whitelisted`, `write_out_of_order`, `delay_not_whitelisted`, `invalid_snapshot_phase`",
++        "interpretation": "Software-policy breach, poison immediately; no fallback (K:198–225,250–254,265–271)."
++      }
++    ],
++    "limits": {
++      "inner_us": 200000,
++      "phase_us": 20000,
++      "inner_access_cap": 8192,
++      "poll_cap": 512,
++      "poll_delay_us": 10,
++      "outer_us": 100000,
++      "outer_physical_access_cap": 4096,
++      "stalled_mmio_contained": false
++    },
++    "predicted_success_first_poll_path": {
++      "not_observed": true,
++      "core_reads": 411,
++      "core_writes": 18,
++      "polls": 4,
++      "physical_reads": 477,
++      "physical_writes": 18,
++      "derivation": "272 snapshot+7*17 guards+4*5 polling=411; +9 board+3 initial GIC+18*3 perwrite GIC=477"
++    },
++    "source_supported": [
++      "STATE low values, VALID/master-generation",
++      "register offsets and FIFO/block count distinction",
++      "CONFIG207 and FIFO/PACK/UNPACK",
++      "first RUN before divider before PAUSE before new tags"
++    ],
++    "conservative_policy": [
++      "exact entry fingerprint",
++      "exact version/STATE auxiliary envelope/geometry",
++      "exact idle status equality at each nonpre stage",
++      "zero FIFO counters and phase-specific MX equalities",
++      "reject every raw error/activity/unknown OP bit",
++      "service mask300 and setup ERREN0 polling adaptation"
++    ],
++    "first_run_bus_silence_guaranteed": false
++  },
++  "runtime": {
++    "log": {
++      "path": "reports/local/20261120-r30-touch-qup-state-approved/console.log",
++      "bytes_actually_read": 46498,
++      "sha256_of_bytes_actually_read": "4a9091cf3dc19438caee0ecf1a61a8d636a3b8c6819376975d3fd806f19e34d1",
++      "line_count": 467,
++      "snapshot_kind": "one in-memory read; not a receiver/frame audit",
++      "state_evidence_line_range": [
++        120,
++        419
++      ]
++    },
++    "begin": {
++      "line": 120,
++      "raw": "LITHIUM TOUCH state begin experimental=1 max_sw_reset=1 fifo_data_io=0 new_tags=0 id_call=0 first_run_bus_activity=unverified owner=unverified gpio_reset=0 rails=unchanged gic_writes=0 irq_attached=0 hid_events=0",
++      "fields": {
++        "experimental": "1",
++        "max_sw_reset": "1",
++        "fifo_data_io": "0",
++        "new_tags": "0",
++        "id_call": "0",
++        "first_run_bus_activity": "unverified",
++        "owner": "unverified",
++        "gpio_reset": "0",
++        "rails": "unchanged",
++        "gic_writes": "0",
++        "irq_attached": "0",
++        "hid_events": "0"
++      }
++    },
++    "result": {
++      "line": 121,
++      "raw": "LITHIUM TOUCH state result status=guard_stop reason=i2c_status_not_exact_idle reset_issued=1 base_configured=1 transfer_configured=1 run_observed=0 clock_programmed=0 pause_observed=0 elapsed_us=398 reads=270 writes=16 polls=3",
++      "fields": {
++        "status": "guard_stop",
++        "reason": "i2c_status_not_exact_idle",
++        "reset_issued": "1",
++        "base_configured": "1",
++        "transfer_configured": "1",
++        "run_observed": "0",
++        "clock_programmed": "0",
++        "pause_observed": "0",
++        "elapsed_us": "398",
++        "reads": "270",
++        "writes": "16",
++        "polls": "3"
++      }
++    },
++    "failure": {
++      "line": 122,
++      "raw": "LITHIUM TOUCH state failure valid=0 access=unread off=unread",
++      "fields": {
++        "valid": "0",
++        "access": "unread",
++        "off": "unread"
++      }
++    },
++    "end": {
++      "line": 419,
++      "raw": "LITHIUM TOUCH state end adapter_reason=none physical_reads=330 physical_writes=16 extra_mappings=1 sw_reset_issued=1 terminal_gic=unread fifo_data_io=0 new_tags=0 id_call=0 first_run_bus_activity=unverified owner=unverified touch_verified=0",
++      "fields": {
++        "adapter_reason": "none",
++        "physical_reads": "330",
++        "physical_writes": "16",
++        "extra_mappings": "1",
++        "sw_reset_issued": "1",
++        "terminal_gic": "unread",
++        "fifo_data_io": "0",
++        "new_tags": "0",
++        "id_call": "0",
++        "first_run_bus_activity": "unverified",
++        "owner": "unverified",
++        "touch_verified": "0"
++      }
++    },
++    "all_phase_fields": [
++      {
++        "phase": "pre",
++        "header": {
++          "line": 123,
++          "fields": {
++            "phase": "pre",
++            "attempted": "1",
++            "complete": "1",
++            "pass0": "0x0001ffff",
++            "pass1": "0x0001ffff",
++            "stable": "0x0001ffff",
++            "changed": "0x00000000"
++          }
++        },
++        "record_count": 34,
++        "valid_records": 34,
++        "unread_records": 0,
++        "both_passes_identical": true,
++        "independent_phase_predicates_pass": true,
++        "terminal_capture_only": false,
++        "pass_field_line_ranges": [
++          [
++            124,
++            140
++          ],
++          [
++            141,
++            157
++          ]
++        ],
++        "identical_pass_values": {
++          "VERSION": "0x20060000",
++          "STATE": "0x0000011c",
++          "CONFIG": "0x00000000",
++          "IO_MODES": "0x000000a5",
++          "OPERATIONAL": "0x000000c0",
++          "ERROR_FLAGS": "0x00000000",
++          "ERROR_FLAGS_EN": "0x0000003c",
++          "OPERATIONAL_MASK": "0x00000000",
++          "OUT_FIFO_COUNT": "0x00000000",
++          "IN_FIFO_COUNT": "0x00000000",
++          "MX_OUTPUT": "0x00000000",
++          "MX_INPUT": "0x00000000",
++          "MX_READ": "0x00000000",
++          "MX_WRITE": "0x00000000",
++          "MASTER_CONFIG": "0x00000000",
++          "CLK_CTL": "0x00000000",
++          "I2C_STATUS": "0x0c000000"
++        }
++      },
++      {
++        "phase": "post_reset",
++        "header": {
++          "line": 158,
++          "fields": {
++            "phase": "post_reset",
++            "attempted": "1",
++            "complete": "1",
++            "pass0": "0x0001ffff",
++            "pass1": "0x0001ffff",
++            "stable": "0x0001ffff",
++            "changed": "0x00000000"
++          }
++        },
++        "record_count": 34,
++        "valid_records": 34,
++        "unread_records": 0,
++        "both_passes_identical": true,
++        "independent_phase_predicates_pass": true,
++        "terminal_capture_only": false,
++        "pass_field_line_ranges": [
++          [
++            159,
++            175
++          ],
++          [
++            176,
++            192
++          ]
++        ],
++        "identical_pass_values": {
++          "VERSION": "0x20060000",
++          "STATE": "0x0000011c",
++          "CONFIG": "0x00000000",
++          "IO_MODES": "0x000000a5",
++          "OPERATIONAL": "0x000000c0",
++          "ERROR_FLAGS": "0x00000000",
++          "ERROR_FLAGS_EN": "0x0000003c",
++          "OPERATIONAL_MASK": "0x00000000",
++          "OUT_FIFO_COUNT": "0x00000000",
++          "IN_FIFO_COUNT": "0x00000000",
++          "MX_OUTPUT": "0x00000000",
++          "MX_INPUT": "0x00000000",
++          "MX_READ": "0x00000000",
++          "MX_WRITE": "0x00000000",
++          "MASTER_CONFIG": "0x00000000",
++          "CLK_CTL": "0x00000000",
++          "I2C_STATUS": "0x0c000000"
++        }
++      },
++      {
++        "phase": "base",
++        "header": {
++          "line": 193,
++          "fields": {
++            "phase": "base",
++            "attempted": "1",
++            "complete": "1",
++            "pass0": "0x0001ffff",
++            "pass1": "0x0001ffff",
++            "stable": "0x0001ffff",
++            "changed": "0x00000000"
++          }
++        },
++        "record_count": 34,
++        "valid_records": 34,
++        "unread_records": 0,
++        "both_passes_identical": true,
++        "independent_phase_predicates_pass": true,
++        "terminal_capture_only": false,
++        "pass_field_line_ranges": [
++          [
++            194,
++            210
++          ],
++          [
++            211,
++            227
++          ]
++        ],
++        "identical_pass_values": {
++          "VERSION": "0x20060000",
++          "STATE": "0x0000011c",
++          "CONFIG": "0x00000207",
++          "IO_MODES": "0x000000a5",
++          "OPERATIONAL": "0x000000c0",
++          "ERROR_FLAGS": "0x00000000",
++          "ERROR_FLAGS_EN": "0x0000003c",
++          "OPERATIONAL_MASK": "0x00000300",
++          "OUT_FIFO_COUNT": "0x00000000",
++          "IN_FIFO_COUNT": "0x00000000",
++          "MX_OUTPUT": "0x00000000",
++          "MX_INPUT": "0x00000000",
++          "MX_READ": "0x00000000",
++          "MX_WRITE": "0x00000000",
++          "MASTER_CONFIG": "0x00000001",
++          "CLK_CTL": "0x00000000",
++          "I2C_STATUS": "0x0c000000"
++        }
++      },
++      {
++        "phase": "setup",
++        "header": {
++          "line": 228,
++          "fields": {
++            "phase": "setup",
++            "attempted": "1",
++            "complete": "1",
++            "pass0": "0x0001ffff",
++            "pass1": "0x0001ffff",
++            "stable": "0x0001ffff",
++            "changed": "0x00000000"
++          }
++        },
++        "record_count": 34,
++        "valid_records": 34,
++        "unread_records": 0,
++        "both_passes_identical": true,
++        "independent_phase_predicates_pass": true,
++        "terminal_capture_only": false,
++        "pass_field_line_ranges": [
++          [
++            229,
++            245
++          ],
++          [
++            246,
++            262
++          ]
++        ],
++        "identical_pass_values": {
++          "VERSION": "0x20060000",
++          "STATE": "0x0000011c",
++          "CONFIG": "0x00000207",
++          "IO_MODES": "0x0000c0a5",
++          "OPERATIONAL": "0x000000c0",
++          "ERROR_FLAGS": "0x00000000",
++          "ERROR_FLAGS_EN": "0x00000000",
++          "OPERATIONAL_MASK": "0x00000300",
++          "OUT_FIFO_COUNT": "0x00000000",
++          "IN_FIFO_COUNT": "0x00000000",
++          "MX_OUTPUT": "0x00000000",
++          "MX_INPUT": "0x00000000",
++          "MX_READ": "0x00000003",
++          "MX_WRITE": "0x00000009",
++          "MASTER_CONFIG": "0x00000001",
++          "CLK_CTL": "0x00000000",
++          "I2C_STATUS": "0x0c000000"
++        }
++      },
++      {
++        "phase": "run",
++        "header": {
++          "line": 263,
++          "fields": {
++            "phase": "run",
++            "attempted": "0",
++            "complete": "0",
++            "pass0": "0x00000000",
++            "pass1": "0x00000000",
++            "stable": "0x00000000",
++            "changed": "0x00000000"
++          }
++        },
++        "record_count": 34,
++        "valid_records": 0,
++        "unread_records": 34,
++        "both_passes_identical": null,
++        "independent_phase_predicates_pass": null,
++        "terminal_capture_only": false,
++        "pass_field_line_ranges": [
++          [
++            264,
++            280
++          ],
++          [
++            281,
++            297
++          ]
++        ],
++        "values": "unread; all34 records explicitly valid0, no numeric evidence"
++      },
++      {
++        "phase": "clock",
++        "header": {
++          "line": 298,
++          "fields": {
++            "phase": "clock",
++            "attempted": "0",
++            "complete": "0",
++            "pass0": "0x00000000",
++            "pass1": "0x00000000",
++            "stable": "0x00000000",
++            "changed": "0x00000000"
++          }
++        },
++        "record_count": 34,
++        "valid_records": 0,
++        "unread_records": 34,
++        "both_passes_identical": null,
++        "independent_phase_predicates_pass": null,
++        "terminal_capture_only": false,
++        "pass_field_line_ranges": [
++          [
++            299,
++            315
++          ],
++          [
++            316,
++            332
++          ]
++        ],
++        "values": "unread; all34 records explicitly valid0, no numeric evidence"
++      },
++      {
++        "phase": "pause",
++        "header": {
++          "line": 333,
++          "fields": {
++            "phase": "pause",
++            "attempted": "0",
++            "complete": "0",
++            "pass0": "0x00000000",
++            "pass1": "0x00000000",
++            "stable": "0x00000000",
++            "changed": "0x00000000"
++          }
++        },
++        "record_count": 34,
++        "valid_records": 0,
++        "unread_records": 34,
++        "both_passes_identical": null,
++        "independent_phase_predicates_pass": null,
++        "terminal_capture_only": false,
++        "pass_field_line_ranges": [
++          [
++            334,
++            350
++          ],
++          [
++            351,
++            367
++          ]
++        ],
++        "values": "unread; all34 records explicitly valid0, no numeric evidence"
++      },
++      {
++        "phase": "terminal",
++        "header": {
++          "line": 368,
++          "fields": {
++            "phase": "terminal",
++            "attempted": "1",
++            "complete": "1",
++            "pass0": "0x0001ffff",
++            "pass1": "0x0001ffff",
++            "stable": "0x0001ffff",
++            "changed": "0x00000000"
++          }
++        },
++        "record_count": 34,
++        "valid_records": 34,
++        "unread_records": 0,
++        "both_passes_identical": true,
++        "independent_phase_predicates_pass": null,
++        "terminal_capture_only": true,
++        "pass_field_line_ranges": [
++          [
++            369,
++            385
++          ],
++          [
++            386,
++            402
++          ]
++        ],
++        "identical_pass_values": {
++          "VERSION": "0x20060000",
++          "STATE": "0x0000011d",
++          "CONFIG": "0x00000207",
++          "IO_MODES": "0x0000c0a5",
++          "OPERATIONAL": "0x00000000",
++          "ERROR_FLAGS": "0x00000000",
++          "ERROR_FLAGS_EN": "0x00000000",
++          "OPERATIONAL_MASK": "0x00000300",
++          "OUT_FIFO_COUNT": "0x00000000",
++          "IN_FIFO_COUNT": "0x00000000",
++          "MX_OUTPUT": "0x00000000",
++          "MX_INPUT": "0x00000000",
++          "MX_READ": "0x00000003",
++          "MX_WRITE": "0x00000009",
++          "MASTER_CONFIG": "0x00000001",
++          "CLK_CTL": "0x00000000",
++          "I2C_STATUS": "0x0c110000"
++        }
++      }
++    ],
++    "field_totals": {
++      "records": 272,
++      "valid": 170,
++      "unread": 102,
++      "complete_identical_snapshot_pairs": 5
++    },
++    "write_trace": [
++      {
++        "line": 403,
++        "raw": "LITHIUM TOUCH state write index=0 off=0x00c value=0x00000001 issued=1 returned_on_time=1",
++        "fields": {
++          "index": "0",
++          "off": "0x00c",
++          "value": "0x00000001",
++          "issued": "1",
++          "returned_on_time": "1"
++        }
++      },
++      {
++        "line": 404,
++        "raw": "LITHIUM TOUCH state write index=1 off=0x004 value=0x00000000 issued=1 returned_on_time=1",
++        "fields": {
++          "index": "1",
++          "off": "0x004",
++          "value": "0x00000000",
++          "issued": "1",
++          "returned_on_time": "1"
++        }
++      },
++      {
++        "line": 405,
++        "raw": "LITHIUM TOUCH state write index=2 off=0x000 value=0x00000207 issued=1 returned_on_time=1",
++        "fields": {
++          "index": "2",
++          "off": "0x000",
++          "value": "0x00000207",
++          "issued": "1",
++          "returned_on_time": "1"
++        }
++      },
++      {
++        "line": 406,
++        "raw": "LITHIUM TOUCH state write index=3 off=0x020 value=0x0000003c issued=1 returned_on_time=1",
++        "fields": {
++          "index": "3",
++          "off": "0x020",
++          "value": "0x0000003c",
++          "issued": "1",
++          "returned_on_time": "1"
++        }
++      },
++      {
++        "line": 407,
++        "raw": "LITHIUM TOUCH state write index=4 off=0x028 value=0x00000300 issued=1 returned_on_time=1",
++        "fields": {
++          "index": "4",
++          "off": "0x028",
++          "value": "0x00000300",
++          "issued": "1",
++          "returned_on_time": "1"
++        }
++      },
++      {
++        "line": 408,
++        "raw": "LITHIUM TOUCH state write index=5 off=0x408 value=0x00000001 issued=1 returned_on_time=1",
++        "fields": {
++          "index": "5",
++          "off": "0x408",
++          "value": "0x00000001",
++          "issued": "1",
++          "returned_on_time": "1"
++        }
++      },
++      {
++        "line": 409,
++        "raw": "LITHIUM TOUCH state write index=6 off=0x020 value=0x00000000 issued=1 returned_on_time=1",
++        "fields": {
++          "index": "6",
++          "off": "0x020",
++          "value": "0x00000000",
++          "issued": "1",
++          "returned_on_time": "1"
++        }
++      },
++      {
++        "line": 410,
++        "raw": "LITHIUM TOUCH state write index=7 off=0x028 value=0x00000300 issued=1 returned_on_time=1",
++        "fields": {
++          "index": "7",
++          "off": "0x028",
++          "value": "0x00000300",
++          "issued": "1",
++          "returned_on_time": "1"
++        }
++      },
++      {
++        "line": 411,
++        "raw": "LITHIUM TOUCH state write index=8 off=0x200 value=0x00000000 issued=1 returned_on_time=1",
++        "fields": {
++          "index": "8",
++          "off": "0x200",
++          "value": "0x00000000",
++          "issued": "1",
++          "returned_on_time": "1"
++        }
++      },
++      {
++        "line": 412,
++        "raw": "LITHIUM TOUCH state write index=9 off=0x100 value=0x00000000 issued=1 returned_on_time=1",
++        "fields": {
++          "index": "9",
++          "off": "0x100",
++          "value": "0x00000000",
++          "issued": "1",
++          "returned_on_time": "1"
++        }
++      },
++      {
++        "line": 413,
++        "raw": "LITHIUM TOUCH state write index=10 off=0x208 value=0x00000003 issued=1 returned_on_time=1",
++        "fields": {
++          "index": "10",
++          "off": "0x208",
++          "value": "0x00000003",
++          "issued": "1",
++          "returned_on_time": "1"
++        }
++      },
++      {
++        "line": 414,
++        "raw": "LITHIUM TOUCH state write index=11 off=0x150 value=0x00000009 issued=1 returned_on_time=1",
++        "fields": {
++          "index": "11",
++          "off": "0x150",
++          "value": "0x00000009",
++          "issued": "1",
++          "returned_on_time": "1"
++        }
++      },
++      {
++        "line": 415,
++        "raw": "LITHIUM TOUCH state write index=12 off=0x000 value=0x00000207 issued=1 returned_on_time=1",
++        "fields": {
++          "index": "12",
++          "off": "0x000",
++          "value": "0x00000207",
++          "issued": "1",
++          "returned_on_time": "1"
++        }
++      },
++      {
++        "line": 416,
++        "raw": "LITHIUM TOUCH state write index=13 off=0x008 value=0x0000c0a5 issued=1 returned_on_time=1",
++        "fields": {
++          "index": "13",
++          "off": "0x008",
++          "value": "0x0000c0a5",
++          "issued": "1",
++          "returned_on_time": "1"
++        }
++      },
++      {
++        "line": 417,
++        "raw": "LITHIUM TOUCH state write index=14 off=0x408 value=0x00000001 issued=1 returned_on_time=1",
++        "fields": {
++          "index": "14",
++          "off": "0x408",
++          "value": "0x00000001",
++          "issued": "1",
++          "returned_on_time": "1"
++        }
++      },
++      {
++        "line": 418,
++        "raw": "LITHIUM TOUCH state write index=15 off=0x004 value=0x00000001 issued=1 returned_on_time=1",
++        "fields": {
++          "index": "15",
++          "off": "0x004",
++          "value": "0x00000001",
++          "issued": "1",
++          "returned_on_time": "1"
++        }
++      }
++    ],
++    "write_reconciliation": {
++      "actual_length": 16,
++      "exact_reviewed_prefix": true,
++      "all_returned_on_time": true,
++      "unissued_indices": [
++        16,
++        17
++      ],
++      "divider_write_issued": false,
++      "pause_write_issued": false,
++      "second_run_issued": false,
++      "fifo_data_io": 0,
++      "new_tags": 0,
++      "id_call": 0
++    },
++    "setup_to_terminal_deltas": [
++      {
++        "index": 1,
++        "register": "STATE",
++        "offset": "0x004",
++        "setup": "0x0000011c",
++        "terminal": "0x0000011d",
++        "xor": "0x00000001",
++        "changed_bits": [
++          0
++        ],
++        "setup_pass0_log_line": 230,
++        "terminal_pass0_log_line": 370
++      },
++      {
++        "index": 4,
++        "register": "OPERATIONAL",
++        "offset": "0x018",
++        "setup": "0x000000c0",
++        "terminal": "0x00000000",
++        "xor": "0x000000c0",
++        "changed_bits": [
++          6,
++          7
++        ],
++        "setup_pass0_log_line": 233,
++        "terminal_pass0_log_line": 373
++      },
++      {
++        "index": 16,
++        "register": "I2C_STATUS",
++        "offset": "0x404",
++        "setup": "0x0c000000",
++        "terminal": "0x0c110000",
++        "xor": "0x00110000",
++        "changed_bits": [
++          16,
++          20
++        ],
++        "setup_pass0_log_line": 245,
++        "terminal_pass0_log_line": 385
++      }
++    ],
++    "admitted_phases": [
++      "pre",
++      "post_reset",
++      "base",
++      "setup"
++    ],
++    "unattempted_snapshots": [
++      "run",
++      "clock",
++      "pause"
++    ],
++    "terminal_capture_only": true,
++    "state_decode": {
++      "raw": "0x11d",
++      "low_state": 1,
++      "VALID": true,
++      "master_generation": true,
++      "opaque_remainder": "0x108",
++      "run_stage_admitted": false,
++      "pause_observed": false
++    },
++    "stop_localization": {
++      "source_refs": [
++        "K:295-307,371-390,441-444,456-463"
++      ],
++      "callsite": "first RUN ltsq_wait after write index15 and before run capture",
++      "immediate_cause": "exact status mismatch before state target/master acceptance",
++      "first_failed_poll_raw_status_logged": false,
++      "terminal_status_is_later_observation": true,
++      "failure_valid0": "no failed/late access recorded; logical guard stop still occurred"
++    },
++    "access_reconciliation": {
++      "core_reads": 270,
++      "core_writes": 16,
++      "polls": 3,
++      "elapsed_us": 398,
++      "physical_reads": 330,
++      "physical_writes": 16,
++      "core_formula": "5*34 snapshots+5*17 live guards+3*5 polls=270",
++      "physical_formula": "270+9 board+3 initialGIC+16*3 prewriteGIC=330",
++      "matches": true
++    },
++    "context": {
++      "stage1": [
++        {
++          "line": 119,
++          "raw": "LITHIUM TOUCH stage=1 end status=observed reason=snapshot_complete_not_touch_verified reads=26 writes=3 mappings=8 elapsed_us=314 clocks_checked=1 pins_checked=1 reset=0 transfer=0 irq_attached=0 hid_events=0",
++          "fields": {
++            "stage": "1",
++            "status": "observed",
++            "reason": "snapshot_complete_not_touch_verified",
++            "reads": "26",
++            "writes": "3",
++            "mappings": "8",
++            "elapsed_us": "314",
++            "clocks_checked": "1",
++            "pins_checked": "1",
++            "reset": "0",
++            "transfer": "0",
++            "irq_attached": "0",
++            "hid_events": "0"
++          }
++        }
++      ],
++      "cpu": [
++        {
++          "line": 426,
++          "raw": "LITHIUM RUN A logical=0 mpidr=0x80000001 affinity=0x1 max_logical=0 bootcpu=1 cpus=1 expected_affinity=0x1 match=1",
++          "fields": {
++            "logical": "0",
++            "mpidr": "0x80000001",
++            "affinity": "0x1",
++            "max_logical": "0",
++            "bootcpu": "1",
++            "cpus": "1",
++            "expected_affinity": "0x1",
++            "match": "1"
++          }
++        }
++      ],
++      "session": [
++        {
++          "line": 431,
++          "raw": "LITHIUM TOUCH session state=ready pid=1 ram_only=1 timer_seconds=180",
++          "fields": {
++            "state": "ready",
++            "pid": "1",
++            "ram_only": "1",
++            "timer_seconds": "180"
++          }
++        },
++        {
++          "line": 432,
++          "raw": "LITHIUM TOUCH session state=wait owner=kernel_loader_return_after",
++          "fields": {
++            "state": "wait",
++            "owner": "kernel_loader_return_after"
++          }
++        }
++      ],
++      "tail_mentions": [
++        {
++          "line": 432,
++          "raw": "LITHIUM TOUCH session state=wait owner=kernel_loader_return_after"
++        },
++        {
++          "line": 462,
++          "raw": "--- loader_return_after expired ---"
++        },
++        {
++          "line": 467,
++          "raw": "LITHIUM USB: timer boundary drain=1 target=46449"
++        }
++      ],
++      "scope": "main owns transport, final timer/frame audit, commands, boot counts and shared state"
++    },
++    "raw_poll_limit": "First failing RUN poll raw STATUS/time was not separately printed; the later terminal STATUS cannot be substituted as the failed-poll value or exact delta."
++  },
++  "status_analysis": {
++    "raw": "0x0c110000",
++    "old_idle": "0x0c000000",
++    "xor": "0x00110000",
++    "changed_bits": [
++      16,
++      20
++    ],
++    "micode_isr_mask": "0x0380003c",
++    "broader_micode_header_linux_mask": "0x038000fc",
++    "and_micode_isr_mask": "0x00000000",
++    "and_broader_mask": "0x00000000",
++    "BUS_ACTIVE_bit8": false,
++    "BUS_MASTER_bit9": false,
++    "WR_BUFFER_FULL_bit0": false,
++    "SDA_bit26_sampled_high": true,
++    "SCL_bit27_sampled_high": true,
++    "ERROR_FLAGS": "0x0",
++    "NACK_bit3": false,
++    "ARB_LOST_bit4": false,
++    "bits16_20_meaning": "not named in available fixed local MiCode H/C or Linux i2c-qup; no invented FSM field names or code meanings",
++    "debug_source_limit": "Workspace filename search including ignored files found no i2c-msm-v2-debug implementation; H:622/645 refers to it but supplies no field decode. No fetch.",
++    "source_refs": [
++      "H:127-178,611-661",
++      "C:1501-1528",
++      "L:113-117,280-307",
++      "K:302-303"
++    ],
++    "interpretation": "conservative exact whole-register equality mismatch, not a named status error or physical traffic/silence proof",
++    "recommendation": "Keep frozen consumed R30 unchanged. A future separately reviewed host revision should first retain failing-poll raw VERSION/ERROR/STATUS/OP/STATE, timestamp, phase/from/target before predicate evaluation without another MMIO read or cleanup. Pin MiCode debug field masks/value tables before phase-aware RUN/CLK/PAUSE status admission; preserve known error/activity/line/unknown-bit stops. No simple bit16/20 mask widening, gate skip, CLK/FIFO/ID or device authorization."
++  },
++  "comparison_R29": {
++    "source": "evidence/touch-r29-20261119/runtime/findings.md:22-46,62-68",
++    "R29": {
++      "stop": "operational_nonzero_before_id",
++      "writes": 6,
++      "reads": 145,
++      "polls": 2,
++      "STATE": "0x11c",
++      "OP": "0xc0",
++      "STATUS": "0x0c000000",
++      "IO_MODES": "0xa5",
++      "MX_READ": 0,
++      "MX_WRITE": 0,
++      "CLK": 0,
++      "RUN_issued": false
++    },
++    "R30": {
++      "stop": "i2c_status_not_exact_idle after RUN request",
++      "writes": 16,
++      "STATE_terminal": "0x11d",
++      "OP_terminal": "0",
++      "STATUS_terminal": "0x0c110000",
++      "IO_MODES_setup_terminal": "0xc0a5",
++      "MX_READ": 3,
++      "MX_WRITE": 9,
++      "CLK": 0,
++      "RUN_issued": true
++    },
++    "same_pre_fingerprint": true,
++    "first6_write_values_same": true,
++    "supported": "setup admitted, first RUN write returned, later terminal RUN/OP/status changes correlated with new sequence",
++    "not_supported": [
++      "internal reset effect proved",
++      "FIFO physically empty",
++      "exclusive ownership",
++      "no physical I2C activity",
++      "exact bit16/20 FSM meanings",
++      "ID/ACK/touch success",
++      "divider/PAUSE reached",
++      "automatic retry authorization"
++    ]
++  },
++  "unknowns": [
++    "precise STATUS bit16/20 semantics without pinned debug implementation",
++    "raw status from first failing transition poll",
++    "transient wire activity, waveform, owner and reset internal effect",
++    "FIFO/parser hidden state/full semantics/count-read side effects",
++    "terminal GIC state unread",
++    "CLK and PAUSE unattempted",
++    "ID/ACK/IRQ/HID/touch untested",
++    "physical return screen and transport integrity delegated to main"
++  ],
++  "markdown_sha256": "b6415e5272007ce77e8dba7465b2c1bbda8c821326f2498ee99b67a61e6ba39f"
++}
+diff --git a/evidence/touch-r30-20261119/runtime/findings.md b/evidence/touch-r30-20261119/runtime/findings.md
+new file mode 100644
+--- /dev/null
++++ b/evidence/touch-r30-20261119/runtime/findings.md
+@@ -0,0 +1,132 @@
++# R30 state-machine independent static and runtime analysis
++
++Reviewed on **2026-11-20, Asia/Shanghai**. Status: **runtime/source analysis complete; final transport audit belongs to main**. After main's explicit notification, this reviewer independently parsed the saved console's result, all phase fields, write trace and end record. The main alone owns all device/preflight/boot/receiver work. This analysis ran no device/USB/network/build/test or Git status/index/checkout operation; only fixed local Linux Git-object reads were used. Only this file and `findings.json` are authored.
++
++All references below use **1-based local source lines**. `K` = `ports/hakios-lithium/peripherals/touch-qup-state-core.h`; `A` = `ports/hakios-lithium/peripherals/touch-qup-state.inc`; `S` = `ports/hakios-lithium/peripherals/touch-snapshot-core.h`; `O` = `ports/hakios-lithium/peripherals/touch-id.inc`; `P` = `evidence/touch-r30-20261119/protocol/findings.md`; `H` = `evidence/touch-stage1-20261119/board/sources/i2c-msm-v2.h`; `C` = `evidence/touch-stage1-20261119/clocks/primary/micode/drivers/i2c/busses/i2c-msm-v2.c`; `L` = fixed local Linux commit `adc218676eef25575469234709c2d87185ca223a:drivers/i2c/busses/i2c-qup.c`; `R` = `reports/local/20261120-r30-touch-qup-state-approved/console.log`; `R29` = `evidence/touch-r29-20261119/runtime/findings.md`. Source hashes and reviewed ranges are in the paired JSON. H/C are local primary-source copies; this analysis does not reverify their commit membership or consult the network. L was read only with lazy-fetch disabled and `protocol.allow=never`.
++
++## 1. What this experiment can establish
++
++The independent path can observe one checked RESET/base/setup/first-RUN/clock/PAUSE sequence, ending before any software FIFO data-port access. It neither includes nor calls the old ID/initializer cores (K:9–32,408–468; A:23–51,120,163–165). **No new FIFO words/tags/ID call is a software-scope fact; physical I2C silence is unverified.** First RUN may resume retained FIFO/parser activity or another owner's work. Zero observed FIFO counters, OP full-bit changes, returned reset writes, and VALID+RESET do not settle that question (K:24–42; P:54–60).
++
++Source-supported ordering is SW_RESET → checked RESET → ordinary STATE RESET → base CONFIG/ERREN/mask/master → FIFO count/mode setup in RESET → first RUN → divider → PAUSE. C:265–295,299–390,667–685,710–724,1870–1903 supports these components and their relative placement, not the entire diagnostic's exact 18-write list or its safety on this board. R30 deliberately inserts extra observations and freezes before vendor FIFO preload/second RUN.
++
++## 2. Shared predicates and measurement meaning
++
++- Each named snapshot attempts **two passes × 17 registers** in S:63–80 order. `pass0=pass1=0x0001ffff` plus `complete=1` means 34 accepted reads, **not** predicate admission, physical certification, or an atomic snapshot. A result always prints 272 field records; unreached/invalid records explicitly say `valid=0 value=unread` and must not be counted as measurements (K:93–104,265–286; A:139–158; S:148–205).
++- `pre` requires exact equality between both passes. Later captures permit only OPERATIONAL bits 6/7 (`0xc0`) to vary between passes; the raw `stable`/`changed` masks still report that difference. If OP alone differs, `stable=0x1ffef`, `changed=0x10` can be admissible; this is not an all-fields-stable result (K:279–285; S:167–169).
++- Every non-pre admission requires VERSION `0x20060000`, raw ERROR_FLAGS `0`, exact I2C_STATUS `0x0c000000`, and OP containing **only** bits 6/7. Bits 4/5 and 8–13 (`0x3f30`) stop as activity; bits outside `0x3ff0` stop as unknown. Admissible raw OP is therefore `0`, `0x40`, `0x80`, or `0xc0`, without assigning full-bit occupancy/permission semantics (K:66–77,295–308).
++- STATE must have VALID bit2, the phase's low state 0/1/3, and opaque remainder `(STATE & ~0x17)` equal to `0` or `0x108`. This excludes FLUSH bit6 and state2. Bits in `0x108` are an observed envelope, not source-defined capability. From base onward master-generation bit4 is required separately (K:289–292,314–345; H:71–84).
++- Fresh single-pass guards reread all 17 fields, STATE last, before mutation stages. These are serialized observations; they cannot make a whole write batch or hardware ownership atomic (K:358–368,423–453).
++
++## 3. Eight phases and exact admission predicates
++
++The following counts refer to the **full-path write prefix at that capture**, not proof that a capture was reached. Any shorter prefix is possible when a callback/guard stops inside a batch.
++
++| Phase | Write prefix | Additional predicates, beyond the shared rules | What a stop does and does not imply |
++| --- | --- | --- | --- |
++| `pre` | 0 | Both passes and a fresh guard exactly match: VERSION `20060000`, STATE `11c`, CONFIG `0`, IO `a5`, OP `c0`, ERROR `0`, ERREN `3c`, OPMASK `0`, six counts `0`, MASTER `0`, CLK `0`, STATUS `0c000000` (K:144–148,317–321,423–426). | Signature/stability mismatch blocks this core's first reset write. It does not diagnose the owner, target chip, or actual FIFO occupancy. |
++| `post_reset` | 1 | After sole SW_RESET and VALID+RESET polling: STATE low0; IO with PACK/UNPACK bits removed equals `a5`; both FIFO counters and all four MX counters `0`; CLK `0`; CONFIG `0`; MASTER `0/1`; ERREN `0/3c`; OPMASK `0/300` (K:325–340,426–428). Master-generation is not required yet. | Reset was requested if traced. A mismatch may violate conservative policy; it does not establish failed internal reset. No base writes follow failed admission. |
++| `base` | 6 | Ordinary STATE RESET was checked before writes 3–6. VALID+RESET+master-generation; CONFIG `207`, MASTER `1`, ERREN `3c`, OPMASK `300`; IO geometry `a5` with PACK/UNPACK optional; all six counts `0`, CLK `0` (K:325–345,430–434). | Source-shaped base admission is incomplete/failed. A base flag0 may coexist with some/all base writes; use trace, not flags, for issued writes. ERREN `3c` enables core error sources. |
++| `setup` | 15 | VALID+RESET+master-generation; CONFIG `207`, MASTER `1`, ERREN `0`, mask `300`, IO **exactly `c0a5`**; OUT/IN FIFO counts `0`, MX_OUTPUT/MX_INPUT `0`, MX_READ **3**, MX_WRITE **9**; CLK `0` (K:327–345,436–439). | Setup not admitted. Nonzero 3/9 are intentional aggregate byte counts, not FIFO occupancy or a sent transaction. No first RUN follows a failed setup gate. |
++| `run` | 16 | Same configured fields/counts as setup, STATE low1 VALID+master-generation, CLK still `0`; transition polling accepts only low state0 or1 and the known envelope (K:371–395,441–444). | Write16 may already have entered RUN even if `run_observed=0`. Activity/status/error before own tags is unexpected evidence, not an ID response. No cleanup PAUSE/RESET is attempted on this failure. |
++| `clock` | 17 | Preserve checked RUN/setup fields and counts; CLK **`003e007c`**, with exact readback (K:334–345,446–449). | Divider may have been written before a flag0/stop. It is a MiCode nominal100kHz choice, not a measured SCL frequency or confirmation of stock-board rate (C:408–456,461–470). |
++| `pause` | 18 | Preserve clock/setup fields/counts; STATE low3 VALID+master-generation; transition accepts only low1 or3 (K:371–395,451–455). | PAUSE request is not PAUSE observation. Even a passed gate leaves raw full-bit/ownership semantics unresolved. No FIFO data, second RUN, or cleanup reset follows. |
++| `terminal` | existing prefix | If no earlier failure, requires the same predicates as pause and successful pair capture. If already logically stopped, it is **capture only**: the `!w.failed` short circuit skips terminal predicate admission. Poisoned I/O/time/cap paths skip capture entirely (K:456–463). | An early-stop terminal may show RESET/RUN/other state; do not relabel it PAUSE. Only full success yields `observed/prefifo_pause_observed_no_new_tags`. `terminal_gic=unread` remains explicit (A:163–171). |
++
++**Source versus policy:** source definitions support low STATE values/VALID/master-generation, register addresses, CONFIG mini-core2/N7, FIFO versus block counts and PACK/UNPACK (H:43–125,144–147; C:299–390). Exact inherited values, VERSION/STATE-aux envelope, all-counts-zero reset/base admission, exact idle status, 64-byte geometry restriction, strict readback and rejection of all raw errors/activity are **conservative R30 policy**. There is no architectural reset-value table proving them necessary on every valid device. Setup intentionally changes counters to3/9. R30 keeps OPMASK `300` and changes ERREN to0, whereas vendor FIFO setup normally unmasks services; this is an explicit polling adaptation, not literal stock behavior (K:21–42,311–347; C:382–388; P:25,31,35–58).
++
++## 4. Exact 18-write sequence (trace indices are zero-based)
++
++The core enforces every `(offset,value)` against the **next** list entry, consuming write/reset attempt accounting before the callback. The adapter independently limits values, permits at most one SW_RESET, checks visible SPI enable/active/pending before each write, and records a trace only after those checks/barriers (K:119–132,219–238,398–404; A:34–76).
++
++| Trace index / ordinal | Offset | Register | Value | Stage / meaning |
++| --- | --- | --- | --- | --- |
++| 0 / 1 | `00c` | SW_RESET | `00000001` | Sole software-reset request; then checked VALID+RESET and `post_reset`. |
++| 1 / 2 | `004` | STATE | `00000000` | Ordinary RESET, distinct from SW_RESET; checked before base writes. |
++| 2 / 3 | `000` | CONFIG | `00000207` | I2C mini-core2, N7; both directions enabled. |
++| 3 / 4 | `020` | ERROR_FLAGS_EN | `0000003c` | Source base error-source enable; not IRQ-silent. |
++| 4 / 5 | `028` | OPERATIONAL_MASK | `00000300` | Mask input/output service sources. |
++| 5 / 6 | `408` | MASTER_CONFIG | `00000001` | V2 tags selected; then `base`. |
++| 6 / 7 | `020` | ERROR_FLAGS_EN | `00000000` | R30 polling adaptation for setup and later phases. |
++| 7 / 8 | `028` | OPERATIONAL_MASK | `00000300` | Retain service masking; differs from vendor FIFO transfer setup. |
++| 8 / 9 | `200` | MX_INPUT | `00000000` | Disable block-mode input count. |
++| 9 / 10 | `100` | MX_OUTPUT | `00000000` | Disable block-mode output count. |
++| 10 / 11 | `208` | MX_READ | `00000003` | Aggregate FIFO RX bytes, including protocol overhead; not three chip bytes. |
++| 11 / 12 | `150` | MX_WRITE | `00000009` | Aggregate FIFO TX bytes; not an output data-port write. |
++| 12 / 13 | `000` | CONFIG | `00000207` | Exact reviewed I2Cv2/N7 setup. |
++| 13 / 14 | `008` | IO_MODES | `0000c0a5` | FIFO mode, PACK+UNPACK, exact inherited geometry; no shift. |
++| 14 / 15 | `408` | MASTER_CONFIG | `00000001` | Retain V2 tag selection; then `setup`. |
++| 15 / 16 | `004` | STATE | `00000001` | First RUN; may resume inherited activity; then `run`. |
++| 16 / 17 | `400` | CLK_CTL | `003e007c` | Source nominal100kHz divider **after** checked first RUN; then `clock`. |
++| 17 / 18 | `004` | STATE | `00000003` | PAUSE; then `pause` and terminal capture, with no further writes. |
++
++Exact list: K:119–125; sequencing and prefix boundaries: K:423–463. Correct FIFO aggregate-count addresses are `208/150`; `200/100` are block-mode counts; data ports `110/218` are absent from both read and write policies (K:108–124; A:23–51; H:53–64). Aggregate9/3 provenance and the distinction from Linux per-message accounting are in P:27–31; no aggregate tag bytes are supplied by R30.
++
++## 5. Stop dictionary and limits
++
++| Status / reason | Evidence interpretation and continuation |
++| --- | --- |
++| `disabled/experimental_disabled`; `invalid_io/missing_callbacks` | No core experiment; production adapter compiles experimental code but runtime invocation/context remains separate (K:56–64,408–419; A:9–13). |
++| `guard_stop/entry_not_exact_r29` | Exact pre fingerprint mismatch, including full bits; first core write blocked when this is the initial failure (K:317–321,423–426). |
++| `guard_stop/snapshot_changed_between_passes` | Any pre difference, or any later difference outside OP full bits. Pair may be complete yet inadmissible (K:279–285). |
++| `wrong_version/unsupported_raw_version`; `guard_stop/unsupported_raw_version` | Snapshot stops immediately after preserving a successfully read mismatching VERSION; live/wait path rejects it too. No unsupported-silicon diagnosis beyond the observed mismatch (S:193–199; K:298–299). |
++| `guard_stop/new_core_error` | Any nonzero raw ERROR_FLAGS, including bits outside named vendor masks. Do not identify a chip-ID error or W1C it (K:300–301). |
++| `guard_stop/i2c_status_not_exact_idle` | Any deviation from exact status `0c000000`: may include activity, low line, known error, or unknown bit. Decode the actual raw status; equality failure alone does not identify which cause (K:302–303; H:127–171). |
++| `guard_stop/unknown_operational_bits`; `guard_stop/unexpected_prefifo_activity` | Bits outside known `3ff0`, or activity bits `3f30`, respectively. Full bits6/7 alone never prove occupancy/emptiness/safe FIFO access (K:304–307). |
++| `guard_stop/require_known_valid_current_state` | Snapshot/live state validity, phase-low-state or opaque-envelope policy failed; no implicit corrective state write (K:325–326). |
++| `guard_stop/unexpected_transition_state`; `guard_stop/require_i2c_master_generation` | Transition poll saw an unreviewed envelope/low state outside from/target, or target VALID without required master-generation. Merely staying in the allowed prior state is polled until a budget/cap stops it (K:371–395). |
++| `guard_stop/require_observed_64byte_geometry` | IO fields outside PACK/UNPACK do not equal reviewed `a5`. Compatibility restriction, not proof of wrong capacity on this board (K:327–328; P:25). |
++| `guard_stop/prefifo_counts_not_exact` | FIFO/block count not0, or MX_READ/MX_WRITE not phase-appropriate0/0 or3/9. Read counts are observations, not occupancy certification (K:329–333). |
++| `guard_stop/clock_readback_not_exact` | CLK differs from0 before clock phase or `003e007c` afterward (K:334–335). |
++| `guard_stop/conservative_post_reset_policy` | CONFIG, MASTER, ERREN or OPMASK failed specifically the optional post-reset envelope; not an architectural reset-failure verdict (K:336–340). |
++| `guard_stop/configuration_readback_not_exact` | Base/setup/later exact CONFIG/MASTER/master-generation/mask/ERREN/IO predicate failed (K:341–345). |
++| `mmio_error/read_callback_failed` or `write_callback_failed` | Callback rejected, which may originate from outer board/GIC/time/access policy rather than a physical bus fault. A write may already have taken effect. Check `adapter_reason`, trace, first-failed access/offset; core is poisoned and skips terminal capture (K:198–238; A:54–76). |
++| `clock_error/clock_rollback`; `timeout/overall_deadline` or `phase_deadline`; `access_cap/aggregate_access_cap`; `poll_cap/aggregate_poll_cap` | Poison and stop external core callbacks; no cleanup/retry/capture. Inner limits:200000us overall,20000us per phase,8192 aggregate read/write attempts,512 aggregate polls,10us poll delay. Outer100000us/4096 physical-access bound includes board/GIC reads and can stop sooner (K:44–54,66–70,162–185,250–257,375–394; O:31–69). These bounds cannot recover a nonreturning MMIO/abort/SError/XPU fault. |
++| `internal_error/read_not_whitelisted`, `write_out_of_order`, `delay_not_whitelisted`, `invalid_snapshot_phase` | Software-policy breach, poison immediately; no fallback (K:198–225,250–254,265–271). |
++
++Logical first failure remains sticky; if not poisoned, a **read-only** terminal capture may still be attempted. A later terminal fault can add failed-access evidence without replacing the original reason. `failure valid=0 access=unread off=unread` only means no recorded failed/late core read/write; it does not certify absence of policy stops (K:150–159,188–195,456–463; A:134–138).
++
++Outer adapter admission/stops cover execution context/Stage1 readiness, mapping count/null windows/QUP mapping, changed board readbacks, GIC mapping and visible SPI enable/active/pending, tighter deadline/access/clock rollback, invalid write/read/delay policy, second SW_RESET and trace capacity (A:23–31,54–95,97–124,168–171; O:41–108). Initial and per-write GIC views do not establish ownership, globally exclude IRQs, or cover terminal state. This reviewer has not invoked those helpers.
++
++## 6. Static full-path prediction and flag interpretation
++
++For a **fully successful, first-poll-every-transition** path, static derivation predicts **411 core reads =272 snapshot +119 fresh-guard +20 transition-poll**, **18 core writes**, **4 polls**. Outer physical reads would be **477 =411 +9 board +3 initial GIC +54 per-write GIC** and physical writes18, under the inspected adapter with no extra operations. These are predictions, **not observed values** (K:423–463; A:65,119–128; O:72–108). Extra transition iterations add five core reads each; failure, early rejection or incomplete captures can reduce the totals.
++
++`reset_issued` is a core attempt flag, adapter `sw_reset_issued` is consumed immediately before the write macro, and `returned_on_time=1` is a returning bounded write, **not** independent hardware readback/reset effect. Stage flags become1 only after checked captures and can stay0 after their corresponding write occurred (K:219–238,434–455; A:68–76,130–165).
++
++## 7. Actual R30 runtime: stopped after first RUN request
++
++**Result:** `guard_stop/i2c_status_not_exact_idle`, `reset_issued=1 base_configured=1 transfer_configured=1 run_observed=0 clock_programmed=0 pause_observed=0`, **270 core reads/16 writes/3 polls/398us** (R:121). Adapter: `reason=none`, **330 physical reads/16 writes**, one extra mapping, one SW_RESET, `terminal_gic=unread`, no software FIFO data access/new tags/ID call (R:419). The analyzed in-memory read is **46,498 bytes/467 lines**, SHA256 `4a9091cf3dc19438caee0ecf1a61a8d636a3b8c6819376975d3fd806f19e34d1`; this identifies bytes read, not a separate frame-integrity audit.
++
++Independent parsing checked all **272 field records:170 valid/102 unread**, no duplicated/missing phase-pass-index tuples, and all logged validity/stability masks. The five complete pairs are identical within each pair; pre/post_reset/base/setup independently satisfy their exact phase predicates. Terminal is capture-only after the earlier stop and is **not an admitted PAUSE snapshot**.
++
++| Phase | Header line | Field lines | Independent outcome |
++| --- | --- | --- | --- |
++| pre | R:123 | R:124–157 | 34 valid, masks/stable `1ffff`, changed0; exact inherited fingerprint. |
++| post_reset | R:158 | R:159–192 | Same as pre in every field; conservative post-reset predicate passed. |
++| base | R:193 | R:194–227 | CONFIG207/MASTER1/OPMASK300; ERREN3c; STATE11c/OPc0/status old idle; six counts0. |
++| setup | R:228 | R:229–262 | IOc0a5/ERREN0/MX_READ3/MX_WRITE9; CONFIG207/MASTER1/mask300; STATE11c/OPc0/status old idle; FIFO/block counts0. |
++| run | R:263 | R:264–297 | attempted0/complete0, all34 unread; this does not mean RUN was never written. |
++| clock | R:298 | R:299–332 | attempted0/complete0, all34 unread. |
++| pause | R:333 | R:334–367 | attempted0/complete0, all34 unread. |
++| terminal | R:368 | R:369–402 | 34 valid, masks/stable `1ffff`, changed0; terminal STATE11d/OP0/changed status, not PAUSE. |
++
++All other fields agree between setup and terminal. Exact changes, present in both passes: **STATE11c→11d** (R:230/247→370/387), **OPc0→0** (R:233/250→373/390), and **I2C_STATUS old idle→two-pass0c110000** (R:245/262→385/402), XOR `0x00110000`, bits16/20. VERSION stays20060000, ERROR_FLAGS0, CLK0, CONFIG207, IOc0a5, ERREN0, mask300, FIFO/block counts0, MX_READ3/MX_WRITE9, MASTER1 (R:229–262,369–402). STATE11d contains VALID+lowstateRUN+master-generation; auxiliary108 remains opaque. OP full-bit clearing is an observation correlated with this sequence, **not proof of empty FIFO or successful reset**.
++
++The **16 issued writes exactly match expected indices0–15**, each `returned_on_time=1` (R:403–418): the original six reset/base writes, nine transfer-setup writes, then **STATE RUN=1**. Index16 divider and index17 PAUSE are absent. No second RUN or cleanup write follows. Thus R30 did issue a returning RUN request and later sampled RUN, but did not admit the complete RUN phase or program CLK/observe PAUSE. Stopping left the last observed controller state RUN; no cleanup semantics are implied.
++
++The reported reason localizes to `ltsq_wait(from0,target1,require_master=true)` immediately after write16 and before the run capture: this helper reads five fields and checks exact status **before** target-state/master acceptance (K:371–390,441–444). **The failing poll's raw I2C_STATUS and timestamp are not individually logged.** The terminal value was measured later; it cannot prove that the failed poll differed by exactly bits16/20. R:122 `failure valid=0` is consistent with a logical guard stop, not a recorded failed/late callback.
++
++Counts reconcile independently: **170 snapshot +85 live-guard +15 poll reads=270**; **270 +9 board +3 initial GIC +48 per-write GIC=330 physical reads**. These scopes do not add transactions. Stage1 separately reports26 reads/3 writes/314us (R:119); CPU context is logical0/MPIDR80000001/affinity1/bootcpu1/cpus1/match1 (R:426). PID1 RAM session reports ready with180-second timer (R:431). R:462–467 contains timer expiry, lookup-phase Data error2, contention0 and drain1/target46449. Main owns final transport/timer/frame audit, total device counts and physical end-screen judgment; this report does not duplicate or modify them.
++
++## 8. STATUS decoding, R29 comparison and bounded recommendation
++
++The later terminal status has **zero intersection with both named error masks**, MiCode ISR `0x0380003c` and broader MiCode-header/Linux `0x038000fc` (H:127–171; C:1718–1741; L:113–117,288–307). ERROR_FLAGS is also0. At those terminal samples BUS_ACTIVEbit8/BUS_MASTERbit9/WR_BUFFER_FULLbit0/NACKbit3/ARB_LOSTbit4 are0 and sampled SDA/SCL bits26/27 are high. These sampled predicates do not exclude transient traffic or establish physical silence/ownership.
++
++**No exact field names or code meanings for STATUS bits16/20 are established by the obtained fixed sources.** They are unnamed in H/C and L; H:174–178 only names two clock-state values without a field extraction, and H:622/645 references a separate `i2c-msm-v2-debug` implementation. A bounded workspace filename search including ignored files found no such implementation. No network fetch or alternative unpinned source was used. Therefore this analysis does not invent OUT/IN/CLK FSM labels or call the values benign. The immediate software stop is a **conservative whole-register equality mismatch**, not evidence of a named error, NACK, or chip nonresponse.
++
++R29 stopped before first RUN at the custom OP-zero gate, with six writes, STATE11c/OPc0/STATUS old idle, IOa5 and all counts0 (R29:22–46,62–68). R30 reproduces the same inherited signature and first six write values, admits setup with9/3 aggregate counts and PACK/UNPACK, then issues first RUN before stopping. The terminal changes provide a new state-dependent observation; they do not settle the meaning of FULL flags or reset effect. CLK0 remains before its unissued programming stage and does not alone diagnose a clock fault.
++
++**Recommendation for a separately reviewed future host revision:** keep the frozen, consumed R30 unchanged. First retain the **failing transition poll's raw VERSION/ERROR/STATUS/OP/STATE, timestamp and from/target/phase** before evaluating its predicate, without another MMIO read or hidden cleanup/retry. Obtain the pinned MiCode debug field masks and value tables before considering a **phase-aware** RUN/CLK/PAUSE status policy; preserve raw bits and explicit known-error/activity/line/unreviewed-bit guards. Do not simply mask bits16/20, drop status checks, or extend this result into CLK/FIFO/ID permission. Existing source-supported RUN→CLK→PAUSE ordering is not itself a board-level safety certificate.
++
++Unknowns remain: raw/time of the first failed poll; precise bits16/20 semantics; reset internal effect/hidden FIFO-parser state/count-read side effects; exclusive owner/electrical state/transient bus activity; terminal GIC; physical return screen. Divider/PAUSE, ID/ACK, IRQ/HID and physical touch were not exercised. **No success, physical bus-silence, ownership, controller-ID, new device operation or automatic retry claim is made.**
+diff --git a/project.json b/project.json
+--- a/project.json
++++ b/project.json
+@@ -42,7 +42,7 @@
+     "hardware_started": true,
+     "ios14_compatibility_verified": false,
+     "springboard_verified": true,
+-    "status": "R29 experimental QUP init/readbacks observed; no I2C/ID; R20 accepted desktop retained",
++    "status": "R30 state diagnostic observed through returned first RUN write; raw11d/OP0/STATUS0c110000, strict policy stop; R20 desktop retained",
+     "configuration_scaffold_created": true,
+     "upstream_config_checks_passed": true,
+     "platform_uefi_verified": true,
+@@ -50,13 +50,13 @@
+     "hello_started": true,
+     "hardware_evidence_report": "reports\\hakios-ios16-device-r20-display.json",
+     "latest_kernel_binary_hardware_verified": false,
+-    "kernel_sha256": "d57837a730a58a3e748c2a8ed45b5035faae01cd3c17068b60a32340ef932222",
+-    "latest_kernel_binary_verification_scope": "R29 isolated RAM diagnostic only; one reset request/base config, strict pre-ID stop; no touch/desktop validation",
++    "kernel_sha256": "2991245a0578658c77154df75236873c8dc4b2d805cb033c2ffd80a19b4c93cd",
++    "latest_kernel_binary_verification_scope": "R30 isolated RAM only; no ID/IRQ/HID/touch/desktop validation",
+     "springboard_display_verified": true,
+     "last_hardware_verified_kernel_sha256": "8e9209c1ff077ba6ad16cbd467c6cceb3cb6b16c0357667e513b913190fd9b4b"
+   },
+   "schema": 2,
+-  "stage": "iOS16 phase4: R30 pre-FIFO QUP state host ready; physical validation pending",
++  "stage": "iOS16 phase4: R30 closed; returned first RUN write clears OP; exact STATUS policy stops before clock/PAUSE",
+   "project_instructions_path": "AGENTS.md",
+   "plan_path": "PLAN.md",
+   "operations_path": "OPERATIONS.md",
+@@ -66,7 +66,7 @@
+   "active_workspace": "/home/jia/ios-mix1-build/hakios-lithium-ios16",
+   "source_lock_path": "upstreams.lock.json",
+   "source_audit_report": "reports/hakios-p0-audit.md",
+-  "current_device_status": "R29 timer/drain captured; current physical state not queried; no R30 device operation",
++  "current_device_status": "R30 normal180s timer/drain captured; physical retained end screen unverified",
+   "device_state": {
+     "last_observation_baseline": "ios16_r20_display_hakios",
+     "live_state_requeried": true,
+@@ -75,19 +75,19 @@
+     "root_install_report": "reports/hakios-ios16-install.json",
+     "root_integrity_report": "reports/hakios-ios16-install.json",
+     "live_usb_requeried": true,
+-    "latest_usb_query_report": "reports/hakios-ios16-device-r29-touch-qup-init-runtime.json",
+-    "latest_device_test_report": "reports/hakios-ios16-device-r29-touch-qup-init-runtime.json",
++    "latest_usb_query_report": "reports/hakios-ios16-device-r30-touch-qup-state.json",
++    "latest_device_test_report": "reports/hakios-ios16-device-r30-touch-qup-state.json",
+     "last_screen_observation_source": "R26 same-run user photograph, original archived with SHA256",
+     "last_screen_observation": "UEFI TIMER DEADLINE REACHED; NO PANIC TEXT IN RETAINED LOG; drain1",
+-    "current_physical_state_source": "R29 recorded runtime; not queried during R30 host work",
+-    "current_physical_state": "Unknown after R29 normal timer/drain; end screen unverified",
+-    "current_state_host_queried": false,
++    "current_physical_state_source": "Same-run saved normal timer/drain; no physical screen observation",
++    "current_physical_state": "R30 normal180s timer/drain captured; physical retained end screen unverified",
++    "current_state_host_queried": true,
+     "userdata_journal_initialized": false,
+     "userdata_journal_repair_report": null,
+     "userdata_hfs_mount_verified": true,
+     "userdata_contains_ios16_ufs_layout": true,
+     "root_integrity_scope": "32KiB component headers and unchanged 24KiB primary GPT sample; not full partition readback",
+-    "latest_device_operation_report": "reports/hakios-ios16-device-r29-touch-qup-init-runtime.json",
++    "latest_device_operation_report": "reports/hakios-ios16-device-r30-touch-qup-state.json",
+     "ios16_data_image_fsck_passed": true,
+     "ios16_data_runtime_read_write_verified": true
+   },
+@@ -162,19 +162,19 @@
+     "large_tasks_sequential": true
+   },
+   "work_status": {
+-    "status": "ios16_r30_qup_state_host_ready",
++    "status": "ios16_r30_closed_run_write_status_policy_stop",
+     "phase2_approved": true,
+     "device_operations_performed": true,
+     "device_boots_performed": true,
+     "partition_writes_performed": true,
+-    "hakios_temporary_boot_count": 53,
++    "hakios_temporary_boot_count": 54,
+     "backup_branch": "archive/ios14-r31-20261116",
+-    "next_step": "Explain one R30 RAM QUP state experiment, obtain current Fastboot readiness, then new independent preflight; no automatic query/boot",
++    "next_step": "Capture the exact failed-poll status and timestamp; prepare a separate phase-aware status guard based on fixed vendor/Linux source and the terminal RUN snapshot, retaining error/activity/line/state/unknown-bit checks, then observe divider/PAUSE only. Preserve R30; no new boot or FIFO/ID authorization implied.",
+     "phase3_approved": true,
+     "auxiliary_stock_reader_boots_accepted": 4,
+-    "ios16_boots_performed": 22,
++    "ios16_boots_performed": 23,
+     "auxiliary_stock_reader_adb_runtime_observations": 3,
+-    "latest_evidence_recorded_at": "2026-11-20T00:35:03.087804+08:00",
++    "latest_evidence_recorded_at": "2026-11-20T00:51:32.725840+08:00",
+     "latest_host_report": "reports/hakios-ios16-touch-r30-prepared.md",
+     "r5_backup_branch": "archive/ios16-r5-20261117",
+     "r6_backup_branch": "archive/ios16-r6-20261117",
+@@ -185,7 +185,11 @@
+     "r10_backup_branch": "archive/ios16-r10-before-r11-20261117",
+     "current_run_shutdown_authorized": false,
+     "host_shutdown_request_scope": "Historical R8 only; no R15 shutdown requested",
+-    "latest_device_report": "reports/hakios-ios16-device-r29-touch-qup-init-runtime.md"
++    "latest_device_report": "reports/hakios-ios16-device-r30-touch-qup-state.md",
++    "current_turn_new_kernel_builds": false,
++    "current_turn_device_queries": true,
++    "current_turn_device_boots": true,
++    "current_turn_partition_writes": false
+   },
+   "active_workspace_report": "reports/hakios-workspace.json",
+   "config_check_report": "reports/hakios-config-check.json",
+@@ -920,14 +924,14 @@
+   },
+   "touch_test_boundary": {
+     "recorded_on": "2026-11-20",
+-    "mode": "r30_qup_state_host_ready_no_device_operations",
++    "mode": "r30_runtime_closed_attempt_consumed",
+     "phone_queries_allowed": false,
+     "phone_boot_allowed": false,
+     "partition_operations_allowed": false,
+     "qemu_allowed": false,
+     "user_explicit_resumption_required": true,
+-    "device_state": "R29 normal timer/drain recorded; current physical state not queried",
+-    "resumption_scope": "Only explained R30 RAM QUP state experiment; first RUN may resume retained bus activity; one temporary boot after fresh readiness/preflight; no automatic retry",
++    "device_state": "R30 normal180s timer/drain captured; physical retained end screen unverified",
++    "resumption_scope": "Prepare a separate source-grounded phase-aware STATUS revision; new device operation requires explained scope and current user confirmation",
+     "revision": "R30-touch-qup-state",
+     "display_baseline_revision": "R20-display",
+     "host_candidate": "artifacts/hakios/lithium-ios16/phase4-r30-touch-qup-state/lithium-hakios-ios16-r30-touch-qup-state.img",
+@@ -959,7 +963,7 @@
+     "latest_kernel_contains_touch_stage_verified": true,
+     "production_kernel_sha256": "2991245a0578658c77154df75236873c8dc4b2d805cb033c2ffd80a19b4c93cd",
+     "host_build_report": "reports/hakios-ios16-touch-r30-prepared.md",
+-    "conditional_device_authorization": "Host preparation only this turn; ask current Fastboot readiness after explaining new experiment",
++    "conditional_device_authorization": "R30 single boot consumed and closed; no automatic query/boot/retry",
+     "hardware_verified": false,
+     "report": "reports/hakios-ios16-touch-r30-prepared.md",
+     "package_report": "artifacts/hakios/lithium-ios16/phase4-r30-touch-qup-state/contract.json",
+@@ -974,19 +978,19 @@
+     "runtime_glue_report": "reports/hakios-ios16-touch-runtime-host-20261119.md",
+     "per_device_operation_confirmation_required": true,
+     "host_candidate_image_path": "artifacts/hakios/lithium-ios16/phase4-r30-touch-qup-state/lithium-hakios-ios16-r30-touch-qup-state.img",
+-    "last_device_report": "reports/hakios-ios16-device-r29-touch-qup-init-runtime.json",
++    "last_device_report": "reports/hakios-ios16-device-r30-touch-qup-state.json",
+     "stage1_runtime_observed": true,
+     "stage1_snapshot_completed": true,
+     "physical_touch_verified": false,
+     "full_runtime_log_verified": false,
+-    "candidate_runtime_observed": false,
++    "candidate_runtime_observed": true,
+     "branch_clock_snapshot_verified": true,
+     "pinmux_snapshot_verified": true,
+     "qup_register_snapshot_verified": true,
+     "diagnostic_hold_verified": true,
+-    "emitted_kernel_stream_through_timer_verified": false,
++    "emitted_kernel_stream_through_timer_verified": true,
+     "physical_screen_verified": false,
+-    "latest_device_report": "reports/hakios-ios16-device-r29-touch-qup-init-runtime.json",
++    "latest_device_report": "reports/hakios-ios16-device-r30-touch-qup-state.json",
+     "runtime_i2c_transaction_verified": false,
+     "inherited_runtime_evidence_scope": "Stage1/clock/pin/QUP/hold booleans describe unchanged modules observed in R29; no R30 candidate runtime observed"
+   },
+diff --git a/reports/hakios-ios16-device-r30-touch-qup-state.json b/reports/hakios-ios16-device-r30-touch-qup-state.json
+new file mode 100644
+--- /dev/null
++++ b/reports/hakios-ios16-device-r30-touch-qup-state.json
+@@ -0,0 +1,3643 @@
++{
++  "schema": 1,
++  "revision": "R30-touch-qup-state",
++  "recorded_at": "2026-11-20T00:51:32.725840+08:00",
++  "phase": "normal_timer_drained_usb_run_write_status_policy_stop",
++  "image_path": "artifacts/hakios/lithium-ios16/phase4-r30-touch-qup-state/lithium-hakios-ios16-r30-touch-qup-state.img",
++  "image_sha256": "fb7c575ec377dd8854786479cb1448f35974071c2ef19010b186eda1df1f92ae",
++  "kernel_sha256": "2991245a0578658c77154df75236873c8dc4b2d805cb033c2ffd80a19b4c93cd",
++  "payload_boot_args": "bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 touch_stage=1 touch_clock_init=1 touch_diag=1 touch_qup_state=1",
++  "fastboot_accepted_at": "2026-11-20T00:40:16.391122+08:00",
++  "command_accepted": true,
++  "temporary_boots_this_session": 1,
++  "readonly_preflight_commands": 5,
++  "device_queries_after_boot": 0,
++  "host_partition_commands": 0,
++  "adb_commands": 0,
++  "android_recovery_boots": 0,
++  "qemu": false,
++  "auto_retry": false,
++  "hakios_total_boots": 54,
++  "ios16_total_boots": 23,
++  "first_run_bus_activity_unverified": true,
++  "new_fifo_tag_io_requested": false,
++  "id_requested": false,
++  "physical_touch_verified": false,
++  "runtime_observed": true,
++  "physical_screen_verified": false,
++  "authorization": "User replied 已进入 Fastboot after the explained R30 one-shot experiment scope",
++  "approved_scope": "Readonly Fastboot identity/unlock/battery/download preflight, then one frozen R30 RAM QUP SW_RESET/base/setup/first RUN/CLK/PAUSE experiment and USB capture",
++  "local_log_path": "reports/local/20261120-r30-touch-qup-state-approved",
++  "host_report": "reports/hakios-ios16-touch-r30-prepared.json",
++  "observations": "Fastboot accepted only; USB enumeration/kernel/CPU/state/timer/drain not yet inferred",
++  "evidence_sha256": {
++    "reports/local/20261120-r30-touch-qup-state-approved/console.log": "4a9091cf3dc19438caee0ecf1a61a8d636a3b8c6819376975d3fd806f19e34d1",
++    "reports/local/20261120-r30-touch-qup-state-approved/console.frames": "e2c5c40907c4cd9c69aef0de8e3330329c9a68bb3b6342e8c3ffc27bb517f9ea",
++    "reports/local/20261120-r30-touch-qup-state-approved/capture-host.py": "d5a9aecdd3c5ac728b233628d9ae810a598a35ba05d9068d0db3ed70fde3791c",
++    "reports/local/20261120-r30-touch-qup-state-approved/usb-status.json": "a4d1e4c22e1b7a5942a270c1d6c7df2ca89ba40a6c726f031808b76889154d78",
++    "reports/local/20261120-r30-touch-qup-state-approved/commands.json": "157760a973d4c59de4e5a11f2f6a99496ec6f825e5debcf13f7f474cd0aec726",
++    "reports/local/20261120-r30-touch-qup-state-approved/result.json": "c83992d9166e7017c7432cb6beee701d42dbf68010ad50bda7a0651fc30e8848",
++    "reports/local/20261120-r30-touch-qup-state-approved/launch-record.json": "672bdd19018d602500d689d4665a1c69a35bfd86f8a89091788d619b51666d9b",
++    "reports/local/20261120-r30-touch-qup-state-approved/register-observation.json": "337af28b7a0fe2bdd6a3e356be2c1b966f291605c8bee92e23d6cd9a73498251",
++    "reports/local/20261120-r30-touch-qup-state-approved/usb-audit-final.json": "41399be4aac5942526257e1ffe024c6eb4d48426d38c908e484510e57d7c7212",
++    "evidence/touch-r30-20261119/main/runtime-main-review.json": "0c41aa568d3cdd4d52b108ad6411c057233683f8d1d294d45d18592bd46f7df9",
++    "evidence/touch-r30-20261119/runtime/findings.md": "b6415e5272007ce77e8dba7465b2c1bbda8c821326f2498ee99b67a61e6ba39f",
++    "evidence/touch-r30-20261119/runtime/findings.json": "0e46d121cb2c55de6b439c7fd87763ba097252609e92c6715ea8eeb4338b8ed3",
++    "reports/hakios-ios16-touch-r30-prepared.json": "0c03f4ec14da7095d472ed73e2a8402bf75dcb9881b8481e6616364cd5a01539"
++  },
++  "cpu": {
++    "logical": 0,
++    "mpidr": "0x80000001",
++    "affinity": "0x1",
++    "bootcpu": 1,
++    "cpus": 1,
++    "max_logical": 0,
++    "match": true
++  },
++  "stage1": {
++    "reads": 26,
++    "writes": 3,
++    "mappings": 8,
++    "elapsed_us": 314,
++    "clocks_checked": true,
++    "pins_checked": true
++  },
++  "state_experiment": {
++    "passed": true,
++    "result": {
++      "status": "guard_stop",
++      "reason": "i2c_status_not_exact_idle",
++      "reset_issued": true,
++      "base_configured": true,
++      "transfer_configured": true,
++      "run_observed": false,
++      "clock_programmed": false,
++      "pause_observed": false,
++      "elapsed_us": 398,
++      "reads": 270,
++      "writes": 16,
++      "polls": 3
++    },
++    "adapter": {
++      "reason": "none",
++      "reads": 330,
++      "writes": 16,
++      "maps": 1
++    },
++    "snapshots": [
++      {
++        "phase": "pre",
++        "attempted": true,
++        "complete": true,
++        "valid_masks": [
++          131071,
++          131071
++        ],
++        "stable_mask": 131071,
++        "changed_mask": 0
++      },
++      {
++        "phase": "post_reset",
++        "attempted": true,
++        "complete": true,
++        "valid_masks": [
++          131071,
++          131071
++        ],
++        "stable_mask": 131071,
++        "changed_mask": 0
++      },
++      {
++        "phase": "base",
++        "attempted": true,
++        "complete": true,
++        "valid_masks": [
++          131071,
++          131071
++        ],
++        "stable_mask": 131071,
++        "changed_mask": 0
++      },
++      {
++        "phase": "setup",
++        "attempted": true,
++        "complete": true,
++        "valid_masks": [
++          131071,
++          131071
++        ],
++        "stable_mask": 131071,
++        "changed_mask": 0
++      },
++      {
++        "phase": "run",
++        "attempted": false,
++        "complete": false,
++        "valid_masks": [
++          0,
++          0
++        ],
++        "stable_mask": 0,
++        "changed_mask": 0
++      },
++      {
++        "phase": "clock",
++        "attempted": false,
++        "complete": false,
++        "valid_masks": [
++          0,
++          0
++        ],
++        "stable_mask": 0,
++        "changed_mask": 0
++      },
++      {
++        "phase": "pause",
++        "attempted": false,
++        "complete": false,
++        "valid_masks": [
++          0,
++          0
++        ],
++        "stable_mask": 0,
++        "changed_mask": 0
++      },
++      {
++        "phase": "terminal",
++        "attempted": true,
++        "complete": true,
++        "valid_masks": [
++          131071,
++          131071
++        ],
++        "stable_mask": 131071,
++        "changed_mask": 0
++      }
++    ],
++    "fields": [
++      {
++        "phase": "pre",
++        "pass_index": 0,
++        "index": 0,
++        "register": "VERSION",
++        "offset": 48,
++        "valid": true,
++        "value": 537264128,
++        "at_us": 256455331,
++        "read_us": 5
++      },
++      {
++        "phase": "pre",
++        "pass_index": 0,
++        "index": 1,
++        "register": "STATE",
++        "offset": 4,
++        "valid": true,
++        "value": 284,
++        "at_us": 256455333,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 0,
++        "index": 2,
++        "register": "CONFIG",
++        "offset": 0,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455335,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 0,
++        "index": 3,
++        "register": "IO_MODES",
++        "offset": 8,
++        "valid": true,
++        "value": 165,
++        "at_us": 256455336,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 0,
++        "index": 4,
++        "register": "OPERATIONAL",
++        "offset": 24,
++        "valid": true,
++        "value": 192,
++        "at_us": 256455338,
++        "read_us": 2
++      },
++      {
++        "phase": "pre",
++        "pass_index": 0,
++        "index": 5,
++        "register": "ERROR_FLAGS",
++        "offset": 28,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455339,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 0,
++        "index": 6,
++        "register": "ERROR_FLAGS_EN",
++        "offset": 32,
++        "valid": true,
++        "value": 60,
++        "at_us": 256455340,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 0,
++        "index": 7,
++        "register": "OPERATIONAL_MASK",
++        "offset": 40,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455341,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 0,
++        "index": 8,
++        "register": "OUT_FIFO_COUNT",
++        "offset": 268,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455343,
++        "read_us": 2
++      },
++      {
++        "phase": "pre",
++        "pass_index": 0,
++        "index": 9,
++        "register": "IN_FIFO_COUNT",
++        "offset": 532,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455344,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 0,
++        "index": 10,
++        "register": "MX_OUTPUT",
++        "offset": 256,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455345,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 0,
++        "index": 11,
++        "register": "MX_INPUT",
++        "offset": 512,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455346,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 0,
++        "index": 12,
++        "register": "MX_READ",
++        "offset": 520,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455348,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 0,
++        "index": 13,
++        "register": "MX_WRITE",
++        "offset": 336,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455349,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 0,
++        "index": 14,
++        "register": "MASTER_CONFIG",
++        "offset": 1032,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455350,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 0,
++        "index": 15,
++        "register": "CLK_CTL",
++        "offset": 1024,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455352,
++        "read_us": 2
++      },
++      {
++        "phase": "pre",
++        "pass_index": 0,
++        "index": 16,
++        "register": "I2C_STATUS",
++        "offset": 1028,
++        "valid": true,
++        "value": 201326592,
++        "at_us": 256455353,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 1,
++        "index": 0,
++        "register": "VERSION",
++        "offset": 48,
++        "valid": true,
++        "value": 537264128,
++        "at_us": 256455354,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 1,
++        "index": 1,
++        "register": "STATE",
++        "offset": 4,
++        "valid": true,
++        "value": 284,
++        "at_us": 256455355,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 1,
++        "index": 2,
++        "register": "CONFIG",
++        "offset": 0,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455357,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 1,
++        "index": 3,
++        "register": "IO_MODES",
++        "offset": 8,
++        "valid": true,
++        "value": 165,
++        "at_us": 256455358,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 1,
++        "index": 4,
++        "register": "OPERATIONAL",
++        "offset": 24,
++        "valid": true,
++        "value": 192,
++        "at_us": 256455359,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 1,
++        "index": 5,
++        "register": "ERROR_FLAGS",
++        "offset": 28,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455361,
++        "read_us": 2
++      },
++      {
++        "phase": "pre",
++        "pass_index": 1,
++        "index": 6,
++        "register": "ERROR_FLAGS_EN",
++        "offset": 32,
++        "valid": true,
++        "value": 60,
++        "at_us": 256455362,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 1,
++        "index": 7,
++        "register": "OPERATIONAL_MASK",
++        "offset": 40,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455363,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 1,
++        "index": 8,
++        "register": "OUT_FIFO_COUNT",
++        "offset": 268,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455364,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 1,
++        "index": 9,
++        "register": "IN_FIFO_COUNT",
++        "offset": 532,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455366,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 1,
++        "index": 10,
++        "register": "MX_OUTPUT",
++        "offset": 256,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455367,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 1,
++        "index": 11,
++        "register": "MX_INPUT",
++        "offset": 512,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455368,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 1,
++        "index": 12,
++        "register": "MX_READ",
++        "offset": 520,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455369,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 1,
++        "index": 13,
++        "register": "MX_WRITE",
++        "offset": 336,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455371,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 1,
++        "index": 14,
++        "register": "MASTER_CONFIG",
++        "offset": 1032,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455372,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 1,
++        "index": 15,
++        "register": "CLK_CTL",
++        "offset": 1024,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455373,
++        "read_us": 1
++      },
++      {
++        "phase": "pre",
++        "pass_index": 1,
++        "index": 16,
++        "register": "I2C_STATUS",
++        "offset": 1028,
++        "valid": true,
++        "value": 201326592,
++        "at_us": 256455375,
++        "read_us": 2
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 0,
++        "index": 0,
++        "register": "VERSION",
++        "offset": 48,
++        "valid": true,
++        "value": 537264128,
++        "at_us": 256455408,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 0,
++        "index": 1,
++        "register": "STATE",
++        "offset": 4,
++        "valid": true,
++        "value": 284,
++        "at_us": 256455409,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 0,
++        "index": 2,
++        "register": "CONFIG",
++        "offset": 0,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455411,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 0,
++        "index": 3,
++        "register": "IO_MODES",
++        "offset": 8,
++        "valid": true,
++        "value": 165,
++        "at_us": 256455412,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 0,
++        "index": 4,
++        "register": "OPERATIONAL",
++        "offset": 24,
++        "valid": true,
++        "value": 192,
++        "at_us": 256455413,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 0,
++        "index": 5,
++        "register": "ERROR_FLAGS",
++        "offset": 28,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455414,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 0,
++        "index": 6,
++        "register": "ERROR_FLAGS_EN",
++        "offset": 32,
++        "valid": true,
++        "value": 60,
++        "at_us": 256455416,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 0,
++        "index": 7,
++        "register": "OPERATIONAL_MASK",
++        "offset": 40,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455417,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 0,
++        "index": 8,
++        "register": "OUT_FIFO_COUNT",
++        "offset": 268,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455418,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 0,
++        "index": 9,
++        "register": "IN_FIFO_COUNT",
++        "offset": 532,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455419,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 0,
++        "index": 10,
++        "register": "MX_OUTPUT",
++        "offset": 256,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455421,
++        "read_us": 2
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 0,
++        "index": 11,
++        "register": "MX_INPUT",
++        "offset": 512,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455422,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 0,
++        "index": 12,
++        "register": "MX_READ",
++        "offset": 520,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455423,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 0,
++        "index": 13,
++        "register": "MX_WRITE",
++        "offset": 336,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455424,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 0,
++        "index": 14,
++        "register": "MASTER_CONFIG",
++        "offset": 1032,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455425,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 0,
++        "index": 15,
++        "register": "CLK_CTL",
++        "offset": 1024,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455427,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 0,
++        "index": 16,
++        "register": "I2C_STATUS",
++        "offset": 1028,
++        "valid": true,
++        "value": 201326592,
++        "at_us": 256455428,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 1,
++        "index": 0,
++        "register": "VERSION",
++        "offset": 48,
++        "valid": true,
++        "value": 537264128,
++        "at_us": 256455429,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 1,
++        "index": 1,
++        "register": "STATE",
++        "offset": 4,
++        "valid": true,
++        "value": 284,
++        "at_us": 256455430,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 1,
++        "index": 2,
++        "register": "CONFIG",
++        "offset": 0,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455432,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 1,
++        "index": 3,
++        "register": "IO_MODES",
++        "offset": 8,
++        "valid": true,
++        "value": 165,
++        "at_us": 256455433,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 1,
++        "index": 4,
++        "register": "OPERATIONAL",
++        "offset": 24,
++        "valid": true,
++        "value": 192,
++        "at_us": 256455434,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 1,
++        "index": 5,
++        "register": "ERROR_FLAGS",
++        "offset": 28,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455435,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 1,
++        "index": 6,
++        "register": "ERROR_FLAGS_EN",
++        "offset": 32,
++        "valid": true,
++        "value": 60,
++        "at_us": 256455437,
++        "read_us": 2
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 1,
++        "index": 7,
++        "register": "OPERATIONAL_MASK",
++        "offset": 40,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455438,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 1,
++        "index": 8,
++        "register": "OUT_FIFO_COUNT",
++        "offset": 268,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455439,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 1,
++        "index": 9,
++        "register": "IN_FIFO_COUNT",
++        "offset": 532,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455440,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 1,
++        "index": 10,
++        "register": "MX_OUTPUT",
++        "offset": 256,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455442,
++        "read_us": 2
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 1,
++        "index": 11,
++        "register": "MX_INPUT",
++        "offset": 512,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455443,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 1,
++        "index": 12,
++        "register": "MX_READ",
++        "offset": 520,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455444,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 1,
++        "index": 13,
++        "register": "MX_WRITE",
++        "offset": 336,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455445,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 1,
++        "index": 14,
++        "register": "MASTER_CONFIG",
++        "offset": 1032,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455446,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 1,
++        "index": 15,
++        "register": "CLK_CTL",
++        "offset": 1024,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455448,
++        "read_us": 1
++      },
++      {
++        "phase": "post_reset",
++        "pass_index": 1,
++        "index": 16,
++        "register": "I2C_STATUS",
++        "offset": 1028,
++        "valid": true,
++        "value": 201326592,
++        "at_us": 256455449,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 0,
++        "index": 0,
++        "register": "VERSION",
++        "offset": 48,
++        "valid": true,
++        "value": 537264128,
++        "at_us": 256455514,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 0,
++        "index": 1,
++        "register": "STATE",
++        "offset": 4,
++        "valid": true,
++        "value": 284,
++        "at_us": 256455516,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 0,
++        "index": 2,
++        "register": "CONFIG",
++        "offset": 0,
++        "valid": true,
++        "value": 519,
++        "at_us": 256455517,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 0,
++        "index": 3,
++        "register": "IO_MODES",
++        "offset": 8,
++        "valid": true,
++        "value": 165,
++        "at_us": 256455518,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 0,
++        "index": 4,
++        "register": "OPERATIONAL",
++        "offset": 24,
++        "valid": true,
++        "value": 192,
++        "at_us": 256455519,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 0,
++        "index": 5,
++        "register": "ERROR_FLAGS",
++        "offset": 28,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455520,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 0,
++        "index": 6,
++        "register": "ERROR_FLAGS_EN",
++        "offset": 32,
++        "valid": true,
++        "value": 60,
++        "at_us": 256455522,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 0,
++        "index": 7,
++        "register": "OPERATIONAL_MASK",
++        "offset": 40,
++        "valid": true,
++        "value": 768,
++        "at_us": 256455523,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 0,
++        "index": 8,
++        "register": "OUT_FIFO_COUNT",
++        "offset": 268,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455524,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 0,
++        "index": 9,
++        "register": "IN_FIFO_COUNT",
++        "offset": 532,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455525,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 0,
++        "index": 10,
++        "register": "MX_OUTPUT",
++        "offset": 256,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455527,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 0,
++        "index": 11,
++        "register": "MX_INPUT",
++        "offset": 512,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455528,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 0,
++        "index": 12,
++        "register": "MX_READ",
++        "offset": 520,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455529,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 0,
++        "index": 13,
++        "register": "MX_WRITE",
++        "offset": 336,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455530,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 0,
++        "index": 14,
++        "register": "MASTER_CONFIG",
++        "offset": 1032,
++        "valid": true,
++        "value": 1,
++        "at_us": 256455532,
++        "read_us": 2
++      },
++      {
++        "phase": "base",
++        "pass_index": 0,
++        "index": 15,
++        "register": "CLK_CTL",
++        "offset": 1024,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455533,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 0,
++        "index": 16,
++        "register": "I2C_STATUS",
++        "offset": 1028,
++        "valid": true,
++        "value": 201326592,
++        "at_us": 256455534,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 1,
++        "index": 0,
++        "register": "VERSION",
++        "offset": 48,
++        "valid": true,
++        "value": 537264128,
++        "at_us": 256455535,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 1,
++        "index": 1,
++        "register": "STATE",
++        "offset": 4,
++        "valid": true,
++        "value": 284,
++        "at_us": 256455537,
++        "read_us": 2
++      },
++      {
++        "phase": "base",
++        "pass_index": 1,
++        "index": 2,
++        "register": "CONFIG",
++        "offset": 0,
++        "valid": true,
++        "value": 519,
++        "at_us": 256455538,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 1,
++        "index": 3,
++        "register": "IO_MODES",
++        "offset": 8,
++        "valid": true,
++        "value": 165,
++        "at_us": 256455539,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 1,
++        "index": 4,
++        "register": "OPERATIONAL",
++        "offset": 24,
++        "valid": true,
++        "value": 192,
++        "at_us": 256455540,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 1,
++        "index": 5,
++        "register": "ERROR_FLAGS",
++        "offset": 28,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455541,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 1,
++        "index": 6,
++        "register": "ERROR_FLAGS_EN",
++        "offset": 32,
++        "valid": true,
++        "value": 60,
++        "at_us": 256455543,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 1,
++        "index": 7,
++        "register": "OPERATIONAL_MASK",
++        "offset": 40,
++        "valid": true,
++        "value": 768,
++        "at_us": 256455544,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 1,
++        "index": 8,
++        "register": "OUT_FIFO_COUNT",
++        "offset": 268,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455545,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 1,
++        "index": 9,
++        "register": "IN_FIFO_COUNT",
++        "offset": 532,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455546,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 1,
++        "index": 10,
++        "register": "MX_OUTPUT",
++        "offset": 256,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455548,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 1,
++        "index": 11,
++        "register": "MX_INPUT",
++        "offset": 512,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455549,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 1,
++        "index": 12,
++        "register": "MX_READ",
++        "offset": 520,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455550,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 1,
++        "index": 13,
++        "register": "MX_WRITE",
++        "offset": 336,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455551,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 1,
++        "index": 14,
++        "register": "MASTER_CONFIG",
++        "offset": 1032,
++        "valid": true,
++        "value": 1,
++        "at_us": 256455553,
++        "read_us": 2
++      },
++      {
++        "phase": "base",
++        "pass_index": 1,
++        "index": 15,
++        "register": "CLK_CTL",
++        "offset": 1024,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455554,
++        "read_us": 1
++      },
++      {
++        "phase": "base",
++        "pass_index": 1,
++        "index": 16,
++        "register": "I2C_STATUS",
++        "offset": 1028,
++        "valid": true,
++        "value": 201326592,
++        "at_us": 256455555,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 0,
++        "index": 0,
++        "register": "VERSION",
++        "offset": 48,
++        "valid": true,
++        "value": 537264128,
++        "at_us": 256455612,
++        "read_us": 2
++      },
++      {
++        "phase": "setup",
++        "pass_index": 0,
++        "index": 1,
++        "register": "STATE",
++        "offset": 4,
++        "valid": true,
++        "value": 284,
++        "at_us": 256455613,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 0,
++        "index": 2,
++        "register": "CONFIG",
++        "offset": 0,
++        "valid": true,
++        "value": 519,
++        "at_us": 256455614,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 0,
++        "index": 3,
++        "register": "IO_MODES",
++        "offset": 8,
++        "valid": true,
++        "value": 49317,
++        "at_us": 256455615,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 0,
++        "index": 4,
++        "register": "OPERATIONAL",
++        "offset": 24,
++        "valid": true,
++        "value": 192,
++        "at_us": 256455616,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 0,
++        "index": 5,
++        "register": "ERROR_FLAGS",
++        "offset": 28,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455618,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 0,
++        "index": 6,
++        "register": "ERROR_FLAGS_EN",
++        "offset": 32,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455619,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 0,
++        "index": 7,
++        "register": "OPERATIONAL_MASK",
++        "offset": 40,
++        "valid": true,
++        "value": 768,
++        "at_us": 256455620,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 0,
++        "index": 8,
++        "register": "OUT_FIFO_COUNT",
++        "offset": 268,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455621,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 0,
++        "index": 9,
++        "register": "IN_FIFO_COUNT",
++        "offset": 532,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455623,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 0,
++        "index": 10,
++        "register": "MX_OUTPUT",
++        "offset": 256,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455624,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 0,
++        "index": 11,
++        "register": "MX_INPUT",
++        "offset": 512,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455625,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 0,
++        "index": 12,
++        "register": "MX_READ",
++        "offset": 520,
++        "valid": true,
++        "value": 3,
++        "at_us": 256455626,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 0,
++        "index": 13,
++        "register": "MX_WRITE",
++        "offset": 336,
++        "valid": true,
++        "value": 9,
++        "at_us": 256455628,
++        "read_us": 2
++      },
++      {
++        "phase": "setup",
++        "pass_index": 0,
++        "index": 14,
++        "register": "MASTER_CONFIG",
++        "offset": 1032,
++        "valid": true,
++        "value": 1,
++        "at_us": 256455629,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 0,
++        "index": 15,
++        "register": "CLK_CTL",
++        "offset": 1024,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455630,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 0,
++        "index": 16,
++        "register": "I2C_STATUS",
++        "offset": 1028,
++        "valid": true,
++        "value": 201326592,
++        "at_us": 256455631,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 1,
++        "index": 0,
++        "register": "VERSION",
++        "offset": 48,
++        "valid": true,
++        "value": 537264128,
++        "at_us": 256455632,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 1,
++        "index": 1,
++        "register": "STATE",
++        "offset": 4,
++        "valid": true,
++        "value": 284,
++        "at_us": 256455634,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 1,
++        "index": 2,
++        "register": "CONFIG",
++        "offset": 0,
++        "valid": true,
++        "value": 519,
++        "at_us": 256455635,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 1,
++        "index": 3,
++        "register": "IO_MODES",
++        "offset": 8,
++        "valid": true,
++        "value": 49317,
++        "at_us": 256455636,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 1,
++        "index": 4,
++        "register": "OPERATIONAL",
++        "offset": 24,
++        "valid": true,
++        "value": 192,
++        "at_us": 256455637,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 1,
++        "index": 5,
++        "register": "ERROR_FLAGS",
++        "offset": 28,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455639,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 1,
++        "index": 6,
++        "register": "ERROR_FLAGS_EN",
++        "offset": 32,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455640,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 1,
++        "index": 7,
++        "register": "OPERATIONAL_MASK",
++        "offset": 40,
++        "valid": true,
++        "value": 768,
++        "at_us": 256455641,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 1,
++        "index": 8,
++        "register": "OUT_FIFO_COUNT",
++        "offset": 268,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455642,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 1,
++        "index": 9,
++        "register": "IN_FIFO_COUNT",
++        "offset": 532,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455644,
++        "read_us": 2
++      },
++      {
++        "phase": "setup",
++        "pass_index": 1,
++        "index": 10,
++        "register": "MX_OUTPUT",
++        "offset": 256,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455645,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 1,
++        "index": 11,
++        "register": "MX_INPUT",
++        "offset": 512,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455646,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 1,
++        "index": 12,
++        "register": "MX_READ",
++        "offset": 520,
++        "valid": true,
++        "value": 3,
++        "at_us": 256455647,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 1,
++        "index": 13,
++        "register": "MX_WRITE",
++        "offset": 336,
++        "valid": true,
++        "value": 9,
++        "at_us": 256455649,
++        "read_us": 2
++      },
++      {
++        "phase": "setup",
++        "pass_index": 1,
++        "index": 14,
++        "register": "MASTER_CONFIG",
++        "offset": 1032,
++        "valid": true,
++        "value": 1,
++        "at_us": 256455650,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 1,
++        "index": 15,
++        "register": "CLK_CTL",
++        "offset": 1024,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455651,
++        "read_us": 1
++      },
++      {
++        "phase": "setup",
++        "pass_index": 1,
++        "index": 16,
++        "register": "I2C_STATUS",
++        "offset": 1028,
++        "valid": true,
++        "value": 201326592,
++        "at_us": 256455652,
++        "read_us": 1
++      },
++      {
++        "phase": "run",
++        "pass_index": 0,
++        "index": 0,
++        "register": "VERSION",
++        "offset": 48,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 0,
++        "index": 1,
++        "register": "STATE",
++        "offset": 4,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 0,
++        "index": 2,
++        "register": "CONFIG",
++        "offset": 0,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 0,
++        "index": 3,
++        "register": "IO_MODES",
++        "offset": 8,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 0,
++        "index": 4,
++        "register": "OPERATIONAL",
++        "offset": 24,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 0,
++        "index": 5,
++        "register": "ERROR_FLAGS",
++        "offset": 28,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 0,
++        "index": 6,
++        "register": "ERROR_FLAGS_EN",
++        "offset": 32,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 0,
++        "index": 7,
++        "register": "OPERATIONAL_MASK",
++        "offset": 40,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 0,
++        "index": 8,
++        "register": "OUT_FIFO_COUNT",
++        "offset": 268,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 0,
++        "index": 9,
++        "register": "IN_FIFO_COUNT",
++        "offset": 532,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 0,
++        "index": 10,
++        "register": "MX_OUTPUT",
++        "offset": 256,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 0,
++        "index": 11,
++        "register": "MX_INPUT",
++        "offset": 512,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 0,
++        "index": 12,
++        "register": "MX_READ",
++        "offset": 520,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 0,
++        "index": 13,
++        "register": "MX_WRITE",
++        "offset": 336,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 0,
++        "index": 14,
++        "register": "MASTER_CONFIG",
++        "offset": 1032,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 0,
++        "index": 15,
++        "register": "CLK_CTL",
++        "offset": 1024,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 0,
++        "index": 16,
++        "register": "I2C_STATUS",
++        "offset": 1028,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 1,
++        "index": 0,
++        "register": "VERSION",
++        "offset": 48,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 1,
++        "index": 1,
++        "register": "STATE",
++        "offset": 4,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 1,
++        "index": 2,
++        "register": "CONFIG",
++        "offset": 0,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 1,
++        "index": 3,
++        "register": "IO_MODES",
++        "offset": 8,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 1,
++        "index": 4,
++        "register": "OPERATIONAL",
++        "offset": 24,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 1,
++        "index": 5,
++        "register": "ERROR_FLAGS",
++        "offset": 28,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 1,
++        "index": 6,
++        "register": "ERROR_FLAGS_EN",
++        "offset": 32,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 1,
++        "index": 7,
++        "register": "OPERATIONAL_MASK",
++        "offset": 40,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 1,
++        "index": 8,
++        "register": "OUT_FIFO_COUNT",
++        "offset": 268,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 1,
++        "index": 9,
++        "register": "IN_FIFO_COUNT",
++        "offset": 532,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 1,
++        "index": 10,
++        "register": "MX_OUTPUT",
++        "offset": 256,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 1,
++        "index": 11,
++        "register": "MX_INPUT",
++        "offset": 512,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 1,
++        "index": 12,
++        "register": "MX_READ",
++        "offset": 520,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 1,
++        "index": 13,
++        "register": "MX_WRITE",
++        "offset": 336,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 1,
++        "index": 14,
++        "register": "MASTER_CONFIG",
++        "offset": 1032,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 1,
++        "index": 15,
++        "register": "CLK_CTL",
++        "offset": 1024,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "run",
++        "pass_index": 1,
++        "index": 16,
++        "register": "I2C_STATUS",
++        "offset": 1028,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 0,
++        "index": 0,
++        "register": "VERSION",
++        "offset": 48,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 0,
++        "index": 1,
++        "register": "STATE",
++        "offset": 4,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 0,
++        "index": 2,
++        "register": "CONFIG",
++        "offset": 0,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 0,
++        "index": 3,
++        "register": "IO_MODES",
++        "offset": 8,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 0,
++        "index": 4,
++        "register": "OPERATIONAL",
++        "offset": 24,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 0,
++        "index": 5,
++        "register": "ERROR_FLAGS",
++        "offset": 28,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 0,
++        "index": 6,
++        "register": "ERROR_FLAGS_EN",
++        "offset": 32,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 0,
++        "index": 7,
++        "register": "OPERATIONAL_MASK",
++        "offset": 40,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 0,
++        "index": 8,
++        "register": "OUT_FIFO_COUNT",
++        "offset": 268,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 0,
++        "index": 9,
++        "register": "IN_FIFO_COUNT",
++        "offset": 532,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 0,
++        "index": 10,
++        "register": "MX_OUTPUT",
++        "offset": 256,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 0,
++        "index": 11,
++        "register": "MX_INPUT",
++        "offset": 512,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 0,
++        "index": 12,
++        "register": "MX_READ",
++        "offset": 520,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 0,
++        "index": 13,
++        "register": "MX_WRITE",
++        "offset": 336,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 0,
++        "index": 14,
++        "register": "MASTER_CONFIG",
++        "offset": 1032,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 0,
++        "index": 15,
++        "register": "CLK_CTL",
++        "offset": 1024,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 0,
++        "index": 16,
++        "register": "I2C_STATUS",
++        "offset": 1028,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 1,
++        "index": 0,
++        "register": "VERSION",
++        "offset": 48,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 1,
++        "index": 1,
++        "register": "STATE",
++        "offset": 4,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 1,
++        "index": 2,
++        "register": "CONFIG",
++        "offset": 0,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 1,
++        "index": 3,
++        "register": "IO_MODES",
++        "offset": 8,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 1,
++        "index": 4,
++        "register": "OPERATIONAL",
++        "offset": 24,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 1,
++        "index": 5,
++        "register": "ERROR_FLAGS",
++        "offset": 28,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 1,
++        "index": 6,
++        "register": "ERROR_FLAGS_EN",
++        "offset": 32,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 1,
++        "index": 7,
++        "register": "OPERATIONAL_MASK",
++        "offset": 40,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 1,
++        "index": 8,
++        "register": "OUT_FIFO_COUNT",
++        "offset": 268,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 1,
++        "index": 9,
++        "register": "IN_FIFO_COUNT",
++        "offset": 532,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 1,
++        "index": 10,
++        "register": "MX_OUTPUT",
++        "offset": 256,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 1,
++        "index": 11,
++        "register": "MX_INPUT",
++        "offset": 512,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 1,
++        "index": 12,
++        "register": "MX_READ",
++        "offset": 520,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 1,
++        "index": 13,
++        "register": "MX_WRITE",
++        "offset": 336,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 1,
++        "index": 14,
++        "register": "MASTER_CONFIG",
++        "offset": 1032,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 1,
++        "index": 15,
++        "register": "CLK_CTL",
++        "offset": 1024,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "clock",
++        "pass_index": 1,
++        "index": 16,
++        "register": "I2C_STATUS",
++        "offset": 1028,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 0,
++        "index": 0,
++        "register": "VERSION",
++        "offset": 48,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 0,
++        "index": 1,
++        "register": "STATE",
++        "offset": 4,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 0,
++        "index": 2,
++        "register": "CONFIG",
++        "offset": 0,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 0,
++        "index": 3,
++        "register": "IO_MODES",
++        "offset": 8,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 0,
++        "index": 4,
++        "register": "OPERATIONAL",
++        "offset": 24,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 0,
++        "index": 5,
++        "register": "ERROR_FLAGS",
++        "offset": 28,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 0,
++        "index": 6,
++        "register": "ERROR_FLAGS_EN",
++        "offset": 32,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 0,
++        "index": 7,
++        "register": "OPERATIONAL_MASK",
++        "offset": 40,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 0,
++        "index": 8,
++        "register": "OUT_FIFO_COUNT",
++        "offset": 268,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 0,
++        "index": 9,
++        "register": "IN_FIFO_COUNT",
++        "offset": 532,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 0,
++        "index": 10,
++        "register": "MX_OUTPUT",
++        "offset": 256,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 0,
++        "index": 11,
++        "register": "MX_INPUT",
++        "offset": 512,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 0,
++        "index": 12,
++        "register": "MX_READ",
++        "offset": 520,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 0,
++        "index": 13,
++        "register": "MX_WRITE",
++        "offset": 336,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 0,
++        "index": 14,
++        "register": "MASTER_CONFIG",
++        "offset": 1032,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 0,
++        "index": 15,
++        "register": "CLK_CTL",
++        "offset": 1024,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 0,
++        "index": 16,
++        "register": "I2C_STATUS",
++        "offset": 1028,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 1,
++        "index": 0,
++        "register": "VERSION",
++        "offset": 48,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 1,
++        "index": 1,
++        "register": "STATE",
++        "offset": 4,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 1,
++        "index": 2,
++        "register": "CONFIG",
++        "offset": 0,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 1,
++        "index": 3,
++        "register": "IO_MODES",
++        "offset": 8,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 1,
++        "index": 4,
++        "register": "OPERATIONAL",
++        "offset": 24,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 1,
++        "index": 5,
++        "register": "ERROR_FLAGS",
++        "offset": 28,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 1,
++        "index": 6,
++        "register": "ERROR_FLAGS_EN",
++        "offset": 32,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 1,
++        "index": 7,
++        "register": "OPERATIONAL_MASK",
++        "offset": 40,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 1,
++        "index": 8,
++        "register": "OUT_FIFO_COUNT",
++        "offset": 268,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 1,
++        "index": 9,
++        "register": "IN_FIFO_COUNT",
++        "offset": 532,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 1,
++        "index": 10,
++        "register": "MX_OUTPUT",
++        "offset": 256,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 1,
++        "index": 11,
++        "register": "MX_INPUT",
++        "offset": 512,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 1,
++        "index": 12,
++        "register": "MX_READ",
++        "offset": 520,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 1,
++        "index": 13,
++        "register": "MX_WRITE",
++        "offset": 336,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 1,
++        "index": 14,
++        "register": "MASTER_CONFIG",
++        "offset": 1032,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 1,
++        "index": 15,
++        "register": "CLK_CTL",
++        "offset": 1024,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "pause",
++        "pass_index": 1,
++        "index": 16,
++        "register": "I2C_STATUS",
++        "offset": 1028,
++        "valid": false,
++        "value": null,
++        "at_us": null,
++        "read_us": null
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 0,
++        "index": 0,
++        "register": "VERSION",
++        "offset": 48,
++        "valid": true,
++        "value": 537264128,
++        "at_us": 256455680,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 0,
++        "index": 1,
++        "register": "STATE",
++        "offset": 4,
++        "valid": true,
++        "value": 285,
++        "at_us": 256455681,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 0,
++        "index": 2,
++        "register": "CONFIG",
++        "offset": 0,
++        "valid": true,
++        "value": 519,
++        "at_us": 256455683,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 0,
++        "index": 3,
++        "register": "IO_MODES",
++        "offset": 8,
++        "valid": true,
++        "value": 49317,
++        "at_us": 256455684,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 0,
++        "index": 4,
++        "register": "OPERATIONAL",
++        "offset": 24,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455685,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 0,
++        "index": 5,
++        "register": "ERROR_FLAGS",
++        "offset": 28,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455686,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 0,
++        "index": 6,
++        "register": "ERROR_FLAGS_EN",
++        "offset": 32,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455688,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 0,
++        "index": 7,
++        "register": "OPERATIONAL_MASK",
++        "offset": 40,
++        "valid": true,
++        "value": 768,
++        "at_us": 256455689,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 0,
++        "index": 8,
++        "register": "OUT_FIFO_COUNT",
++        "offset": 268,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455690,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 0,
++        "index": 9,
++        "register": "IN_FIFO_COUNT",
++        "offset": 532,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455691,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 0,
++        "index": 10,
++        "register": "MX_OUTPUT",
++        "offset": 256,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455693,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 0,
++        "index": 11,
++        "register": "MX_INPUT",
++        "offset": 512,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455694,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 0,
++        "index": 12,
++        "register": "MX_READ",
++        "offset": 520,
++        "valid": true,
++        "value": 3,
++        "at_us": 256455695,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 0,
++        "index": 13,
++        "register": "MX_WRITE",
++        "offset": 336,
++        "valid": true,
++        "value": 9,
++        "at_us": 256455696,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 0,
++        "index": 14,
++        "register": "MASTER_CONFIG",
++        "offset": 1032,
++        "valid": true,
++        "value": 1,
++        "at_us": 256455698,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 0,
++        "index": 15,
++        "register": "CLK_CTL",
++        "offset": 1024,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455699,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 0,
++        "index": 16,
++        "register": "I2C_STATUS",
++        "offset": 1028,
++        "valid": true,
++        "value": 202440704,
++        "at_us": 256455700,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 1,
++        "index": 0,
++        "register": "VERSION",
++        "offset": 48,
++        "valid": true,
++        "value": 537264128,
++        "at_us": 256455702,
++        "read_us": 2
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 1,
++        "index": 1,
++        "register": "STATE",
++        "offset": 4,
++        "valid": true,
++        "value": 285,
++        "at_us": 256455703,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 1,
++        "index": 2,
++        "register": "CONFIG",
++        "offset": 0,
++        "valid": true,
++        "value": 519,
++        "at_us": 256455704,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 1,
++        "index": 3,
++        "register": "IO_MODES",
++        "offset": 8,
++        "valid": true,
++        "value": 49317,
++        "at_us": 256455705,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 1,
++        "index": 4,
++        "register": "OPERATIONAL",
++        "offset": 24,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455707,
++        "read_us": 2
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 1,
++        "index": 5,
++        "register": "ERROR_FLAGS",
++        "offset": 28,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455708,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 1,
++        "index": 6,
++        "register": "ERROR_FLAGS_EN",
++        "offset": 32,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455709,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 1,
++        "index": 7,
++        "register": "OPERATIONAL_MASK",
++        "offset": 40,
++        "valid": true,
++        "value": 768,
++        "at_us": 256455710,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 1,
++        "index": 8,
++        "register": "OUT_FIFO_COUNT",
++        "offset": 268,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455712,
++        "read_us": 2
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 1,
++        "index": 9,
++        "register": "IN_FIFO_COUNT",
++        "offset": 532,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455713,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 1,
++        "index": 10,
++        "register": "MX_OUTPUT",
++        "offset": 256,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455714,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 1,
++        "index": 11,
++        "register": "MX_INPUT",
++        "offset": 512,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455715,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 1,
++        "index": 12,
++        "register": "MX_READ",
++        "offset": 520,
++        "valid": true,
++        "value": 3,
++        "at_us": 256455717,
++        "read_us": 2
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 1,
++        "index": 13,
++        "register": "MX_WRITE",
++        "offset": 336,
++        "valid": true,
++        "value": 9,
++        "at_us": 256455718,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 1,
++        "index": 14,
++        "register": "MASTER_CONFIG",
++        "offset": 1032,
++        "valid": true,
++        "value": 1,
++        "at_us": 256455719,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 1,
++        "index": 15,
++        "register": "CLK_CTL",
++        "offset": 1024,
++        "valid": true,
++        "value": 0,
++        "at_us": 256455720,
++        "read_us": 1
++      },
++      {
++        "phase": "terminal",
++        "pass_index": 1,
++        "index": 16,
++        "register": "I2C_STATUS",
++        "offset": 1028,
++        "valid": true,
++        "value": 202440704,
++        "at_us": 256455722,
++        "read_us": 1
++      }
++    ],
++    "phase_passes": {
++      "pre": [
++        {
++          "VERSION": 537264128,
++          "STATE": 284,
++          "CONFIG": 0,
++          "IO_MODES": 165,
++          "OPERATIONAL": 192,
++          "ERROR_FLAGS": 0,
++          "ERROR_FLAGS_EN": 60,
++          "OPERATIONAL_MASK": 0,
++          "OUT_FIFO_COUNT": 0,
++          "IN_FIFO_COUNT": 0,
++          "MX_OUTPUT": 0,
++          "MX_INPUT": 0,
++          "MX_READ": 0,
++          "MX_WRITE": 0,
++          "MASTER_CONFIG": 0,
++          "CLK_CTL": 0,
++          "I2C_STATUS": 201326592
++        },
++        {
++          "VERSION": 537264128,
++          "STATE": 284,
++          "CONFIG": 0,
++          "IO_MODES": 165,
++          "OPERATIONAL": 192,
++          "ERROR_FLAGS": 0,
++          "ERROR_FLAGS_EN": 60,
++          "OPERATIONAL_MASK": 0,
++          "OUT_FIFO_COUNT": 0,
++          "IN_FIFO_COUNT": 0,
++          "MX_OUTPUT": 0,
++          "MX_INPUT": 0,
++          "MX_READ": 0,
++          "MX_WRITE": 0,
++          "MASTER_CONFIG": 0,
++          "CLK_CTL": 0,
++          "I2C_STATUS": 201326592
++        }
++      ],
++      "post_reset": [
++        {
++          "VERSION": 537264128,
++          "STATE": 284,
++          "CONFIG": 0,
++          "IO_MODES": 165,
++          "OPERATIONAL": 192,
++          "ERROR_FLAGS": 0,
++          "ERROR_FLAGS_EN": 60,
++          "OPERATIONAL_MASK": 0,
++          "OUT_FIFO_COUNT": 0,
++          "IN_FIFO_COUNT": 0,
++          "MX_OUTPUT": 0,
++          "MX_INPUT": 0,
++          "MX_READ": 0,
++          "MX_WRITE": 0,
++          "MASTER_CONFIG": 0,
++          "CLK_CTL": 0,
++          "I2C_STATUS": 201326592
++        },
++        {
++          "VERSION": 537264128,
++          "STATE": 284,
++          "CONFIG": 0,
++          "IO_MODES": 165,
++          "OPERATIONAL": 192,
++          "ERROR_FLAGS": 0,
++          "ERROR_FLAGS_EN": 60,
++          "OPERATIONAL_MASK": 0,
++          "OUT_FIFO_COUNT": 0,
++          "IN_FIFO_COUNT": 0,
++          "MX_OUTPUT": 0,
++          "MX_INPUT": 0,
++          "MX_READ": 0,
++          "MX_WRITE": 0,
++          "MASTER_CONFIG": 0,
++          "CLK_CTL": 0,
++          "I2C_STATUS": 201326592
++        }
++      ],
++      "base": [
++        {
++          "VERSION": 537264128,
++          "STATE": 284,
++          "CONFIG": 519,
++          "IO_MODES": 165,
++          "OPERATIONAL": 192,
++          "ERROR_FLAGS": 0,
++          "ERROR_FLAGS_EN": 60,
++          "OPERATIONAL_MASK": 768,
++          "OUT_FIFO_COUNT": 0,
++          "IN_FIFO_COUNT": 0,
++          "MX_OUTPUT": 0,
++          "MX_INPUT": 0,
++          "MX_READ": 0,
++          "MX_WRITE": 0,
++          "MASTER_CONFIG": 1,
++          "CLK_CTL": 0,
++          "I2C_STATUS": 201326592
++        },
++        {
++          "VERSION": 537264128,
++          "STATE": 284,
++          "CONFIG": 519,
++          "IO_MODES": 165,
++          "OPERATIONAL": 192,
++          "ERROR_FLAGS": 0,
++          "ERROR_FLAGS_EN": 60,
++          "OPERATIONAL_MASK": 768,
++          "OUT_FIFO_COUNT": 0,
++          "IN_FIFO_COUNT": 0,
++          "MX_OUTPUT": 0,
++          "MX_INPUT": 0,
++          "MX_READ": 0,
++          "MX_WRITE": 0,
++          "MASTER_CONFIG": 1,
++          "CLK_CTL": 0,
++          "I2C_STATUS": 201326592
++        }
++      ],
++      "setup": [
++        {
++          "VERSION": 537264128,
++          "STATE": 284,
++          "CONFIG": 519,
++          "IO_MODES": 49317,
++          "OPERATIONAL": 192,
++          "ERROR_FLAGS": 0,
++          "ERROR_FLAGS_EN": 0,
++          "OPERATIONAL_MASK": 768,
++          "OUT_FIFO_COUNT": 0,
++          "IN_FIFO_COUNT": 0,
++          "MX_OUTPUT": 0,
++          "MX_INPUT": 0,
++          "MX_READ": 3,
++          "MX_WRITE": 9,
++          "MASTER_CONFIG": 1,
++          "CLK_CTL": 0,
++          "I2C_STATUS": 201326592
++        },
++        {
++          "VERSION": 537264128,
++          "STATE": 284,
++          "CONFIG": 519,
++          "IO_MODES": 49317,
++          "OPERATIONAL": 192,
++          "ERROR_FLAGS": 0,
++          "ERROR_FLAGS_EN": 0,
++          "OPERATIONAL_MASK": 768,
++          "OUT_FIFO_COUNT": 0,
++          "IN_FIFO_COUNT": 0,
++          "MX_OUTPUT": 0,
++          "MX_INPUT": 0,
++          "MX_READ": 3,
++          "MX_WRITE": 9,
++          "MASTER_CONFIG": 1,
++          "CLK_CTL": 0,
++          "I2C_STATUS": 201326592
++        }
++      ],
++      "run": [
++        {},
++        {}
++      ],
++      "clock": [
++        {},
++        {}
++      ],
++      "pause": [
++        {},
++        {}
++      ],
++      "terminal": [
++        {
++          "VERSION": 537264128,
++          "STATE": 285,
++          "CONFIG": 519,
++          "IO_MODES": 49317,
++          "OPERATIONAL": 0,
++          "ERROR_FLAGS": 0,
++          "ERROR_FLAGS_EN": 0,
++          "OPERATIONAL_MASK": 768,
++          "OUT_FIFO_COUNT": 0,
++          "IN_FIFO_COUNT": 0,
++          "MX_OUTPUT": 0,
++          "MX_INPUT": 0,
++          "MX_READ": 3,
++          "MX_WRITE": 9,
++          "MASTER_CONFIG": 1,
++          "CLK_CTL": 0,
++          "I2C_STATUS": 202440704
++        },
++        {
++          "VERSION": 537264128,
++          "STATE": 285,
++          "CONFIG": 519,
++          "IO_MODES": 49317,
++          "OPERATIONAL": 0,
++          "ERROR_FLAGS": 0,
++          "ERROR_FLAGS_EN": 0,
++          "OPERATIONAL_MASK": 768,
++          "OUT_FIFO_COUNT": 0,
++          "IN_FIFO_COUNT": 0,
++          "MX_OUTPUT": 0,
++          "MX_INPUT": 0,
++          "MX_READ": 3,
++          "MX_WRITE": 9,
++          "MASTER_CONFIG": 1,
++          "CLK_CTL": 0,
++          "I2C_STATUS": 202440704
++        }
++      ]
++    },
++    "write_trace": [
++      {
++        "index": 0,
++        "offset": 12,
++        "value": 1,
++        "returned_on_time": true
++      },
++      {
++        "index": 1,
++        "offset": 4,
++        "value": 0,
++        "returned_on_time": true
++      },
++      {
++        "index": 2,
++        "offset": 0,
++        "value": 519,
++        "returned_on_time": true
++      },
++      {
++        "index": 3,
++        "offset": 32,
++        "value": 60,
++        "returned_on_time": true
++      },
++      {
++        "index": 4,
++        "offset": 40,
++        "value": 768,
++        "returned_on_time": true
++      },
++      {
++        "index": 5,
++        "offset": 1032,
++        "value": 1,
++        "returned_on_time": true
++      },
++      {
++        "index": 6,
++        "offset": 32,
++        "value": 0,
++        "returned_on_time": true
++      },
++      {
++        "index": 7,
++        "offset": 40,
++        "value": 768,
++        "returned_on_time": true
++      },
++      {
++        "index": 8,
++        "offset": 512,
++        "value": 0,
++        "returned_on_time": true
++      },
++      {
++        "index": 9,
++        "offset": 256,
++        "value": 0,
++        "returned_on_time": true
++      },
++      {
++        "index": 10,
++        "offset": 520,
++        "value": 3,
++        "returned_on_time": true
++      },
++      {
++        "index": 11,
++        "offset": 336,
++        "value": 9,
++        "returned_on_time": true
++      },
++      {
++        "index": 12,
++        "offset": 0,
++        "value": 519,
++        "returned_on_time": true
++      },
++      {
++        "index": 13,
++        "offset": 8,
++        "value": 49317,
++        "returned_on_time": true
++      },
++      {
++        "index": 14,
++        "offset": 1032,
++        "value": 1,
++        "returned_on_time": true
++      },
++      {
++        "index": 15,
++        "offset": 4,
++        "value": 1,
++        "returned_on_time": true
++      }
++    ],
++    "valid_field_count": 170,
++    "unread_field_count": 102,
++    "setup_to_terminal_delta": {
++      "STATE": {
++        "before": 284,
++        "after": 285,
++        "xor": 1
++      },
++      "OPERATIONAL": {
++        "before": 192,
++        "after": 0,
++        "xor": 192
++      },
++      "I2C_STATUS": {
++        "before": 201326592,
++        "after": 202440704,
++        "xor": 1114112
++      }
++    },
++    "status_xor": 1114112,
++    "status_changed_bits": [
++      16,
++      20
++    ],
++    "status_known_error_mask": 58720508,
++    "status_error_bits": 0,
++    "status_bus_active": false,
++    "status_bus_master": false,
++    "gpio_lines_high_bits_observed": true,
++    "terminal_state_low_bits": 1,
++    "raw_valid_run_state_observed": true,
++    "full_run_admission_passed": false,
++    "run_snapshot_attempted": false,
++    "physical_bus_activity_verified": false,
++    "physical_owner_verified": false,
++    "id_read": false,
++    "no_new_fifo_software_access": true,
++    "terminal_gic": "unread",
++    "source_prefix_bytes": 43894,
++    "source_prefix_text_sha256": "5237ebbbe88270cdb3cc5b8458b21edaec78c2b09b70e6f4f1656cbc1f73d596",
++    "observations": "Returned STATE RUN write and later valid lowstate1; full RUN checked admission stopped at exact-status policy; not a chip NACK or a failed MMIO callback"
++  },
++  "normal_timer": true,
++  "timer_seconds": 180,
++  "drain_success": true,
++  "usb_audit": {
++    "raw_bytes": 52482,
++    "console_bytes": 46498,
++    "frames": 187,
++    "raw_sha256": "e2c5c40907c4cd9c69aef0de8e3330329c9a68bb3b6342e8c3ffc27bb517f9ea",
++    "console_sha256": "4a9091cf3dc19438caee0ecf1a61a8d636a3b8c6819376975d3fd806f19e34d1",
++    "first_offset": 0,
++    "final_offset": 46498,
++    "missing_bytes": 0,
++    "duplicate_bytes": 0,
++    "incomplete_frame_bytes": 0,
++    "device_lost_max": 0,
++    "frames_reporting_device_loss": 0,
++    "independent_parser_agrees_with_frozen_receiver": true,
++    "frozen_redecode_equals_complete_console": true,
++    "transport_verified": true,
++    "kernel_banner_offset": 0,
++    "timer_offset": 46171,
++    "normal_return_offset": 46382,
++    "drain_success": true,
++    "drain_records": [
++      {
++        "offset": 46449,
++        "drained": 1,
++        "target": 46449
++      }
++    ],
++    "emitted_kernel_stream_through_timer_verified": true,
++    "all_firmware_daemon_and_original_printf_logs_complete": false,
++    "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit."
++  },
++  "source_writer_contention_dropped_bytes": 0,
++  "receiver_status_preserved": {
++    "started_at": "2026-11-20T00:40:15.130542+08:00",
++    "enumerated": true,
++    "frames": 187,
++    "missing_bytes": 0,
++    "duplicate_bytes": 0,
++    "status": "capture_failed",
++    "output": "F:\\IOS-MIX1\\reports\\local\\20261120-r30-touch-qup-state-approved\\console.log",
++    "device_commands_sent": false,
++    "candidate_seen": true,
++    "identity_verified": true,
++    "descriptor_errors": 0,
++    "descriptor_error_samples": [],
++    "configuration_verified": true,
++    "console_bytes": 46498,
++    "failure_stage": "capturing",
++    "failure": "[Errno 32] Pipe error",
++    "finished_at": "2026-11-20T00:43:48.226283+08:00"
++  },
++  "pipe_error_after_successful_drain": true,
++  "full_runtime_log_verified": false,
++  "emitted_kernel_stream_through_timer_verified": true,
++  "hardware_id_verified": false,
++  "physical_bus_activity_verified": false,
++  "physical_ownership_verified": false,
++  "terminal_gic": "unread",
++  "data_sync_error": {
++    "errno": 2,
++    "phase": "lookup",
++    "expected_ram_diagnostic_scope": true,
++    "device_flush_reached": false
++  },
++  "stop_cause": "Exact inherited-idle I2C_STATUS policy fails during first RUN poll before checked run snapshot/clock/PAUSE; not failed MMIO or elapsed timeout",
++  "status_changed_bits": [
++    16,
++    20
++  ],
++  "failed_poll_status_value_captured": false,
++  "terminal_status_guaranteed_identical_to_failed_poll": false,
++  "status_bits_16_20_semantics": "Unverified unless explicitly source-defined in independent report; do not invent bit names",
++  "runtime_primary_source_review": {
++    "passed": true,
++    "recorded_at": "2026-11-20T00:51:09.063052+08:00",
++    "agent": "Nash",
++    "agent_report_sha256": "b6415e5272007ce77e8dba7465b2c1bbda8c821326f2498ee99b67a61e6ba39f",
++    "agent_json_sha256": "0e46d121cb2c55de6b439c7fd87763ba097252609e92c6715ea8eeb4338b8ed3",
++    "checked_source_sha256": {
++      "ports/hakios-lithium/peripherals/touch-qup-state-core.h": "72792553f4429910c05d124453d8e2f094bad6470f60ccbea60b893b7b7c3a66",
++      "ports/hakios-lithium/peripherals/touch-qup-state.inc": "eabc05c5dddf5572f396741a7b2b436d4bc46bdf7100b5c4335fc1f41221df7e",
++      "ports/hakios-lithium/peripherals/touch-snapshot-core.h": "8f8e37552b2c05989a748827bda456a6b242398b4db797961099584bd6125b4f",
++      "ports/hakios-lithium/peripherals/touch-id.inc": "09c9700fd95dae41630f31d0942a9f3066ae4262b204d1f136e28f8a4b654b90",
++      "evidence/touch-r30-20261119/protocol/findings.md": "fd87becb92a7a0e7e221b3359955a8e6b74331332a3b9bb0f97636163f9af2e1",
++      "evidence/touch-r30-20261119/protocol/source-manifest.json": "61ef9756a58afc4fcddf868eb755304231de2b96a617efcaf805ed4e6f5cf533",
++      "evidence/touch-stage1-20261119/board/sources/i2c-msm-v2.h": "2b8d8ef3070516fc8afff4b82545d2241d1afe6c40591a215d9450e0c90743f8",
++      "evidence/touch-stage1-20261119/clocks/primary/micode/drivers/i2c/busses/i2c-msm-v2.c": "c64d72734e67b45d72c732491cdc3e8a3ef8b2fc7424faf0df9fbd4cc0ee5f53",
++      "evidence/touch-r29-20261119/runtime/findings.md": "a37f9cb18f3644d786e2e7800bf3e6268d8d051d715715152376b4a12a77e746"
++    },
++    "independent_main_checks": [
++      "Actual source K295-307/K371-390/K441-463:STATUS equality precedes STATE validation; logical stop leaves later raw RUN terminal",
++      "Fixed MiCode header127-171:error/active/master/line definitions; bits16/20 unnamed, no invented semantics",
++      "Fixed MiCode driver216-275:VALID/STATE transition helper, no whole STATUS==idle condition",
++      "All272 records/170valid/102unread,5matching34-read pairs and16 exact returning write-prefix entries independently parsed",
++      "Core170+85+15=270 reads; board9+entryGIC3+prewriteGIC48 yields330 physical reads",
++      "Agent source paths/hashes and reviewed line-range bounds verified; actual source windows read independently",
++      "Agent actual-console hash agrees with final187-frame independent USB replay; no device activity delegated"
++    ],
++    "limitations": [
++      "Failed-poll STATUS raw/time absent; terminal later cannot establish exact failing value",
++      "No hardware field semantics/physical bus silence/ownership/ID/IRQ/HID or physical end-screen claim"
++    ],
++    "device_operations": false
++  },
++  "host_inspection_correction": "One saved-result read initially used Windows GBK and failed before boot invocation; reread UTF-8 only, no repeated device query or boot",
++  "next_step": "Capture the exact failed-poll status and timestamp; prepare a separate phase-aware status guard based on fixed vendor/Linux source and the terminal RUN snapshot, retaining error/activity/line/state/unknown-bit checks, then observe divider/PAUSE only. Preserve R30; no new boot or FIFO/ID authorization implied.",
++  "unverified": [
++    "Exact failed-poll STATUS/timestamp, not individually retained; terminal snapshot is later",
++    "Exact meaning of I2C_STATUS bits16/20 in this hardware phase",
++    "Checked complete RUN admission, divider frequency and PAUSE state",
++    "Physical I2C bus activity/waveform, exclusive ownership and complete internal reset effects",
++    "Actual chip ID/ACK/NACK/report, IRQ/HID delivery and physical touch",
++    "Terminal GIC/global IRQ exclusion and physical retained end screen",
++    "Permanent MMIO/SError/XPU containment and firmware/daemon logs outside emitted USB stream"
++  ]
++}
+diff --git a/reports/hakios-ios16-device-r30-touch-qup-state.md b/reports/hakios-ios16-device-r30-touch-qup-state.md
+new file mode 100644
+--- /dev/null
++++ b/reports/hakios-ios16-device-r30-touch-qup-state.md
+@@ -0,0 +1,69 @@
++# R30 真机结案：RUN 写入后 OP 清零，严格 STATUS 策略停止
++
++记录：2026-11-20T00:51:32.725840+08:00。用户确认已进入Fastboot后，新独立预检通过；**2026-11-20T00:40:16.391122+08:00，冻结R30镜像临时启动一次获接受**。未重构建或更改上机镜像。正常180秒timer及USB drain1已捕获；物理结束屏尚未目视确认。
++
++## 结论
++
++R30已越过原来的基础配置与传输准备阶段。最后一次写为STATE=RUN(0x004←1)，已返回。终态有效原值为STATE0x11d（VALID及低状态1）、OP0、ERROR0、I2C_STATUS0x0c110000。
++
++停止原因是`i2c_status_not_exact_idle`：R30在RUN过渡轮询中仍要求STATUS整值等于继承空闲值0x0c000000，检查未通过，因而在**checked RUN快照、分频及PAUSE之前**主动停止。稍后的两轮终态STATUS均多出0x00110000（bit16、bit20）；触发停止的那一次poll原STATUS未独立保存，不能保证其与终态完全相同。它不是MMIO访问失败或软件超时，没有芯片ID事务/NACK结论。终态已知错误掩码0x038000fc无置位，BUS_ACTIVE/BUS_MASTER两位亦未置位；这些瞬时读数不证明总线全程无活动。
++
++`run_observed=0`表示完整检查未通过，不表示STATE从未成为RUN：终态确实读到0x11d。run/clock/pause三组未尝试的102字段是unread，不是硬件返回零。延长等待不会让已返回的一次性诊断继续往下执行。
++
++## 实测与各阶段原值
++
++- actual logical0/MPIDR0x80000001/affinity1，bootcpu1/cpus1，match1。
++- 原Stage1：26读3写8映射314us，clock/pin检查通过。
++- 新状态核心：270读16写、3次poll、398us；适配层330读16写、1额外映射，adapter_reason=none。首个失败访问valid=0，属于逻辑停止。
++- 8个命名阶段共272条字段记录：pre/post_reset/base/setup/terminal五组各双轮17项，170项有效且各组两轮一致；run/clock/pause三组共102项unread。先后快照不是原子/独占证明。
++- 精确16写前缀到首次RUN，没有divider/PAUSE/第二次RUN、软件FIFO端口/tag/ID调用、W1C、恢复复位、GIC写、外部GPIO复位/供电切换、IRQ/HID接入。
++
++| 寄存器 | pre | SW_RESET后 | base | setup | terminal |
++| --- | --- | --- | --- | --- | --- |
++| VERSION | `0x20060000` | `0x20060000` | `0x20060000` | `0x20060000` | `0x20060000` |
++| STATE | `0x0000011c` | `0x0000011c` | `0x0000011c` | `0x0000011c` | `0x0000011d` |
++| CONFIG | `0x00000000` | `0x00000000` | `0x00000207` | `0x00000207` | `0x00000207` |
++| IO_MODES | `0x000000a5` | `0x000000a5` | `0x000000a5` | `0x0000c0a5` | `0x0000c0a5` |
++| OPERATIONAL | `0x000000c0` | `0x000000c0` | `0x000000c0` | `0x000000c0` | `0x00000000` |
++| ERROR_FLAGS | `0x00000000` | `0x00000000` | `0x00000000` | `0x00000000` | `0x00000000` |
++| ERROR_FLAGS_EN | `0x0000003c` | `0x0000003c` | `0x0000003c` | `0x00000000` | `0x00000000` |
++| OPERATIONAL_MASK | `0x00000000` | `0x00000000` | `0x00000300` | `0x00000300` | `0x00000300` |
++| OUT_FIFO_COUNT | `0x00000000` | `0x00000000` | `0x00000000` | `0x00000000` | `0x00000000` |
++| IN_FIFO_COUNT | `0x00000000` | `0x00000000` | `0x00000000` | `0x00000000` | `0x00000000` |
++| MX_OUTPUT | `0x00000000` | `0x00000000` | `0x00000000` | `0x00000000` | `0x00000000` |
++| MX_INPUT | `0x00000000` | `0x00000000` | `0x00000000` | `0x00000000` | `0x00000000` |
++| MX_READ | `0x00000000` | `0x00000000` | `0x00000000` | `0x00000003` | `0x00000003` |
++| MX_WRITE | `0x00000000` | `0x00000000` | `0x00000000` | `0x00000009` | `0x00000009` |
++| MASTER_CONFIG | `0x00000000` | `0x00000000` | `0x00000001` | `0x00000001` | `0x00000001` |
++| CLK_CTL | `0x00000000` | `0x00000000` | `0x00000000` | `0x00000000` | `0x00000000` |
++| I2C_STATUS | `0x0c000000` | `0x0c000000` | `0x0c000000` | `0x0c000000` | `0x0c110000` |
++
++setup→terminal仅STATE11c→11d、OPc0→0、STATUS0c000000→0c110000发生变化；其余14项一致。FIFO聚合计数保持MX_READ3/MX_WRITE9，block及FIFO占用读数0。不能把count/full读数直接当作物理FIFO或总线静默证明。
++
++## 源码定位与下一修订
++
++`ports/hakios-lithium/peripherals/touch-qup-state-core.h:295–303`执行整值STATUS检查；`:371–387`在检查低STATE/VALID前调用它；`:441–449`因此跳过run快照与分频；`:456–463`仅追加未再次准入的只读terminal快照。原厂固定MiCode `i2c-msm-v2.c:216–275`的状态转换以VALID/低STATE等为条件，不要求STATUS全值在各阶段始终等于继承空闲值。
++
++这已定位到**R30自定义STATUS检查停止、且终态与原RESET空闲值不同**，但未证实失败poll瞬时值、bit16/20具体硬件语义或控制器全功能正常。下一修订先保存失败poll原值及时间，并据固定来源补足按阶段的状态检查，保留所有错误、活动、线电平、STATE及未知位的明确处理，再尝试分频/PAUSE的前后快照；不直接把差异整片屏蔽，不顺带加FIFO/ID事务。本阶段不改代码、不自动再启动。
++
++Nash完成独立源码/日志复核；主代理逐项核对五组原值、精确16写、源码检查次序、已知错误掩码及其报告引用。独立报告在`evidence/touch-r30-20261119/runtime/findings.md/json`，主复核在`evidence/touch-r30-20261119/main/runtime-main-review.json`。不能从本轮推出时钟/芯片损坏、无应答或触摸可用。
++
++## 日志完整性与终态
++
++独立重解码**187帧、52482原始字节、46498控制台字节**，offset0→46498逐字节一致；缺口/重复/残帧/device-lost均0，源端writer争用丢0。正常timer及`drain=1 target=46449`在流内。接收器于2026-11-20T00:43:48.226283+08:00记录Pipe error，在成功排空之后；身份/configuration均verified，描述符错误0，保留原始失败状态而不改写为接收器成功退出。
++
++验证范围是已输出内核USB流至timer/drain，不是所有固件/daemon/原始printf全量。RAM包Data sync error2在无/private/var的lookup阶段，未到VFS_SYNC/设备flush，不是UFS故障证据。本包故意保持RAM PID1诊断，不运行系统桌面流程。
++
++控制台SHA256：`4a9091cf3dc19438caee0ecf1a61a8d636a3b8c6819376975d3fd806f19e34d1`。原始帧SHA256：`e2c5c40907c4cd9c69aef0de8e3330329c9a68bb3b6342e8c3ffc27bb517f9ea`。
++
++## 保留及操作范围
++
++镜像：`artifacts/hakios/lithium-ios16/phase4-r30-touch-qup-state/lithium-hakios-ios16-r30-touch-qup-state.img`，SHA256`fb7c575ec377dd8854786479cb1448f35974071c2ef19010b186eda1df1f92ae`；内核`2991245a0578658c77154df75236873c8dc4b2d805cb033c2ffd80a19b4c93cd`。46套回归/108打包/106源闭包的同一冻结包。
++
++本轮5项只读Fastboot预检+1次boot，累计HakiOS54/iOS16为23；无启动后设备查询、分区查询/刷写、ADB、Android/Recovery、QEMU或自动重试。一次主机结果读取因默认GBK失败，改UTF-8重读保存文件后才启动；未重复任何手机查询。R20唯一显示基线、旧冻结字节和原索引保持。
++
++R30启动已消费，本阶段结案后停止；无需抢拍瞬时日志。物理结束屏、芯片ID、真实触摸及IRQ/HID仍未验证。
++
++```text
++bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 touch_stage=1 touch_clock_init=1 touch_diag=1 touch_qup_state=1
++```

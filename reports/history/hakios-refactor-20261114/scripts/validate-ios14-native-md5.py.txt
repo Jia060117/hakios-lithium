@@ -1,0 +1,160 @@
+#!/usr/bin/env python3
+"""Check the real 7195 MD5 wrapper and HFS UUID code against independent results."""
+import argparse
+import ctypes
+import hashlib
+import json
+from pathlib import Path
+import re
+import struct
+import subprocess
+
+ROOT = Path(__file__).resolve().parents[1]
+WORK = Path.home() / 'ios-mix1-build/xnu7195-lithium'
+
+
+def digest(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def disasm(kernel, symbol):
+    return subprocess.check_output(['llvm-objdump', '--macho', '--disassemble',
+        '--no-show-raw-insn', '--section=__TEXT_EXEC,__text', '--dis-symname', symbol, str(kernel)], text=True)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('kernel', type=Path)
+    args = parser.parse_args()
+    tree = WORK / 'src'
+    crypto = tree / 'libkern/crypto'
+    bear = crypto / 'lithium_bearssl'
+    out = WORK / 'md5-validation'
+    shim = out / 'include'
+    for name, content in {
+        'libkern/crypto/crypto_internal.h': '#include <stdint.h>\n#include <string.h>\n',
+        'kern/debug.h': '#include <stdlib.h>\n#define panic(...) abort()\n',
+    }.items():
+        target = shim / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content)
+    hfs = tree / 'bsd/lithium_hfs/core/hfs_vfsops.c'
+    hfs_header = tree / 'bsd/lithium_hfs/core/hfs_format.h'
+    text = hfs.read_text()
+    start = text.index('void\nhfs_getvoluuid(')
+    function = text[start:text.index('\n}\n', start) + 3]
+    namespace = next(line for line in hfs_header.read_text().splitlines() if line.startswith('#define HFS_UUID_NAMESPACE_ID'))
+    uuid_source = out / 'hfs-uuid.c'
+    uuid_source.write_text('''#include <stdint.h>
+#include <string.h>
+#include <libkern/crypto/md5.h>
+typedef unsigned char uuid_t[16];
+struct hfsmount { uuid_t hfs_full_uuid; uint32_t vcbFndrInfo[8]; };
+static int uuid_is_null(const uuid_t u) { unsigned n=0; for (int i=0;i<16;i++) n|=u[i]; return n==0; }
+static void uuid_copy(uuid_t dst, const uuid_t src) { memcpy(dst,src,16); }
+''' + namespace + '\n' + function + '''
+int check_hfs_uuid(uint32_t a, uint32_t b, unsigned char *out) {
+    struct hfsmount mount = {0}; uuid_t cached;
+    mount.vcbFndrInfo[6]=a; mount.vcbFndrInfo[7]=b;
+    hfs_getvoluuid(&mount,out);
+    mount.vcbFndrInfo[6]^=0x55; mount.vcbFndrInfo[7]^=0xaa;
+    hfs_getvoluuid(&mount,cached);
+    return memcmp(out,cached,16)==0;
+}
+size_t md5_context_bytes(void) { return sizeof(MD5_CTX); }
+''')
+    sources = [crypto / 'corecrypto_md5.c', *(crypto / f'lithium_{n}.c' for n in ('md5', 'dec32le', 'enc32le')), uuid_source]
+    library = out / 'liblithium-md5.so'
+    command = ['clang', '-shared', '-fPIC', '-O2', '-Wall', '-Wextra', '-Werror',
+        '-DARM64_BOARD_CONFIG_LITHIUM', f'-I{shim}', f'-I{tree / "libkern"}',
+        f'-I{tree / "EXTERNAL_HEADERS"}', f'-I{crypto}', f'-I{bear / "inc"}', f'-I{bear / "src"}',
+        *map(str, sources), '-Wl,-z,defs', '-o', str(library)]
+    subprocess.run(command, check=True)
+    lib = ctypes.CDLL(str(library))
+
+    class Context(ctypes.Structure):
+        _fields_ = [('state', ctypes.c_uint32 * 4), ('count', ctypes.c_uint32 * 2), ('buffer', ctypes.c_ubyte * 64)]
+
+    lib.md5_context_bytes.restype = ctypes.c_size_t
+    assert lib.md5_context_bytes() == ctypes.sizeof(Context) == 88
+    lib.MD5Init.argtypes = [ctypes.POINTER(Context)]
+    lib.MD5Update.argtypes = [ctypes.POINTER(Context), ctypes.c_void_p, ctypes.c_uint]
+    lib.MD5Final.argtypes = [ctypes.c_void_p, ctypes.POINTER(Context)]
+    lib.check_hfs_uuid.argtypes = [ctypes.c_uint32, ctypes.c_uint32, ctypes.c_void_p]
+    cases = []
+
+    def finish(ctx):
+        result = ctypes.create_string_buffer(16)
+        lib.MD5Final(result, ctypes.byref(ctx))
+        return result.raw
+
+    def run(data, expected, label):
+        for width in (1, 7, 64, 257):
+            ctx = Context()
+            ctypes.memset(ctypes.byref(ctx), 0xa5, ctypes.sizeof(ctx))
+            lib.MD5Init(ctypes.byref(ctx))
+            assert bytes(ctx.buffer) == bytes(64)
+            lib.MD5Update(ctypes.byref(ctx), None, 0)
+            for offset in range(0, len(data), width):
+                chunk = data[offset:offset + width]
+                buf = ctypes.create_string_buffer(chunk)
+                lib.MD5Update(ctypes.byref(ctx), buf, len(chunk))
+                # Preserve the actual 7195 high-word/low-word byte count ABI.
+                assert ((ctx.count[0] << 32) | ctx.count[1]) == offset + len(chunk)
+                ctx = Context.from_buffer_copy(ctx)
+            assert finish(ctx) == expected, (label, width)
+        cases.append(label)
+
+    # RFC 1321 Appendix A.5; check fixed known answers before hashlib cases.
+    vectors = [
+        (b'', 'd41d8cd98f00b204e9800998ecf8427e'),
+        (b'a', '0cc175b9c0f1b6a831c399e269772661'),
+        (b'abc', '900150983cd24fb0d6963f7d28e17f72'),
+        (b'message digest', 'f96b697d7cb7938d525a2f31aaf161d0'),
+        (b'abcdefghijklmnopqrstuvwxyz', 'c3fcd3d76192e4007dfb496cca67e13b'),
+        (b'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', 'd174ab98d277d9f5a5611c2c9f419d9f'),
+        (b'1234567890' * 8, '57edf4a22be3c955ac49da2e2107b67a'),
+    ]
+    for i, (data, expected) in enumerate(vectors):
+        run(data, bytes.fromhex(expected), f'RFC1321-{i + 1}')
+    for length in (55, 56, 63, 64, 65, 119, 120, 127, 128, 129, 4097):
+        data = bytes((i * 29 + 7) % 256 for i in range(length))
+        run(data, hashlib.md5(data).digest(), f'padding-and-streaming-{length}')
+    ctx = Context()
+    lib.MD5Init(ctypes.byref(ctx))
+    ctx.count[0], ctx.count[1] = 0, 0xffffffe0
+    lib.MD5Update(ctypes.byref(ctx), ctypes.create_string_buffer(bytes(32)), 32)
+    assert tuple(ctx.count) == (1, 0), '7195 byte count lost its 32-bit carry'
+    namespace_bytes = bytes.fromhex('b3e20f39f29211d697a400306543ecac')
+    assert ''.join(re.findall(r'\\x([0-9A-Fa-f]{2})', namespace)).lower() == namespace_bytes.hex()
+    for a, b in ((0, 0), (0x01020304, 0xaabbccdd), (0xffffffff, 0x12345678)):
+        result = ctypes.create_string_buffer(16)
+        assert lib.check_hfs_uuid(a, b, result) == 1
+        expected = bytearray(hashlib.md5(namespace_bytes + struct.pack('<II', a, b)).digest())
+        expected[6] = 0x30 | (expected[6] & 0x0f)
+        expected[8] = 0x80 | (expected[8] & 0x3f)
+        assert result.raw == expected
+        cases.append(f'HFS-UUID-{a:08x}-{b:08x}')
+    emitted = {name: disasm(args.kernel, '_' + name) for name in ('MD5Init', 'MD5Update', 'MD5Final')}
+    for api, backend in (('MD5Init', 'br_md5_init'), ('MD5Update', 'br_md5_update'), ('MD5Final', 'br_md5_out')):
+        assert re.search(r'\bbl\s+_' + backend + r'\b', emitted[api]), api
+    old = ROOT / 'reports/local/20261113-172930-455158-native-xnu/inputs/mach.development.lithium.unstripped'
+    assert digest(old) == '1afe0a00b73c4ac2615fbcaab8425a27f6892ec9f35f41d99301ffe8108cb859'
+    old_dis = disasm(old, '_MD5Init')
+    assert re.search(r'fffffff00773317c:\s+ldr\s+x20,\s*\[x22, #0x20\]', old_dis)
+    assert not re.search(r'\bbl\s+_br_md5_init\b', old_dis)
+    inputs = sources + [hfs, hfs_header, tree / 'libkern/libkern/crypto/md5.h']
+    inputs += list(bear.rglob('*.h')) + [bear / n for n in ('src/hash/md5.c', 'src/codec/dec32le.c', 'src/codec/enc32le.c')]
+    record = dict(all_passed=True, kernel_sha256=digest(args.kernel), cases=cases, context_bytes=88,
+        copied_contexts_passed=True, byte_count_carry_passed=True, zero_length_passed=True,
+        hfs_actual_function_checked=True, hfs_uuid_cache_checked=True, round9_null_provider_path_rejected=True,
+        input_sha256={str(p): digest(p) for p in inputs}, command=command, disassembly=emitted,
+        qemu_used=False, hardware_verified=False,
+        scope='Real host MD5/7195 ABI and extracted HFS UUID function plus emitted kernel call targets; hardware pending',
+        vector_source='RFC 1321 Appendix A.5')
+    (ROOT / 'reports/ios14-native-md5-validation.json').write_text(json.dumps(record, indent=2) + '\n')
+    print(json.dumps(dict(all_passed=True, cases=len(cases), kernel_sha256=record['kernel_sha256'], context_bytes=88)))
+
+
+if __name__ == '__main__':
+    main()

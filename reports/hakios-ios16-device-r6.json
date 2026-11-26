@@ -1,0 +1,454 @@
+{
+  "schema": 1,
+  "revision": 6,
+  "checked_at": "2026-11-17T00:53:45.351247+08:00",
+  "connected": true,
+  "identity_verified": true,
+  "temporary_boot_issued": true,
+  "command_accepted": true,
+  "image_sha256": "5faba1f7a5ea0ac0f7717b68fdffd3013bf14c4a2d757d5c1f260532a72d1118",
+  "readiness_report": "reports/hakios-ios16-boot-ready.json",
+  "local_log_path": "reports\\local\\20261117-005345-319335-ios16-r6",
+  "host_partition_flash_issued": false,
+  "kernel_data_writes_enabled": true,
+  "kernel_data_write_hardware_verified": true,
+  "hardware_verified": false,
+  "screen_observation_pending": false,
+  "full_services_verified": false,
+  "springboard_display_verified": false,
+  "physical_touch_verified": false,
+  "usb_log_transfer_verified": true,
+  "all_6gb_exposed": false,
+  "qemu_used": false,
+  "legacy_7195_used": false,
+  "userdata_bytes": 250710192128,
+  "bootloader_unlocked": true,
+  "battery_soc_ok": true,
+  "started_at": "2026-11-17T00:53:45.579696+08:00",
+  "usb_capture_started": true,
+  "usb_capture_status_path": "reports\\local\\20261117-005345-319335-ios16-r6\\usb-status.json",
+  "boot_entry_sha256": "c15aa8d7ebc6a069a053f32dd96b10fc7738484d8093671b6240da9e6bfd6db6",
+  "fastboot_returncode": 0,
+  "outcome": "normal_timer_return_to_uefi_summary_desktop_not_reached",
+  "usb_enumeration_verified": true,
+  "usb_endpoint_configuration_verified": true,
+  "kernel_hardware_started": true,
+  "original_launchd_pid1_verified": true,
+  "early_boot_complete_observed": true,
+  "observation_policy_runtime_verified": true,
+  "first_frame_observation_started": true,
+  "early_springboard_sampler_observed": true,
+  "main_queue_callback_observed": false,
+  "main_runloop_observed": false,
+  "display_split_timing_observed": true,
+  "timer_return_boundary_captured": true,
+  "usb_return_drain_captured": true,
+  "usb_log_complete": false,
+  "user_screen_observation": "结束摘要",
+  "user_screen_observation_source": "R6 same-session user reply confirming final summary after timer return",
+  "data_runtime_read_write_verified": true,
+  "init_checks_passed": 45,
+  "init_checks_failed": 0,
+  "previous_live_snapshot": {
+    "recorded_at": "2026-11-17T01:02:19.511396+08:00",
+    "snapshot_path": "reports/local/20261117-005345-319335-ios16-r6/snapshot-010219-511396",
+    "raw_bytes": 173793,
+    "console_bytes": 79937,
+    "raw_sha256": "7ae7afdaea1cd9bec03b644fceeaae5908555baa6f30a856824726413dffd7b1",
+    "console_sha256": "60700db66b1e7027f44f2b5d76c029b087b5cf7fdade17668495b54cc145f144",
+    "capture_source_sha256": "d5a9aecdd3c5ac728b233628d9ae810a598a35ba05d9068d0db3ed70fde3791c",
+    "frames": 2933,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "incomplete_frame_bytes": 0,
+    "decoded_console_prefix_matches": true,
+    "superseded_by_final_snapshot": true
+  },
+  "recorded_at": "2026-11-17T02:40:52.465789+08:00",
+  "ended": true,
+  "ended_at": "2026-11-17T01:43:28.455876+08:00",
+  "end_time_scope": "USB receiver finished_at; exact UEFI summary appearance time was not captured",
+  "usb_runtime_final": {
+    "recorded_at": "2026-11-17T02:30:34.246326+08:00",
+    "snapshot_path": "reports/local/20261117-005345-319335-ios16-r6/snapshot-final",
+    "capture_finished_at": "2026-11-17T01:43:28.455876+08:00",
+    "capture_status": "capture_failed",
+    "capture_failure": "[Errno 32] Pipe error",
+    "host_boot_to_usb_end_seconds": 2982.87618,
+    "console_bytes": 325433,
+    "raw_bytes": 561369,
+    "frames": 7373,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "incomplete_frame_bytes": 0,
+    "decoded_console_matches": true,
+    "raw_sha256": "24a7602e7ae1653e604de4734cce0df5b84b58a00018d112091d0c8dde559b26",
+    "console_sha256": "cb4f301f361cbc45cad9c4d64ae7498c1f2ee660e94702037ec42265fe484bf8",
+    "capture_source_sha256": "d5a9aecdd3c5ac728b233628d9ae810a598a35ba05d9068d0db3ed70fde3791c",
+    "first_log_line": "Darwin Kernel Version 22.5.0: Tue Nov 17 00:46:40 CST 2026; jia:xnu-8796.121.2[xnu-8796.121.2-dirty]/BUILD/obj/DEVELOPMENT_ARM64_BCM2837",
+    "last_log_line": "LITHIUM USB: timer boundary drain=1 target=325290",
+    "from_kernel_banner": true,
+    "from_launchd_start": true,
+    "normal_timer_return_boundary_captured": true,
+    "drain_succeeded": true,
+    "drain_target": 325290,
+    "decoded_stream_end_offset": 325433,
+    "bytes_after_drain_target": 143,
+    "scope": "Complete acknowledged kernel log stream through normal timer-return drain result; UEFI summary is a separate console, not captured by this USB device.",
+    "screen_user_confirmed": "结束摘要",
+    "first_frame_kernel_ms": 1143907,
+    "first_frame_plus_observation_end_ms": 2943907,
+    "display_splits": [
+      {
+        "swap": 1,
+        "setup_us": 330,
+        "rows_us": 3288748,
+        "rows": 2040,
+        "cols": 1080,
+        "filter": 0,
+        "unscaled": 0,
+        "line": 1252
+      },
+      {
+        "swap": 2,
+        "setup_us": 329,
+        "rows_us": 4793328,
+        "rows": 2040,
+        "cols": 1080,
+        "filter": 0,
+        "unscaled": 0,
+        "line": 1273
+      },
+      {
+        "swap": 3,
+        "setup_us": 329,
+        "rows_us": 3804794,
+        "rows": 2040,
+        "cols": 1080,
+        "filter": 0,
+        "unscaled": 0,
+        "line": 1445
+      }
+    ],
+    "capture_started_at": "2026-11-17T00:53:46.013624+08:00",
+    "capture_still_running": false,
+    "final_snapshot_verified_at": "2026-11-17T02:40:52.465789+08:00",
+    "analysis_sha256": "f8796aec002e5d423f286307582ed8db9448dc5b2e5d1b86fa3eb871a5c7a2c3",
+    "stack_mapping_sha256": "de18e4141128d94fbc282110e3e277a3d9bf110bc0249b761297a72e316c7c47",
+    "uefi_summary_captured_over_usb": false,
+    "all_daemon_logging_or_producer_side_truncation_verified": false,
+    "termination_interpretation": "Host Pipe error followed captured normal timer boundary and successful bounded drain; it is not evidence of a kernel panic."
+  },
+  "diagnosis": {
+    "status": "SpringBoard main-thread long lock wait before main-runloop entry; owner/root cause not yet identified",
+    "total_samples": 24,
+    "repeated_stack": {
+      "count": 21,
+      "first_elapsed_ms": 991152,
+      "last_elapsed_ms": 2587968,
+      "sampled_span_ms": 1596816,
+      "pcs": [
+        "0x1fa4c7a90",
+        "0x1ba8fa7b8",
+        "0x1ba861bc0",
+        "0x1ba927238",
+        "0x1ba850bb8",
+        "0x1ba850b20",
+        "0x228c83c64",
+        "0x1c69af0f4",
+        "0x228c83bf4",
+        "0x228c836c4",
+        "0x228c8364c",
+        "0x228c83338"
+      ],
+      "thread_states": [
+        3
+      ],
+      "cpu_accounting_unchanged": true,
+      "user_us": 9421050,
+      "system_us": 138172903,
+      "main_loop_masks": [
+        0
+      ],
+      "commits": [
+        0
+      ],
+      "symbolized": "__ulock_wait ... BSCollectionFilter ..."
+    },
+    "first_repeated_sample_index": 3,
+    "last_repeated_sample_index": 23,
+    "thread_state_name": "TH_STATE_WAITING",
+    "thread_state_value": 3,
+    "stage": "constructor_ready",
+    "constructor_ready_elapsed_ms": 82727,
+    "main_queue_callback_scheduled": true,
+    "main_queue_enter_observed": false,
+    "runloop_observers_installed": true,
+    "main_runloop_entry_observed": false,
+    "runloop_commit_count": 0,
+    "module_chain": "ControlCenterServices -> BaseBoard BSCollectionFilter -> CoreServices -> __ulock_wait",
+    "lock_owner_identified": false,
+    "deadlock_proven": false,
+    "exact_private_method_names_known": false,
+    "image_mapping": {
+      "supplied_cache": "20F66__iPhone10,3_6",
+      "cache_uuid": "e5420db330d033aa8b7e05b5038bb46d",
+      "verified_slide": "0x38c74000",
+      "slide_verified_by": [
+        "_mach_msg2_trap verified svc continuation +8",
+        "___ulock_wait verified svc continuation +8"
+      ],
+      "read_only": true,
+      "format_source": "https://raw.githubusercontent.com/apple-oss-distributions/dyld/dyld-1066.8/cache-builder/dyld_cache_format.h",
+      "format_header_sha256": "b7861b7d0511946ebc067702b4b67a8bc77209b1bf35dd494240726e4cc628bb",
+      "repeated_stack": [
+        {
+          "runtime": "0x1fa4c7a90",
+          "unslid": "0x1c1853a90",
+          "image": "/usr/lib/system/libsystem_kernel.dylib",
+          "image_offset": "0x1a90",
+          "function_start": "0x1c1853a88",
+          "function_offset": 8,
+          "exact_function_exports": [
+            "___ulock_wait"
+          ]
+        },
+        {
+          "runtime": "0x1ba8fa7b8",
+          "unslid": "0x181c867b8",
+          "image": "/System/Library/Frameworks/CoreServices.framework/CoreServices",
+          "image_offset": "0xb57b8",
+          "function_start": "0x181c866e4",
+          "function_offset": 212,
+          "exact_function_exports": []
+        },
+        {
+          "runtime": "0x1ba861bc0",
+          "unslid": "0x181bedbc0",
+          "image": "/System/Library/Frameworks/CoreServices.framework/CoreServices",
+          "image_offset": "0x1cbc0",
+          "function_start": "0x181bedbb4",
+          "function_offset": 12,
+          "exact_function_exports": []
+        },
+        {
+          "runtime": "0x1ba927238",
+          "unslid": "0x181cb3238",
+          "image": "/System/Library/Frameworks/CoreServices.framework/CoreServices",
+          "image_offset": "0xe2238",
+          "function_start": "0x181cb31cc",
+          "function_offset": 108,
+          "exact_function_exports": []
+        },
+        {
+          "runtime": "0x1ba850bb8",
+          "unslid": "0x181bdcbb8",
+          "image": "/System/Library/Frameworks/CoreServices.framework/CoreServices",
+          "image_offset": "0xbbb8",
+          "function_start": "0x181bdcb2c",
+          "function_offset": 140,
+          "exact_function_exports": []
+        },
+        {
+          "runtime": "0x1ba850b20",
+          "unslid": "0x181bdcb20",
+          "image": "/System/Library/Frameworks/CoreServices.framework/CoreServices",
+          "image_offset": "0xbb20",
+          "function_start": "0x181bdcaec",
+          "function_offset": 52,
+          "exact_function_exports": []
+        },
+        {
+          "runtime": "0x228c83c64",
+          "unslid": "0x1f000fc64",
+          "image": "/System/Library/PrivateFrameworks/ControlCenterServices.framework/ControlCenterServices",
+          "image_offset": "0x9c64",
+          "function_start": "0x1f000fc10",
+          "function_offset": 84,
+          "exact_function_exports": []
+        },
+        {
+          "runtime": "0x1c69af0f4",
+          "unslid": "0x18dd3b0f4",
+          "image": "/System/Library/PrivateFrameworks/BaseBoard.framework/BaseBoard",
+          "image_offset": "0xf0f4",
+          "function_start": "0x18dd3b01c",
+          "function_offset": 216,
+          "exact_function_exports": [
+            "_BSCollectionFilter"
+          ]
+        },
+        {
+          "runtime": "0x228c83bf4",
+          "unslid": "0x1f000fbf4",
+          "image": "/System/Library/PrivateFrameworks/ControlCenterServices.framework/ControlCenterServices",
+          "image_offset": "0x9bf4",
+          "function_start": "0x1f000fbc4",
+          "function_offset": 48,
+          "exact_function_exports": []
+        },
+        {
+          "runtime": "0x228c836c4",
+          "unslid": "0x1f000f6c4",
+          "image": "/System/Library/PrivateFrameworks/ControlCenterServices.framework/ControlCenterServices",
+          "image_offset": "0x96c4",
+          "function_start": "0x1f000f690",
+          "function_offset": 52,
+          "exact_function_exports": []
+        },
+        {
+          "runtime": "0x228c8364c",
+          "unslid": "0x1f000f64c",
+          "image": "/System/Library/PrivateFrameworks/ControlCenterServices.framework/ControlCenterServices",
+          "image_offset": "0x964c",
+          "function_start": "0x1f000f4fc",
+          "function_offset": 336,
+          "exact_function_exports": []
+        },
+        {
+          "runtime": "0x228c83338",
+          "unslid": "0x1f000f338",
+          "image": "/System/Library/PrivateFrameworks/ControlCenterServices.framework/ControlCenterServices",
+          "image_offset": "0x9338",
+          "function_start": "0x1f000f300",
+          "function_offset": 56,
+          "exact_function_exports": []
+        }
+      ]
+    },
+    "early_waits_not_the_final_stop": [
+      "os_log_create Mach wait later advanced",
+      "_BKSDisplayGetMainScreenInfo wait later advanced"
+    ],
+    "current_service_evidence": {
+      "springboard_backboard_system_shell_connected": true,
+      "activity_assertion_later_returned_seconds": 240.901,
+      "containermanagerd_pid": 14,
+      "containermanagerd_running_observed": true,
+      "containermanagerd_exit_observed": false,
+      "virtual_touch_service_nonnull_later_observed": true,
+      "complete_container_rpc_verified": false,
+      "physical_touch_verified": false
+    },
+    "display": {
+      "actual_software_frame_submissions": 3,
+      "first_base_layer_kernel_ms": 1143907,
+      "after_first_frame_observation_seconds": 1800,
+      "computed_policy_deadline_kernel_ms": 2943907,
+      "split_timings": [
+        {
+          "swap": 1,
+          "setup_us": 330,
+          "rows_us": 3288748,
+          "rows": 2040,
+          "cols": 1080,
+          "filter": 0,
+          "unscaled": 0,
+          "line": 1252
+        },
+        {
+          "swap": 2,
+          "setup_us": 329,
+          "rows_us": 4793328,
+          "rows": 2040,
+          "cols": 1080,
+          "filter": 0,
+          "unscaled": 0,
+          "line": 1273
+        },
+        {
+          "swap": 3,
+          "setup_us": 329,
+          "rows_us": 3804794,
+          "rows": 2040,
+          "cols": 1080,
+          "filter": 0,
+          "unscaled": 0,
+          "line": 1445
+        }
+      ],
+      "rows_timing_includes_scheduling": true,
+      "physical_framebuffer_width": 1080,
+      "physical_framebuffer_height": 2040,
+      "framebuffer_format": "BGR24",
+      "logical_width": 750,
+      "logical_height": 1334,
+      "last_boot_ui": "Apple Logo",
+      "explicit_screen_owner_verified": false,
+      "desktop_verified": false
+    },
+    "memory": {
+      "kernel_window_mib": 2880,
+      "xnu_cpus": 1,
+      "final_free_mb": 1754,
+      "final_available_mb": 2646,
+      "all_6gb_exposed": false
+    },
+    "no_crash_body_observed_in_captured_stream": true,
+    "software_renderer_simulating_crash_is_not_actual_panic_evidence": true,
+    "evidence_lines": {
+      "sample_start": 1341,
+      "sample_end": 2804,
+      "sb_marks": [
+        981,
+        1022,
+        1024,
+        1027,
+        1028,
+        1029,
+        1030,
+        1032
+      ],
+      "runloop_observer_installation": [
+        1031
+      ],
+      "display": [
+        1252,
+        1273,
+        1445
+      ],
+      "screen_owner": [
+        1181,
+        1207,
+        1306,
+        1310,
+        1368,
+        1391
+      ],
+      "activity_assertion": [
+        1208,
+        1389
+      ],
+      "final_memory": 2829,
+      "timer_return_and_drain": [
+        2843,
+        2844,
+        2846
+      ]
+    }
+  },
+  "prepared_report": "reports/hakios-ios16-r6-prepared.json",
+  "source_baseline": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+  "kernel_sha256": "17117d4a0f9a247d617fbe20a43f3c3ea58d828dd2841f93b9f78d333caa87d6",
+  "image_bytes": 16232448,
+  "runloop_observer_installation_observed": true,
+  "usb_normal_timer_boundary_drain_hardware_verified": true,
+  "usb_kernel_stream_through_timer_boundary_verified": true,
+  "usb_log_complete_scope": "Full firmware/all-daemon log capture remains unverified; the emitted kernel-console stream is verified through the normal timer-return drain result.",
+  "uefi_summary_user_confirmed": true,
+  "next_steps": [
+    "Reuse fixed-upstream user_exception_trace.c bounded multi-thread snapshots for SpringBoard; correlate the waiting main thread with worker threads and dependencies to identify the lock owner.",
+    "Use only the supplied 20F66 cache to map unresolved CoreServices/ControlCenterServices frames; compare complete upstream initialization/dependencies before proposing a bounded fix.",
+    "Investigate software row-rendering cost alongside the initialization stall; do not equate schedule-inclusive wall time with CPU drawing time.",
+    "After a concrete diagnosis/fix, fully build, check and freeze a new combined revision for one temporary boot; no R6/R5 retry or userdata reflash."
+  ],
+  "this_analysis_operations": {
+    "runtime_code_changed": false,
+    "rebuilt": false,
+    "device_query_issued": false,
+    "boot_issued": false,
+    "partition_flash_issued": false,
+    "reports_and_project_state_updated": true
+  },
+  "observation_correction": "The early snapshot main_runloop_observed=true matched observer installation only. No main-queue entry or runloop activity/commit was observed; final status is false."
+}

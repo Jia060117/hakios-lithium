@@ -1,0 +1,2214 @@
+{
+  "schema": 1,
+  "revision": 7,
+  "checked_at": "2026-11-17T04:16:38.974397+08:00",
+  "connected": true,
+  "identity_verified": true,
+  "temporary_boot_issued": true,
+  "command_accepted": true,
+  "image_sha256": "013cdeb8b2ba6c1e72a51f8a41df539c3b28d95838e1f1ad567183cdacaa822d",
+  "readiness_report": "reports/hakios-ios16-boot-ready.json",
+  "local_log_path": "reports\\local\\20261117-032135-817008-ios16-r7",
+  "host_partition_flash_issued": false,
+  "kernel_data_writes_enabled": true,
+  "kernel_data_write_hardware_verified": true,
+  "hardware_verified": false,
+  "screen_observation_pending": false,
+  "full_services_verified": false,
+  "springboard_display_verified": false,
+  "physical_touch_verified": false,
+  "usb_log_transfer_verified": true,
+  "all_6gb_exposed": false,
+  "qemu_used": false,
+  "legacy_7195_used": false,
+  "userdata_bytes": 250710192128,
+  "bootloader_unlocked": true,
+  "battery_soc_ok": true,
+  "started_at": "2026-11-17T03:21:36.077402+08:00",
+  "usb_capture_started": true,
+  "usb_capture_status_path": "reports\\local\\20261117-032135-817008-ios16-r7\\usb-status.json",
+  "boot_entry_sha256": "c15aa8d7ebc6a069a053f32dd96b10fc7738484d8093671b6240da9e6bfd6db6",
+  "fastboot_returncode": 0,
+  "outcome": "normal_timer_return_desktop_not_observed",
+  "usb_runtime_snapshot": {
+    "recorded_at": "2026-11-17T04:11:21.767177+08:00",
+    "snapshot_path": "reports/local/20261117-032135-817008-ios16-r7/snapshot-041121-767177",
+    "console_bytes": 252881,
+    "raw_bytes": 467249,
+    "console_sha256": "235fdd14153a69a12e5cdfc250309d6c38faa5098146c68f417f37494b7e2955",
+    "raw_sha256": "a8aa20ec7bf91ae1afca55ccec2077a671f2d935bf811d7e090475b5eb075d7e",
+    "frames": 6699,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "incomplete_frame_bytes": 0,
+    "decoded_console_prefix_matches": true,
+    "capture_status": "capture_failed",
+    "capture_still_running": false,
+    "counts": {
+      "kernel": 2,
+      "launchd": 1,
+      "data_write": 1,
+      "first_frame": 1,
+      "sampler": 13,
+      "milestones": 8,
+      "runloop": 0,
+      "threads_begin": 8,
+      "threads_end": 8,
+      "process_threads": 26,
+      "thread": 97,
+      "owners": 12,
+      "cpu": 18,
+      "split": 3,
+      "top": 0,
+      "timer": 1,
+      "drain": 1,
+      "thread_records_parsed": 178
+    },
+    "evidence": {
+      "kernel": [
+        {
+          "line": 1,
+          "text": "Darwin Kernel Version 22.5.0: Tue Nov 17 03:17:06 CST 2026; jia:xnu-8796.121.2[xnu-8796.121.2-dirty]/BUILD/obj/DEVELOPMENT_ARM64_BCM2837"
+        },
+        {
+          "line": 170,
+          "text": "Darwin Kernel Version 22.5.0: Tue Nov 17 03:17:06 CST 2026; jia:xnu-8796.121.2[xnu-8796.121.2-dirty]/BUILD/obj/DEVELOPMENT_ARM64_BCM2837"
+        }
+      ],
+      "launchd": [
+        {
+          "line": 912,
+          "text": "com.apple.xpc.launchd|2026-11-17 03:22:12.287408 <Notice>: launchd logging initialized. name: com.apple.xpc.launchd pid: 1"
+        }
+      ],
+      "data_write": [
+        {
+          "line": 677,
+          "text": "[ ok ] create a file, write 100 KB, read it back"
+        }
+      ],
+      "first_frame": [
+        {
+          "line": 1312,
+          "text": "LITHIUM UI OBSERVE: first base-layer frame at 1129788 ms; window 1800 seconds; desktop UNVERIFIED"
+        }
+      ],
+      "sampler": [
+        {
+          "line": 991,
+          "text": "LITHIUM SB SAMPLE 0 elapsed_ms=5675 stage=constructor_begin loop_mask=0 commits=0 thread_info=0 state=3 cpu_permille=33 user_us=3936088 system_us=97553409 wall=1794857153.854860"
+        },
+        {
+          "line": 1039,
+          "text": "LITHIUM SB SAMPLE 1 elapsed_ms=108030 stage=constructor_ready loop_mask=0 commits=0 thread_info=0 state=3 cpu_permille=0 user_us=5351392 system_us=119622241 wall=1794857255.704972"
+        },
+        {
+          "line": 1948,
+          "text": "LITHIUM SB SAMPLE 11 elapsed_ms=1718225 stage=constructor_ready loop_mask=0 commits=0 thread_info=0 state=3 cpu_permille=0 user_us=9403557 system_us=137179732 wall=1794858866.404786"
+        },
+        {
+          "line": 2019,
+          "text": "LITHIUM SB SAMPLE 12 elapsed_ms=1779894 stage=constructor_ready loop_mask=0 commits=0 thread_info=0 state=3 cpu_permille=0 user_us=9403557 system_us=137179732 wall=1794858928.074246"
+        }
+      ],
+      "milestones": [
+        {
+          "line": 984,
+          "text": "LITHIUM SB MARK constructor_begin elapsed_ms=0"
+        },
+        {
+          "line": 1022,
+          "text": "LITHIUM SB MARK hooks_ready elapsed_ms=71857"
+        },
+        {
+          "line": 1031,
+          "text": "LITHIUM SB MARK install_runloop_observers elapsed_ms=80142"
+        },
+        {
+          "line": 1033,
+          "text": "LITHIUM SB MARK constructor_ready elapsed_ms=80513"
+        }
+      ],
+      "runloop": [],
+      "threads_begin": [
+        {
+          "line": 961,
+          "text": "LITHIUM USTACKS begin sequence=1"
+        },
+        {
+          "line": 1044,
+          "text": "LITHIUM SB RAW elapsed_ms=108030 resume=0 depth=10 0x1e66d74f8 0x1b29c9e00 0x1b2LITHIUM USTACKS begin sequence=2"
+        },
+        {
+          "line": 2095,
+          "text": "LITHIUM USTACKS begin sequence=7"
+        },
+        {
+          "line": 2160,
+          "text": "LITHIUM USTACKS begin sequence=8"
+        }
+      ],
+      "threads_end": [
+        {
+          "line": 963,
+          "text": "LITHIUM USTACKS end sequence=1 processes=0 wall_us=1304"
+        },
+        {
+          "line": 1058,
+          "text": "LITHIUM USTACKS end sequence=2 processes=2 wall_us=42130"
+        },
+        {
+          "line": 2112,
+          "text": "LITHIUM USTACKS end sequence=7 processes=4 wall_us=145505"
+        },
+        {
+          "line": 2177,
+          "text": "LITHIUM USTACKS end sequence=8 processes=4 wall_us=156972"
+        }
+      ],
+      "process_threads": [
+        {
+          "line": 1045,
+          "text": "ustacks: SpringBoard[8] 5 threads, shared cache slide 0x24e84000, uptime 1230.454, at 1230450085"
+        },
+        {
+          "line": 1051,
+          "text": "ustacks: runningboardd[7] 12 threads, shared cache slide 0x24e84000, uptime 1230.462, at 1230457862"
+        },
+        {
+          "line": 2170,
+          "text": "ustacks: runningboardd[7] 6 threads, shared cache slide 0x24e84000, uptime 3391.036, at 3391036362"
+        },
+        {
+          "line": 2174,
+          "text": "ustacks: lsd[25] 5 threads, shared cache slide 0x24e84000, uptime 3391.067, at 3391067047"
+        }
+      ],
+      "thread": [
+        {
+          "line": 1046,
+          "text": "ustacks:  thread 0xbd (running): 0x1b2baa4c0 0x1b2b6837c state=0x4 x0=0x283985950 x1=0x1a7b8404b x2=0x206d31ec8 x3=0x16f0f5c80 x16=0x1b29aacc4 0x1c74aba4c 0x1c74abdb8 0x1b2a0b780 0x1b29ac64c 0x1c74abd8c 0x1c74d0190 0x1e99209c8 0x1c9457344 0x0"
+        },
+        {
+          "line": 1047,
+          "text": "ustacks:  thread 0xcd (running): 0x1e66d8850 0x100d8dda8 state=0x4 x0=0x2 x1=0x16f17e378 x2=0xab x3=0x16f17e423 x16=0x4 0x100d9115c 0x100d90f9c 0x1f5b590ec 0x1f5b5772c"
+        },
+        {
+          "line": 2175,
+          "text": "ustacks:  thread 0x108: 0x1e66d74f8 0x1b29c9454 state=0x1 x0=0x131dddb60 x1=0x16f46f6b8 x2=0x1 x3=0x16f46f6b8 x16=0x177 0x1b29c9e00 0x1b29b8ab4 0x1b29b86ec 0x1a6b91ea8 0x1a6b8b654 0x1b2a0b780 0x1b29ac64c 0x1a6b6db44 0x1c9457344 0x0"
+        },
+        {
+          "line": 2176,
+          "text": "ustacks:  thread 0x11a: 0x1e66d6ff0 0x1e66e8ad8 state=0x41 x0=0x16f6097d0 x1=0x40700420e x2=0x0 x3=0x1203 x16=0xffffffffffffffd1 0x1e66e8d78 0x1e66d74e4 0x1b29c1ec4 0x1b29c225c 0x1f5bab0ec 0x1abdd2298 0x1abdea514 0x1abdd224c 0x1abdd21d4 0x1abdd1b68 0x1abcustacks:  thread 0x24e: 0x1e66d7a90 0x1b29ab908 state=0x41 x0=0x1000001 x1=0x131d6bf34 x2=0x0 x3=0x0 x16=0x203 ulock_op=1 word=0x0 copy=0 matches=1 owner_port=0x0 owner_tid=0x0 owner_same_task=0 lookup=15 0x1b29abca0 0x1a6b8bbfc 0x1b2a0a7a8 0x1b2a0b780 0xustacks:  thread 0x252: 0x1e66d7a90 0x1b29ab908 state=0x41 x0=0x1000001 x1=0x131d6bf34 x2=0x0 x3=0x0 x16=0x203 ulock_op=1 word=0x0 copy=0 matches=1 owner_port=0x0 owner_tid=0x0 owner_same_task=0 lookup=15 0x1b29abca0 0x1a6b48990 0x1a6b488c4 0x1a6068b90 0xustacks:  thread 0x283: 0x1e66d74b0 0x1f5b57c1c state=0x1 x0=0x100 x1=0x16f726b80 x2=0x1 x3=0x0 x16=0x170 0x1f5b57720"
+        }
+      ],
+      "owners": [
+        {
+          "line": 1056,
+          "text": "ustacks:  thread 0xfd (running): 0x1e66d7b08 0x1b29ab98c state=0x4 x0=0x0 x1=0x0 x2=0x0 x3=0x1008a2fc0 x16=0x204 0x1b29d02f0 0x1b29ce2f0 0x1c1814394 0x1c18114e8 0x1c18167b8 0x21a11b57c 0x21a1211d8 0x1b2a0a7a8 0x1b2a0b780 0x1b29b1298 0x1b29b1da0 0x1b29bbdcustacks:  thread 0xfe: 0x1e66d7a90 0x1f5abfd08 state=0x1 x0=0x1050002 x1=0x100888a00 x2=0x3002 x3=0x0 x16=0x203 ulock_op=2 word=0x3002 copy=0 matches=1 owner_port=0x3003 owner_tid=0xff owner_same_task=1 lookup=0 0x1b93bb408 0x1b29aaf90 0x1f5bb745c 0x1f5bcustacks:  thread 0xff (running): 0x1b93bb434 0x1b93bb408 state=0x4 x0=0x100888a00 x1=0x50000 x2=0x3003 x3=0x100989de0 x16=0x1f5ac5044 0x1abcd0ed0 0x21a12c900 0x21a1279d8 0x21a129f1c 0x21a122c10 0x21a125294 0x1b2a0a7a8 0x1b2a0b780 0x1b29b1298 0x1b29b1da0 0ustacks:  thread 0x100 (running): 0x1f5b57718 0x0 state=0x4 x0=0x16fb57000 x1=0x310f x2=0x16fad4000 x3=0x16fb56b80 x16=0x0"
+        },
+        {
+          "line": 1433,
+          "text": "ustacks:  thread 0xbd: 0x1e66d7a90 0x1f5abfd08 state=0x1 x0=0x1000002 x1=0x206d6a4b8 x2=0x2a02 x3=0x0 x16=0x203 ulock_op=2 word=0x2a02 copy=0 matches=1 owner_port=0x2a03 owner_tid=0xeb owner_same_task=1 lookup=0 0x1a6b0a7b8 0x1a6a71bc0 0x1a6b37238 0x1a6a6ustacks:  thread 0xcd (running): 0x1e66d8850 0x100d8dda8 state=0x4 x0=0x2 x1=0x16f17e998 x2=0xb4 x3=0x16f17ea4c x16=0x4 0x100d90f80 0x1f5b590ec 0x1f5b5772c"
+        },
+        {
+          "line": 2168,
+          "text": "ustacks:  thread 0x149 \"com.apple.coreanimation.display.primary\": 0x1e66d6ff0 0x1e66e8ad8 state=0x1 x0=0x16f5cde78 x1=0x507000806 x2=0x200000000 x3=0x650300000000 x16=0xffffffffffffffd1 0x1e66e8d78 0x1e66d74e4 0x1abcd41c8 0x1abcd5360 0x1abcd9da0 0x1abd18custacks:  thread 0x14a \"com.apple.CoreMotion.MotionThread\": 0x1e66d6ff0 0x1e66e8ad8 state=0x1 x0=0x16f29df28 x1=0x507000806 x2=0x200000000 x3=0x860300000000 x16=0xffffffffffffffd1 0x1e66e8d78 0x1e66d74e4 0x1abcd41c8 0x1abcd5360 0x1abcd9da0 0x1abd18c58 0x1ustacks:  thread 0x14b: 0x1e66d7a90 0x1b29ab908 state=0x41 x0=0x1000001 x1=0x11dd47cb4 x2=0x0 x3=0x0 x16=0x203 ulock_op=1 word=0x0 copy=0 matches=1 owner_port=0x0 owner_tid=0x0 owner_same_task=0 lookup=15 0x1b29abca0 0x100ebca78 0x1b2a0a7a8 0x1b2a0b780 0xustacks:  thread 0x171: 0x1e66d6ff0 0x1e66e8ad8 state=0x41 x0=0x16f76e530 x1=0x40700420e x2=0x0 x3=0x7907 x16=0xffffffffffffffd1 0x1e66e8d78 0x1e66d74e4 0x1b29c1ec4 0x1b29c225c 0x1f5bab0ec 0x1c3bc3f58 0x1c3bc3c50 0x1b2a0a7a8 0x1b2a0b780 0x1b29b1298 0x1b29ustacks:  thread 0x1af (running): 0x1b93b81c0 0x1abcbdeec state=0x4 x0=0x11dd0f8a0 x1=0x11dd0f8a0 x2=0xa413 x3=0x11dd19280 x16=0x1b93b81b4 0x1b33c6e64 0x101204828 0x1012033b8 0x101203374 0x1b2a0b780 0x1b29ad73c 0x1b29bf7ac 0x1b29b1168 0x1b29b1d70 0x1b29bbustacks:  thread 0x268: 0x1e66d74b0 0x1f5b57c1c state=0x1 x0=0x40 x1=0x16f06eb80 x2=0x0 x3=0x0 x16=0x170 0x1f5b57720"
+        },
+        {
+          "line": 2176,
+          "text": "ustacks:  thread 0x11a: 0x1e66d6ff0 0x1e66e8ad8 state=0x41 x0=0x16f6097d0 x1=0x40700420e x2=0x0 x3=0x1203 x16=0xffffffffffffffd1 0x1e66e8d78 0x1e66d74e4 0x1b29c1ec4 0x1b29c225c 0x1f5bab0ec 0x1abdd2298 0x1abdea514 0x1abdd224c 0x1abdd21d4 0x1abdd1b68 0x1abcustacks:  thread 0x24e: 0x1e66d7a90 0x1b29ab908 state=0x41 x0=0x1000001 x1=0x131d6bf34 x2=0x0 x3=0x0 x16=0x203 ulock_op=1 word=0x0 copy=0 matches=1 owner_port=0x0 owner_tid=0x0 owner_same_task=0 lookup=15 0x1b29abca0 0x1a6b8bbfc 0x1b2a0a7a8 0x1b2a0b780 0xustacks:  thread 0x252: 0x1e66d7a90 0x1b29ab908 state=0x41 x0=0x1000001 x1=0x131d6bf34 x2=0x0 x3=0x0 x16=0x203 ulock_op=1 word=0x0 copy=0 matches=1 owner_port=0x0 owner_tid=0x0 owner_same_task=0 lookup=15 0x1b29abca0 0x1a6b48990 0x1a6b488c4 0x1a6068b90 0xustacks:  thread 0x283: 0x1e66d74b0 0x1f5b57c1c state=0x1 x0=0x100 x1=0x16f726b80 x2=0x1 x3=0x0 x16=0x170 0x1f5b57720"
+        }
+      ],
+      "cpu": [
+        {
+          "line": 1306,
+          "text": "LITHIUM DISPLAY CPU swap=1 band=0 y0=0 y1=2040 wall_us=412 cpu_us=413 noncpu_us=0 monotonic=1 cpu_le_wall=0"
+        },
+        {
+          "line": 1307,
+          "text": "LITHIUM DISPLAY CPU swap=1 band=1 y0=0 y1=2040 wall_us=3497790 cpu_us=2713141 noncpu_us=784649 monotonic=1 cpu_le_wall=1"
+        },
+        {
+          "line": 1690,
+          "text": "LITHIUM DISPLAY CPU swap=3 band=4 y0=1024 y1=1536 wall_us=1213506 cpu_us=701985 noncpu_us=511520 monotonic=1 cpu_le_wall=1"
+        },
+        {
+          "line": 1691,
+          "text": "LITHIUM DISPLAY CPU swap=3 band=5 y0=1536 y1=2040 wall_us=1484120 cpu_us=922407 noncpu_us=561713 monotonic=1 cpu_le_wall=1"
+        }
+      ],
+      "split": [
+        {
+          "line": 1305,
+          "text": "LITHIUM SB SAMPLE 4 elapsed_ms=799868 stage=constructor_ready loop_mask=0 commits=0 thread_info=0 state=3 cpu_permille=0 user_us=5744057 system_us=121800178 wall=1794857948.048616LITHIUM DISPLAY SPLIT swap=1 setup_us=414 rows_us=3497826 rows=2040 cols=1080 filter=0 unscaled=0; includes scheduling"
+        },
+        {
+          "line": 1335,
+          "text": "LITHIUM DISPLAY SPLIT swap=2 setup_us=412 rows_us=5438662 rows=2040 cols=1080 filter=0 unscaled=0; includes scheduling"
+        },
+        {
+          "line": 1685,
+          "text": "LITHIUM DISPLAY SPLIT swap=3 setup_us=415 rows_us=4181484 rows=2040 cols=1080 filter=0 unscaled=0; includes scheduling"
+        }
+      ],
+      "top": [],
+      "timer": [
+        {
+          "line": 2190,
+          "text": "--- loader_return_after expired ---"
+        }
+      ],
+      "drain": [
+        {
+          "line": 2192,
+          "text": "LITHIUM USB: timer boundary drain=1 target=252831"
+        }
+      ]
+    },
+    "boot_arguments_observation": {
+      "runtime_bytes": 607,
+      "requested_bytes": 631,
+      "loader_capacity": 608,
+      "exact_truncated_prefix": true,
+      "omitted_suffix": "ks_tname=* ustacks_top=1",
+      "ustacks_top_enabled": false,
+      "finite_count_and_related_processes_present": true
+    },
+    "drawing_cpu_profile": {
+      "spans": [
+        {
+          "swap": 1,
+          "band": 0,
+          "y0": 0,
+          "y1": 2040,
+          "wall_us": 412,
+          "cpu_us": 413,
+          "noncpu_us": 0,
+          "monotonic": 1,
+          "cpu_le_wall": 0,
+          "stream_start": 116771,
+          "line": 1306,
+          "cpu_exceeds_wall_us": 1,
+          "arithmetic_consistent": true,
+          "accepted": false
+        },
+        {
+          "swap": 1,
+          "band": 1,
+          "y0": 0,
+          "y1": 2040,
+          "wall_us": 3497790,
+          "cpu_us": 2713141,
+          "noncpu_us": 784649,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 116879,
+          "line": 1307,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.7756729249040109
+        },
+        {
+          "swap": 1,
+          "band": 2,
+          "y0": 0,
+          "y1": 512,
+          "wall_us": 687148,
+          "cpu_us": 646460,
+          "noncpu_us": 40687,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 117000,
+          "line": 1308,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.9407871375598852
+        },
+        {
+          "swap": 1,
+          "band": 3,
+          "y0": 512,
+          "y1": 1024,
+          "wall_us": 837419,
+          "cpu_us": 662473,
+          "noncpu_us": 174945,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 117117,
+          "line": 1309,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.7910890486124628
+        },
+        {
+          "swap": 1,
+          "band": 4,
+          "y0": 1024,
+          "y1": 1536,
+          "wall_us": 857624,
+          "cpu_us": 674716,
+          "noncpu_us": 182908,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 117238,
+          "line": 1310,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.7867270505489585
+        },
+        {
+          "swap": 1,
+          "band": 5,
+          "y0": 1536,
+          "y1": 2040,
+          "wall_us": 1115469,
+          "cpu_us": 729357,
+          "noncpu_us": 386112,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 117360,
+          "line": 1311,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.6538568082125097
+        },
+        {
+          "swap": 2,
+          "band": 0,
+          "y0": 0,
+          "y1": 2040,
+          "wall_us": 410,
+          "cpu_us": 411,
+          "noncpu_us": 0,
+          "monotonic": 1,
+          "cpu_le_wall": 0,
+          "stream_start": 119756,
+          "line": 1336,
+          "cpu_exceeds_wall_us": 1,
+          "arithmetic_consistent": true,
+          "accepted": false
+        },
+        {
+          "swap": 2,
+          "band": 1,
+          "y0": 0,
+          "y1": 2040,
+          "wall_us": 5438626,
+          "cpu_us": 3469201,
+          "noncpu_us": 1969425,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 119864,
+          "line": 1337,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.637881884137648
+        },
+        {
+          "swap": 2,
+          "band": 2,
+          "y0": 0,
+          "y1": 512,
+          "wall_us": 1263051,
+          "cpu_us": 795103,
+          "noncpu_us": 467948,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 119986,
+          "line": 1338,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.6295098139346709
+        },
+        {
+          "swap": 2,
+          "band": 3,
+          "y0": 512,
+          "y1": 1024,
+          "wall_us": 1091319,
+          "cpu_us": 797486,
+          "noncpu_us": 293833,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 120105,
+          "line": 1339,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.7307542524229854
+        },
+        {
+          "swap": 2,
+          "band": 4,
+          "y0": 1024,
+          "y1": 1536,
+          "wall_us": 1530203,
+          "cpu_us": 938842,
+          "noncpu_us": 591360,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 120227,
+          "line": 1340,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.613540817786921
+        },
+        {
+          "swap": 2,
+          "band": 5,
+          "y0": 1536,
+          "y1": 2040,
+          "wall_us": 1553914,
+          "cpu_us": 937627,
+          "noncpu_us": 616286,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 120350,
+          "line": 1341,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.6033969704887143
+        },
+        {
+          "swap": 3,
+          "band": 0,
+          "y0": 0,
+          "y1": 2040,
+          "wall_us": 415,
+          "cpu_us": 416,
+          "noncpu_us": 0,
+          "monotonic": 1,
+          "cpu_le_wall": 0,
+          "stream_start": 172191,
+          "line": 1686,
+          "cpu_exceeds_wall_us": 1,
+          "arithmetic_consistent": true,
+          "accepted": false
+        },
+        {
+          "swap": 3,
+          "band": 1,
+          "y0": 0,
+          "y1": 2040,
+          "wall_us": 4181447,
+          "cpu_us": 2928223,
+          "noncpu_us": 1253223,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 172299,
+          "line": 1687,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.7002893974262976
+        },
+        {
+          "swap": 3,
+          "band": 2,
+          "y0": 0,
+          "y1": 512,
+          "wall_us": 686354,
+          "cpu_us": 645926,
+          "noncpu_us": 40427,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 172421,
+          "line": 1688,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.9410974511695132
+        },
+        {
+          "swap": 3,
+          "band": 3,
+          "y0": 512,
+          "y1": 1024,
+          "wall_us": 797327,
+          "cpu_us": 657761,
+          "noncpu_us": 139566,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 172538,
+          "line": 1689,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.8249576397136934
+        },
+        {
+          "swap": 3,
+          "band": 4,
+          "y0": 1024,
+          "y1": 1536,
+          "wall_us": 1213506,
+          "cpu_us": 701985,
+          "noncpu_us": 511520,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 172659,
+          "line": 1690,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.578476744243539
+        },
+        {
+          "swap": 3,
+          "band": 5,
+          "y0": 1536,
+          "y1": 2040,
+          "wall_us": 1484120,
+          "cpu_us": 922407,
+          "noncpu_us": 561713,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 172782,
+          "line": 1691,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.621517801795003
+        }
+      ],
+      "accepted_draw_totals": [
+        {
+          "swap": 1,
+          "band": 1,
+          "y0": 0,
+          "y1": 2040,
+          "wall_us": 3497790,
+          "cpu_us": 2713141,
+          "noncpu_us": 784649,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 116879,
+          "line": 1307,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.7756729249040109
+        },
+        {
+          "swap": 2,
+          "band": 1,
+          "y0": 0,
+          "y1": 2040,
+          "wall_us": 5438626,
+          "cpu_us": 3469201,
+          "noncpu_us": 1969425,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 119864,
+          "line": 1337,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.637881884137648
+        },
+        {
+          "swap": 3,
+          "band": 1,
+          "y0": 0,
+          "y1": 2040,
+          "wall_us": 4181447,
+          "cpu_us": 2928223,
+          "noncpu_us": 1253223,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 172299,
+          "line": 1687,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.7002893974262976
+        }
+      ],
+      "draw_total_count": 3,
+      "rejected_span_count": 3,
+      "wall_us_range": [
+        3497790,
+        5438626
+      ],
+      "cpu_us_range": [
+        2713141,
+        3469201
+      ],
+      "noncpu_us_range": [
+        784649,
+        1969425
+      ],
+      "cpu_fraction_range": [
+        0.637881884137648,
+        0.7756729249040109
+      ],
+      "noncpu_scope": "Wall minus current-thread CPU; includes scheduling, blocking, interrupts and measurement overhead. Not a direct scheduler-only or memory-bandwidth measurement."
+    },
+    "full_log_final_verified": false,
+    "desktop_verified": false,
+    "full_stack_analysis_private_path": "reports/local/20261117-032135-817008-ios16-r7/snapshot-041121-767177/analysis.json",
+    "final_usb_transport_verified": true,
+    "final_transport_audit_path": "reports/local/20261117-032135-817008-ios16-r7/snapshot-041121-767177/final-audit.json"
+  },
+  "usb_enumeration_verified": true,
+  "usb_endpoint_configuration_verified": true,
+  "kernel_hardware_started": true,
+  "original_launchd_pid1_verified": true,
+  "thread_dependency_snapshots_observed": true,
+  "unfair_lock_context_observed": true,
+  "drawing_cpu_profile_observed": true,
+  "main_runloop_observed": false,
+  "main_queue_callback_observed": false,
+  "timer_return_boundary_captured": true,
+  "usb_return_drain_captured": true,
+  "usb_log_complete": false,
+  "user_screen_observation": "UEFI 结束摘要",
+  "user_screen_observation_source": "R7 same-session user photo",
+  "data_runtime_read_write_verified": true,
+  "runtime_review": {
+    "recorded_at": "2026-11-17T04:11:44.537851+08:00",
+    "snapshot_path": "reports/local/20261117-032135-817008-ios16-r7/snapshot-041121-767177",
+    "springboard_main_samples": [
+      {
+        "sequence": 2,
+        "uptime_seconds": "1230.454",
+        "mach_absolute_us": 1230450085,
+        "main_tid": "0xbd",
+        "main_state": "0x4",
+        "wait_address": "0x1a7b8404b",
+        "lock_word": null,
+        "word_matches": null,
+        "copy_error": null,
+        "lookup_error": null,
+        "owner_tid": null,
+        "owner_same_task": null,
+        "owner_state": null,
+        "owner_pc": null,
+        "owner_stack_found": false
+      },
+      {
+        "sequence": 3,
+        "uptime_seconds": "1590.487",
+        "mach_absolute_us": 1590482492,
+        "main_tid": "0xbd",
+        "main_state": "0x1",
+        "wait_address": "0x400304003",
+        "lock_word": null,
+        "word_matches": null,
+        "copy_error": null,
+        "lookup_error": null,
+        "owner_tid": null,
+        "owner_same_task": null,
+        "owner_state": null,
+        "owner_pc": null,
+        "owner_stack_found": false
+      },
+      {
+        "sequence": 4,
+        "uptime_seconds": "1950.528",
+        "mach_absolute_us": 1950523007,
+        "main_tid": "0xbd",
+        "main_state": "0x1",
+        "wait_address": "0x206d6a4b8",
+        "lock_word": "0x2a02",
+        "word_matches": "1",
+        "copy_error": "0",
+        "lookup_error": "0",
+        "owner_tid": "0xeb",
+        "owner_same_task": "1",
+        "owner_state": "0x41",
+        "owner_pc": "0x1e66d6ff0",
+        "owner_stack_found": true
+      },
+      {
+        "sequence": 5,
+        "uptime_seconds": "2310.591",
+        "mach_absolute_us": 2310585148,
+        "main_tid": "0xbd",
+        "main_state": "0x1",
+        "wait_address": "0x206d6a4b8",
+        "lock_word": "0x2a02",
+        "word_matches": "1",
+        "copy_error": "0",
+        "lookup_error": "0",
+        "owner_tid": "0xeb",
+        "owner_same_task": "1",
+        "owner_state": "0x41",
+        "owner_pc": "0x1e66d6ff0",
+        "owner_stack_found": true
+      },
+      {
+        "sequence": 6,
+        "uptime_seconds": "2670.650",
+        "mach_absolute_us": 2670644043,
+        "main_tid": "0xbd",
+        "main_state": "0x1",
+        "wait_address": "0x206d6a4b8",
+        "lock_word": "0x2a02",
+        "word_matches": "1",
+        "copy_error": "0",
+        "lookup_error": "0",
+        "owner_tid": "0xeb",
+        "owner_same_task": "1",
+        "owner_state": "0x41",
+        "owner_pc": "0x1e66d6ff0",
+        "owner_stack_found": true
+      },
+      {
+        "sequence": 7,
+        "uptime_seconds": "3030.805",
+        "mach_absolute_us": 3030797011,
+        "main_tid": "0xbd",
+        "main_state": "0x1",
+        "wait_address": "0x206d6a4b8",
+        "lock_word": "0x2a02",
+        "word_matches": "1",
+        "copy_error": "0",
+        "lookup_error": "0",
+        "owner_tid": "0xeb",
+        "owner_same_task": "1",
+        "owner_state": "0x41",
+        "owner_pc": "0x1e66d6ff0",
+        "owner_stack_found": true
+      },
+      {
+        "sequence": 8,
+        "uptime_seconds": "3390.956",
+        "mach_absolute_us": 3390946536,
+        "main_tid": "0xbd",
+        "main_state": "0x1",
+        "wait_address": "0x206d6a4b8",
+        "lock_word": "0x2a02",
+        "word_matches": "1",
+        "copy_error": "0",
+        "lookup_error": "0",
+        "owner_tid": "0xeb",
+        "owner_same_task": "1",
+        "owner_state": "0x41",
+        "owner_pc": "0x1e66d6ff0",
+        "owner_stack_found": true
+      }
+    ],
+    "same_lock_owner_sample_count": 5,
+    "sampled_lock_owner_groups": [
+      {
+        "wait_address": "0x206d6a4b8",
+        "word": "0x2a02",
+        "owner_tid": "0xeb",
+        "sequences": [
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      }
+    ],
+    "synchronous_dependency_samples": [
+      {
+        "sequence": 3,
+        "process": "runningboardd",
+        "tid": "0xf0",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": false,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 3,
+        "process": "runningboardd",
+        "tid": "0xff",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": false,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 4,
+        "process": "SpringBoard",
+        "tid": "0xeb",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": false,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 4,
+        "process": "backboardd",
+        "tid": "0x170",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync",
+          "__DMPerformMigration"
+        ],
+        "coreservices_same_client_callsite": false,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 4,
+        "process": "runningboardd",
+        "tid": "0xf0",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": false,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 4,
+        "process": "runningboardd",
+        "tid": "0xff",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": false,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 5,
+        "process": "SpringBoard",
+        "tid": "0xeb",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": false,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 5,
+        "process": "backboardd",
+        "tid": "0x171",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": false,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 5,
+        "process": "runningboardd",
+        "tid": "0xf0",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": false,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 5,
+        "process": "runningboardd",
+        "tid": "0xff",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": false,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 6,
+        "process": "SpringBoard",
+        "tid": "0xeb",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": false,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 6,
+        "process": "backboardd",
+        "tid": "0x13b",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": false,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 6,
+        "process": "backboardd",
+        "tid": "0x171",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": false,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 6,
+        "process": "runningboardd",
+        "tid": "0xf0",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": false,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 6,
+        "process": "runningboardd",
+        "tid": "0xff",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": false,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 7,
+        "process": "SpringBoard",
+        "tid": "0xeb",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": true,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 7,
+        "process": "backboardd",
+        "tid": "0x13b",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": true,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 7,
+        "process": "backboardd",
+        "tid": "0x171",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": false,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 7,
+        "process": "runningboardd",
+        "tid": "0xf0",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": true,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 7,
+        "process": "runningboardd",
+        "tid": "0xff",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": false,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 7,
+        "process": "lsd",
+        "tid": "0x11a",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync",
+          "_container_xpc_send_sync_message",
+          "_os_activity_apply_f",
+          "_container_invalidate_code_signing_cache"
+        ],
+        "coreservices_same_client_callsite": false,
+        "container_code_signing_invalidation": true,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 8,
+        "process": "SpringBoard",
+        "tid": "0xeb",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": true,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 8,
+        "process": "backboardd",
+        "tid": "0x13b",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": true,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 8,
+        "process": "backboardd",
+        "tid": "0x171",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": false,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 8,
+        "process": "runningboardd",
+        "tid": "0xf0",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": true,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 8,
+        "process": "runningboardd",
+        "tid": "0xff",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": false,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      },
+      {
+        "sequence": 8,
+        "process": "lsd",
+        "tid": "0x11a",
+        "state": "0x41",
+        "exact_exports": [
+          "_mach_msg2_trap",
+          "_mach_msg2_internal",
+          "_mach_msg_overwrite",
+          "_mach_msg",
+          "_xpc_connection_send_message_with_reply_sync"
+        ],
+        "coreservices_same_client_callsite": false,
+        "container_code_signing_invalidation": false,
+        "actual_ipc_peer_pid_verified": false,
+        "dependency_causality_verified": false
+      }
+    ],
+    "same_lock_owner_observed_span_us": 1440423529,
+    "same_owner_between_samples_proven": false,
+    "continuous_deadlock_proven": false,
+    "saved_register_scope": "TH_RUN shows the last saved user kernel-entry state, not instantaneous user execution. WAIT samples may be correlated with syscall context. mach_absolute_us has a boot-counter origin; compare deltas or printed uptime, not assume zero at kernel entry.",
+    "mapped_service_call": {
+      "receiver_class": "_LSDReadService",
+      "selector": "getServerStoreNonBlockingWithCompletionHandler:",
+      "client_context_name": "_LSContextInitClient",
+      "owner_api": "xpc_connection_send_message_with_reply_sync",
+      "evidence_scope": "Sampled owner frames plus exact original-cache callsite/selector/class metadata; actual IPC peer PID and server-side cause unverified."
+    },
+    "lsd_metadata_frames": [
+      {
+        "sequence": 4,
+        "process": "lsd",
+        "tid": "0x108",
+        "pc": "0x1a6a59b78",
+        "function_start": "0x181bd5b1c",
+        "offset": 92,
+        "methods": [
+          "-[_LSDataBackedPropertyList _getValue:forPropertyListKey:]"
+        ]
+      },
+      {
+        "sequence": 4,
+        "process": "lsd",
+        "tid": "0x108",
+        "pc": "0x1a6a59834",
+        "function_start": "0x181bd57c8",
+        "offset": 108,
+        "methods": [
+          "-[_LSLazyPropertyList objectForKey:ofClass:valuesOfClass:]"
+        ]
+      },
+      {
+        "sequence": 4,
+        "process": "lsd",
+        "tid": "0x108",
+        "pc": "0x1a6a597bc",
+        "function_start": "0x181bd57ac",
+        "offset": 16,
+        "methods": [
+          "-[_LSLazyPropertyList objectForKey:ofClass:]"
+        ]
+      },
+      {
+        "sequence": 4,
+        "process": "lsd",
+        "tid": "0x108",
+        "pc": "0x1a6b70668",
+        "function_start": "0x181cec31c",
+        "offset": 844,
+        "methods": [
+          "-[_LSStringLocalizer enumerateLocalizedStringsForKeys:usingBlock:]"
+        ]
+      },
+      {
+        "sequence": 5,
+        "process": "lsd",
+        "tid": "0x108",
+        "pc": "0x1a6afc398",
+        "function_start": "0x181c781b8",
+        "offset": 480,
+        "methods": [
+          "-[LSBundleRecordBuilder registerBundleRecord:error:]"
+        ]
+      },
+      {
+        "sequence": 7,
+        "process": "lsd",
+        "tid": "0x108",
+        "pc": "0x1a607668c",
+        "function_start": "0x1811f2660",
+        "offset": 44,
+        "methods": [
+          "-[NSXPCListener resume]"
+        ]
+      },
+      {
+        "sequence": 7,
+        "process": "lsd",
+        "tid": "0x108",
+        "pc": "0x1abc838cc",
+        "function_start": "0x186dff80c",
+        "offset": 192,
+        "methods": [
+          "-[__NSArrayM enumerateObjectsWithOptions:usingBlock:]"
+        ]
+      },
+      {
+        "sequence": 8,
+        "process": "lsd",
+        "tid": "0x108",
+        "pc": "0x1a6b91ea8",
+        "function_start": "0x181d0de50",
+        "offset": 88,
+        "methods": [
+          "-[_LSInstallProgressService performJournalRecovery]"
+        ]
+      },
+      {
+        "sequence": 8,
+        "process": "lsd",
+        "tid": "0x24e",
+        "pc": "0x1a6b8bbfc",
+        "function_start": "0x181d07b84",
+        "offset": 120,
+        "methods": [
+          "-[_LSInstallProgressService restoreInactiveInstalls]"
+        ]
+      },
+      {
+        "sequence": 8,
+        "process": "lsd",
+        "tid": "0x252",
+        "pc": "0x1a6b488c4",
+        "function_start": "0x181cc4894",
+        "offset": 48,
+        "methods": [
+          "-[LSDatabaseBlockingFetchClient getServerStoreBlockingWithCompletionHandler:]"
+        ]
+      }
+    ],
+    "lsd_final_readiness_waits": [
+      {
+        "sequence": 8,
+        "tid": "0x108",
+        "fields": {
+          "state": "0x1",
+          "x0": "0x131dddb60",
+          "x1": "0x16f46f6b8",
+          "x2": "0x1",
+          "x3": "0x16f46f6b8",
+          "x16": "0x177"
+        },
+        "methods": [
+          [
+            "-[_LSInstallProgressService performJournalRecovery]"
+          ]
+        ]
+      },
+      {
+        "sequence": 8,
+        "tid": "0x11a",
+        "fields": {
+          "state": "0x41",
+          "x0": "0x16f6097d0",
+          "x1": "0x40700420e",
+          "x2": "0x0",
+          "x3": "0x1203",
+          "x16": "0xffffffffffffffd1"
+        },
+        "methods": []
+      },
+      {
+        "sequence": 8,
+        "tid": "0x24e",
+        "fields": {
+          "state": "0x41",
+          "x0": "0x1000001",
+          "x1": "0x131d6bf34",
+          "x2": "0x0",
+          "x3": "0x0",
+          "x16": "0x203",
+          "ulock_op": "1",
+          "word": "0x0",
+          "copy": "0",
+          "matches": "1",
+          "owner_port": "0x0",
+          "owner_tid": "0x0",
+          "owner_same_task": "0",
+          "lookup": "15"
+        },
+        "methods": [
+          [
+            "-[_LSInstallProgressService restoreInactiveInstalls]"
+          ]
+        ]
+      },
+      {
+        "sequence": 8,
+        "tid": "0x252",
+        "fields": {
+          "state": "0x41",
+          "x0": "0x1000001",
+          "x1": "0x131d6bf34",
+          "x2": "0x0",
+          "x3": "0x0",
+          "x16": "0x203",
+          "ulock_op": "1",
+          "word": "0x0",
+          "copy": "0",
+          "matches": "1",
+          "owner_port": "0x0",
+          "owner_tid": "0x0",
+          "owner_same_task": "0",
+          "lookup": "15"
+        },
+        "methods": [
+          [
+            "-[LSDatabaseBlockingFetchClient getServerStoreBlockingWithCompletionHandler:]"
+          ]
+        ]
+      },
+      {
+        "sequence": 8,
+        "tid": "0x283",
+        "fields": {
+          "state": "0x1",
+          "x0": "0x100",
+          "x1": "0x16f726b80",
+          "x2": "0x1",
+          "x3": "0x0",
+          "x16": "0x170"
+        },
+        "methods": []
+      }
+    ],
+    "lsd_entry_contexts": [
+      {
+        "sequence": 3,
+        "tid": "0x108",
+        "state": "0x4",
+        "first_pc": "0x1abe052bc",
+        "exports": [
+          [
+            "_CFBundleGetInfoDictionary"
+          ]
+        ]
+      },
+      {
+        "sequence": 4,
+        "tid": "0x108",
+        "state": "0x4",
+        "first_pc": "0x1abc75040",
+        "exports": [
+          [
+            "__CFPropertyListCreateFiltered"
+          ]
+        ]
+      },
+      {
+        "sequence": 5,
+        "tid": "0x108",
+        "state": "0x4",
+        "first_pc": "0x1abce0708",
+        "exports": [
+          [
+            "_CFStringCompareWithOptionsAndLocale"
+          ],
+          [
+            "_CFStringCompareWithOptionsAndLocale"
+          ]
+        ]
+      },
+      {
+        "sequence": 6,
+        "tid": "0x108",
+        "state": "0x4",
+        "first_pc": "0x1b93b9e20",
+        "exports": [
+          [
+            "__Znwm"
+          ],
+          [
+            "__CSStoreGarbageCollect"
+          ]
+        ]
+      },
+      {
+        "sequence": 7,
+        "tid": "0x108",
+        "state": "0x4",
+        "first_pc": "0x1f5ac7394",
+        "exports": [
+          [
+            "_OSAtomicTestAndSetBarrier"
+          ],
+          [
+            "__LSServerMain"
+          ]
+        ]
+      },
+      {
+        "sequence": 8,
+        "tid": "0x108",
+        "state": "0x1",
+        "first_pc": "0x1e66d74f8",
+        "exports": [
+          [
+            "_kevent_id"
+          ],
+          [
+            "__LSServerMain"
+          ]
+        ]
+      }
+    ],
+    "dependency_progress_scope": "Changing saved entry contexts and caller stacks, not a direct CPU-utilization measurement; top was not enabled.",
+    "main_watch_samples": [
+      {
+        "sample": 0,
+        "elapsed_ms": 5675,
+        "state": 3,
+        "user_us": 3936088,
+        "system_us": 97553409
+      },
+      {
+        "sample": 1,
+        "elapsed_ms": 108030,
+        "state": 3,
+        "user_us": 5351392,
+        "system_us": 119622241
+      },
+      {
+        "sample": 2,
+        "elapsed_ms": 359465,
+        "state": 3,
+        "user_us": 5744057,
+        "system_us": 121800178
+      },
+      {
+        "sample": 3,
+        "elapsed_ms": 736574,
+        "state": 3,
+        "user_us": 5744057,
+        "system_us": 121800178
+      },
+      {
+        "sample": 4,
+        "elapsed_ms": 799868,
+        "state": 3,
+        "user_us": 5744057,
+        "system_us": 121800178
+      },
+      {
+        "sample": 5,
+        "elapsed_ms": 848038,
+        "state": 3,
+        "user_us": 5744057,
+        "system_us": 121800178
+      },
+      {
+        "sample": 6,
+        "elapsed_ms": 937520,
+        "state": 3,
+        "user_us": 9403557,
+        "system_us": 137179732
+      },
+      {
+        "sample": 7,
+        "elapsed_ms": 1205563,
+        "state": 3,
+        "user_us": 9403557,
+        "system_us": 137179732
+      },
+      {
+        "sample": 8,
+        "elapsed_ms": 1265898,
+        "state": 3,
+        "user_us": 9403557,
+        "system_us": 137179732
+      },
+      {
+        "sample": 9,
+        "elapsed_ms": 1365082,
+        "state": 3,
+        "user_us": 9403557,
+        "system_us": 137179732
+      },
+      {
+        "sample": 10,
+        "elapsed_ms": 1471681,
+        "state": 3,
+        "user_us": 9403557,
+        "system_us": 137179732
+      },
+      {
+        "sample": 11,
+        "elapsed_ms": 1718225,
+        "state": 3,
+        "user_us": 9403557,
+        "system_us": 137179732
+      },
+      {
+        "sample": 12,
+        "elapsed_ms": 1779894,
+        "state": 3,
+        "user_us": 9403557,
+        "system_us": 137179732
+      }
+    ],
+    "main_cpu_totals_unchanged_from_sample6": true,
+    "drawing": {
+      "spans": [
+        {
+          "swap": 1,
+          "band": 0,
+          "y0": 0,
+          "y1": 2040,
+          "wall_us": 412,
+          "cpu_us": 413,
+          "noncpu_us": 0,
+          "monotonic": 1,
+          "cpu_le_wall": 0,
+          "stream_start": 116771,
+          "line": 1306,
+          "cpu_exceeds_wall_us": 1,
+          "arithmetic_consistent": true,
+          "accepted": false
+        },
+        {
+          "swap": 1,
+          "band": 1,
+          "y0": 0,
+          "y1": 2040,
+          "wall_us": 3497790,
+          "cpu_us": 2713141,
+          "noncpu_us": 784649,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 116879,
+          "line": 1307,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.7756729249040109
+        },
+        {
+          "swap": 1,
+          "band": 2,
+          "y0": 0,
+          "y1": 512,
+          "wall_us": 687148,
+          "cpu_us": 646460,
+          "noncpu_us": 40687,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 117000,
+          "line": 1308,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.9407871375598852
+        },
+        {
+          "swap": 1,
+          "band": 3,
+          "y0": 512,
+          "y1": 1024,
+          "wall_us": 837419,
+          "cpu_us": 662473,
+          "noncpu_us": 174945,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 117117,
+          "line": 1309,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.7910890486124628
+        },
+        {
+          "swap": 1,
+          "band": 4,
+          "y0": 1024,
+          "y1": 1536,
+          "wall_us": 857624,
+          "cpu_us": 674716,
+          "noncpu_us": 182908,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 117238,
+          "line": 1310,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.7867270505489585
+        },
+        {
+          "swap": 1,
+          "band": 5,
+          "y0": 1536,
+          "y1": 2040,
+          "wall_us": 1115469,
+          "cpu_us": 729357,
+          "noncpu_us": 386112,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 117360,
+          "line": 1311,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.6538568082125097
+        },
+        {
+          "swap": 2,
+          "band": 0,
+          "y0": 0,
+          "y1": 2040,
+          "wall_us": 410,
+          "cpu_us": 411,
+          "noncpu_us": 0,
+          "monotonic": 1,
+          "cpu_le_wall": 0,
+          "stream_start": 119756,
+          "line": 1336,
+          "cpu_exceeds_wall_us": 1,
+          "arithmetic_consistent": true,
+          "accepted": false
+        },
+        {
+          "swap": 2,
+          "band": 1,
+          "y0": 0,
+          "y1": 2040,
+          "wall_us": 5438626,
+          "cpu_us": 3469201,
+          "noncpu_us": 1969425,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 119864,
+          "line": 1337,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.637881884137648
+        },
+        {
+          "swap": 2,
+          "band": 2,
+          "y0": 0,
+          "y1": 512,
+          "wall_us": 1263051,
+          "cpu_us": 795103,
+          "noncpu_us": 467948,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 119986,
+          "line": 1338,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.6295098139346709
+        },
+        {
+          "swap": 2,
+          "band": 3,
+          "y0": 512,
+          "y1": 1024,
+          "wall_us": 1091319,
+          "cpu_us": 797486,
+          "noncpu_us": 293833,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 120105,
+          "line": 1339,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.7307542524229854
+        },
+        {
+          "swap": 2,
+          "band": 4,
+          "y0": 1024,
+          "y1": 1536,
+          "wall_us": 1530203,
+          "cpu_us": 938842,
+          "noncpu_us": 591360,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 120227,
+          "line": 1340,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.613540817786921
+        },
+        {
+          "swap": 2,
+          "band": 5,
+          "y0": 1536,
+          "y1": 2040,
+          "wall_us": 1553914,
+          "cpu_us": 937627,
+          "noncpu_us": 616286,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 120350,
+          "line": 1341,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.6033969704887143
+        },
+        {
+          "swap": 3,
+          "band": 0,
+          "y0": 0,
+          "y1": 2040,
+          "wall_us": 415,
+          "cpu_us": 416,
+          "noncpu_us": 0,
+          "monotonic": 1,
+          "cpu_le_wall": 0,
+          "stream_start": 172191,
+          "line": 1686,
+          "cpu_exceeds_wall_us": 1,
+          "arithmetic_consistent": true,
+          "accepted": false
+        },
+        {
+          "swap": 3,
+          "band": 1,
+          "y0": 0,
+          "y1": 2040,
+          "wall_us": 4181447,
+          "cpu_us": 2928223,
+          "noncpu_us": 1253223,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 172299,
+          "line": 1687,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.7002893974262976
+        },
+        {
+          "swap": 3,
+          "band": 2,
+          "y0": 0,
+          "y1": 512,
+          "wall_us": 686354,
+          "cpu_us": 645926,
+          "noncpu_us": 40427,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 172421,
+          "line": 1688,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.9410974511695132
+        },
+        {
+          "swap": 3,
+          "band": 3,
+          "y0": 512,
+          "y1": 1024,
+          "wall_us": 797327,
+          "cpu_us": 657761,
+          "noncpu_us": 139566,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 172538,
+          "line": 1689,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.8249576397136934
+        },
+        {
+          "swap": 3,
+          "band": 4,
+          "y0": 1024,
+          "y1": 1536,
+          "wall_us": 1213506,
+          "cpu_us": 701985,
+          "noncpu_us": 511520,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 172659,
+          "line": 1690,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.578476744243539
+        },
+        {
+          "swap": 3,
+          "band": 5,
+          "y0": 1536,
+          "y1": 2040,
+          "wall_us": 1484120,
+          "cpu_us": 922407,
+          "noncpu_us": 561713,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 172782,
+          "line": 1691,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.621517801795003
+        }
+      ],
+      "accepted_draw_totals": [
+        {
+          "swap": 1,
+          "band": 1,
+          "y0": 0,
+          "y1": 2040,
+          "wall_us": 3497790,
+          "cpu_us": 2713141,
+          "noncpu_us": 784649,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 116879,
+          "line": 1307,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.7756729249040109
+        },
+        {
+          "swap": 2,
+          "band": 1,
+          "y0": 0,
+          "y1": 2040,
+          "wall_us": 5438626,
+          "cpu_us": 3469201,
+          "noncpu_us": 1969425,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 119864,
+          "line": 1337,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.637881884137648
+        },
+        {
+          "swap": 3,
+          "band": 1,
+          "y0": 0,
+          "y1": 2040,
+          "wall_us": 4181447,
+          "cpu_us": 2928223,
+          "noncpu_us": 1253223,
+          "monotonic": 1,
+          "cpu_le_wall": 1,
+          "stream_start": 172299,
+          "line": 1687,
+          "cpu_exceeds_wall_us": 0,
+          "arithmetic_consistent": true,
+          "accepted": true,
+          "cpu_fraction": 0.7002893974262976
+        }
+      ],
+      "draw_total_count": 3,
+      "rejected_span_count": 3,
+      "wall_us_range": [
+        3497790,
+        5438626
+      ],
+      "cpu_us_range": [
+        2713141,
+        3469201
+      ],
+      "noncpu_us_range": [
+        784649,
+        1969425
+      ],
+      "cpu_fraction_range": [
+        0.637881884137648,
+        0.7756729249040109
+      ],
+      "noncpu_scope": "Wall minus current-thread CPU; includes scheduling, blocking, interrupts and measurement overhead. Not a direct scheduler-only or memory-bandwidth measurement."
+    },
+    "first_base_frame_kernel_ms": 1129788,
+    "last_memory": {
+      "free_mb": 1734,
+      "files_mb": 904,
+      "programs_mb": 65,
+      "wired_mb": 174
+    },
+    "original_printf_complete": false,
+    "usb_transfer_gap_scope": "Continuity of bytes emitted into USB framing, not all printf tails or all daemons/firmware.",
+    "desktop_verified": false,
+    "host_partition_flash_issued": false,
+    "new_device_commands_sent": false,
+    "no_new_kernel_build": true,
+    "diagnostic_audit": "reports/hakios-ios16-r7-diagnostic-audit.json",
+    "host_checks": [
+      "reports/hakios-ios16-ustacks-parser-checks.json",
+      "reports/hakios-ios16-display-timing-checks.json"
+    ],
+    "private_evidence": [
+      {
+        "path": "reports/local/20261117-032135-817008-ios16-r7/snapshot-041121-767177/console.frames",
+        "sha256": "a8aa20ec7bf91ae1afca55ccec2077a671f2d935bf811d7e090475b5eb075d7e"
+      },
+      {
+        "path": "reports/local/20261117-032135-817008-ios16-r7/snapshot-041121-767177/console.log",
+        "sha256": "235fdd14153a69a12e5cdfc250309d6c38faa5098146c68f417f37494b7e2955"
+      },
+      {
+        "path": "reports/local/20261117-032135-817008-ios16-r7/snapshot-041121-767177/analysis.json",
+        "sha256": "f348a15aa636a864e988110041bfb678b8a492b81d15572c8809f9e069c25a5c"
+      },
+      {
+        "path": "reports/local/20261117-032135-817008-ios16-r7/snapshot-041121-767177/stack-symbols.json",
+        "sha256": "165bd05380f8d32a3a2cbe961e454935458166842194a7646adfedc4d8f2b853"
+      },
+      {
+        "path": "reports/local/20261117-032135-817008-ios16-r7/snapshot-041121-767177/objc-method-matches.json",
+        "sha256": "6fa5de9d68dff97b4d1503225c7d2764319c5b8b02db941c94d3ae584e8c687f"
+      },
+      {
+        "path": "reports/local/20261117-032135-817008-ios16-r7/snapshot-041121-767177/sampled-objc-stubs.json",
+        "sha256": "db4552357be9d1d5457f51b7d808094c179d830f85dda3393a568fdeb16aca3a"
+      }
+    ],
+    "next_revision": [
+      "Reject full loader-prefixed boot-argument truncation; include reviewed bounded top sampling.",
+      "Use complete short diagnostic records and correct long process names; collect selected lsd OSLOG.",
+      "Trace bounded LaunchServices database request/reply, listener startup and container-code-signing-cache invalidation using existing upstream implementations; verify peer/domain and persisted database before choosing a functional fix.",
+      "Measure BGR24 store/pixel processing separately and validate an exact-output packed-store candidate; do not claim GPU or SMP.",
+      "Keep UFS installation and current RAM/CPU configuration; archive R7, no unchanged retry or userdata flash."
+    ]
+  },
+  "final_observation": {
+    "recorded_at": "2026-11-17T04:16:38.974397+08:00",
+    "snapshot_path": "reports/local/20261117-032135-817008-ios16-r7/snapshot-041121-767177",
+    "transport": {
+      "raw_bytes": 467249,
+      "console_bytes": 252881,
+      "frames": 6699,
+      "raw_sha256": "a8aa20ec7bf91ae1afca55ccec2077a671f2d935bf811d7e090475b5eb075d7e",
+      "console_sha256": "235fdd14153a69a12e5cdfc250309d6c38faa5098146c68f417f37494b7e2955",
+      "first_offset": 0,
+      "final_offset": 252881,
+      "missing_bytes": 0,
+      "duplicate_bytes": 0,
+      "incomplete_frame_bytes": 0,
+      "device_lost_max": 0,
+      "frames_reporting_device_loss": 0,
+      "independent_parser_agrees_with_frozen_receiver": true,
+      "frozen_redecode_equals_complete_console": true,
+      "transport_verified": true,
+      "kernel_banner_offset": 0,
+      "timer_offset": 252728,
+      "normal_return_offset": 252764,
+      "drain_success": true,
+      "drain_records": [
+        {
+          "offset": 252831,
+          "drained": 1,
+          "target": 252831
+        }
+      ],
+      "emitted_kernel_stream_through_timer_verified": true,
+      "all_firmware_daemon_and_original_printf_logs_complete": false,
+      "scope": "Saved USB byte stream only. Pre-framing printf truncation and uncollected daemon or firmware output remain outside this audit.",
+      "capture_status": "capture_failed",
+      "capture_failure": "[Errno 32] Pipe error",
+      "frozen_receiver_sha256": "d5a9aecdd3c5ac728b233628d9ae810a598a35ba05d9068d0db3ed70fde3791c",
+      "host_status_counts_agree": true
+    },
+    "multi_thread_rounds": 8,
+    "sampled_processes": [
+      "SpringBoard",
+      "backboardd",
+      "lsd",
+      "runningboardd"
+    ],
+    "normal_kernel_timer_return": true,
+    "uefi_summary_user_confirmed": true,
+    "screen_evidence": {
+      "path": "reports/local/20261117-032135-817008-ios16-r7/final-summary-user.jpg",
+      "sha256": "fb25e337a85a05552f633dad14b66edd2f9fb87ad4c6f6224bb35cd72a6a1231",
+      "bytes": 128883,
+      "recorded_at": "2026-11-17T04:16:38.587355+08:00",
+      "source": "same-session user attachment",
+      "transcription": {
+        "title": "HAKIOS UEFI LOG",
+        "raw_bytes": 362773,
+        "return_reason": "RETURN TIMER DEADLINE REACHED",
+        "panic_text": "NO PANIC TEXT IN RETAINED LOG",
+        "usb_timer_boundary_drain": 1,
+        "usb_timer_boundary_target": 252831,
+        "summary_retained_until_reboot": true
+      },
+      "terminal_matches_captured_normal_timer_and_drain": true,
+      "retained_firmware_log_and_usb_stream_are_different_scopes": true
+    },
+    "desktop_verified": false,
+    "original_printf_complete": false,
+    "gap_scope": "All USB-framed bytes including timer/drain result; not all daemon/firmware text or pre-framing truncated printf.",
+    "capture_error_is_panic_evidence": false,
+    "production_package_changed_during_run": false
+  },
+  "usb_normal_timer_boundary_drain_hardware_verified": true,
+  "usb_kernel_stream_through_timer_boundary_verified": true,
+  "usb_log_complete_scope": "All USB-framed bytes including timer/drain result; not all daemon/firmware text or pre-framing truncated printf.",
+  "uefi_summary_user_confirmed": true,
+  "this_analysis_operations": {
+    "runtime_code_changed": false,
+    "rebuilt": false,
+    "device_query_issued": false,
+    "boot_issued": false,
+    "partition_flash_issued": false,
+    "reports_and_project_state_updated": true
+  },
+  "next_steps": [
+    "Reject full loader-prefixed boot-argument truncation; include reviewed bounded top sampling.",
+    "Use complete short diagnostic records and correct long process names; collect selected lsd OSLOG.",
+    "Trace bounded LaunchServices database request/reply, listener startup and container-code-signing-cache invalidation using existing upstream implementations; verify peer/domain and persisted database before choosing a functional fix.",
+    "Measure BGR24 store/pixel processing separately and validate an exact-output packed-store candidate; do not claim GPU or SMP.",
+    "Keep UFS installation and current RAM/CPU configuration; archive R7, no unchanged retry or userdata flash."
+  ],
+  "photo_evidence": {
+    "path": "reports/local/20261117-032135-817008-ios16-r7/final-summary-user.jpg",
+    "sha256": "fb25e337a85a05552f633dad14b66edd2f9fb87ad4c6f6224bb35cd72a6a1231",
+    "bytes": 128883,
+    "recorded_at": "2026-11-17T04:16:38.587355+08:00",
+    "source": "same-session user attachment",
+    "transcription": {
+      "title": "HAKIOS UEFI LOG",
+      "raw_bytes": 362773,
+      "return_reason": "RETURN TIMER DEADLINE REACHED",
+      "panic_text": "NO PANIC TEXT IN RETAINED LOG",
+      "usb_timer_boundary_drain": 1,
+      "usb_timer_boundary_target": 252831,
+      "summary_retained_until_reboot": true
+    },
+    "terminal_matches_captured_normal_timer_and_drain": true,
+    "retained_firmware_log_and_usb_stream_are_different_scopes": true
+  }
+}

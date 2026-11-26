@@ -1,0 +1,242 @@
+From: ios14-lithium
+Subject: arm64: adapt sailfish platform routing for XNU7195 lithium
+
+Source: joranv1/ios-sailfish 6f27e41ff249f2680540ebe8ee5ab982c5e641c9, patches 0004/0080.
+Board timer/stride data come from the matching MIX stock DTS.
+No hardware execution is claimed by this patch.
+
+--- a/makedefs/MakeInc.def
++++ b/makedefs/MakeInc.def
+@@ -32,7 +32,7 @@
+ SUPPORTED_ARM64_MACHINE_CONFIGS = NONE
+ else
+ SUPPORTED_ARM_MACHINE_CONFIGS = T8002 T8004
+-SUPPORTED_ARM64_MACHINE_CONFIGS = T7000 T7001 S8000 S8001 T8010 T8011 BCM2837 T8020 T8101 T8103
++SUPPORTED_ARM64_MACHINE_CONFIGS = T7000 T7001 S8000 S8001 T8010 T8011 BCM2837 T8020 T8101 T8103 LITHIUM
+ 
+ endif
+ 
+@@ -68,6 +68,7 @@
+ MACHINE_FLAGS_ARM64_T8010 = -DARM64_BOARD_CONFIG_T8010 -mcpu=hurricane
+ MACHINE_FLAGS_ARM64_T8011 = -DARM64_BOARD_CONFIG_T8011 -mcpu=hurricane
+ MACHINE_FLAGS_ARM64_BCM2837 = -DARM64_BOARD_CONFIG_BCM2837
++MACHINE_FLAGS_ARM64_LITHIUM = -DARM64_BOARD_CONFIG_LITHIUM -mcpu=kryo
+ MACHINE_FLAGS_ARM64_T8020 = -DARM64_BOARD_CONFIG_T8020 -mcpu=vortex
+ MACHINE_FLAGS_ARM64_T8101 = -DARM64_BOARD_CONFIG_T8101 -mcpu=firestorm
+ MACHINE_FLAGS_ARM64_T8103 = -DARM64_BOARD_CONFIG_T8103 -mcpu=firestorm
+--- a/pexpert/pexpert/arm64/board_config.h
++++ b/pexpert/pexpert/arm64/board_config.h
+@@ -220,6 +220,14 @@
+ 
+ 
+ 
++#ifdef ARM64_BOARD_CONFIG_LITHIUM
++#include <pexpert/arm64/LITHIUM.h>
++#define MAX_L2_CLINE                   6
++#define MAX_CPUS                       4
++#define MAX_CPU_CLUSTERS               1
++#define CORE_NCTRS                     8 /* KPC is not enabled on this board. */
++#endif
++
+ #ifdef ARM64_BOARD_CONFIG_BCM2837
+ #include <pexpert/arm64/BCM2837.h>
+ 
+--- /dev/null
++++ b/pexpert/pexpert/arm64/LITHIUM.h
+@@ -0,0 +1,66 @@
++/*
++ * Xiaomi Mi MIX lithium / MSM8996pro, ARMv8.0 Kryo, 16K pages.
++ * Adapted from joranv1/ios-sailfish 6f27e41ff249f2680540ebe8ee5ab982c5e641c9,
++ * xnu/patches/0004 and 0080. GICR stride is supplied by the lithium ADT.
++ * Bring-up starts with one CPU; this configuration alone is not a port.
++ */
++
++#ifndef _PEXPERT_ARM64_LITHIUM_H
++#define _PEXPERT_ARM64_LITHIUM_H
++
++#define NO_MONITOR                1
++#define NO_ECORE                  1
++
++#define LITHIUM                     1
++
++#define ARM_ARCH_TIMER
++#define __ARM_ARCH__              8
++#define __ARM_VMSA__              8
++#define __ARM_VFP__               4
++#define __ARM_COHERENT_CACHE__    1
++#define __ARM_DEBUG__             7
++#define __ARM_ENABLE_SWAP__       1
++#define __ARM_V8_CRYPTO_EXTENSIONS__ 1
++#define __ARM_16K_PG__            1
++
++#define HAS_GIC_V3                1
++
++#ifndef ASSEMBLER
++#define PLATFORM_PANIC_LOG_DISABLED
++#endif /* ! ASSEMBLER */
++
++/* MIX stock DT: virtual timer PPI 11 + 16 = raw INTID 27. */
++#define LITHIUM_VTIMER_INTID        27
++#define LITHIUM_IPI_SGI             1       // SGI used for cross-CPU signals
++
++#define GIC_SPURIOUS_IRQ          1023    // IRQ no. for GIC spurious interrupt
++
++#define GICR_PE_SIZE              0x20000 // Size of each redistributor region
++
++/* GICv3 register definitions; see GICv3 spec (Arm IHI 0069G) */
++#define GICD_CTLR                 0x0
++
++/* Non-secure view of GICD_CTLR (DS=0) */
++#define GICD_CTLR_ENABLEGRP1      0x1
++#define GICD_CTLR_ENABLEGRP1A     0x2
++#define GICD_CTLR_ARE_NS          0x10
++#define GICD_CTLR_RWP             0x80000000
++
++#define GICR_TYPER                              0x08
++#define GICR_WAKER                              0x14
++#define GICR_IGROUPR0                           0x10080
++#define GICR_ISENABLER0                         0x10100
++#define GICR_IPRIORITYR0                        0x10400
++
++#define GICR_TYPER_AFFINITY_VALUE_SHIFT         32
++#define GICR_TYPER_LAST                         0x10
++
++#define GICR_WAKER_PROCESSORSLEEP               0x2
++#define GICR_WAKER_CHILDRENASLEEP               0x4
++
++#define ICC_CTLR_EOIMODE                        0x2
++
++#define ICC_SRE_SRE                             0x1
++/* End of GICv3 register definitions */
++
++#endif /* ! _PEXPERT_ARM64_LITHIUM_H */
+--- a/pexpert/pexpert/arm64/Makefile
++++ b/pexpert/pexpert/arm64/Makefile
+@@ -23,6 +23,7 @@
+ 	H11.h \
+ 	H13.h \
+ 	BCM2837.h \
++	LITHIUM.h \
+ 	spr_locks.h
+ 
+ 
+@@ -59,6 +60,7 @@
+ 	H11.h \
+ 	H13.h \
+ 	BCM2837.h \
++	LITHIUM.h \
+ 	spr_locks.h
+ 
+ 
+--- a/pexpert/arm/pe_fiq.c
++++ b/pexpert/arm/pe_fiq.c
+@@ -143,11 +143,20 @@
+ 		}
+ 	}
+ 
++#if defined(LITHIUM)
++	/* Reference sailfish Group 1 NS routing; Group 0 belongs to TrustZone. */
++	gicr_write32(GICR_IGROUPR0, 0xFFFFFFFF);
++	for (unsigned int i = 0; i < 32; i += 4) {
++		gicr_write32(GICR_IPRIORITYR0 + i, 0xA0A0A0A0);
++	}
++	gicr_write32(GICR_ISENABLER0, (1U << LITHIUM_VTIMER_INTID) | (1U << LITHIUM_IPI_SGI));
++#else
+ 	// Configure timers and legacy FIQ to be group 0
+ 	gicr_write32(GICR_IGROUPR0, 0x81FFFFFF);
+ 
+ 	// Enable PPI 27
+ 	gicr_write32(GICR_ISENABLER0, (1 << 27));
++#endif
+ 
+ 	// Enable system register access
+ 	uint64_t icc_sre = __builtin_arm_rsr64("ICC_SRE_EL1");
+@@ -156,7 +165,11 @@
+ 	__builtin_arm_isb(ISB_SY);
+ 
+ 	// Set priority masks and binary point for group 0
++#if defined(LITHIUM)
++	__builtin_arm_wsr64("ICC_BPR1_EL1", 0);
++#else
+ 	__builtin_arm_wsr64("ICC_BPR0_EL1", 0);
++#endif
+ 	__builtin_arm_wsr64("ICC_PMR_EL1", 0xFF);
+ 
+ 	// Set EOI mode of this processor
+@@ -164,12 +177,27 @@
+ 	icc_ctlr &= ~ICC_CTLR_EOIMODE;
+ 	__builtin_arm_wsr64("ICC_CTLR_EL1", icc_ctlr);
+ 
++#if defined(LITHIUM)
++	uint32_t gicd_ctlr = gicd_read32(GICD_CTLR);
++	gicd_ctlr |= GICD_CTLR_ARE_NS | GICD_CTLR_ENABLEGRP1A | GICD_CTLR_ENABLEGRP1;
++	gicd_write32(GICD_CTLR, gicd_ctlr);
++	uint64_t deadline;
++	nanoseconds_to_deadline(GICR_WAKE_TIMEOUT_NS, &deadline);
++	while (gicd_read32(GICD_CTLR) & GICD_CTLR_RWP) {
++		if (mach_absolute_time() > deadline) {
++			panic("lithium: GIC distributor RWP timeout");
++		}
++	}
++	__builtin_arm_wsr64("ICC_IGRPEN1_EL1", 1);
++	__builtin_arm_isb(ISB_SY);
++#else
+ 	// Enable the forwarding of the vtimer interrupt
+ 	uint32_t gicd_ctlr = gicd_read32(GICD_CTLR);
+ 	gicd_ctlr |= GICD_CTLR_ENABLEGRP0;
+ 	gicd_write32(GICD_CTLR, gicd_ctlr);
+ 	__builtin_arm_wsr64("ICC_IGRPEN0_EL1", 1);
+ 	__builtin_arm_isb(ISB_SY);
++#endif
+ }
+ #else
+ void
+--- a/osfmk/arm64/sleh.c
++++ b/osfmk/arm64/sleh.c
+@@ -1759,6 +1759,37 @@
+ #endif
+ 
+ 
++#if defined(LITHIUM)
++	/* Adapt sailfish's non-secure GICv3 dispatch to the 7195 handler API. */
++	uint64_t iar = __builtin_arm_rsr64("ICC_IAR1_EL1");
++	uint32_t intid = (uint32_t)(iar & 0xFFFFFF);
++	if (intid >= 1020 && intid <= 1023) {
++		return;
++	}
++	if (intid == LITHIUM_VTIMER_INTID) {
++		sleh_interrupt_handler_prologue(state, DBG_INTR_TYPE_TIMER);
++		cdp->cpu_decrementer = -1;
++		INTERRUPT_MASKED_DEBUG_START(rtclock_intr, DBG_INTR_TYPE_TIMER);
++		rtclock_intr(TRUE);
++		INTERRUPT_MASKED_DEBUG_END();
++		__builtin_arm_wsr64("ICC_EOIR1_EL1", iar);
++	} else if (intid < 16) {
++		sleh_interrupt_handler_prologue(state, DBG_INTR_TYPE_IPI);
++		__builtin_arm_wsr64("ICC_EOIR1_EL1", iar);
++		__builtin_arm_isb(ISB_SY);
++		cpu_signal_handler();
++	} else {
++		sleh_interrupt_handler_prologue(state, DBG_INTR_TYPE_OTHER);
++		if (cdp->interrupt_handler) {
++			cdp->interrupt_handler(cdp->interrupt_target, cdp->interrupt_refCon,
++			    cdp->interrupt_nub, intid);
++		} else {
++			panic("lithium: unhandled IRQ %u", intid);
++		}
++		__builtin_arm_wsr64("ICC_EOIR1_EL1", iar);
++	}
++	__builtin_arm_isb(ISB_SY);
++#else
+ 	sleh_interrupt_handler_prologue(state, DBG_INTR_TYPE_OTHER);
+ 
+ #if USE_APPLEARMSMP
+@@ -1769,6 +1800,8 @@
+ 	    cdp->interrupt_refCon,
+ 	    cdp->interrupt_nub,
+ 	    cdp->interrupt_source);
++#endif
++
+ #endif
+ 
+ 	entropy_collect();

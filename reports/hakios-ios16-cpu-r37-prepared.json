@@ -1,0 +1,149 @@
+{
+  "recorded_at": "2026-11-20T19:01:29.778657+08:00",
+  "revision": "R37-cpu-final",
+  "kernel_sha256": "cdd261e6be574dce61c4781b0b034a4d8412ff039c44b16a9f0cedbaba26cec4",
+  "host_ready": true,
+  "device_operations": 0,
+  "images": [
+    {
+      "profile": "reference",
+      "image": "artifacts/hakios/lithium-ios16/phase4-r37-cpu-final/reference/lithium-hakios-ios16-r37-cpu-reference.img",
+      "sha256": "10115394cff611685e32733eb9ab840cbf70372f3a4f82fb4ce79a8596f35922",
+      "bytes": 16330752,
+      "cmdline": "bootcpu=1 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1 touch_smp=1",
+      "newly_added_arg": null,
+      "command_budget": {
+        "capacity_including_nul": 608,
+        "reserved_bytes": 497,
+        "spare_bytes": 111
+      },
+      "readback": {
+        "android_header_and_sha1": true,
+        "gzip_dtb_fat": true,
+        "shim_literal_and_mu": true,
+        "xnup_exact_entries": true,
+        "fat_loader": true,
+        "all_written_components": true
+      }
+    },
+    {
+      "profile": "frequency",
+      "image": "artifacts/hakios/lithium-ios16/phase4-r37-cpu-final/frequency/lithium-hakios-ios16-r37-cpu-frequency.img",
+      "sha256": "069ea504d9ccabe4c605ac6d8411bcf1db9ee06e0c0064662f3c4fe2f072a4be",
+      "bytes": 16330752,
+      "cmdline": "bootcpu=1 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1 touch_smp=1 cpu_freq_diag=1",
+      "newly_added_arg": "cpu_freq_diag=1",
+      "command_budget": {
+        "capacity_including_nul": 608,
+        "reserved_bytes": 513,
+        "spare_bytes": 95
+      },
+      "readback": {
+        "android_header_and_sha1": true,
+        "gzip_dtb_fat": true,
+        "shim_literal_and_mu": true,
+        "xnup_exact_entries": true,
+        "fat_loader": true,
+        "all_written_components": true
+      }
+    },
+    {
+      "profile": "timer",
+      "image": "artifacts/hakios/lithium-ios16/phase4-r37-cpu-final/timer/lithium-hakios-ios16-r37-cpu-timer.img",
+      "sha256": "e9581e20d541bd6e0bff9a98e9d600ebec907ece66ad91a499e94287763c738c",
+      "bytes": 16330752,
+      "cmdline": "bootcpu=1 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1 touch_smp=1 cpu_freq_diag=1 timer_migrate_diag=1",
+      "newly_added_arg": "timer_migrate_diag=1",
+      "command_budget": {
+        "capacity_including_nul": 608,
+        "reserved_bytes": 534,
+        "spare_bytes": 74
+      },
+      "readback": {
+        "android_header_and_sha1": true,
+        "gzip_dtb_fat": true,
+        "shim_literal_and_mu": true,
+        "xnup_exact_entries": true,
+        "fat_loader": true,
+        "all_written_components": true
+      }
+    },
+    {
+      "profile": "scheduler",
+      "image": "artifacts/hakios/lithium-ios16/phase4-r37-cpu-final/scheduler/lithium-hakios-ios16-r37-cpu-scheduler.img",
+      "sha256": "121c1ae8d6b072412dfb1c743f433ef48a22eddcb3d1596aaaae7682560a289f",
+      "bytes": 16330752,
+      "cmdline": "bootcpu=1 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1 touch_smp=1 cpu_freq_diag=1 timer_migrate_diag=1 ui_sched_diag=1",
+      "newly_added_arg": "ui_sched_diag=1",
+      "command_budget": {
+        "capacity_including_nul": 608,
+        "reserved_bytes": 550,
+        "spare_bytes": 58
+      },
+      "readback": {
+        "android_header_and_sha1": true,
+        "gzip_dtb_fat": true,
+        "shim_literal_and_mu": true,
+        "xnup_exact_entries": true,
+        "fat_loader": true,
+        "all_written_components": true
+      }
+    },
+    {
+      "profile": "idle",
+      "image": "artifacts/hakios/lithium-ios16/phase4-r37-cpu-final/idle/lithium-hakios-ios16-r37-cpu-idle.img",
+      "sha256": "6c449b8eed22583cd4928340546c4105e04cb13f90319c8a340fb16caa9efb48",
+      "bytes": 16330752,
+      "cmdline": "bootcpu=1 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1 touch_smp=1 cpu_freq_diag=1 timer_migrate_diag=1 ui_sched_diag=1 slowcores_idle=1",
+      "newly_added_arg": "slowcores_idle=1",
+      "command_budget": {
+        "capacity_including_nul": 608,
+        "reserved_bytes": 567,
+        "spare_bytes": 41
+      },
+      "readback": {
+        "android_header_and_sha1": true,
+        "gzip_dtb_fat": true,
+        "shim_literal_and_mu": true,
+        "xnup_exact_entries": true,
+        "fat_loader": true,
+        "all_written_components": true
+      }
+    }
+  ],
+  "preserved_frozen_hashes": {
+    "lithium-hakios-ios16-r20-display.img": "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82",
+    "lithium-hakios-ios16-r34-touch-live-ufs.img": "47740664f56fcf021096493444cc96934223f49ce0dfc099920bfb73cfc426ed",
+    "lithium-hakios-ios16-r35-ui-perf-combined.img": "bfc3a041b7d81f33582dae04ba9894c53b3b44f16e1b5f70ba10b1672500370d",
+    "lithium-hakios-ios16-r36-touch-smp.img": "d4f2d0ee4f4be24952d7439b17834d0d159fa76e78da40bec59622b6623b5669"
+  },
+  "hardware_clock_voltage_writes": false,
+  "frequency_mhz": {
+    "0x1": null,
+    "0x100": null,
+    "0x101": null
+  },
+  "cntfrq_hz_historical": {
+    "0x1": 19200000,
+    "0x100": 19200000,
+    "0x101": 19200000
+  },
+  "timer_migration": "unverified",
+  "desktop_jitter_schedule_correlation": "unverified",
+  "slowcores_idle_effect": "unverified",
+  "cpu_on_clock_source": "unverified",
+  "hardware_voltage": "unverified",
+  "fixed_frequency_design": "withheld_pending_1_to_5",
+  "frequency_mock_checks": [
+    2107,
+    2103
+  ],
+  "scheduler_cases": 13,
+  "policy_cases": 34,
+  "clock_evidence": "evidence/cpu-r37-20261120/clocks/r37-clock-root-cause.md",
+  "rollback_patch": "reports/hakios-ios16-cpu-r37-prepared.patch",
+  "recorded_accepted_boot_counts": {
+    "hakios": 62,
+    "ios16": 31
+  }
+}

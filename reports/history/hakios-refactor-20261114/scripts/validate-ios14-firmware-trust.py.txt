@@ -1,0 +1,110 @@
+"""Actual trust callback, firmware page hashes, invalid-page path and native link."""
+import argparse, hashlib, importlib.util, json, re, struct, subprocess
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+WORK=Path.home()/'ios-mix1-build/xnu7195-lithium'
+
+def module(name,path):
+    spec=importlib.util.spec_from_file_location(name,path);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);return m
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def function(text,name):
+    start=text.index('\n'+name+'(');start=text.rfind('\n',0,start-1)+1
+    return text[start:text.index('\n}',start)+3]
+
+def firmware_file(path,expected,entries):
+    d=path.read_bytes();assert hashlib.sha256(d).hexdigest()==expected
+    assert d[:4]==bytes.fromhex('cffaedfe')
+    ncmd,cmdbytes=struct.unpack_from('<II',d,16);p=32;signatures=[]
+    for _ in range(ncmd):
+        cmd,size=struct.unpack_from('<II',d,p);assert size>=8 and p+size<=32+cmdbytes
+        if cmd==0x1d:signatures.append(struct.unpack_from('<II',d,p+8))
+        p+=size
+    assert p==32+cmdbytes and len(signatures)==1
+    off,size=signatures[0];assert off+size<=len(d)
+    sb=d[off:off+size];magic,length,count=struct.unpack_from('>III',sb);assert magic==0xfade0cc0 and length<=size and 12+count*8<=length
+    cds=[]
+    for i in range(count):
+        typ,o=struct.unpack_from('>II',sb,12+8*i);assert 12+count*8<=o<=length-8
+        m,l=struct.unpack_from('>II',sb,o);assert o+l<=length
+        if m!=0xfade0c02:continue
+        cd=sb[o:o+l];version,flags,hashoff,identoff,special,slots,limit=struct.unpack_from('>7I',cd,8)
+        hsize,htype,platform,shift=struct.unpack_from('4B',cd,36)
+        assert htype==2 and hsize==32 and shift==12 and limit<=off
+        assert hashoff>=special*hsize and hashoff+slots*hsize<=len(cd)
+        assert slots==(limit+4095)//4096
+        if version>=0x20100:assert struct.unpack_from('>I',cd,44)[0]==0, 'scatter not supported in fixture inspector'
+        cdhash=hashlib.sha256(cd).digest()[:20];assert cdhash+bytes([htype,0]) in entries
+        for slot in range(slots):
+            code=d[slot*4096:min((slot+1)*4096,limit)]
+            assert hashlib.sha256(code).digest()==cd[hashoff+slot*32:hashoff+(slot+1)*32]
+        corrupt=bytearray(d[:min(4096,limit)]);corrupt[0]^=1
+        assert hashlib.sha256(corrupt).digest()!=cd[hashoff:hashoff+32]
+        altered=bytearray(cd);altered[identoff]^=1
+        assert not any(e[:20]==hashlib.sha256(altered).digest()[:20] for e in entries)
+        cds.append(dict(slot=typ,cdhash=cdhash.hex(),hash_type=htype,code_directory_flags=hex(flags),
+            code_limit=limit,code_pages_checked=slots,code_mutation_detected=True,directory_mutation_not_trusted=True))
+    assert cds
+    return dict(path=str(path),sha256=expected,code_directories=cds)
+
+def main():
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('kernel',type=Path,nargs='?');args=p.parse_args()
+    generator=module('trust_gen',ROOT/'scripts/prepare-ios14-firmware-trust.py');entries,cache=generator.parse_cache()
+    tree=WORK/'src';out=WORK/'firmware-trust-validation';out.mkdir(exist_ok=True)
+    adapter=ROOT/'ports/lithium/native/lithium_firmware_trust.c';header=tree/'bsd/kern/lithium_firmware_trust_data.h'
+    data=header.read_text();emitted=bytes(int(x,16) for x in re.findall('0x([0-9a-f]{2})',data));assert emitted==b''.join(entries)
+    flags=(tree/'osfmk/kern/cs_blobs.h').read_text()
+    names=('CS_VALID','CS_SIGNED','CS_PLATFORM_BINARY','CS_HARD','CS_KILL','CS_ENFORCEMENT','CS_KILLED')
+    defines='\n'.join(re.search(r'^#define\s+'+n+r'\s+[^\n]+',flags,re.M)[0] for n in names)
+    cs_source=tree/'bsd/kern/kern_cs.c';invalid=function(cs_source.read_text(),'cs_invalid_page')
+    template=ROOT/'ports/lithium/host/firmware-trust-test.c';source=out/'test.c'
+    source.write_text(template.read_text().replace('@@FLAGS@@',defines).replace('@@DATA@@',data)
+        .replace('@@ADAPTER@@',re.sub(r'^#include[^\n]*\n','',adapter.read_text(),flags=re.M))
+        .replace('@@INVALID_PAGE@@',invalid))
+    cmd=['clang','-std=gnu11','-O1','-g','-Wall','-Wextra','-Werror','-fsanitize=address,undefined',str(source),'-o',str(out/'test')]
+    r=subprocess.run(cmd,capture_output=True,text=True);(out/'compile.log').write_text(r.stdout+r.stderr);assert r.returncode==0,r.stderr
+    r=subprocess.run([out/'test'],capture_output=True,text=True,timeout=60);(out/'test.log').write_text(r.stdout+r.stderr);assert r.returncode==0,r.stdout+r.stderr
+    cases=re.findall(r'^PASS (.+)',r.stdout,re.M);assert len(cases)==8
+    fixtures=WORK.parent/'dyld-inspection'
+    files=[firmware_file(fixtures/n,s,entries) for n,s in [
+        ('fsck','bbb2e4d21cd75683699c3ff0b7b72f5b50c546961be51b05b5771405955ec54d'),
+        ('launchd','cb34041d66dfbeee006ac0f69e4f217b223ad2a7df6046c9f28f317786cf951d'),
+        ('dyld','54fd7d7f710554dc976dddcdb0902fe7a779d37634c0ffc343b6febca61e6c2b')]]
+    (out/'firmware-code-hashes.json').write_text(json.dumps(files,indent=2)+'\n')
+    for name,defines in [('other-board',[]),('no-macf',['-DARM64_BOARD_CONFIG_LITHIUM=1','-DCONFIG_MACF=0'])]:
+        obj=out/(name+'.o');subprocess.run(['clang','-Werror',*defines,'-c',adapter,'-o',obj],check=True)
+        assert 'lithium_' not in subprocess.check_output(['nm',obj],text=True)
+    result=dict(all_passed=True,host_cases=cases,firmware=files,cache=cache,
+        sanitizer='ASan + UBSan',exhaustive_mutated_hashes=43620,actual_xnu_invalid_page_tested=True,
+        scope='Pinned firmware membership; code-page fixture hashes and actual invalid-page denial tested separately; full UBC/pager integration requires hardware',
+        entitlement_overrides=False,qemu_used=False,device_operations=False)
+    if args.kernel:
+        assert adapter.read_bytes()==(tree/'bsd/kern/lithium_firmware_trust.c').read_bytes()
+        build=json.loads((ROOT/'reports/ios14-xnu-lithium-kernel.json').read_text());assert build['exit_code']==0
+        assert any(k['sha256']==sha(args.kernel) for k in build['kernel_binaries'])
+        for patch in build['patches']:assert sha(ROOT/patch['path'])==patch['sha256']
+        inspect=module('inspect_kernel',ROOT/'scripts/inspect-native-xnu.py');info=inspect.inspect(args.kernel);binary=args.kernel.read_bytes()
+        symbols={x[-1]:int(x[0],16) for l in subprocess.check_output(['llvm-nm','-n',args.kernel],text=True).splitlines() if len(x:=l.split())>=3 and len(x[0])==16}
+        def va_bytes(va,n):
+            seg=next(s for s in info['segments'] if int(s['vmaddr'],16)<=va and va+n<=int(s['vmaddr'],16)+s['filesize'])
+            off=seg['fileoff']+va-int(seg['vmaddr'],16);return binary[off:off+n]
+        assert va_bytes(symbols['_lithium_firmware_trust_entries'],len(emitted))==emitted
+        text=subprocess.check_output(['llvm-objdump','--macho','--disassemble','--section=__TEXT_EXEC,__text','--dis-symname','_lithium_firmware_check_signature',args.kernel],text=True)
+        for call in ['csblob_get_cdhash','csblob_get_hashtype']:assert re.search(r'\bbl\s+_'+call+r'\b',text)
+        (out/'native-callback.txt').write_text(text)
+        # No modifications to UBC or the invalid-page path from this patch.
+        baseline=module('baseline',ROOT/'scripts/prepare-ios14-native-alias-probe.py')
+        for name in ['bsd/kern/ubc_subr.c','bsd/kern/kern_cs.c','bsd/kern/kern_exec.c','osfmk/vm/vm_fault.c']:
+            assert (tree/name).read_text()==baseline.baseline(name,generator.PATCH)
+        ubc=(tree/'bsd/kern/ubc_subr.c').read_text();exec_source=(tree/'bsd/kern/kern_exec.c').read_text()
+        assert ubc.index('cs_blob_create_validated',ubc.index('\nubc_cs_blob_add('))<ubc.index('mac_vnode_check_signature',ubc.index('\nubc_cs_blob_add('))
+        assert 'blob->csb_platform_binary = 1;' in ubc
+        assert '(CS_VALID | CS_SIGNED | CS_DEV_CODE' in exec_source and 'CS_HARD | CS_KILL | CS_RESTRICT | CS_ENFORCEMENT' in exec_source
+        result.update(kernel_sha256=sha(args.kernel),native_cache_bytes_verified=len(emitted),native_callback_verified=True,existing_ubc_pager_exec_unchanged=True)
+        inputs=[adapter,header,template,cs_source,tree/'osfmk/kern/cs_blobs.h',Path(__file__),
+            ROOT/'scripts/prepare-ios14-firmware-trust.py',generator.PATCH,
+            ROOT/'artifacts/research/ios14-local-d20ap/BuildManifest.plist',ROOT/'artifacts/research/ios14-local-d20ap/018-62062-016.dmg.trustcache']
+        result['input_sha256']={str(p):sha(p) for p in inputs}
+        (ROOT/'reports/ios14-firmware-trust-validation.json').write_text(json.dumps(result,indent=2)+'\n')
+    (out/'result.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result,indent=2))
+
+if __name__=='__main__':main()

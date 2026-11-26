@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+"""Build a local HFS image writer from pinned libdmg, with bounded UTF-8 names."""
+import argparse
+import hashlib
+import json
+from pathlib import Path
+import shutil
+import subprocess
+
+ROOT=Path(__file__).resolve().parents[1]
+REF=Path('/home/jia/ios-mix1-build/libdmg-hfsplus')
+WORK=Path('/home/jia/ios-mix1-build/hfs-host')
+PIN='7ac55ec64c96f7800d9818ce64c79670e7f02b67'
+
+def main():
+    global WORK
+    p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--work-dir',type=Path,default=WORK)
+    p.add_argument('--report',type=Path,default=ROOT/'reports/ios14-hfs-host.json')
+    args=p.parse_args();WORK=args.work_dir
+    assert subprocess.check_output(['git','-C',REF,'rev-parse','HEAD'],text=True).strip()==PIN
+    for d in ('common','hfs','includes'):
+        shutil.copytree(REF/d,WORK/d,dirs_exist_ok=True)
+    p=WORK/'hfs/catalog.c';s=p.read_text()
+    start=s.index('void ASCIIToUnicode(');end=s.index('HFSPlusCatalogRecord* getRecordByCNID(',start)
+    s=s[:start]+'''/* Input has already undergone HFS Unicode 3.2 decomposition. */
+void ASCIIToUnicode(const char *utf8, HFSUniStr255 *out) {
+    iconv_t cv=iconv_open("UTF-16LE","UTF-8");
+    if(cv==(iconv_t)-1)hfs_panic("iconv_open");
+    char *in=(char*)utf8;size_t n=strlen(utf8),remaining=sizeof(out->unicode);
+    unsigned char bytes[510];char *dst=(char*)bytes;
+    if(iconv(cv,&in,&n,&dst,&remaining)==(size_t)-1 || n)hfs_panic("invalid/oversized UTF-8 HFS name");
+    out->length=(sizeof(bytes)-remaining)/2;
+    for(unsigned i=0;i<out->length;i++) {
+        uint16_t c=(uint16_t)bytes[2*i]|(uint16_t)bytes[2*i+1]<<8;
+        /* Component boundaries were already parsed; HFS represents the
+         * POSIX colon by a slash in its UTF-16 catalog key. */
+        out->unicode[i]=(c==':')?'/':c;
+    }
+    iconv_close(cv);
+}
+
+'''+s[end:]
+    s='#include <iconv.h>\n'+s
+    s=s.replace('id = record->folderID;','id = (record && exact) ? record->folderID : 0;')
+    p.write_text(s)
+    p=WORK/'hfs/rawfile.c';s=p.read_text()
+    old='curBlock * volume->volumeHeader->blockSize, volume->volumeHeader->blockSize, zeros'
+    assert s.count(old)==1
+    s=s.replace(old,'(off_t)curBlock * volume->volumeHeader->blockSize, volume->volumeHeader->blockSize, zeros')
+    # Extents overflow keys count logical blocks from the start of the fork,
+    # not the physical starting LBA of an extent. Match read/removeExtents.
+    begin=s.index('int writeExtents(RawFile* rawFile) {');end=s.index('int readExtents(',begin)
+    part=s[begin:end]
+    part=part.replace('int currentExtent;','int currentExtent;\n\tuint32_t logicalBlock = 0;')
+    anchor='\t\textent = extent->next;\n\t\tcurrentExtent++;'
+    assert part.count(anchor)==1
+    part=part.replace(anchor,'\t\tlogicalBlock += extent->blockCount;\n'+anchor)
+    part=part.replace('extentKey.startBlock = descriptor[0].startBlock;','/* startBlock was set before filling this logical extent group. */')
+    anchor='\t\t\t\tmemset(descriptor, 0, sizeof(HFSPlusExtentRecord));'
+    assert part.count(anchor)==1
+    part=part.replace(anchor,anchor+'\n\t\t\t\textentKey.startBlock = logicalBlock;')
+    # On a full group, flush it before initializing the next group/key.
+    part=part.replace('''\t\t\tif(currentExtent == 0) {
+\t\t\t\tmemset(descriptor, 0, sizeof(HFSPlusExtentRecord));
+\t\t\t\textentKey.startBlock = logicalBlock;
+\t\t\t}
+
+''','')
+    anchor='\t\t\tdescriptor[currentExtent].startBlock = extent->startBlock;'
+    assert part.count(anchor)==1
+    part=part.replace(anchor,'''\t\t\tif(currentExtent == 0) {
+\t\t\t\tmemset(descriptor, 0, sizeof(HFSPlusExtentRecord));
+\t\t\t\textentKey.startBlock = logicalBlock;
+\t\t\t}
+'''+anchor)
+    part=part.replace('\t\t\tcurrentExtent++;\n\t\t\textent = extent->next;',
+                      '\t\t\tlogicalBlock += extent->blockCount;\n\t\t\tcurrentExtent++;\n\t\t\textent = extent->next;')
+    anchor='addToBTree(rawFile->volume->extentsTree, (BTKey*)(&extentKey), sizeof(HFSPlusExtentRecord), (unsigned char *)(&(descriptor[0])));'
+    assert part.count(anchor)==2
+    part=part.replace(anchor,'flipExtentRecord((HFSPlusExtentRecord *)&descriptor);\n\t\t\t'+
+        'ASSERT('+anchor[:-1]+', "extent overflow write");')
+    s=s[:begin]+part+s[end:];p.write_text(s)
+    cmake='''cmake_minimum_required(VERSION 3.16)
+project(lithium_hfs_host C)
+add_compile_definitions(_FILE_OFFSET_BITS=64)
+include_directories(includes)
+add_subdirectory(common)
+add_subdirectory(hfs)
+add_executable(hfs-root-copy ROOT_SOURCE)
+target_link_libraries(hfs-root-copy hfs)
+add_executable(hfs-extents-test EXTENTS_TEST)
+target_link_libraries(hfs-extents-test hfs)
+'''.replace('ROOT_SOURCE',str(ROOT/'ports/lithium/host/hfs-root-copy.c'))
+    cmake=cmake.replace('EXTENTS_TEST',str(ROOT/'ports/lithium/host/hfs-extents-test.c'))
+    (WORK/'CMakeLists.txt').write_text(cmake)
+    subprocess.run(['cmake','-S',WORK,'-B',WORK/'build','-DCMAKE_BUILD_TYPE=Release'],check=True)
+    subprocess.run(['cmake','--build',WORK/'build','--target','hfs-root-copy','-j','2'],check=True)
+    record=dict(reference_commit=PIN,source=str(REF),tool=str(WORK/'build/hfs-root-copy'),
+        adaptations=['UTF8 to UTF16 with 255-code-unit bound; manifest handles normalization; POSIX colon maps to HFS slash',
+                     'empty filesystem can lack private hardlink directory',
+                     'bounded fixed-size mmap I/O; verification opens image read-only',
+                     '64-bit allocation byte offsets; logical block keys for extents overflow',
+                     'dedicated importer preserves metadata and symlinks; verifies data without following links'],
+        wrapper_sha256=hashlib.sha256((ROOT/'ports/lithium/host/hfs-root-copy.c').read_bytes()).hexdigest())
+    args.report.write_text(json.dumps(record,indent=2)+'\n')
+
+if __name__=='__main__':main()

@@ -1,0 +1,131 @@
+"""Build a pinned DarwinBoot overlay with the actual XNU 7195 boot_args ABI.
+
+Run in the WSL build venv. All upstream checkouts remain unchanged. Produces
+an EFI driver and cross-compiled ABI evidence; never contacts a phone.
+"""
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import struct
+import subprocess
+import sys
+import time
+
+ROOT=Path(__file__).resolve().parents[1]
+BASE=Path('/home/jia/ios-mix1-build')
+MU=BASE/'Mu-Silicium'
+DARWIN=ROOT/'upstream/UniXNU/drivers/DarwinBoot'
+XNU=ROOT/'upstream/research/xnu-7195.141.2'
+WORK=BASE/'darwinboot-ios14-workspace'
+OUT=ROOT/'out/darwinboot-ios14'
+PINS={DARWIN:'5243c68ec332a227fe3680cd5da6d5a0e127035c',XNU:'776661b72c2db9861865df68d309f6f35faccff4',
+      MU:'6b3d90b79e191e08171bfedd3980234a7e49d340',ROOT/'upstream/UniXNU':'c34f018aafd6befd5dc93c05a8dccd5bdce6724b'}
+
+def sha(path): return hashlib.sha256(path.read_bytes()).hexdigest()
+def output(*args): return subprocess.check_output(list(map(str,args)),text=True).strip()
+def run(*args,**kwargs): subprocess.run(list(map(str,args)),check=True,**kwargs)
+
+def main():
+    assert sys.platform=='linux','Run in the WSL build venv'
+    for path,pin in PINS.items(): assert output('git','-C',path,'rev-parse','HEAD')==pin,str(path)
+    # These checkouts were created by Windows Git with CRLF conversion. Match
+    # that checkout policy for read-only WSL status checks; change no config.
+    for path in (DARWIN,XNU):
+        assert not output('git','-c','core.fileMode=false','-c','core.autocrlf=true',
+            '-C',path,'status','--porcelain'),f'{path.name} checkout has local edits'
+    OUT.mkdir(parents=True,exist_ok=True); WORK.mkdir(parents=True,exist_ok=True)
+    shutil.copytree(DARWIN/'DarwinBootPkg',WORK/'DarwinBootPkg',dirs_exist_ok=True)
+    for path in (WORK/'DarwinBootPkg').rglob('*'):
+        if path.is_file() and path.suffix in ('.c','.h','.S','.inf','.dsc'):
+            path.write_text(path.read_text())
+    overlay=ROOT/'boot/darwinboot-ios14'
+    shutil.copy2(overlay/'BootArgs.h',WORK/'DarwinBootPkg/Driver/BootArgs.h')
+    # The entire driver is built. Only its optional Test/Validation application
+    # is omitted; its Darwin 23 assumptions are not the 7195 ABI authority.
+    dsc=WORK/'DarwinBootPkg/DarwinBoot.dsc'
+    text=dsc.read_text(); assert text.count('  Test/Validation.inf')==1
+    dsc.write_text(text.replace('  Test/Validation.inf',''))
+    run('git','apply','--check',overlay/'command-line.patch',cwd=WORK)
+    run('git','apply',overlay/'command-line.patch',cwd=WORK)
+    driver=WORK/'DarwinBootPkg/Driver/DarwinBoot.c'
+    assert 'CHAR8                           CommandLine[sizeof (((DARWIN_BOOT_ARGS *)0)->CommandLine)];' in driver.read_text()
+    conf=WORK/'Conf'; conf.mkdir(exist_ok=True)
+    for name in ('target','tools_def','build_rule'):
+        shutil.copy2(MU/f'Mu_Basecore/BaseTools/Conf/{name}.template',conf/f'{name}.txt')
+    sources={p.relative_to(ROOT).as_posix():sha(p) for p in overlay.iterdir() if p.suffix in ('.h','.c','.patch')}
+    sources['scripts/build-ios14-darwinboot.py']=sha(Path(__file__))
+    original_inputs={str(p.relative_to(ROOT)):sha(p) for p in (
+        XNU/'pexpert/pexpert/arm64/boot.h',DARWIN/'DarwinBootPkg/Driver/BootArgs.h',
+        DARWIN/'DarwinBootPkg/Driver/DarwinBoot.c',ROOT/'upstream/UniXNU/package/UniXNUPkg/UniXNUPkg.dec')}
+    report=dict(schema=1,target_os='iOS 14.8 / 18H17',reference_xnu='7195.141.2',
+        original_ios_kernel='7195.140.44; not an exact source match',
+        pins={str(p):pin for p,pin in PINS.items()},sources=sources,original_inputs=original_inputs,
+        upstream_checkouts_modified=False,hardware_boot_performed=False,
+        integration_status='standalone EFI build only; not integrated into lithium firmware')
+    # Include the original boot.h with its actual struct. The two skipped
+    # headers hold unrelated debug/prototype declarations requiring kernel SDK
+    # types; neither defines a field or changes boot_args packing/alignment.
+    includes=['-I',str(overlay),'-I',str(XNU/'pexpert'),'-I',str(MU/'Mu_Basecore/MdePkg/Include'),
+              '-I',str(MU/'Mu_Basecore/MdePkg/Include/AArch64')]
+    flags=['-ffreestanding','-fno-builtin','-fno-stack-protector','-mgeneral-regs-only',
+        '-fshort-wchar','-O2','-Wall','-Wextra','-Werror']
+    unit=overlay/'verify-abi.c'
+    commands=[]
+    def checked(args): commands.append(list(map(str,args))); run(*args)
+    checked(['clang','--target=aarch64-none-elf',*flags,*includes,'-c',unit,'-o',OUT/'abi-reference.elf.o'])
+    checked(['clang','--target=arm64-apple-ios14.8',*flags,*includes,'-c',unit,'-o',OUT/'abi-reference.macho.o'])
+    checked(['ld64.lld-18','-arch','arm64','-platform_version','ios','14.8','14.8','-no_uuid',
+        '-e','_mix1_ios14_abi_entry','-o',OUT/'abi-smoke.macho',OUT/'abi-reference.macho.o'])
+    checked(['llvm-objcopy','--only-section=.rodata','-O','binary',OUT/'abi-reference.elf.o',OUT/'abi-layout.bin'])
+    names=['struct_bytes','struct_alignment','command_line_bytes','Revision','Version','virtBase','physBase',
+        'memSize','topOfKernelData','Video','machineType','deviceTreeP','deviceTreeLength','CommandLine','bootFlags','memSizeActual','video_bytes']
+    raw=(OUT/'abi-layout.bin').read_bytes(); assert len(raw)==8*len(names)
+    layout=dict(zip(names,struct.unpack('<'+'Q'*len(names),raw)))
+    assert layout['struct_bytes']==0x2e0 and layout['bootFlags']==0x2d0 and layout['memSizeActual']==0x2d8
+    assert layout['command_line_bytes']==608
+    macho=(OUT/'abi-smoke.macho').read_bytes()
+    assert struct.unpack_from('<4I',macho)==(0xfeedfacf,0x100000c,0,2)
+    assert not output('llvm-nm','--undefined-only',OUT/'abi-smoke.macho')
+    (OUT/'abi-macho.txt').write_text(output('llvm-readobj','--file-headers','--sections',OUT/'abi-smoke.macho')+'\n')
+    env=os.environ.copy()
+    env.update(WORKSPACE=str(WORK),PACKAGES_PATH=':'.join(map(str,[WORK,ROOT/'upstream/UniXNU/package',MU/'Mu_Basecore'])),
+        EDK_TOOLS_PATH=str(MU/'Mu_Basecore/BaseTools'),CONF_PATH=str(conf),PYTHON_COMMAND=sys.executable,CLANG_BIN='/usr/bin/')
+    env['PATH']=':'.join([str(Path(sys.executable).parent),str(MU/'Mu_Basecore/BaseTools/BinWrappers/PosixLike'),
+        str(MU/'Mu_Basecore/BaseTools/Source/C/bin'),env['PATH']])
+    build=['build','-p','DarwinBootPkg/DarwinBoot.dsc','-a','AARCH64','-t','CLANGPDB','-b','DEBUG','-n','2','-y',str(OUT/'build-report.txt')]
+    report.update(abi_layout=layout,abi_checks_passed=True,abi_commands=commands,build_command=build,
+        compiler_version=output('clang','--version'),mach_o_linker_version=output('ld64.lld-18','--version'))
+    start=time.monotonic()
+    with (OUT/'build.log').open('w') as log:
+        result=subprocess.run(build,cwd=WORK,env=env,stdout=log,stderr=subprocess.STDOUT)
+    if result.returncode:
+        print('\n'.join(line for line in (OUT/'build.log').read_text().splitlines()
+            if any(word in line.lower() for word in ('error','warning','failed','undefined')))[-8000:])
+        report.update(build_success=False,build_exit_code=result.returncode)
+        (OUT/'inputs.json').write_text(json.dumps(report,indent=2)+'\n')
+        raise SystemExit(result.returncode)
+    efi=WORK/'build/DarwinBoot/DEBUG_CLANGPDB/AARCH64/DarwinBoot.efi'
+    assert efi.exists()
+    shutil.copy2(efi,OUT/'DarwinBoot-ios14.efi')
+    data=(OUT/'DarwinBoot-ios14.efi').read_bytes()
+    pe=struct.unpack_from('<I',data,0x3c)[0]
+    assert data[:2]==b'MZ' and data[pe:pe+4]==b'PE\0\0'
+    assert struct.unpack_from('<H',data,pe+4)[0]==0xaa64
+    assert struct.unpack_from('<H',data,pe+24)[0]==0x20b
+    assert struct.unpack_from('<H',data,pe+24+68)[0]==11 # EFI boot-service driver
+    report.update(build_success=True,build_seconds=round(time.monotonic()-start,2),
+        efi_path='out/darwinboot-ios14/DarwinBoot-ios14.efi',efi_sha256=sha(OUT/'DarwinBoot-ios14.efi'),efi_bytes=len(data),
+        mach_o_abi_probe_sha256=sha(OUT/'abi-smoke.macho'),
+        patched_driver_sha256=sha(driver),patched_header_sha256=sha(WORK/'DarwinBootPkg/Driver/BootArgs.h'),
+        limitations=['Not an XNU kernel build; MIG, IIG, IOKit and 7195 dependencies remain unverified.',
+          'No lithium firmware integration, payload volume or file-system path tested.',
+          'The actual phone has BGR24 PixelBltOnly GOP; the inherited loader supports only BGRA32 video.',
+          '7195 does not acquire new kernel support for modern darwinboot memory/payload extensions merely from this ABI change.',
+          'No iOS user space or hardware XNU execution verified.'])
+    (OUT/'inputs.json').write_text(json.dumps(report,indent=2)+'\n')
+    (ROOT/'reports/ios14-loader-build.json').write_text(json.dumps(report,indent=2)+'\n')
+    print(json.dumps({k:report[k] for k in ('build_success','abi_checks_passed','efi_path','efi_bytes','efi_sha256','abi_layout')},indent=2))
+
+if __name__=='__main__': main()

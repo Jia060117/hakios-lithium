@@ -1,0 +1,20 @@
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -3503,7 +3503,7 @@
+ 
+ #if defined(HAKIOS_LITHIUM_G2_RECEIPT) && defined(HAKIOS_LITHIUM)
+ 	const int lg2l_receipt_ok = lg2l_loader_capture(1u);
+-	const int lg2m_receipt_ok = lg2l_receipt_ok && lg2m_loader_capture(1u);
++	const int lg2m_receipt_ok = lg2m_loader_capture(1u);
+ #endif
+ 
+ 	/* --- device tree ---------------------------------------------------- */
+@@ -3541,6 +3541,8 @@
+ 		dt_prop(&w, LG2L_RECEIPT_PROPERTY, &lg2l_loader_receipt, sizeof(lg2l_loader_receipt));
+ 	if (lg2m_receipt_ok)
+ 		dt_prop(&w, LG2M_PROPERTY, &lg2m_loader_receipt, sizeof(lg2m_loader_receipt));
++	dt_prop(&w, LG2M_DIAG_PROPERTY, &lg2m_loader_diagnostic,
++	    sizeof(lg2m_loader_diagnostic));
+ #endif
+ 	dt_prop(&w, "random-seed", seed, sizeof(seed));
+ 	dt_prop_u64(&w, "dram-base", phys_base);

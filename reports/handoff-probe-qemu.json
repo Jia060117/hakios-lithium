@@ -1,0 +1,150 @@
+{
+  "schema": 1,
+  "image_sha256": "53b75806612df3e0a35b95efb2d384e849aac187395b7c54adc098f117dcf417",
+  "probe_sha256": "66509715de27c903d68e5b8defb628dbc67a51f01d80d918386522627d393b4a",
+  "build_tag": "0xfb8e8fdd417a1962",
+  "sources": {
+    "diagnostics/handoff-probe.S": "8cefb76e34d5f00d6a38be49cf420d1bde05b23cb9d97140761e48a360dfefd6",
+    "diagnostics/handoff-probe.c": "b0899f9c0629a4abf975e69e273c490a16e8dbe7a2055dfb3204342b5dd517ac",
+    "scripts/build-handoff-probe.py": "4b83460cbee18c6db9edfa976962139b564dd899c2f71a1a7891bb0a208e7a9b"
+  },
+  "validator_source_sha256": "f31cdefe27ffe9554078ea693017639ca56627c4f036ee1b678bbd49f5594d92",
+  "validated_cases": 14,
+  "all_passed": true,
+  "cases": [
+    {
+      "name": "valid-32",
+      "passed": true,
+      "status": "0x4",
+      "reason": 0,
+      "rejected_fdt_unchanged": null,
+      "collector_executed": true,
+      "pc": "0x40081000"
+    },
+    {
+      "name": "valid-64",
+      "passed": true,
+      "status": "0x4",
+      "reason": 0,
+      "rejected_fdt_unchanged": null,
+      "collector_executed": true,
+      "pc": "0x40081000"
+    },
+    {
+      "name": "valid-mixed-widths",
+      "passed": true,
+      "status": "0x4",
+      "reason": 0,
+      "rejected_fdt_unchanged": null,
+      "collector_executed": true,
+      "pc": "0x40081000"
+    },
+    {
+      "name": "bad-fdt-magic",
+      "passed": true,
+      "status": "0xffffffff",
+      "reason": 1,
+      "rejected_fdt_unchanged": true,
+      "collector_executed": false,
+      "pc": "0x42079098"
+    },
+    {
+      "name": "oversized-total",
+      "passed": true,
+      "status": "0xffffffff",
+      "reason": 2,
+      "rejected_fdt_unchanged": true,
+      "collector_executed": false,
+      "pc": "0x42079098"
+    },
+    {
+      "name": "bad-structure-bounds",
+      "passed": true,
+      "status": "0xffffffff",
+      "reason": 3,
+      "rejected_fdt_unchanged": true,
+      "collector_executed": false,
+      "pc": "0x42079098"
+    },
+    {
+      "name": "unknown-token",
+      "passed": true,
+      "status": "0xffffffff",
+      "reason": 4,
+      "rejected_fdt_unchanged": true,
+      "collector_executed": false,
+      "pc": "0x42079098"
+    },
+    {
+      "name": "missing-start",
+      "passed": true,
+      "status": "0xffffffff",
+      "reason": 7,
+      "rejected_fdt_unchanged": true,
+      "collector_executed": false,
+      "pc": "0x42079098"
+    },
+    {
+      "name": "wrong-start",
+      "passed": true,
+      "status": "0xffffffff",
+      "reason": 8,
+      "rejected_fdt_unchanged": true,
+      "collector_executed": false,
+      "pc": "0x42079098"
+    },
+    {
+      "name": "wrong-end",
+      "passed": true,
+      "status": "0xffffffff",
+      "reason": 8,
+      "rejected_fdt_unchanged": true,
+      "collector_executed": false,
+      "pc": "0x42079098"
+    },
+    {
+      "name": "bad-property-width",
+      "passed": true,
+      "status": "0xffffffff",
+      "reason": 6,
+      "rejected_fdt_unchanged": true,
+      "collector_executed": false,
+      "pc": "0x42079098"
+    },
+    {
+      "name": "bad-image-magic",
+      "passed": true,
+      "status": "0xffffffff",
+      "reason": 9,
+      "rejected_fdt_unchanged": true,
+      "collector_executed": false,
+      "pc": "0x42079098"
+    },
+    {
+      "name": "corrupt-slot",
+      "passed": true,
+      "status": "0xffffffff",
+      "reason": 10,
+      "rejected_fdt_unchanged": true,
+      "collector_executed": false,
+      "pc": "0x42079098"
+    },
+    {
+      "name": "corrupt-initrd",
+      "passed": true,
+      "status": "0xffffffff",
+      "reason": 11,
+      "rejected_fdt_unchanged": true,
+      "collector_executed": false,
+      "pc": "0x42079098"
+    }
+  ],
+  "phone_boot_performed": false,
+  "limitations": [
+    "QEMU does not execute Qualcomm Linux or the phone bootloader.",
+    "No UEFI, MMU/GIC/timer initialization or kernel restoration is exercised.",
+    "FNV checks detect loading errors; boot image identity is independently bound by SHA-256.",
+    "The unchanged aboot manages its download/decompression scratch; the expanded load still needs hardware validation.",
+    "Early exceptions are not exported by this diagnostic."
+  ]
+}

@@ -1,0 +1,239 @@
+{
+  "schema": 1,
+  "revision": 5,
+  "checked_at": "2026-11-16T23:24:16.006820+08:00",
+  "connected": true,
+  "identity_verified": true,
+  "temporary_boot_issued": true,
+  "command_accepted": true,
+  "image_sha256": "4ad8e3db74baf802ed5b25d86c22027cc87ae0067664136ae644164790ba1ede",
+  "readiness_report": "reports/hakios-ios16-boot-ready.json",
+  "local_log_path": "reports\\local\\20261116-232415-973616-ios16-r5",
+  "host_partition_flash_issued": false,
+  "kernel_data_writes_enabled": true,
+  "kernel_data_write_hardware_verified": true,
+  "hardware_verified": false,
+  "screen_observation_pending": false,
+  "full_services_verified": false,
+  "springboard_display_verified": false,
+  "physical_touch_verified": false,
+  "usb_log_transfer_verified": true,
+  "all_6gb_exposed": false,
+  "qemu_used": false,
+  "legacy_7195_used": false,
+  "userdata_bytes": 250710192128,
+  "bootloader_unlocked": true,
+  "battery_soc_ok": true,
+  "started_at": "2026-11-16T23:24:16.228707+08:00",
+  "usb_capture_started": true,
+  "usb_capture_status_path": "reports\\local\\20261116-232415-973616-ios16-r5\\usb-status.json",
+  "boot_entry_sha256": "c15aa8d7ebc6a069a053f32dd96b10fc7738484d8093671b6240da9e6bfd6db6",
+  "fastboot_returncode": 0,
+  "outcome": "timer_return_no_desktop_screen_ownership_incomplete",
+  "usb_runtime_snapshot": {
+    "recorded_at": "2026-11-16T23:26:59.320369+08:00",
+    "snapshot_path": "reports/local/20261116-232415-973616-ios16-r5/snapshot-232659-320369",
+    "raw_bytes": 128637,
+    "console_bytes": 60445,
+    "raw_sha256": "847189d1c47491689212de4b70595d3ac093feb5767f6cdbfc5d06ba41af7071",
+    "console_sha256": "b19dae639f8f282dd4bb57ec583afaffdf15db35439e0ad0a8a0b9cadac8a788",
+    "capture_source_sha256": "d5a9aecdd3c5ac728b233628d9ae810a598a35ba05d9068d0db3ed70fde3791c",
+    "frames": 2131,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "incomplete_frame_bytes": 0,
+    "decoded_console_prefix_matches": true,
+    "capture_status": "capturing",
+    "capture_still_running": true,
+    "from_launchd_start": true,
+    "return_tail_captured": false,
+    "evidence": {
+      "kernel_banner": [
+        {
+          "line": 1,
+          "text": "Darwin Kernel Version 22.5.0: Mon Nov 16 23:18:21 CST 2026; jia:xnu-8796.121.2[xnu-8796.121.2-dirty]/BUILD/obj/DEVELOPMENT_ARM64_BCM2837"
+        },
+        {
+          "line": 170,
+          "text": "Darwin Kernel Version 22.5.0: Mon Nov 16 23:18:21 CST 2026; jia:xnu-8796.121.2[xnu-8796.121.2-dirty]/BUILD/obj/DEVELOPMENT_ARM64_BCM2837"
+        }
+      ],
+      "observation_policy": [
+        {
+          "line": 59,
+          "text": "LITHIUM UI OBSERVE: initial 1800 seconds, after first frame 1800 seconds, maximum 3600 seconds"
+        }
+      ],
+      "first_frame": [],
+      "observation_extended": [],
+      "ufs_system": [
+        {
+          "line": 140,
+          "text": "[ ok ] mount the Darwin volume read only"
+        }
+      ],
+      "data_mount": [
+        {
+          "line": 181,
+          "text": "[ ok ] mount the data volume on /private/var"
+        }
+      ],
+      "data_write_readback": [
+        {
+          "line": 677,
+          "text": "[ ok ] create a file, write 100 KB, read it back"
+        }
+      ],
+      "init_checks": [
+        {
+          "line": 831,
+          "text": "=== 45 checks, 0 failed ==="
+        }
+      ],
+      "launchd_start": [
+        {
+          "line": 912,
+          "text": "com.apple.xpc.launchd|1970-01-01 08:16:36.781161 <Notice>: launchd logging initialized. name: com.apple.xpc.launchd pid: 1"
+        }
+      ],
+      "early_boot_complete": [],
+      "springboard_code": [],
+      "frame_timing": [],
+      "deadline": []
+    }
+  },
+  "usb_enumeration_verified": true,
+  "usb_endpoint_configuration_verified": true,
+  "kernel_hardware_started": true,
+  "original_launchd_pid1_verified": true,
+  "early_boot_complete_observed": true,
+  "observation_policy_runtime_verified": true,
+  "first_frame_observation_started": true,
+  "observation_extension_runtime_observed": true,
+  "usb_log_complete": false,
+  "observation_policy": {
+    "initial_seconds": 1800,
+    "after_first_frame_seconds": 1800,
+    "maximum_kernel_seconds": 3600,
+    "first_frame_is_desktop_evidence": false,
+    "first_frame_rearms_once_only": true
+  },
+  "data_runtime_read_write_verified": true,
+  "init_checks_passed": 45,
+  "init_checks_failed": 0,
+  "final_evidence_recorded_at": "2026-11-17T00:23:52.663469+08:00",
+  "screen_observation": "UEFI TIMER DEADLINE REACHED retained summary; no desktop confirmed",
+  "timer_return_confirmed_by_photo": true,
+  "panic_text_absent_in_retained_summary": true,
+  "first_base_layer_kernel_ms": 1095537,
+  "expected_deadline_kernel_ms": 2895537,
+  "post_first_frame_observation_seconds": 1800,
+  "graphics_frame_submission_verified": true,
+  "graphics_frame_submissions_observed": 6,
+  "layer_elapsed_us_including_scheduling": [
+    3663181,
+    3327182,
+    3293362,
+    3639654,
+    3815159,
+    3746658
+  ],
+  "springboard_backboard_connection_observed": true,
+  "springboard_screen_ownership_verified": false,
+  "activity_assertion_acquire_return_observed": true,
+  "virtual_hid_service_objects_observed": true,
+  "springboard_main_queue_callback_log_observed": false,
+  "springboard_main_thread_stack_captured": false,
+  "usb_final_snapshot": {
+    "recorded_at": "2026-11-17T00:16:07.255953+08:00",
+    "snapshot_path": "reports/local/20261116-232415-973616-ios16-r5/snapshot-final",
+    "raw_bytes": 529824,
+    "console_bytes": 309344,
+    "raw_sha256": "e4d77b597409e1fbc851d869dcc876f65d943aaad5f4c0b3d95da35abbced016",
+    "console_sha256": "e924819f408cb1e9c0a1dcbca8c1d081c9030997daa30c20e2292fdcd53e473d",
+    "capture_source_sha256": "d5a9aecdd3c5ac728b233628d9ae810a598a35ba05d9068d0db3ed70fde3791c",
+    "frames": 6890,
+    "missing_bytes": 0,
+    "duplicate_bytes": 0,
+    "incomplete_frame_bytes": 0,
+    "decoded_console_matches": true,
+    "capture_status": "capture_failed",
+    "capture_still_running": false,
+    "capture_failure": "[Errno 32] Pipe error",
+    "capture_finished_at": "2026-11-17T00:13:10.401553+08:00",
+    "from_launchd_start": true,
+    "return_tail_captured": false
+  },
+  "final_photo": {
+    "path": "reports/local/20261116-232415-973616-ios16-r5/photos/r5-timer-return.jpg",
+    "sha256": "bf6c4188ce36b24c8e2915b2f10ecb1b794da3e1fec5890245db6355a2a54c62",
+    "partial_manual_transcription": [
+      "HAKIOS UEFI LOG",
+      "LITHIUM IOS16 RETURN RAW BYTES 372414",
+      "RETURN: TIMER DEADLINE REACHED",
+      "NO PANIC TEXT IN RETAINED LOG",
+      "RAW LOG RETAINED IN RAM",
+      "SUMMARY RETAINED UNTIL REBOOT",
+      "LITHIUM SESSION ENDED"
+    ]
+  },
+  "final_evidence_lines": {
+    "early_boot_complete": [
+      935,
+      936
+    ],
+    "first_frame": [
+      1183
+    ],
+    "extension": [
+      1570
+    ],
+    "system_shell_connected": [
+      1260
+    ],
+    "bootstrap_system_shells_ready": [
+      1299
+    ],
+    "no_explicit_screen_owner": [
+      1165,
+      1264,
+      1303
+    ],
+    "activity_assertion_returned": [
+      1307
+    ],
+    "apple_logo_state": [
+      1138,
+      1309
+    ],
+    "virtual_hid_service": [
+      2185
+    ],
+    "frame_timing": [
+      1184,
+      1203,
+      1347,
+      2724,
+      2731,
+      2737
+    ]
+  },
+  "diagnosis": {
+    "confirmed_boundary": "System shell connected but desktop/screen ownership handoff not observed",
+    "exact_blocking_function_known": false,
+    "further_delay_is_primary_action": false,
+    "main_thread_initialization_or_synchronous_dependency_wait_suspected": true,
+    "memory_exhaustion_evidence": false,
+    "ios14_error51_nil_path_abort_reproduced": false,
+    "upstream_launch_argument_differences": [
+      "sb_delay default 8 omitted",
+      "epoch omitted"
+    ],
+    "launch_argument_difference_is_proven_root_cause": false,
+    "smp_topology_gap": "loader cores/core_shift implies 0/0x100/0x200/0x300; stock DTS is 0/1/0x100/0x101; reserve UFS bridge core",
+    "next_step": "bounded SpringBoard initialization/main-thread sampling and main-queue milestones, dependency/HID and display timing audit before a new frozen build"
+  },
+  "frozen_package_and_source_hashes_rechecked": true,
+  "latest_audit_device_operations_performed": false,
+  "latest_audit_runtime_code_changes_performed": false
+}

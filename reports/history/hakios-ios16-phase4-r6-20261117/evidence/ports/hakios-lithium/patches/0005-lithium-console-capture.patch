@@ -1,0 +1,105 @@
+--- a/xnu/hakios.patch
++++ b/xnu/hakios.patch
+@@ -263,25 +263,6 @@
+  	/* Bodge in the CLOCAL flag as the km device is always local */
+  	case TIOCSETA_32:
+  	case TIOCSETAW_32:
+-@@ -252,6 +261,9 @@ fallthrough:
+-  *		assumptions here, this routine should be static (and
+-  *		inlined, given there is only one call site).
+-  */
+-+
+-+extern void loader_log_putc(char c);
+-+
+- int
+- kmputc(__unused dev_t dev, char c)
+- {
+-@@ -363,6 +375,8 @@ kmoutput(struct tty * tp)
+- 		for (cp = buf; cp < &buf[cc]; cp++) {
+- 			/* output the buffer one charatcer at a time */
+- 			*cp = *cp & 0x7f;
+-+			/* What user space writes to /dev/console also goes to the loader's log. */
+-+			loader_log_putc((char)*cp);
+- 		}
+- 		if (cc > 1) {
+- 			console_write((char *)buf, cc);
+ diff --git a/bsd/dev/arm/systemcalls.c b/bsd/dev/arm/systemcalls.c
+ index 7fd9be1a5f38..0d035255b030 100644
+ --- a/bsd/dev/arm/systemcalls.c
+@@ -3687,3 +3668,33 @@
+  } serial_device_t;
+  
+  kern_return_t serial_irq_enable(serial_device_t device);
++diff --git a/osfmk/console/serial_console.c b/osfmk/console/serial_console.c
++--- a/osfmk/console/serial_console.c
+++++ b/osfmk/console/serial_console.c
++@@ -245,6 +245,12 @@
++ static inline void
++ _cnputc(char c, bool poll)
++ {
+++#if HAKIOS_LITHIUM_USB_LOG
+++	/* Capture both BSD printf and user /dev/console at their shared sink.
+++	 * CR is ignored by the retained ring; never print from this hook. */
+++	extern void loader_log_putc(char c);
+++	loader_log_putc(c);
+++#endif
++ 	bool in_debugger = (kernel_debugger_entry_count > 0);
++ 	const uint32_t idx = get_cons_ops_index();
++ 
++@@ -272,6 +278,13 @@
++ 	extern int disableConsoleOutput;
++ 
++ 	if (disableConsoleOutput) {
+++#if HAKIOS_LITHIUM_USB_LOG
+++		/* Graphical ownership suppresses pixels, not the USB log. */
+++		extern void loader_log_putc(char c);
+++		if (c != NULL) {
+++			for (int i = 0; i < size; i++) loader_log_putc(c[i]);
+++		}
+++#endif
++ 		return;
++ 	}
++ 
+--- a/xnu/files/osfmk/arm64/user_exception_trace.c
++++ b/xnu/files/osfmk/arm64/user_exception_trace.c
+@@ -27,6 +27,8 @@
+ void user_exception_trace(exception_type_t exception, mach_exception_data_t code, mach_msg_type_number_t count, thread_t thread);
+ 
+ static TUNABLE(uint32_t, user_exception_trace_enabled, "systrace", 0);
++/* Keep fatal-user diagnostics without tracing every failed file lookup. */
++static TUNABLE(uint32_t, user_exception_trace_only, "usertraps", 0);
+ 
+ static bool
+ plausible_user_address(uint64_t address)
+@@ -45,7 +47,7 @@
+ 	task_t task;
+ 	struct proc *proc;
+ 
+-	if (!user_exception_trace_enabled || thread != current_thread()) {
++	if ((!user_exception_trace_enabled && !user_exception_trace_only) || thread != current_thread()) {
+ 		return;
+ 	}
+ 	if (exception != EXC_BAD_ACCESS && exception != EXC_BAD_INSTRUCTION && exception != EXC_ARITHMETIC &&
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -439,7 +439,11 @@
+     if (line) {
+         print("PANIC CAUSE AND CONTEXT:\n");
+         lithium_summary_lines(line,text+text_bytes,6);
++    } else if (!structured && lithium_find(text,text_bytes,"\n--- loader_return_after expired ---\n")) {
++        print("RETURN: TIMER DEADLINE REACHED\n");
++        print("NO PANIC TEXT IN RETAINED LOG\n");
+     } else {
++        print(structured ? "RETURN: XNU PANIC RECORD\n" : "RETURN: REASON UNCONFIRMED\n");
+         print("PANIC CAUSE NOT RECOVERED\n");
+         if (structured) lithium_summary_lines(text,text+text_bytes,6);
+     }
+@@ -454,7 +458,7 @@
+         if (start) start++;
+         lithium_summary_lines(text+start,text+text_bytes,6);
+     }
+-    print("RAW LOG AND STACKSHOT RETAINED IN RAM\n");
++    print("RAW LOG RETAINED IN RAM\n");
+     print("SUMMARY RETAINED UNTIL REBOOT\n");
+ }
+ 

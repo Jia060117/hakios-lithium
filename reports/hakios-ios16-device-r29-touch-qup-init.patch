@@ -1,0 +1,270 @@
+diff --git a/AGENTS.md b/AGENTS.md
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -1,3 +1,5 @@
++2026-11-19 R29真机预检停止：已说明一次QUP软复位/条件式ID范围后，仅执行一次只读fastboot devices，返回码0但列表为空；未到身份/电量核验，无boot/接收器/复位/I2C/分区/刷写/ADB/QEMU或重试。原因未验证，不猜线材/电量/模式。R29镜像2dec085c75a29ea770a56231ff359ae76da0d13aa36e11836d657ea1a03b9d65已完成42套测试/82打包/100源闭包及完整构建读回，仍可复用；临时启动次数未消费，总计52/iOS16为21不变。等待用户恢复并确认Fastboot USB连接后，以同镜像建立新独立预检记录，保留本次证据，不自动重试。R20基线/旧冻结字节/原索引保持。见reports/hakios-ios16-device-r29-touch-qup-init.md/json。下方主机准备状态为历史。
++
+ 2026-11-19 R29初始化主机包已冻结：SHA256 2dec085c75a29ea770a56231ff359ae76da0d13aa36e11836d657ea1a03b9d65；默认关闭touch_qup_init=1，隔离RAM/ufs0/单核affinity1/180秒。原Stage1/ID/snapshot/0022不变；来源支持的一次SW_RESET/普通STATE RESET/基础I2Cv2配置，严格OP0后才条件式单次原ID；无GIC/外部GPIO复位/供电/IRQ/HID写入扩展。ERREN3c启用错误源，GIC只读view不是全局排除证明。完整HakiOS/Mu/D22AP/413job、82来源/46扫描、42套ASan/UBSan（新core6095、adapter24632、init374）、82打包测试/100源闭包及实际APFS/整包读回通过。物理复位/所有权/电气/I2C/ID/触摸未验证，历史R9总门禁未解决。R20唯一显示基线及旧冻结字节/原索引保留。当前无R29设备操作；用户已表示Fastboot可测试，主代理说明对应新包范围后可单次临时boot，不分区/刷写/ADB/QEMU或自动重试。见reports/hakios-ios16-touch-r29-prepared.md/json。
+ 
+ 2026-11-19 R28真机结案：23:05:36临时boot一次获接受，实际affinity0x1/bootcpu1/cpus1。Stage1为26读3写312us；新QUP快照两轮各17项全部valid且相同，34读37us、适配层48读0写，入口/末尾GIC可见状态通过。CONFIG0/MASTER_CONFIG0未具备原厂I2Cv2配置；IO_MODES0xa5两套算法均得IN/OUT各64字节。OP0xc0共享full位与count0不能直接推断实际占用，I2C/RESET语义仍未验证。无QUP写/复位/I2C/真实ID/IRQ/HID。PID1保持、正常180秒timer及drain1通过；67帧/15845控制台字节独立重解码一致，缺口/重复/残帧/lost/源争用丢均0，Pipe error在排空后。物理结束屏未目视确认；RAM Data sync error2为lookup，非UFS故障。R20显示基线及R15/R20/R25/R26/R27/R28镜像/原索引字节保留。下一步准备来源支持的QUP初始化前后对照及条件式单次ID，不直接放宽掩码；R28已消费，不自动新启动。见reports/hakios-ios16-device-r28-touch-snapshot.md/json。下方主机准备/等待状态为历史。
+diff --git a/OPERATIONS.md b/OPERATIONS.md
+--- a/OPERATIONS.md
++++ b/OPERATIONS.md
+@@ -1,3 +1,5 @@
++2026-11-19 R29真机预检停止：已说明一次QUP软复位/条件式ID范围后，仅执行一次只读fastboot devices，返回码0但列表为空；未到身份/电量核验，无boot/接收器/复位/I2C/分区/刷写/ADB/QEMU或重试。原因未验证，不猜线材/电量/模式。R29镜像2dec085c75a29ea770a56231ff359ae76da0d13aa36e11836d657ea1a03b9d65已完成42套测试/82打包/100源闭包及完整构建读回，仍可复用；临时启动次数未消费，总计52/iOS16为21不变。等待用户恢复并确认Fastboot USB连接后，以同镜像建立新独立预检记录，保留本次证据，不自动重试。R20基线/旧冻结字节/原索引保持。见reports/hakios-ios16-device-r29-touch-qup-init.md/json。下方主机准备状态为历史。
++
+ 2026-11-19 R29初始化主机包已冻结：SHA256 2dec085c75a29ea770a56231ff359ae76da0d13aa36e11836d657ea1a03b9d65；默认关闭touch_qup_init=1，隔离RAM/ufs0/单核affinity1/180秒。原Stage1/ID/snapshot/0022不变；来源支持的一次SW_RESET/普通STATE RESET/基础I2Cv2配置，严格OP0后才条件式单次原ID；无GIC/外部GPIO复位/供电/IRQ/HID写入扩展。ERREN3c启用错误源，GIC只读view不是全局排除证明。完整HakiOS/Mu/D22AP/413job、82来源/46扫描、42套ASan/UBSan（新core6095、adapter24632、init374）、82打包测试/100源闭包及实际APFS/整包读回通过。物理复位/所有权/电气/I2C/ID/触摸未验证，历史R9总门禁未解决。R20唯一显示基线及旧冻结字节/原索引保留。当前无R29设备操作；用户已表示Fastboot可测试，主代理说明对应新包范围后可单次临时boot，不分区/刷写/ADB/QEMU或自动重试。见reports/hakios-ios16-touch-r29-prepared.md/json。
+ 
+ 2026-11-19 R28真机结案：23:05:36临时boot一次获接受，实际affinity0x1/bootcpu1/cpus1。Stage1为26读3写312us；新QUP快照两轮各17项全部valid且相同，34读37us、适配层48读0写，入口/末尾GIC可见状态通过。CONFIG0/MASTER_CONFIG0未具备原厂I2Cv2配置；IO_MODES0xa5两套算法均得IN/OUT各64字节。OP0xc0共享full位与count0不能直接推断实际占用，I2C/RESET语义仍未验证。无QUP写/复位/I2C/真实ID/IRQ/HID。PID1保持、正常180秒timer及drain1通过；67帧/15845控制台字节独立重解码一致，缺口/重复/残帧/lost/源争用丢均0，Pipe error在排空后。物理结束屏未目视确认；RAM Data sync error2为lookup，非UFS故障。R20显示基线及R15/R20/R25/R26/R27/R28镜像/原索引字节保留。下一步准备来源支持的QUP初始化前后对照及条件式单次ID，不直接放宽掩码；R28已消费，不自动新启动。见reports/hakios-ios16-device-r28-touch-snapshot.md/json。下方主机准备/等待状态为历史。
+diff --git a/PLAN.md b/PLAN.md
+--- a/PLAN.md
++++ b/PLAN.md
+@@ -1,3 +1,5 @@
++2026-11-19 R29真机预检停止：已说明一次QUP软复位/条件式ID范围后，仅执行一次只读fastboot devices，返回码0但列表为空；未到身份/电量核验，无boot/接收器/复位/I2C/分区/刷写/ADB/QEMU或重试。原因未验证，不猜线材/电量/模式。R29镜像2dec085c75a29ea770a56231ff359ae76da0d13aa36e11836d657ea1a03b9d65已完成42套测试/82打包/100源闭包及完整构建读回，仍可复用；临时启动次数未消费，总计52/iOS16为21不变。等待用户恢复并确认Fastboot USB连接后，以同镜像建立新独立预检记录，保留本次证据，不自动重试。R20基线/旧冻结字节/原索引保持。见reports/hakios-ios16-device-r29-touch-qup-init.md/json。下方主机准备状态为历史。
++
+ 2026-11-19 R29初始化主机包已冻结：SHA256 2dec085c75a29ea770a56231ff359ae76da0d13aa36e11836d657ea1a03b9d65；默认关闭touch_qup_init=1，隔离RAM/ufs0/单核affinity1/180秒。原Stage1/ID/snapshot/0022不变；来源支持的一次SW_RESET/普通STATE RESET/基础I2Cv2配置，严格OP0后才条件式单次原ID；无GIC/外部GPIO复位/供电/IRQ/HID写入扩展。ERREN3c启用错误源，GIC只读view不是全局排除证明。完整HakiOS/Mu/D22AP/413job、82来源/46扫描、42套ASan/UBSan（新core6095、adapter24632、init374）、82打包测试/100源闭包及实际APFS/整包读回通过。物理复位/所有权/电气/I2C/ID/触摸未验证，历史R9总门禁未解决。R20唯一显示基线及旧冻结字节/原索引保留。当前无R29设备操作；用户已表示Fastboot可测试，主代理说明对应新包范围后可单次临时boot，不分区/刷写/ADB/QEMU或自动重试。见reports/hakios-ios16-touch-r29-prepared.md/json。
+ 
+ 2026-11-19 R28真机结案：23:05:36临时boot一次获接受，实际affinity0x1/bootcpu1/cpus1。Stage1为26读3写312us；新QUP快照两轮各17项全部valid且相同，34读37us、适配层48读0写，入口/末尾GIC可见状态通过。CONFIG0/MASTER_CONFIG0未具备原厂I2Cv2配置；IO_MODES0xa5两套算法均得IN/OUT各64字节。OP0xc0共享full位与count0不能直接推断实际占用，I2C/RESET语义仍未验证。无QUP写/复位/I2C/真实ID/IRQ/HID。PID1保持、正常180秒timer及drain1通过；67帧/15845控制台字节独立重解码一致，缺口/重复/残帧/lost/源争用丢均0，Pipe error在排空后。物理结束屏未目视确认；RAM Data sync error2为lookup，非UFS故障。R20显示基线及R15/R20/R25/R26/R27/R28镜像/原索引字节保留。下一步准备来源支持的QUP初始化前后对照及条件式单次ID，不直接放宽掩码；R28已消费，不自动新启动。见reports/hakios-ios16-device-r28-touch-snapshot.md/json。下方主机准备/等待状态为历史。
+diff --git a/project.json b/project.json
+--- a/project.json
++++ b/project.json
+@@ -56,7 +56,7 @@
+     "last_hardware_verified_kernel_sha256": "8e9209c1ff077ba6ad16cbd467c6cceb3cb6b16c0357667e513b913190fd9b4b"
+   },
+   "schema": 2,
+-  "stage": "iOS16 phase4: R29 QUP initialization host ready; physical validation pending",
++  "stage": "iOS16 phase4: R29 host ready; readonly enumeration empty, stopped before boot",
+   "project_instructions_path": "AGENTS.md",
+   "plan_path": "PLAN.md",
+   "operations_path": "OPERATIONS.md",
+@@ -66,7 +66,7 @@
+   "active_workspace": "/home/jia/ios-mix1-build/hakios-lithium-ios16",
+   "source_lock_path": "upstreams.lock.json",
+   "source_audit_report": "reports/hakios-p0-audit.md",
+-  "current_device_status": "Latest user reports Fastboot ready; no R29 query/boot yet",
++  "current_device_status": "R29 saved fastboot devices returned empty; physical cause and screen unverified; no boot issued",
+   "device_state": {
+     "last_observation_baseline": "ios16_r20_display_hakios",
+     "live_state_requeried": true,
+@@ -75,19 +75,19 @@
+     "root_install_report": "reports/hakios-ios16-install.json",
+     "root_integrity_report": "reports/hakios-ios16-install.json",
+     "live_usb_requeried": true,
+-    "latest_usb_query_report": "reports/hakios-ios16-device-r28-touch-snapshot.json",
+-    "latest_device_test_report": "reports/hakios-ios16-device-r28-touch-snapshot.json",
++    "latest_usb_query_report": "reports/hakios-ios16-device-r29-touch-qup-init.json",
++    "latest_device_test_report": "reports/hakios-ios16-device-r29-touch-qup-init.json",
+     "last_screen_observation_source": "R26 same-run user photograph, original archived with SHA256",
+     "last_screen_observation": "UEFI TIMER DEADLINE REACHED; NO PANIC TEXT IN RETAINED LOG; drain1",
+-    "current_physical_state_source": "Latest user request on2026-11-19",
+-    "current_physical_state": "Fastboot ready, user reported",
+-    "current_state_host_queried": false,
++    "current_physical_state_source": "Saved one Fastboot devices result, not a screen observation",
++    "current_physical_state": "R29 saved fastboot devices returned empty; physical cause and screen unverified; no boot issued",
++    "current_state_host_queried": true,
+     "userdata_journal_initialized": false,
+     "userdata_journal_repair_report": null,
+     "userdata_hfs_mount_verified": true,
+     "userdata_contains_ios16_ufs_layout": true,
+     "root_integrity_scope": "32KiB component headers and unchanged 24KiB primary GPT sample; not full partition readback",
+-    "latest_device_operation_report": "reports/hakios-ios16-device-r28-touch-snapshot.json",
++    "latest_device_operation_report": "reports/hakios-ios16-device-r29-touch-qup-init.json",
+     "ios16_data_image_fsck_passed": true,
+     "ios16_data_runtime_read_write_verified": true
+   },
+@@ -162,19 +162,19 @@
+     "large_tasks_sequential": true
+   },
+   "work_status": {
+-    "status": "ios16_r29_qup_init_host_ready",
++    "status": "ios16_r29_preflight_no_device_no_boot",
+     "phase2_approved": true,
+     "device_operations_performed": true,
+     "device_boots_performed": true,
+     "partition_writes_performed": true,
+     "hakios_temporary_boot_count": 52,
+     "backup_branch": "archive/ios14-r31-20261116",
+-    "next_step": "One explained R29 RAM QUP initialization/conditional strict ID temporary boot after preflight; no partition operations",
++    "next_step": "User confirms/restores Fastboot USB connection; use this same frozen image with a fresh separately recorded preflight session, preserving this failed record. No automatic retry and no need to rebuild unchanged sources.",
+     "phase3_approved": true,
+     "auxiliary_stock_reader_boots_accepted": 4,
+     "ios16_boots_performed": 21,
+     "auxiliary_stock_reader_adb_runtime_observations": 3,
+-    "latest_evidence_recorded_at": "2026-11-19T23:43:24.184263+08:00",
++    "latest_evidence_recorded_at": "2026-11-19T23:45:57.938416+08:00",
+     "latest_host_report": "reports/hakios-ios16-touch-r29-prepared.md",
+     "r5_backup_branch": "archive/ios16-r5-20261117",
+     "r6_backup_branch": "archive/ios16-r6-20261117",
+@@ -185,7 +185,7 @@
+     "r10_backup_branch": "archive/ios16-r10-before-r11-20261117",
+     "current_run_shutdown_authorized": false,
+     "host_shutdown_request_scope": "Historical R8 only; no R15 shutdown requested",
+-    "latest_device_report": "reports/hakios-ios16-device-r28-touch-snapshot.md"
++    "latest_device_report": "reports/hakios-ios16-device-r29-touch-qup-init.md"
+   },
+   "active_workspace_report": "reports/hakios-workspace.json",
+   "config_check_report": "reports/hakios-config-check.json",
+@@ -920,14 +920,14 @@
+   },
+   "touch_test_boundary": {
+     "recorded_on": "2026-11-19",
+-    "mode": "r29_qup_init_host_ready_awaiting_explained_preflight",
++    "mode": "r29_preflight_empty_stopped_no_boot",
+     "phone_queries_allowed": false,
+     "phone_boot_allowed": false,
+     "partition_operations_allowed": false,
+     "qemu_allowed": false,
+     "user_explicit_resumption_required": true,
+-    "device_state": "Fastboot ready, latest user report; R29 host has not queried it",
+-    "resumption_scope": "Only explained R29 QUP initialization/conditional old strict ID in isolated RAM; one temporary boot and USB capture, no automatic retry or partitions",
++    "device_state": "R29 saved fastboot devices returned empty; physical cause and screen unverified; no boot issued",
++    "resumption_scope": "User confirms/restores Fastboot USB connection; use this same frozen image with a fresh separately recorded preflight session, preserving this failed record. No automatic retry and no need to rebuild unchanged sources.",
+     "revision": "R29-touch-qup-init",
+     "display_baseline_revision": "R20-display",
+     "host_candidate": "artifacts/hakios/lithium-ios16/phase4-r29-touch-qup-init/lithium-hakios-ios16-r29-touch-qup-init.img",
+@@ -959,7 +959,7 @@
+     "latest_kernel_contains_touch_stage_verified": true,
+     "production_kernel_sha256": "d57837a730a58a3e748c2a8ed45b5035faae01cd3c17068b60a32340ef932222",
+     "host_build_report": "reports/hakios-ios16-touch-r29-prepared.md",
+-    "conditional_device_authorization": "Latest user requests continue and explicitly makes Fastboot available; describe corresponding initializer experiment before queries/boot",
++    "conditional_device_authorization": "This failed preflight is closed. Await user-restored/confirmed connection and a fresh recorded preflight; no automatic retry.",
+     "hardware_verified": false,
+     "report": "reports/hakios-ios16-touch-r29-prepared.md",
+     "package_report": "artifacts/hakios/lithium-ios16/phase4-r29-touch-qup-init/contract.json",
+@@ -974,7 +974,7 @@
+     "runtime_glue_report": "reports/hakios-ios16-touch-runtime-host-20261119.md",
+     "per_device_operation_confirmation_required": true,
+     "host_candidate_image_path": "artifacts/hakios/lithium-ios16/phase4-r29-touch-qup-init/lithium-hakios-ios16-r29-touch-qup-init.img",
+-    "last_device_report": "reports/hakios-ios16-device-r28-touch-snapshot.json",
++    "last_device_report": "reports/hakios-ios16-device-r29-touch-qup-init.json",
+     "stage1_runtime_observed": true,
+     "stage1_snapshot_completed": true,
+     "physical_touch_verified": false,
+@@ -986,7 +986,7 @@
+     "diagnostic_hold_verified": true,
+     "emitted_kernel_stream_through_timer_verified": false,
+     "physical_screen_verified": false,
+-    "latest_device_report": "reports/hakios-ios16-device-r28-touch-snapshot.json",
++    "latest_device_report": "reports/hakios-ios16-device-r29-touch-qup-init.json",
+     "runtime_i2c_transaction_verified": false
+   },
+   "touch_r27_host_prepared": {
+@@ -1173,5 +1173,19 @@
+     "total_suites": 42,
+     "hardware_verified": false,
+     "physical_screen_verified": false
++  },
++  "touch_r29_preflight": {
++    "phase": "readonly_enumeration_stopped_no_target_no_boot",
++    "preflight_started_at": "2026-11-19T23:44:15.305517+08:00",
++    "preflight_finished_at": "2026-11-19T23:44:15.342983+08:00",
++    "image_sha256": "2dec085c75a29ea770a56231ff359ae76da0d13aa36e11836d657ea1a03b9d65",
++    "fastboot_readonly_queries": 1,
++    "enumerated_device_count": 0,
++    "temporary_boots": 0,
++    "boot_attempt_consumed": false,
++    "usb_receiver_started": false,
++    "qup_reset_executed": false,
++    "i2c_transaction_executed": false,
++    "next_step": "User confirms/restores Fastboot USB connection; use this same frozen image with a fresh separately recorded preflight session, preserving this failed record. No automatic retry and no need to rebuild unchanged sources."
+   }
+ }
+diff --git a/reports/hakios-ios16-device-r29-touch-qup-init.json b/reports/hakios-ios16-device-r29-touch-qup-init.json
+new file mode 100644
+--- /dev/null
++++ b/reports/hakios-ios16-device-r29-touch-qup-init.json
+@@ -0,0 +1,56 @@
++{
++  "schema": 1,
++  "revision": "R29-touch-qup-init",
++  "recorded_at": "2026-11-19T23:45:57.938416+08:00",
++  "phase": "readonly_enumeration_stopped_no_target_no_boot",
++  "image_path": "artifacts/hakios/lithium-ios16/phase4-r29-touch-qup-init/lithium-hakios-ios16-r29-touch-qup-init.img",
++  "image_sha256": "2dec085c75a29ea770a56231ff359ae76da0d13aa36e11836d657ea1a03b9d65",
++  "image_bytes": 16285696,
++  "kernel_sha256": "d57837a730a58a3e748c2a8ed45b5035faae01cd3c17068b60a32340ef932222",
++  "payload_boot_args": "bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 touch_stage=1 touch_clock_init=1 touch_diag=1 touch_qup_init=1",
++  "host_prepared": true,
++  "host_test_suites": 42,
++  "merged_source_hashes": 100,
++  "source_review_checks": 82,
++  "instruction_scans": 46,
++  "launchd_jobs": 413,
++  "fastboot_readonly_queries": 1,
++  "fastboot_command": "devices",
++  "returncode": 0,
++  "enumerated_device_count": 0,
++  "identity_or_battery_checks_reached": false,
++  "preflight_started_at": "2026-11-19T23:44:15.305517+08:00",
++  "preflight_finished_at": "2026-11-19T23:44:15.342983+08:00",
++  "temporary_boots": 0,
++  "temporary_boot_issued": false,
++  "boot_attempt_consumed": false,
++  "preflight_attempt_closed": true,
++  "usb_receiver_started": false,
++  "usb_runtime_log_available": false,
++  "qup_reset_executed": false,
++  "qup_configuration_executed": false,
++  "i2c_transaction_executed": false,
++  "chip_id_read": false,
++  "physical_touch_verified": false,
++  "physical_screen_verified": false,
++  "partition_queries": 0,
++  "partition_operations": 0,
++  "flashes": 0,
++  "adb_commands": 0,
++  "android_recovery_boots": 0,
++  "qemu": false,
++  "auto_retry": false,
++  "failure": "fastboot devices returned an empty list; no target was enumerated",
++  "physical_cause": "unverified; saved host enumeration cannot identify cable/power/mode/driver cause",
++  "preserved_display_baseline": "R20-display",
++  "next_step": "User confirms/restores Fastboot USB connection; use this same frozen image with a fresh separately recorded preflight session, preserving this failed record. No automatic retry and no need to rebuild unchanged sources.",
++  "evidence_sha256": {
++    "reports/local/20261119-r29-touch-qup-init-approved/commands.json": "5a1db3ae7fef0c2c13244e187f0ceb1290bc4815ab96a20b16a8d08f303d26bb",
++    "reports/local/20261119-r29-touch-qup-init-approved/result.json": "c0855726582120cb37d85f009a3ee274eb5ae47b0b1db29a1b64d1b97b0f80d2",
++    "reports/local/20261119-r29-touch-qup-init-approved/authorization.json": "71be03573a10f5eb6ae947bd9d90a7b8fe7ad3d71ce1091d18de3a85437f1b2c",
++    "reports/local/20261119-r29-touch-qup-init-approved/offline-preflight.json": "d16e22d766dd3e62b45fb2813e8754fed02864d94cd4ef9c35a6962685f0bf46",
++    "reports/hakios-ios16-touch-r29-prepared.json": "d852c9c369071d9d3b07a7e54fb896a8405fed8831c30396d674297637b810d8",
++    "reports/hakios-ios16-touch-r29-prepared-checkpoint.json": "c292b0ad2d06e055c592d41b38fb3b413bc140a85e44e3f344c831d683bdbb7a",
++    "evidence/touch-r29-20261119/main/final-offline-preflight.json": "d368096eadfc22a0ce40ac856bc8b7e6d77c288cceeef63be7ab08e062224049"
++  }
++}
+diff --git a/reports/hakios-ios16-device-r29-touch-qup-init.md b/reports/hakios-ios16-device-r29-touch-qup-init.md
+new file mode 100644
+--- /dev/null
++++ b/reports/hakios-ios16-device-r29-touch-qup-init.md
+@@ -0,0 +1,33 @@
++# R29 真机预检：未枚举到目标，尚未启动
++
++记录：2026-11-19T23:45:57.938416+08:00。**主机准备完整通过；唯一一次只读 `fastboot devices` 返回空列表，按规则停止，没有发出 `boot`。**
++
++## 实际发生的操作
++
++- 只读枚举开始：2026-11-19T23:44:15.305517+08:00，结束：2026-11-19T23:44:15.342983+08:00。
++- 返回码0、stdout为空、stderr为空；没有枚举到任何Fastboot设备。
++- 未继续product/unlock/battery/download核验；USB日志接收器未启动；无临时启动、QUP复位/配置、I2C事务或芯片ID结果。
++- 无分区查询/读写、刷写、ADB、Android/Recovery、QEMU或自动重试。
++- 此前R28是最后一次已接受启动。总计仍为HakiOS52次/iOS16共21次，不增加计数。R29仅本次预检记录已结案，临时启动次数尚未消费。
++
++枚举为空只能确认主机未看到目标，不能据此猜测电量、线材、模式或驱动原因；物理屏幕未核验。没有本轮USB运行日志，也没有硬件初始化通过结论。
++
++## 已就绪的同一冻结镜像
++
++路径：`artifacts/hakios/lithium-ios16/phase4-r29-touch-qup-init/lithium-hakios-ios16-r29-touch-qup-init.img`；16285696字节。
++
++SHA256：`2dec085c75a29ea770a56231ff359ae76da0d13aa36e11836d657ea1a03b9d65`。
++
++完整HakiOS/Mu/D22AP/413job、82来源边界、46指令扫描、42套ASan/UBSan、82组打包验证、100合并源哈希及实际APFS/整包读回均通过。新初始化core6095、实际adapter24632场景。准备报告及代码/测试分工见 `reports/hakios-ios16-touch-r29-prepared.md/json`。
++
++本包在隔离RAM内请求一次QUP软复位及原厂I2Cv2基础配置，只有原有严格条件满足才尝试一次0x38/A3读取。默认关闭，不写GIC、外部触摸复位GPIO或供电，无IRQ/HID接入。真实复位效果、所有权、电气和ID仍未验证。R20-display仍为唯一显示基线，旧镜像及原索引保留。
++
++## 后续
++
++请用户确认手机仍在Fastboot并重新接好USB，确认后再用**同一冻结镜像**建立新的独立预检记录，无需重构建。保留本次空枚举记录，不清空/复用它来绕过单次检查，不自动重试、不自动重启手机。
++
++本轮参数（未执行）：
++
++```text
++bootcpu=1 cpus=1 serial=3 -v ufs=0 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 loader_return_after=180 usertraps=1 epoch=1794940756 touch_stage=1 touch_clock_init=1 touch_diag=1 touch_qup_init=1
++```

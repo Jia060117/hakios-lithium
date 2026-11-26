@@ -1,0 +1,56 @@
+{
+  "generated_on": "2026-11-19",
+  "scope": "R20-display touch host regression follow-up; no device operation, no production kernel rebuild",
+  "passed": true,
+  "existing_suite_count": 14,
+  "isolated_followup_suite_count": 10,
+  "total_suite_count": 24,
+  "command_record_count": 21,
+  "failed_command_records": 0,
+  "source_hash_count": 51,
+  "suites": [
+    "qup-combined",
+    "touch-delivery",
+    "irq-affinity-audit",
+    "a5xx-fence-packet",
+    "ft5x46-frame",
+    "touch-stage",
+    "touch-static",
+    "touch-stage-trace",
+    "qup-clean-entry-safety",
+    "touch-submit-deadline"
+  ],
+  "evidence_path": "reports/touch-stage0-complete-host-20261119-r2/passed.json",
+  "evidence_sha256": "def9fb7d3d766623cec56e0962d27c6a84ef9e2e86aa4dd45d936511145b59d4",
+  "frozen_baselines_before": {
+    "r20_image_sha256": "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82",
+    "r20_display_acceptance": true,
+    "r15_image_sha256": "ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55",
+    "frozen_baselines_unchanged": true
+  },
+  "frozen_baselines_after": {
+    "r20_image_sha256": "3b1611897440aece1adfe27bfab2d972ed3a234b0e46a9d0aabd1bd198233f82",
+    "r20_display_acceptance": true,
+    "r15_image_sha256": "ed4994d39144494a0413b2259b9cca10ae98d3872c1ea4876aba8d0b2ceffd55",
+    "frozen_baselines_unchanged": true
+  },
+  "production_kernel": {
+    "sha256": "3e130b765b47ec06ac5e5392d5f94301d22ed43fa37b937827b65ab220180c93",
+    "stage0_static_marker": true,
+    "stage1_to_3_fail_closed": true,
+    "host_readback_verified": true,
+    "rebuilt_this_followup": false
+  },
+  "touch_package_ready": false,
+  "physical_touch_verified": false,
+  "device_operations": false,
+  "unresolved_hardware": [
+    "QUP6 UEFI-to-XNU exclusive ownership/handoff and bus quiescence",
+    "QUP clock and pinmux state; GPIO87/88 SDA/SCL roles",
+    "Touch rail ownership/state and safe preservation of shared display rails",
+    "GPIO105 vs GPIO125 IRQ selection, trigger and GIC routing",
+    "Runtime controller identity, report frame coherence and actual touch coordinates",
+    "IOHID/backboardd end-to-end event delivery"
+  ],
+  "next_gate": "Establish an auditable QUP6/GPIO/clock/rail handoff contract before enabling any MMIO. Then permit only a bounded default-off controller-ID/read probe; keep IRQ and HID disabled until raw-frame evidence is reliable."
+}

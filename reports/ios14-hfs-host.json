@@ -1,0 +1,13 @@
+{
+  "reference_commit": "7ac55ec64c96f7800d9818ce64c79670e7f02b67",
+  "source": "/home/jia/ios-mix1-build/libdmg-hfsplus",
+  "tool": "/home/jia/ios-mix1-build/hfs-host/build/hfs-root-copy",
+  "adaptations": [
+    "UTF8 to UTF16 with 255-code-unit bound; manifest handles normalization; POSIX colon maps to HFS slash",
+    "empty filesystem can lack private hardlink directory",
+    "bounded fixed-size mmap I/O; verification opens image read-only",
+    "64-bit allocation byte offsets; logical block keys for extents overflow",
+    "dedicated importer preserves metadata and symlinks; verifies data without following links"
+  ],
+  "wrapper_sha256": "6e4e0e87deb90144b200b2de2bf671c70e55be14f66e80cf3b4412d97c220b48"
+}

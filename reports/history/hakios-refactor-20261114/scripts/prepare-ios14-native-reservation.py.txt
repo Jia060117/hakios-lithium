@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+"""Reserve the live framebuffer alias in XNU7195's non-KTRR kernel VM map."""
+import difflib
+import importlib.util
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+PATCH = ROOT / 'ports/lithium/patches/xnu-7195/0016-lithium-native-framebuffer-reservation.patch'
+
+
+def main():
+    spec = importlib.util.spec_from_file_location('native_alias', ROOT / 'scripts/prepare-ios14-native-alias-probe.py')
+    helper = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(helper)
+    path = 'osfmk/arm/pmap.c'
+    old = helper.baseline(path, PATCH)
+    anchor = '\tif (((gVirtBase & low_global_vr_mask) != LOW_GLOBAL_BASE_ADDRESS) && (region_select == 2)) {'
+    assert old.count(anchor) == 1
+    new = old.replace(anchor, '''#if defined(LITHIUM)
+	/* arm_vm_init.c maps the early BGR24 console in the NEXT L2 block
+	 * above low globals. Unlike the newer reference kernel, non-KTRR
+	 * XNU7195 reserves only the first block here. Exclude both blocks
+	 * from kernel_map so zone allocations cannot overwrite the console. */
+	assert(!TEST_PAGE_SIZE_4K && low_global_vr_size == ARM_TT_L2_SIZE);
+	low_global_vr_size += ARM_TT_L2_SIZE;
+	assert(LOW_GLOBAL_BASE_ADDRESS + low_global_vr_size <=
+	    (gVirtBase & low_global_vr_mask));
+#endif
+
+''' + anchor)
+    anchor = '\t\t*startp = LOW_GLOBAL_BASE_ADDRESS;\n\t\t*size = low_global_vr_size;\n\t\tret = TRUE;'
+    assert new.count(anchor) == 1
+    new = new.replace(anchor, anchor + '''
+#if defined(LITHIUM)
+		printf("lithium: low globals + framebuffer reserved (%llu MiB)\\n",
+		    (unsigned long long)(*size >> 20));
+#endif''')
+    patch = 'Subject: lithium: reserve the native framebuffer L2 alias from kernel VM allocation\n\n'
+    patch += 'Round 4 reached zone_init, then pmap_ttne tried L3 at 0xfffffff0038ec000\n'
+    patch += 'inside the console block (TTE 0x0060000082000605). Reserve that VA in\n'
+    patch += 'the existing low-globals region before kmem_init makes heap allocations.\n\n'
+    patch += f'diff --git a/{path} b/{path}\n'
+    patch += ''.join(difflib.unified_diff(old.splitlines(True), new.splitlines(True),
+                                        fromfile='a/' + path, tofile='b/' + path))
+    PATCH.write_text(patch)
+    print(PATCH)
+
+
+if __name__ == '__main__':
+    main()

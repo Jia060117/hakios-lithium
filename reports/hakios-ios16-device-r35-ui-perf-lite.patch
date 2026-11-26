@@ -1,0 +1,422 @@
+diff --git a/AGENTS.md b/AGENTS.md
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -1,3 +1,5 @@
++2026-11-20 R35 lite单次上机运行中：用户要求“试试看？”后，18:07:16.936822+08:00 Fastboot接受冻结lite镜像fda8fd7a18b8f0468c7be483e3080a30a2b9aee97d862fefc077f4c99eced9d3一次，五项只读预检通过；正常Data及辅助功能偏好写入已说明。actualaffinity1/bootcpu1/cpus1，MIDR512f2011/SCTLR34d4593d/I-C-M均1，整数2472us/memcpy3485MBps；非慢核或实时MHz结论。ui_lite1执行日志已见，SB main_queue_enter相对constructor71445ms，触摸IDe7/至少4200报告无read/report错误。18:09:28快照1932帧/446148字节连续前缀独立重放一致、gap/dup/残帧/lost0，USB仍采集，无最终timer/drain或用户流畅度反馈。quiet+lite同时启用，不做单变量归因；三核未启动，未改频率/电压/缓存策略。无刷分区/ADB/Android/Recovery/QEMU/启动后设备查询或重试，计数61/30。保持同次运行和USB，等待桌面/后台卡片/返回桌面对比；不自动新启动。R20/R32/R33/R34/R35冻结与原索引保留。见reports/hakios-ios16-device-r35-ui-perf-lite.md/json。
++
+ 2026-11-20 R35两路主机修订完成：用户已确认R34应用内可用、触摸位置/滑动/长按正常，桌面/后台卡片严重卡。Huygens完成默认关闭applog_ui_quiet，精确抑制两UI进程额外DT_MODE回显；Einstein补逐核MIDR/SCTLR I/C/M及affinity/logical_match，不写缓存/PLL/电压且不宣称调频修好；Poincare完成同内核quiet/lite/cpu3打包。实际HakiOS增量编译链接、540个新增逻辑检查及3实际整包逐层读回通过，未重复历史总回归/未重建未改固件用户态。内核86f36fdf4e047e0f2da18138a39629e584975e4c6689036946ae71195bd924aa；quiet镜像bb8eae118bde5e877510b6ea17ba96e866378eb1e42d29a7320ff67059718511，lite fda8fd7a18b8f0468c7be483e3080a30a2b9aee97d862fefc077f4c99eced9d3，cpu3 74db47b0879e3148f0d3a438dd22cc197f62d96d89d8ae12cf280810c9761475。lite复用ui_lite1、会持久化减少透明/动态偏好，省略不恢复，ui_lite0可关闭；cpu3仅诊断、慢核收益未验证，四核仍受residentUFS限制。无新手机/USB/分区/boot/ADB/QEMU操作，60/29不变；R20/R32/R33/R34冻结和原索引保持。旧USB接收PID23680已不在，原capturing状态保留；18826帧/4120429字节独立重放一致无传输缺口，未获timer/drain，手机终态未查询，不宣称仍实时采集。候选效果未上机；保持当前R34，待用户选择切Fastboot测试一个配置。见reports/hakios-ios16-r35-ui-performance-prepared.md/json。
+ 
+ 2026-11-20 R34性能排查：用户报告几十秒响应且短按成长按，记为部分可见响应但性能不可用，不宣称触摸完整验收。当前仍affinity1单核；本次启动前整数2473us/memcpy3499MBps接近R15，不是运行中MHz测量。360秒有效窗口99%忙、backboardd48.9/kernel31.2%；同触点原始DOWN/UP90.658ms而EventFilter处理相隔99.698秒，17:29:13已存43陈旧事件最大539.914秒。两轮redwood input栈均落IOHIDVirtualServiceClientDispatchEvent内，时间戳保留，精确内部分段未测。实际loader保留phys0作UEFI/UFSworker，当前最多3XNU核；四核需存储/交接重构，既有redwood EPSS不适用8996。下一修订优先有界派发时序和单变量减少强制os_log回显，CPU线并行核对慢核cache/clock，恢复后再验三核。Mencius/Bohr/Ohm各自证据完成，主代理读回关键源码和栈；无新生产改动/build/设备查询/boot/频率/分区操作，60/29不变，原同次UFS/USB保留。见reports/hakios-ios16-r34-input-performance.md。
+diff --git a/project.json b/project.json
+--- a/project.json
++++ b/project.json
+@@ -49,15 +49,15 @@
+     "loader_started": true,
+     "hello_started": true,
+     "hardware_evidence_report": "reports\\hakios-ios16-device-r20-display.json",
+-    "latest_kernel_binary_hardware_verified": false,
++    "latest_kernel_binary_hardware_verified": true,
+     "kernel_sha256": "86f36fdf4e047e0f2da18138a39629e584975e4c6689036946ae71195bd924aa",
+-    "latest_kernel_binary_verification_scope": "R35 host compile/link/package only; last hardware observations remain R34 touch and user-reported app UI",
++    "latest_kernel_binary_verification_scope": "R35lite actualaffinity1/SCTLR ICM, ID/report, ui_lite execution, SB mainqueue observed; performance not verified",
+     "springboard_display_verified": true,
+     "last_hardware_verified_kernel_sha256": "799bdcec2e72fc6f3a0d34c810431254687ba5ef772566e851a97956fa60650c",
+-    "latest_kernel_binary_hardware_report": "reports/hakios-ios16-device-r34-touch-live.json"
++    "latest_kernel_binary_hardware_report": "reports/hakios-ios16-device-r35-ui-perf-lite.json"
+   },
+   "schema": 2,
+-  "stage": "iOS16 phase4: R35 quiet/lite/cpu3 host packages ready; R34 app touch usable, SpringBoard performance pending",
++  "stage": "iOS16 phase4: R35 lite executed, SB main loop verified, visual performance comparison pending",
+   "project_instructions_path": "AGENTS.md",
+   "plan_path": "PLAN.md",
+   "operations_path": "OPERATIONS.md",
+@@ -67,7 +67,7 @@
+   "active_workspace": "/home/jia/ios-mix1-build/hakios-lithium-ios16",
+   "source_lock_path": "upstreams.lock.json",
+   "source_audit_report": "reports/hakios-p0-audit.md",
+-  "current_device_status": "R34 preserved by host; user reports app touch usable, SpringBoard slow; prior USB receiver absent, physical terminal not queried",
++  "current_device_status": "R35lite SB mainqueue in saved USB; visible screen/response not yet user-confirmed",
+   "device_state": {
+     "last_observation_baseline": "ios16_r20_display_hakios",
+     "live_state_requeried": true,
+@@ -77,18 +77,18 @@
+     "root_integrity_report": "reports/hakios-ios16-install.json",
+     "live_usb_requeried": true,
+     "latest_usb_query_report": "reports/hakios-ios16-device-r34-touch-live.json",
+-    "latest_device_test_report": "reports/hakios-ios16-device-r34-touch-live-ufs.json",
++    "latest_device_test_report": "reports/hakios-ios16-device-r35-ui-perf-lite.json",
+     "last_screen_observation_source": "R26 same-run user photograph, original archived with SHA256",
+     "last_screen_observation": "UEFI TIMER DEADLINE REACHED; NO PANIC TEXT IN RETAINED LOG; drain1",
+-    "current_physical_state_source": "Latest user feedback: app touch position/swipe/longpress normal, home/app-switcher slow; no new hostdevicequery",
+-    "current_physical_state": "R34 user-reported app UI usable; no new boot issued",
++    "current_physical_state_source": "Same-run USB snapshot; no post-boot query",
++    "current_physical_state": "R35lite SB mainqueue in saved USB; visible screen/response not yet user-confirmed",
+     "current_state_host_queried": true,
+     "userdata_journal_initialized": false,
+     "userdata_journal_repair_report": null,
+     "userdata_hfs_mount_verified": true,
+     "userdata_contains_ios16_ufs_layout": true,
+     "root_integrity_scope": "32KiB component headers and unchanged 24KiB primary GPT sample; not full partition readback",
+-    "latest_device_operation_report": "reports/hakios-ios16-device-r34-touch-live-ufs.json",
++    "latest_device_operation_report": "reports/hakios-ios16-device-r35-ui-perf-lite.json",
+     "ios16_data_image_fsck_passed": true,
+     "ios16_data_runtime_read_write_verified": true
+   },
+@@ -172,19 +172,19 @@
+     "large_tasks_sequential": true
+   },
+   "work_status": {
+-    "status": "ios16_r35_ui_cpu_host_packages_prepared",
++    "status": "ios16_r35_lite_main_loop_visual_comparison_pending",
+     "phase2_approved": true,
+     "device_operations_performed": true,
+     "device_boots_performed": true,
+     "partition_writes_performed": true,
+-    "hakios_temporary_boot_count": 60,
++    "hakios_temporary_boot_count": 61,
+     "backup_branch": "archive/ios14-r31-20261116",
+-    "next_step": "Keep current R34; choose one R35 profile for next explicitly authorized temporary boot, lite targets home/app-switcher burden; cpu3 is diagnostic only",
++    "next_step": "Keep same run/USB; user compares home/app-switcher and return-to-home response, no new boot",
+     "phase3_approved": true,
+     "auxiliary_stock_reader_boots_accepted": 4,
+-    "ios16_boots_performed": 29,
++    "ios16_boots_performed": 30,
+     "auxiliary_stock_reader_adb_runtime_observations": 3,
+-    "latest_evidence_recorded_at": "2026-11-20T18:03:37.737526+08:00",
++    "latest_evidence_recorded_at": "2026-11-20T18:09:28.280892+08:00",
+     "latest_host_report": "reports/hakios-ios16-r35-ui-performance-prepared.md",
+     "r5_backup_branch": "archive/ios16-r5-20261117",
+     "r6_backup_branch": "archive/ios16-r6-20261117",
+@@ -195,10 +195,10 @@
+     "r10_backup_branch": "archive/ios16-r10-before-r11-20261117",
+     "current_run_shutdown_authorized": false,
+     "host_shutdown_request_scope": "Historical R8 only; no R15 shutdown requested",
+-    "latest_device_report": "reports/hakios-ios16-device-r34-touch-live-ufs.md",
+-    "current_turn_new_kernel_builds": true,
+-    "current_turn_device_queries": false,
+-    "current_turn_device_boots": false,
++    "latest_device_report": "reports/hakios-ios16-device-r35-ui-perf-lite.md",
++    "current_turn_new_kernel_builds": false,
++    "current_turn_device_queries": true,
++    "current_turn_device_boots": true,
+     "current_turn_partition_writes": false
+   },
+   "active_workspace_report": "reports/hakios-workspace.json",
+@@ -206,7 +206,7 @@
+   "refactor_report": "reports/hakios-project-refactor.md",
+   "test_package_report": "reports/hakios-test-package.json",
+   "p0_closure_report": "reports/hakios-p0-closure.json",
+-  "current_report": "reports/hakios-ios16-r35-ui-performance-prepared.json",
++  "current_report": "reports/hakios-ios16-device-r35-ui-perf-lite.json",
+   "latest_diagnosis_report": "reports/hakios-ios16-r34-input-performance.md",
+   "repeat_ready_report": null,
+   "platform_observation_workflow": {
+@@ -1297,7 +1297,7 @@
+     }
+   },
+   "live_touch": {
+-    "status": "R34_apps_touch_usable_R35_performance_candidates_prepared",
++    "status": "R35_lite_running_performance_comparison_pending",
+     "report": "reports/hakios-ios16-device-r34-touch-live.json",
+     "default_off": true,
+     "enable": "touch=1",
+@@ -1510,7 +1510,7 @@
+         "UEFI internal prepare/commit stream fields"
+       ]
+     },
+-    "current_ufs_run_report": "reports/hakios-ios16-device-r34-touch-live-ufs.json",
++    "current_ufs_run_report": "reports/hakios-ios16-device-r35-ui-perf-lite.json",
+     "ram_runtime_report": "reports/hakios-ios16-device-r34-touch-live.json",
+     "ufs_runtime": {
+       "schema": 1,
+@@ -1790,6 +1790,26 @@
+       "CPUgovernorrepair",
+       "threecorethroughput/latencybenefit"
+     ],
+-    "report": "reports/hakios-ios16-r35-ui-performance-prepared.md"
++    "report": "reports/hakios-ios16-r35-ui-performance-prepared.md",
++    "runtime_lite_report": "reports/hakios-ios16-device-r35-ui-perf-lite.json",
++    "runtime_lite_observations": {
++      "recorded_at": "2026-11-20T18:09:28.280892+08:00",
++      "id_e7_verified": true,
++      "actual_affinity1_verified": true,
++      "cpu_sctlr_raw": "0x34d4593d",
++      "cpu_i_c_m_enabled": true,
++      "cpu_integer_avg_us": 2472,
++      "cpu_memcpy_avg_MBps": 3485,
++      "ui_lite_execution_observed": true,
++      "successful_touch_reports_lower_bound": 4200,
++      "main_queue_enter_ms": 71445,
++      "touch_read_errors": 0,
++      "touch_report_errors": 0,
++      "usb_prefix_verified": true,
++      "snapshot_frames": 1932,
++      "snapshot_console_bytes": 446148,
++      "visible_ui_response_user_confirmed": false,
++      "performance_improvement_verified": false
++    }
+   }
+ }
+diff --git a/reports/local/run-ios16-r35-ui-perf-lite.py b/reports/local/run-ios16-r35-ui-perf-lite.py
+--- /dev/null
++++ b/reports/local/run-ios16-r35-ui-perf-lite.py
+@@ -0,0 +1,137 @@
++"""One authorized R35 lite desktop boot; retain USB logs without device polling."""
++from datetime import datetime
++import hashlib
++import json
++from pathlib import Path
++import re
++import shutil
++import subprocess
++import time
++
++ROOT = Path('F:/IOS-MIX1')
++LOCAL = ROOT/'reports/local/20261120-r35-ui-perf-lite-approved'
++PACKAGE = ROOT/'artifacts/hakios/lithium-ios16/phase4-r35-ui-perf/lite'
++GUARD = ROOT/'reports/local/ios16-r35-ui-perf-lite-boot-intent.json'
++FASTBOOT = Path('C:/platform-tools/fastboot.exe')
++USB_PYTHON = Path('E:/IOS-MIX1-artifacts/host-usb-venv/Scripts/python.exe')
++IMAGE_SHA = 'fda8fd7a18b8f0468c7be483e3080a30a2b9aee97d862fefc077f4c99eced9d3'
++CAPTURE_SHA = 'd5a9aecdd3c5ac728b233628d9ae810a598a35ba05d9068d0db3ed70fde3791c'
++now = lambda: datetime.now().astimezone().isoformat()
++sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
++read = lambda p: json.loads(p.read_text(encoding='utf-8'))
++
++
++def save(path, data):
++    path.write_text(json.dumps(data, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
++
++
++def require(ok, message):
++    if not ok:
++        raise RuntimeError(message)
++
++
++def command(argv, timeout=20):
++    path = LOCAL/'commands.json'
++    rows = read(path) if path.exists() else []
++    row = dict(started_at=now(), argv=list(map(str, argv)))
++    rows.append(row)
++    save(path, rows)
++    try:
++        proc = subprocess.run(row['argv'], capture_output=True, text=True,
++            encoding='utf-8', errors='replace', timeout=timeout)
++        row.update(finished_at=now(), returncode=proc.returncode,
++                   stdout=proc.stdout, stderr=proc.stderr)
++    except Exception as exc:
++        row.update(finished_at=now(), exception=str(exc))
++        save(path, rows)
++        raise
++    save(path, rows)
++    require(proc.returncode == 0, 'Device command failed; no retry')
++    return proc.stdout+proc.stderr
++
++
++def boot():
++    require(not GUARD.exists() and not LOCAL.exists(), 'R35 lite attempt already exists; stop')
++    c = read(PACKAGE/'contract.json')
++    prepared = read(ROOT/'reports/hakios-ios16-r35-ui-performance-prepared.json')
++    require(c['passed'] and c['profile'] == 'lite' and
++        c['image']['sha256'] == IMAGE_SHA and c['normal_boot_may_write_userdata'] and
++        not c['return_fastboot'], 'Wrong R35 lite profile')
++    image = PACKAGE/c['image']['path']
++    require(sha(image) == IMAGE_SHA and image.stat().st_size == c['image']['bytes'], 'Image differs')
++    for name, item in c['components'].items():
++        require(sha(PACKAGE/name) == item['sha256'], 'Frozen component differs: '+name)
++    for name, digest in prepared['source_sha256'].items():
++        require(sha(ROOT/name) == digest, 'Prepared source differs: '+name)
++    require(c['cmdline'] == prepared['profiles']['lite']['boot_args'], 'Boot arguments differ')
++    require(sha(ROOT/'scripts/capture-hakios-usb.py') == CAPTURE_SHA, 'Receiver differs')
++    require(FASTBOOT.is_file() and USB_PYTHON.is_file(), 'Host tools missing')
++    LOCAL.mkdir()
++    state = dict(schema=1, revision='R35-ui-perf-lite',
++        authorization='User: 试试看？; follows recommendation of R35 lite and disclosed persistent Reduce Transparency/Motion settings',
++        scope='One temporary R35 lite UFS desktop boot, existing R20 root/Data/display and R34 touch, '
++              'UI quiet and ui_lite1 (persistent accessibility preferences), GPIO89/QUP6 reports, USB capture; normal Data writes allowed',
++        image_sha256=IMAGE_SHA, payload_boot_args=c['cmdline'],
++        temporary_boot_issued=False, partition_commands=0, firmware_downloads=0,
++        adb_commands=0, qemu=False, automatic_retry=False,
++        normal_boot_may_write_userdata=True, automatic_fastboot_enabled=False,
++        kernel_timer_seconds=10800, usb_wait_seconds=180, usb_capture_seconds=12600,
++        started_at=now())
++    save(LOCAL/'authorization.json', state)
++    save(LOCAL/'result.json', state)
++    target = read(ROOT/'reports/local/hakios-device-target.json')
++    try:
++        lines = command([FASTBOOT, 'devices']).strip().splitlines()
++        require([s.split() for s in lines] == [[target['serial'], 'fastboot']], 'Target absent/mismatched; stop')
++
++        def query(key):
++            text = command([FASTBOOT, '-s', target['serial'], 'getvar', key])
++            match = re.search(re.escape(key)+r':\s*([^\r\n]+)', text)
++            require(match is not None, 'Missing field '+key)
++            return match[1].strip()
++
++        require(query('product') == target['product'], 'Product mismatch')
++        text = command([FASTBOOT, '-s', target['serial'], 'oem', 'device-info'])
++        require(re.search(r'Device unlocked:\s*true', text, re.I), 'Locked bootloader')
++        require(query('battery-soc-ok').lower() == 'yes', 'Battery not ready')
++        require(int(query('max-download-size'), 16) >= image.stat().st_size, 'Download window too small')
++        state.update(preflight_passed=True, preflight_finished_at=now())
++        private = LOCAL/image.name
++        shutil.copyfile(image, private)
++        require(sha(private) == IMAGE_SHA, 'Private image differs')
++        capture = LOCAL/'capture-host.py'
++        shutil.copyfile(ROOT/'scripts/capture-hakios-usb.py', capture)
++        intent = dict(started_at=now(), image_sha256=IMAGE_SHA, accepted=False, no_retry=True)
++        with GUARD.open('x', encoding='utf-8') as stream:
++            json.dump(intent, stream, indent=2)
++        with (LOCAL/'usb-host.txt').open('x', encoding='utf-8') as log:
++            receiver = subprocess.Popen([str(USB_PYTHON), '-B', '-u', str(capture),
++                '--output', str(LOCAL/'console.log'), '--status', str(LOCAL/'usb-status.json'),
++                '--wait', '180', '--duration', '12600', '--stop-file', str(LOCAL/'stop-usb')],
++                stdout=log, stderr=subprocess.STDOUT, creationflags=subprocess.CREATE_NO_WINDOW)
++        save(LOCAL/'usb-process.json', dict(pid=receiver.pid, started_at=now(), capture_sha256=sha(capture)))
++        for _ in range(30):
++            if (LOCAL/'usb-status.json').exists() or receiver.poll() is not None:
++                break
++            time.sleep(.1)
++        require(receiver.poll() is None and (LOCAL/'usb-status.json').exists(), 'Receiver failed; no boot')
++        state.update(temporary_boot_issued=True, outcome='boot_command_starting')
++        save(LOCAL/'result.json', state)
++        text = command([FASTBOOT, '-s', target['serial'], 'boot', private], timeout=90)
++        require(re.search(r'Booting\s+OKAY', text), 'Boot outcome uncertain; no retry')
++        state.update(command_accepted=True, accepted_at=now(), outcome='boot_accepted_observation_pending',
++                     boot_totals=dict(hakios=61, ios16=30))
++        intent.update(accepted=True, accepted_at=state['accepted_at'])
++        save(GUARD, intent)
++        save(LOCAL/'result.json', state)
++        print('R35 lite desktop image accepted ONCE; USB capture running.')
++    except Exception as exc:
++        state.update(outcome='stopped_no_retry', failure=str(exc), stopped_at=now())
++        save(LOCAL/'result.json', state)
++        if GUARD.exists():
++            (LOCAL/'stop-usb').touch()
++        raise
++
++
++if __name__ == '__main__':
++    boot()
+diff --git a/reports/hakios-ios16-device-r35-ui-perf-lite.md b/reports/hakios-ios16-device-r35-ui-perf-lite.md
+--- /dev/null
++++ b/reports/hakios-ios16-device-r35-ui-perf-lite.md
+@@ -0,0 +1,39 @@
++# R35 lite 真机测试（运行中）
++
++2026-11-20，Asia/Shanghai。用户在获知lite会保存减少透明／动态偏好后要求“试试看？”。本轮仅执行一次R35 lite冻结镜像的Fastboot临时启动；正常UFS Data文件系统写入及该偏好设置已说明。
++
++Fastboot于 **18:07:16.936822+08:00** 接受本次启动。启动前五项只读身份、product、解锁、电量和download-size预检通过，随后USB日志接收器成功枚举。累计HakiOS临时启动61次、iOS16为30次。
++
++镜像：`artifacts/hakios/lithium-ios16/phase4-r35-ui-perf/lite/lithium-hakios-ios16-r35-ui-perf-lite.img`
++
++SHA-256：`fda8fd7a18b8f0468c7be483e3080a30a2b9aee97d862fefc077f4c99eced9d3`
++
++内核SHA-256：`86f36fdf4e047e0f2da18138a39629e584975e4c6689036946ae71195bd924aa`
++
++## 实际参数与对照范围
++
++```text
++bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1
++```
++
++仍为单核phys0x1目标；未启动三核诊断候选，未写频率、电压或缓存配置。相比R34，本轮同时加入UIquiet和现有UIlite，优先验收交互改善，不能把结果单独归因于其中一个变量。10800秒为原有timer上限；交互检查无需等满。
++
++原始USB记录：`reports/local/20261120-r35-ui-perf-lite-approved/`。最初的保存流已到APFS系统根/cryptex挂载；实际CPU缓存观测、ui_lite执行、主屏及响应效果继续从本次运行核对。
++
++18:09:28+08:00的运行快照已确认：
++
++- actual logical0、MPIDR0x80000001、affinity1、bootcpu1/cpus1，logical_match1。
++- MIDR0x512f2011，SCTLR0x34d4593d，I/C/M均为1。只证明本快核在该预启动观测点开启对应功能，不是慢核或实时MHz的测量。
++- 整数平均2472us、memcpy平均3485MB/s，与R34同快核接近。
++- `hakios: SpringBoard: ui_lite=1: Reduce Transparency and Reduce Motion on` 已输出，表示现有设置路径已执行；代码未检查CFPreferencesSynchronize结果，跨启动持久化和视觉收益尚未确认。
++- SpringBoard `main_queue_enter elapsed_ms=71445`，相对其constructor开始计时，不是从Fastboot接受开始的总启动耗时。
++- 触摸ID0xe7、至少4200份成功报告，未见触摸read_error/report_error。
++- 已保存1932帧/446148控制台字节的连续前缀独立重放一致，无缺口、重复、残帧或device-loss；接收器仍运行，尚无最终timer/drain。
++
++用户已被提示对比桌面翻页、后台卡片、打开应用再返回桌面的停顿。没有收到本轮可见效果反馈前，不宣称性能改善通过。R35 lite同时启用两个减负路径，因此即使改善，也不能单独归因于quiet或lite其中一个。
++
++## 边界
++
++本轮六条Fastboot命令为五项只读预检及一次临时boot；无刷分区/擦除、ADB、Android/Recovery、QEMU、额外设备查询或重试。UFS自动Fastboot仍未启用。R20/R32/R33/R34/R35冻结字节保留。
++
++本文件是运行记录，不是UI改善或完整timer/drain验收结论。保持同次手机运行与USB接收，后续根据主屏翻页、后台卡片、点应用返回桌面等实际反馈更新。
+diff --git a/reports/hakios-ios16-device-r35-ui-perf-lite.json b/reports/hakios-ios16-device-r35-ui-perf-lite.json
+--- /dev/null
++++ b/reports/hakios-ios16-device-r35-ui-perf-lite.json
+@@ -0,0 +1,75 @@
++{
++  "schema": 1,
++  "revision": "R35-ui-perf-lite",
++  "authorization": "User: 试试看？; follows recommendation of R35 lite and disclosed persistent Reduce Transparency/Motion settings",
++  "scope": "One temporary R35 lite UFS desktop boot, existing R20 root/Data/display and R34 touch, UI quiet and ui_lite1 (persistent accessibility preferences), GPIO89/QUP6 reports, USB capture; normal Data writes allowed",
++  "image_sha256": "fda8fd7a18b8f0468c7be483e3080a30a2b9aee97d862fefc077f4c99eced9d3",
++  "payload_boot_args": "bootcpu=1 cpus=1 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=1080 fbheight=2040 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=10800 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1 touch=1 touch_log=1 touch_poll=1 applog_ui_quiet=1 ui_lite=1",
++  "temporary_boot_issued": true,
++  "partition_commands": 0,
++  "firmware_downloads": 0,
++  "adb_commands": 0,
++  "qemu": false,
++  "automatic_retry": false,
++  "normal_boot_may_write_userdata": true,
++  "automatic_fastboot_enabled": false,
++  "kernel_timer_seconds": 10800,
++  "usb_wait_seconds": 180,
++  "usb_capture_seconds": 12600,
++  "started_at": "2026-11-20T18:07:15.153440+08:00",
++  "preflight_passed": true,
++  "preflight_finished_at": "2026-11-20T18:07:15.361984+08:00",
++  "outcome": "running_ui_lite_executed_main_loop_verified_visual_comparison_pending",
++  "command_accepted": true,
++  "accepted_at": "2026-11-20T18:07:16.936822+08:00",
++  "boot_totals": {
++    "hakios": 61,
++    "ios16": 30
++  },
++  "recorded_at": "2026-11-20T18:07:50.648311+08:00",
++  "report": "reports/hakios-ios16-device-r35-ui-perf-lite.json",
++  "hardware_observations": {
++    "recorded_at": "2026-11-20T18:09:28.280892+08:00",
++    "id_e7_verified": true,
++    "actual_affinity1_verified": true,
++    "cpu_sctlr_raw": "0x34d4593d",
++    "cpu_i_c_m_enabled": true,
++    "cpu_integer_avg_us": 2472,
++    "cpu_memcpy_avg_MBps": 3485,
++    "ui_lite_execution_observed": true,
++    "successful_touch_reports_lower_bound": 4200,
++    "main_queue_enter_ms": 71445,
++    "touch_read_errors": 0,
++    "touch_report_errors": 0,
++    "usb_prefix_verified": true,
++    "snapshot_frames": 1932,
++    "snapshot_console_bytes": 446148,
++    "visible_ui_response_user_confirmed": false,
++    "performance_improvement_verified": false
++  },
++  "physical_ui_response_pending": true,
++  "local_evidence": "reports/local/20261120-r35-ui-perf-lite-approved",
++  "comparison_scope": "R34 versus R35 lite combines UIquiet and existing uilite; not a single-variable attribution test",
++  "last_observed_at": "2026-11-20T18:09:28.280892+08:00",
++  "receiver_current_status": "capturing",
++  "attempt_closed": false,
++  "postboot_device_commands": 0,
++  "usb_observation": {
++    "started_at": "2026-11-20T18:07:15.598438+08:00",
++    "enumerated": true,
++    "frames": 2602,
++    "missing_bytes": 0,
++    "duplicate_bytes": 0,
++    "status": "capturing",
++    "output": "F:\\IOS-MIX1\\reports\\local\\20261120-r35-ui-perf-lite-approved\\console.log",
++    "device_commands_sent": false,
++    "candidate_seen": true,
++    "identity_verified": true,
++    "descriptor_errors": 0,
++    "descriptor_error_samples": [],
++    "configuration_verified": true,
++    "console_bytes": 585856
++  },
++  "usb_snapshot_audit": "reports/local/20261120-r35-ui-perf-lite-approved/usb-audit-snapshot.json",
++  "performance_improvement_verified": false
++}

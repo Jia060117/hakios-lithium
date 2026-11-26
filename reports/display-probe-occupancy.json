@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "image_sha256": "7ab7d822a7840f7263bb7558d4b154a09d72143d658787a1a46f5af49fc5b761",
+  "address_basis": "aboot data flow plus observed stock initrd; see entry-state.json for actual PC proof",
+  "bounded_stock_chained_probe_check_passed": true,
+  "regions": [
+    {
+      "name": "stock kernel declared reservation",
+      "start": "0x40080000",
+      "end_exclusive": "0x424b3000"
+    },
+    {
+      "name": "aboot DT editing window",
+      "start": "0x42800000",
+      "end_exclusive": "0x42a00000"
+    },
+    {
+      "name": "unchanged stock ramdisk",
+      "start": "0x42a00000",
+      "end_exclusive": "0x42c28cf1"
+    },
+    {
+      "name": "stock aboot live segment",
+      "start": "0x92a00000",
+      "end_exclusive": "0x92bd74f8"
+    }
+  ],
+  "probe": {
+    "start": "0x42078000",
+    "end_exclusive": "0x42079000",
+    "contained_in_stock_kernel_reservation": true,
+    "lifetime": "before original head.S; original BSS zeroing may overwrite probe after continuation"
+  },
+  "limitations": [
+    "Not a complete allocation map for UEFI.",
+    "Fastboot download/decompression scratch locations remain allocated by unchanged stock aboot, unobserved by this probe.",
+    "Linux-time dynamic pools are not treated as free UEFI memory."
+  ]
+}

@@ -1,0 +1,66 @@
+--- a/xnu/files/osfmk/arm64/loader_return.c
++++ b/xnu/files/osfmk/arm64/loader_return.c
+@@ -83,6 +83,7 @@
+  * inside this very function) goes ahead without it.
+  */
+ static uint32_t loader_log_lock;
++static uint64_t lithium_log_total;
+ 
+ static void loader_log_put_locked(char c);
+ 
+@@ -138,6 +139,7 @@
+ static void
+ loader_log_put_locked(char c)
+ {
++    if (!loader_log_linear) lithium_log_total++;
+ 	if (loader_log_linear || loader_log_len < LOADER_LOG_HEAD) {
+ 		if (loader_log_len < LOADER_LOG_SIZE) {
+ 			loader_log[loader_log_len++] = c;
+@@ -152,6 +154,36 @@
+ 			loader_log_len = LOADER_LOG_HEAD + loader_log_ring_at;
+ 		}
+ 	}
++}
++
++/* Same head/ring retained for loader return; USB reads never block writers. */
++uint32_t lithium_log_copy(uint64_t *cursor, char *out, uint32_t max, uint64_t *lost);
++uint32_t
++lithium_log_copy(uint64_t *cursor, char *out, uint32_t max, uint64_t *lost)
++{
++    uint64_t daif=__builtin_arm_rsr64("DAIF");
++    __builtin_arm_wsr("DAIFSet",DAIFSC_IRQF | DAIFSC_FIQF);
++    if (!os_atomic_cmpxchg(&loader_log_lock,0,1,acquire)) {
++        __builtin_arm_wsr64("DAIF",daif); return 0;
++    }
++    uint32_t n=0; *lost=0;
++    uint64_t total=lithium_log_total;
++    uint64_t oldest=total>LOADER_LOG_HEAD+LOADER_LOG_RING ? total-LOADER_LOG_RING : LOADER_LOG_HEAD;
++    if (!loader_log_linear && *cursor<=total) {
++        while (n<max && *cursor<total) {
++            if (*cursor>=LOADER_LOG_HEAD && *cursor<oldest) {
++                /* Preserve frame continuity: report the gap in the next frame. */
++                if (n) break;
++                *lost=oldest-*cursor; *cursor=oldest;
++            }
++            uint64_t p=*cursor;
++            out[n++]=loader_log[p<LOADER_LOG_HEAD ? p : LOADER_LOG_HEAD+(p-LOADER_LOG_HEAD)%LOADER_LOG_RING];
++            (*cursor)++;
++        }
++    }
++    os_atomic_store(&loader_log_lock,0,release);
++    __builtin_arm_wsr64("DAIF",daif);
++    return n;
+ }
+ 
+ /* Oldest first: the head, a note about what was dropped, then the ring from its oldest character. */
+@@ -371,6 +403,10 @@
+ 	 */
+ 	psci_smp_stop_others();
+ #endif
++#if HAKIOS_LITHIUM_USB_LOG
++    extern void lithium_usb_quiesce(void);
++    lithium_usb_quiesce();
++#endif
+ 	hakios_ufs_quiesce();          /* this kernel's requests to the storage done, UEFI's list as it was, for the log */
+ 	hakios_adreno_quiesce();       /* the GPU block, if it was started, has tables in memory that is about to be reused */
+ 	hakios_wifi_quiesce();         /* the Wi-Fi DSP, if it still runs (a panic), is not left to itself */

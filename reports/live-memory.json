@@ -1,0 +1,250 @@
+{
+  "schema": 1,
+  "analyzed_at": "2026-11-12T14:48:38.207756+08:00",
+  "target_os": "iOS 14",
+  "source": "running Android sysfs via ADB exec-out",
+  "archive_path": "artifacts/live/20261112-144834-876150/device-tree.tar",
+  "archive_sha256": "63a9c7766d62e59b196ed54f11fa5b66db7287545c86fb972c2f0db357f9fd9f",
+  "archive_complete_for_visible_sysfs": true,
+  "node_count": 1898,
+  "property_count": 14615,
+  "stock_node_count": 1898,
+  "normalized_sysfs_name_properties": 1898,
+  "all_stock_nodes_and_properties_present": true,
+  "live_root_identity_matches_stock": true,
+  "ram_ranges": [
+    {
+      "start": "0x40000000",
+      "end_exclusive": "0x100000000",
+      "size_bytes": 3221225472,
+      "size_mib": 3072.0
+    },
+    {
+      "start": "0x100000000",
+      "end_exclusive": "0x1bd950000",
+      "size_bytes": 3180658688,
+      "size_mib": 3033.3125
+    }
+  ],
+  "declared_ram_bytes": 6401884160,
+  "independent_memory_reg_sample_matches": true,
+  "reserved_memory": [
+    {
+      "node": "/reserved-memory/adsp_region",
+      "status": [],
+      "no_map": false,
+      "reusable": true,
+      "dynamic_size_bytes": 4194304,
+      "runtime_allocation_address_known": false,
+      "allocation_windows": [
+        {
+          "start": "0x0",
+          "end_exclusive": "0xffffffff",
+          "size_bytes": 4294967295,
+          "size_mib": 4095.9999990463257
+        }
+      ]
+    },
+    {
+      "node": "/reserved-memory/cont_splash_mem@83401000",
+      "status": [],
+      "no_map": false,
+      "reusable": false,
+      "fixed_ranges": [
+        {
+          "start": "0x83401000",
+          "end_exclusive": "0x85800000",
+          "size_bytes": 37744640,
+          "size_mib": 35.99609375
+        }
+      ]
+    },
+    {
+      "node": "/reserved-memory/cont_splash_mem_hdmi@b1c00000",
+      "status": [],
+      "no_map": false,
+      "reusable": false,
+      "fixed_ranges": [
+        {
+          "start": "0xb1c00000",
+          "end_exclusive": "0xb3fff000",
+          "size_bytes": 37744640,
+          "size_mib": 35.99609375
+        }
+      ]
+    },
+    {
+      "node": "/reserved-memory/dfps_data_mem@83400000",
+      "status": [],
+      "no_map": false,
+      "reusable": false,
+      "fixed_ranges": [
+        {
+          "start": "0x83400000",
+          "end_exclusive": "0x83401000",
+          "size_bytes": 4096,
+          "size_mib": 0.00390625
+        }
+      ]
+    },
+    {
+      "node": "/reserved-memory/modem_region@89c00000",
+      "status": [],
+      "no_map": true,
+      "reusable": false,
+      "fixed_ranges": [
+        {
+          "start": "0x89c00000",
+          "end_exclusive": "0x8fe00000",
+          "size_bytes": 102760448,
+          "size_mib": 98.0
+        }
+      ]
+    },
+    {
+      "node": "/reserved-memory/ocimem_log@0xb4000000",
+      "status": [],
+      "no_map": false,
+      "reusable": false,
+      "fixed_ranges": [
+        {
+          "start": "0xb4000000",
+          "end_exclusive": "0xb4100000",
+          "size_bytes": 1048576,
+          "size_mib": 1.0
+        }
+      ]
+    },
+    {
+      "node": "/reserved-memory/peripheral_region@8fe00000",
+      "status": [],
+      "no_map": true,
+      "reusable": false,
+      "fixed_ranges": [
+        {
+          "start": "0x8fe00000",
+          "end_exclusive": "0x92900000",
+          "size_bytes": 45088768,
+          "size_mib": 43.0
+        }
+      ]
+    },
+    {
+      "node": "/reserved-memory/qseecom_region",
+      "status": [],
+      "no_map": false,
+      "reusable": true,
+      "dynamic_size_bytes": 20971520,
+      "runtime_allocation_address_known": false,
+      "allocation_windows": [
+        {
+          "start": "0x0",
+          "end_exclusive": "0xffffffff",
+          "size_bytes": 4294967295,
+          "size_mib": 4095.9999990463257
+        }
+      ]
+    },
+    {
+      "node": "/reserved-memory/removed_regions@85800000",
+      "status": [],
+      "no_map": true,
+      "reusable": false,
+      "fixed_ranges": [
+        {
+          "start": "0x85800000",
+          "end_exclusive": "0x89c00000",
+          "size_bytes": 71303168,
+          "size_mib": 68.0
+        }
+      ]
+    },
+    {
+      "node": "/reserved-memory/secure_region",
+      "status": [],
+      "no_map": false,
+      "reusable": true,
+      "dynamic_size_bytes": 96468992,
+      "runtime_allocation_address_known": false,
+      "allocation_windows": [
+        {
+          "start": "0x0",
+          "end_exclusive": "0xffffffff",
+          "size_bytes": 4294967295,
+          "size_mib": 4095.9999990463257
+        }
+      ]
+    }
+  ],
+  "chosen_initrd": {
+    "linux,initrd-start": "0x42a00000",
+    "linux,initrd-end": "0x42c28cf1"
+  },
+  "stock_to_live_changes": [
+    {
+      "node": "/chosen",
+      "property": "bootargs",
+      "before_size": 46,
+      "after_size": 597,
+      "before_sha256": "b9d3abe4915f70124d9f9639719e46dd37f5358e8b58d30271da2eaec2c30a36",
+      "after_sha256": "d686964f1b085726473a3dcd282a9ee5eb4f2c7e464c4861a5110351017f48d8"
+    },
+    {
+      "node": "/chosen",
+      "property": "hwversion",
+      "before_size": null,
+      "after_size": 4,
+      "before_sha256": null,
+      "after_sha256": "1f7460802c31e58ecd5f4d7bdc9279a16e0baed195cff238d79c41e080482097"
+    },
+    {
+      "node": "/chosen",
+      "property": "linux,initrd-end",
+      "before_size": null,
+      "after_size": 4,
+      "before_sha256": null,
+      "after_sha256": "030158e3bd1b9f4d3d4d6234e9cbbdc98961f6049670d92fbc7050a9a8e0a2f2"
+    },
+    {
+      "node": "/chosen",
+      "property": "linux,initrd-start",
+      "before_size": null,
+      "after_size": 4,
+      "before_sha256": null,
+      "after_sha256": "2b2149a3e7e9e2dab48aca85f843233452d08c2b97b15f8f8402aa38caf8f7eb"
+    },
+    {
+      "node": "/chosen",
+      "property": "pureason",
+      "before_size": null,
+      "after_size": 4,
+      "before_sha256": null,
+      "after_sha256": "7276d8b7f22f533ddb66879963fd58823a337f9bd8f793e38b50fe39e5f1429f"
+    },
+    {
+      "node": "/chosen",
+      "property": "smeminfo",
+      "before_size": null,
+      "after_size": 4,
+      "before_sha256": null,
+      "after_sha256": "b40711a88c7039756fb8a73827eabe2c0fe5a0346ca7e0a104adc0fc764f528d"
+    },
+    {
+      "node": "/memory",
+      "property": "reg",
+      "before_size": 16,
+      "after_size": 32,
+      "before_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+      "after_sha256": "61eb57b3a37d472c18f8bc7ff2686df1f3f271316e925af46c9371cc165fea42"
+    }
+  ],
+  "original_stock_memreserve_entries": [],
+  "limits": [
+    "This is a visible sysfs snapshot, not a byte copy of root-only /sys/firmware/fdt",
+    "The live FDT header and binary memreserve table are not available through this snapshot",
+    "Declared RAM includes reserved and occupied ranges; no safe allocation map is claimed",
+    "Dynamic reserved-memory pools do not expose their actual allocation addresses here",
+    "Current Android initrd addresses do not prescribe future UEFI placement"
+  ],
+  "phone_write_operations_performed": false
+}

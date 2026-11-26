@@ -1,0 +1,75 @@
+--- a/xnu/files/bsd/sys/hakios.input.h
++++ b/xnu/files/bsd/sys/hakios.input.h
+@@ -18,6 +18,14 @@
+ #ifdef KERNEL
+ /* For drivers; not from interrupt context. */
+ void hakios_touch_post(uint32_t type, uint32_t finger, uint32_t x, uint32_t y);
++#define HAKIOS_TOUCH_BATCH_MAX 20
++/*
++ * Atomically append 1..HAKIOS_TOUCH_BATCH_MAX touch-only records in ordinary thread context.
++ * Input time fields are ignored. Success assigns one mach_absolute_time() to every record,
++ * preserves input order, and wakes readers once. Returns EINVAL for invalid input or ENOBUFS
++ * when the complete batch does not fit; on rejection no queue or touch state is changed.
++ */
++int hakios_touch_post_batch(const struct hakios_touch *events, uint32_t count);
+ void hakios_input_init(void);
+ void hakios_virtio_input_init(void);   /* boot-arg virtio_input=1: QEMU's virtio pointer and keyboard */
+ void hakios_goodix_init(void);         /* boot-arg touchscreen=1: the phone's Goodix or FocalTech touch screen */
+--- a/drivers/input/hakios.input.c
++++ b/drivers/input/hakios.input.c
+@@ -204,6 +204,55 @@
+ 	touch_post(type, finger, x, y, true);
+ }
+ 
++int
++hakios_touch_post_batch(const struct hakios_touch *events, uint32_t count)
++{
++	struct hakios_touch staged[HAKIOS_TOUCH_BATCH_MAX];
++	struct hakios_touch *t;
++	uint32_t i, used;
++	uint64_t frame_time;
++
++	if (events == NULL || count == 0 || count > HAKIOS_TOUCH_BATCH_MAX) {
++		return EINVAL;
++	}
++	/* Stage and validate the complete input before acquiring the queue lock. */
++	for (i = 0; i < count; i++) {
++		staged[i] = events[i];
++		if (staged[i].type < HAKIOS_TOUCH_DOWN || staged[i].type > HAKIOS_TOUCH_UP) {
++			return EINVAL;
++		}
++	}
++
++	lck_mtx_lock(&touch_lock);
++	/* Unsigned subtraction intentionally permits head/tail counters to wrap. */
++	used = touch_tail - touch_head;
++	if (used > TOUCH_QUEUE || count > TOUCH_QUEUE - used) {
++		lck_mtx_unlock(&touch_lock);
++		return ENOBUFS;
++	}
++
++	frame_time = mach_absolute_time();
++	for (i = 0; i < count; i++) {
++		t = &touch_queue[touch_tail++ % TOUCH_QUEUE];
++		*t = staged[i];
++		t->time = frame_time;
++		/* Keep the legacy per-event touch-feel cadence; queue time remains frame_time. */
++		touch_feel_add(t->type, t->finger, mach_absolute_time());
++		if (latency_lines()) {
++			uint64_t ns;
++
++			absolutetime_to_nanoseconds(t->time, &ns);
++			hakios_tl("tl: p %u %u %u %u at %llu\n", t->type, t->finger, t->x, t->y, ns / 1000);
++		}
++		t->x = t->x > 65535 ? 65535 : t->x;
++		t->y = t->y > 65535 ? 65535 : t->y;
++		count_fingers(t->type, t->finger);
++	}
++	lck_mtx_unlock(&touch_lock);
++	wakeup(&touch_queue);
++	return 0;
++}
++
+ static int
+ touch_open(__unused dev_t dev, __unused int flags, __unused int devtype, __unused struct proc *p)
+ {

@@ -1,0 +1,34 @@
+--- a/xnuloader/loader.c
++++ b/xnuloader/loader.c
+@@ -448,8 +448,29 @@
+ 	    "LITHIUM P2 DYNFILE LAUNCHD ", "LITHIUM P2 LAUNCHMOUNTS ", "LITHIUM P2 LAUNCHHANDOFF ", "LITHIUM P2 LAUNCHBOOT ", "LITHIUM P2 LAUNCHSTDIO ", "LITHIUM P2 LAUNCHFD step=open ", "LITHIUM P2 LAUNCHFD step=dup0 ", "LITHIUM P2 LAUNCHFD step=dup1 ", "LITHIUM P2 LAUNCHFD step=close ", "LITHIUM P2 LAUNCHFD step=tty ", "LITHIUM P2 LAUNCHEXEC ",
+ 	    "LITHIUM P2 LAUNCHJOB ", "LITHIUM P2 LAUNCHPROC PID1 ",
+ 	    "LITHIUM P2 LAUNCHPROC NOTIFYD ", "LITHIUM P2 LAUNCHPROC CFPREFSD ", "LITHIUM P2 LAUNCHRESULT "};
+-	for (unsigned i=0; i<sizeof(launch)/sizeof(launch[0]); i++)
+-	    lithium_show_line(lithium_last_line(log, bytes, launch[i]), log + bytes);
++	/* A started observer proves the preceding descriptor/exec handoff.
++	 * Keep its result and the current PS phase compact; pre-job failures
++	 * still use the complete legacy handoff diagnostics above. */
++	const char *budget = lithium_last_line(log, bytes, "LITHIUM P2 LAUNCHBUDGET ");
++	if (budget == NULL) {
++		for (unsigned i=0; i<sizeof(launch)/sizeof(launch[0]); i++)
++		    lithium_show_line(lithium_last_line(log, bytes, launch[i]), log + bytes);
++	} else {
++		static const char *observer[] = {"LITHIUM P2 LAUNCHROOT ", "LITHIUM P2 LAUNCHJOB ",
++		    "LITHIUM P2 LAUNCHBUDGET ", "LITHIUM P2 LAUNCHOBS phase=start ",
++		    "LITHIUM P2 LAUNCHOBS phase=ps_begin ", "LITHIUM P2 LAUNCHPS stage=capture ",
++		    "LITHIUM P2 DYNBUDGET PS ", "LITHIUM P2 DYNRUN PS ",
++		    "LITHIUM P2 DYNWAIT PS ", "LITHIUM P2 DYNTIME PS ",
++		    "LITHIUM P2 LAUNCHPS stage=complete ", "LITHIUM P2 LAUNCHPROC PID1 ",
++		    "LITHIUM P2 LAUNCHPROC NOTIFYD ", "LITHIUM P2 LAUNCHPROC CFPREFSD ",
++		    "LITHIUM P2 LAUNCHRESULT "};
++		for (unsigned i=0; i<sizeof(observer)/sizeof(observer[0]); i++)
++		    lithium_show_line(lithium_last_line(log, bytes, observer[i]), log + bytes);
++		const char *last = lithium_last_line(log, bytes, "LITHIUM P2 LAUNCHOBS ");
++		if (last != lithium_last_line(log, bytes, "LITHIUM P2 LAUNCHOBS phase=start ") &&
++		    last != lithium_last_line(log, bytes, "LITHIUM P2 LAUNCHOBS phase=ps_begin "))
++		    lithium_show_line(last, log + bytes);
++	}
+ 	static const char *dynamic[] = {"LITHIUM P2 DYNBUDGET DF ", "LITHIUM P2 DYNBUDGET MOUNT ", "LITHIUM P2 DYNSTART ", "LITHIUM P2 DYNROOT ",
+ 	    "LITHIUM P2 DYNCACHE ", "LITHIUM P2 SR438 ", "LITHIUM P2 DYNEXEC ",
+ 	    "LITHIUM P2 MACH14 ",

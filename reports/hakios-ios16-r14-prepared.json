@@ -1,0 +1,29 @@
+{
+  "revision": 14,
+  "status": "prepared_not_device_tested",
+  "prepared_at": "2026-11-18T02:40:30.295372+08:00",
+  "passed": true,
+  "image_path": "artifacts/hakios/lithium-ios16/phase4-r14/lithium-hakios-ios16-r14.img",
+  "image_sha256": "6201aae3c699f601488c2fd59540f59a5453844ace89384ce919fbc5393c67fc",
+  "kernel_sha256": "398cd23b8ead6ff9245fcfd9dede9f1bdedf5d4e996e5e736ef3a46c5b141671",
+  "cmdline": "bootcpu=2 cpus=3 serial=3 -v ufs=2 root_apfs=ufs_userdata var_hfs=ufs_darwin_data ufs_write=1 lithiumusb=2 gl=0 metal=0 fbwidth=750 fbheight=1334 fb_threads=1 fb_filter=0 applog=1 applog_name=backboardd,SpringBoard loader_return_after=600 usertraps=1 lithium_sb_watch=1 sb_delay=8 epoch=1794940756 ustacks=SpringBoard ustacks_at=180 hfsdiag=1 cpu_sanity=1 hfs_bench=1",
+  "runtime_change": "CPU diagnostic traverses inclusive XNU logical maximum instead of fixed physical count4",
+  "actual_binary_range_inspected": true,
+  "actual_binary_evidence": {
+    "get_max_call": "0xfffffff007435c94",
+    "compare": "0xfffffff007435d40",
+    "exit_if_above": "0xfffffff007435d44",
+    "processor_query": "0xfffffff007435d4c"
+  },
+  "cpu_count": 3,
+  "kernel_memory_mib": 2880,
+  "observation_seconds": 600,
+  "userdata_reflash": false,
+  "hfs_policy_changed": false,
+  "clock_policy_changed": false,
+  "checks_report": "reports/hakios-ios16-r14-checks.json",
+  "package_checks_report": "reports/hakios-ios16-package-host-checks.json",
+  "prior_panic_report": "reports/hakios-ios16-r13-final-diagnosis.json",
+  "hardware_verified": false,
+  "springboard_verified": false
+}

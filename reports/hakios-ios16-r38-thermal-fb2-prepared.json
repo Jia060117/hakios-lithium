@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "phase": "R38-thermal-fb2-host-ready",
+  "date": "2026-11-21",
+  "runtime_verified": false,
+  "device_operations": 1,
+  "boot_counts": {
+    "hakios": 78,
+    "ios16": 47
+  },
+  "report": "reports/hakios-ios16-r38-thermal-fb2-prepared.md",
+  "thermal": {
+    "package": "artifacts/hakios/lithium-ios16/phase4-r37-ram-frequency-15",
+    "image_sha256": "50d19aa239ff0b396d2e44acfaec6af8f1db19f050e2d33fe3daa0b3ed8cab39",
+    "kernel_sha256": "89ef867c891e2401fe7eb319d879f3ae9300d7fb31c1d1be1c863da44731d2e5",
+    "target_hz_model": 307200000,
+    "measurement_enabled": true,
+    "regulator_writes": 0,
+    "TSENS_writes": 0,
+    "timer_seconds": 180,
+    "automatic_fastboot_requested": true,
+    "hardware_temperature_verified": false
+  },
+  "fb2": {
+    "package": "evidence/cpu-r38-20261121/fb-workers/phase4-r38-ufs-fb2-01",
+    "image_sha256": "cc8d2b52bd8672ff7ec9285882f1c33bf9012a020f67f2522c20bab280612a6d",
+    "only_argument_change": "fb_threads=1 -> fb_threads=2",
+    "UFS_desktop": true,
+    "normal_Data_writes": true,
+    "automatic_fastboot": false,
+    "runtime_verified": false,
+    "runner": "reports/local/run-ios16-r38-ufs-fb2-01.py",
+    "runner_host_verified": true
+  },
+  "next_frequency": {
+    "hz": 384000000,
+    "implemented": false,
+    "hardware_verified": false,
+    "requires": "valid thermal data and supported target supply/settled condition first"
+  },
+  "evidence": [
+    "evidence/cpu-r38-20261121/thermal-main/host-final-verification.json",
+    "evidence/cpu-r38-20261121/thermal-main/kernel-result-thermal01.json",
+    "evidence/cpu-r38-20261121/perf-uefi-support06/ram-support.json",
+    "evidence/cpu-r38-20261121/fb-workers/main-validation.json"
+  ],
+  "awaiting": "manual Fastboot readiness; no new approval requested",
+  "device_state_changes": 0,
+  "readiness": {
+    "expected_fastboot_present": false,
+    "evidence": "evidence/cpu-r38-20261121/thermal-main/fastboot-readiness.json"
+  }
+}

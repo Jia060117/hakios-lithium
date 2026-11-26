@@ -1,0 +1,186 @@
+{
+  "recorded_at": "2026-11-16T17:07:47.847907+08:00",
+  "phase": "1 AUDIT",
+  "status": "complete_waiting_for_phase2_confirmation",
+  "authority": {
+    "target_change_explicitly_requested": true,
+    "plan_approved": true,
+    "current_phase_scope": "audit_and_authorized_wsl_housekeeping_only",
+    "target": "iOS16.5/20F66/arm64/iPhone10,3/D22AP",
+    "supersedes_prior_ios14_target": true,
+    "complete_hakios_only": true,
+    "legacy_7195_read_only": true,
+    "stop_after_every_phase": true
+  },
+  "source": {
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu": "8796.121.2",
+    "upstream_files_checked": 879,
+    "unchanged": 864,
+    "changed": 15,
+    "missing": 0,
+    "added_common_files": [
+      "xnu/files/pexpert/arm/pe_serial.c"
+    ],
+    "remote_refs": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438\tHEAD\n63fc2b4633bac3af8e57dadab9f5a8d4cb940438\trefs/heads/main\n",
+    "provenance": {
+      "common_diff_sha256": "ecf1d410d6a1a554f57bc60e81314d9fa3f71e3f9151d37299a56f214ccbc961",
+      "common_matches_recorded_marker": true,
+      "generated_kernel_matches_recorded_dependencies": true,
+      "overlay_files_checked": 73,
+      "overlay_mismatches": [],
+      "driver_files_checked": 49,
+      "driver_mismatches": [],
+      "device_files_checked": 85,
+      "device_copy_mismatches": [],
+      "patch_file_mismatches": []
+    },
+    "generated_kernel_counts": {
+      "SAME_AS_UPSTREAM": 191,
+      "LOCAL_DELTA": 20,
+      "DEPENDENCY": 70
+    },
+    "mu_commit": "6b3d90b79e191e08171bfedd3980234a7e49d340"
+  },
+  "inventory": {
+    "project_files": 723,
+    "patch_hunks": 114,
+    "classification_counts": {
+      "DEVICE-SPECIFIC": 76,
+      "DEVICE-SPECIFIC|IOS14-SPECIFIC": 45,
+      "IOS14-SPECIFIC": 602
+    },
+    "authorship_cannot_be_attributed_without_commit_history": true,
+    "all_723_baseline_hashes_unchanged": true,
+    "operation_guards_checked": 16,
+    "operation_guards_unchanged": true,
+    "r31_already_consumed": true
+  },
+  "ipsw": {
+    "path": "D:\\iPhone10,3,iPhone10,6_16.5_20F66_Restore.ipsw",
+    "bytes": 6165698198,
+    "version": "16.5",
+    "build": "20F66",
+    "supported": [
+      "iPhone10,6",
+      "iPhone10,3"
+    ],
+    "manifest_sha256": "7dd041dc7ac05f2e1f041013024f9062b8166d916c708ff8b46aca5e089e091f",
+    "identity": "iPhone10,3 / D22AP",
+    "components": {
+      "OS": {
+        "member": "096-04088-077.dmg",
+        "bytes": 4728546953,
+        "zip_crc": "0x28fc181"
+      },
+      "Cryptex1,SystemOS": {
+        "member": "096-04666-078.dmg",
+        "bytes": 2726297600,
+        "zip_crc": "0x1ddd2ad5"
+      },
+      "Cryptex1,AppOS": {
+        "member": "096-03536-083.dmg",
+        "bytes": 10485760,
+        "zip_crc": "0x27c0c027"
+      },
+      "DeviceTree": {
+        "member": "Firmware/all_flash/DeviceTree.d22ap.im4p",
+        "bytes": 33694,
+        "zip_crc": "0x28712866"
+      }
+    },
+    "full_firmware_hash_deferred_to_userspace_phase": true
+  },
+  "proposed_ufs_layout": {
+    "proposal_only": true,
+    "outer_partition": "existing userdata; no GPT change proposed",
+    "logical_sector_bytes": 4096,
+    "experiment_bytes": 21474836480,
+    "regions": [
+      {
+        "name": "System APFS",
+        "offset": 0,
+        "bytes": 5628755968,
+        "mode": "read-only"
+      },
+      {
+        "name": "OS cryptex APFS",
+        "offset": 5628755968,
+        "bytes": 2726297600,
+        "mode": "read-only"
+      },
+      {
+        "name": "App cryptex APFS",
+        "offset": 8355053568,
+        "bytes": 10485760,
+        "mode": "read-only"
+      },
+      {
+        "name": "Data HFS+ journaled",
+        "offset": 8365539328,
+        "bytes": 13109297152,
+        "mode": "read-write after board write/flush and range guards implemented"
+      }
+    ],
+    "udif_apfs_first_sector": 34,
+    "udif_apfs_sectors": 10993664,
+    "upstream_data_first_block": 2042368,
+    "data_boundary_matches_upstream": true,
+    "device_current_geometry_recheck_required_before_write": true,
+    "phone_accessed": false
+  },
+  "wsl_housekeeping": {
+    "known_allocated_bytes_released": 19223838720,
+    "filesystem_used_bytes_reduction": 19164897280,
+    "archives_preserved": [
+      {
+        "path": "E:\\IOS-MIX1-artifacts\\ios14-d20ap\\ios14-root-hfs.img",
+        "exists": true,
+        "bytes": 17179869184,
+        "prior_full_sha256": "396e0b17d99eae20abda540f35834f95cd2857c858cc1a959f709cc7194ef6b3",
+        "fully_rehashed_at_finalization": false
+      },
+      {
+        "path": "E:\\IOS-MIX1-artifacts\\ios14-d20ap\\ios14-root-hfs.sparse.img",
+        "exists": true,
+        "bytes": 9383190364,
+        "prior_full_sha256": "d9d1bb002bb53259c718ff2b1ca7f6132609ee420e2a619711ef130c11807751",
+        "fully_rehashed_at_finalization": false
+      }
+    ],
+    "original_paths_replaced_with_verified_archive_symlinks": true,
+    "symlink_targets_verified_by_cleanup": true,
+    "final_symlink_recheck_skipped_to_keep_wsl_stopped": true,
+    "ubuntu_final_state": "Stopped",
+    "final_wsl_status": "NAME              STATE           VERSION\r\n* Ubuntu            Stopped         2\r\n  docker-desktop    Stopped         2",
+    "termination_command_needed_at_finalization": false,
+    "memory_gib": 16,
+    "processors": 12,
+    "swap_gib": 2,
+    "auto_memory_reclaim": "dropCache",
+    "windows_vhdx_compacted": false,
+    "other_projects_deleted": false,
+    "source_or_build_dependencies_deleted": false,
+    "logs_deleted": false
+  },
+  "actions": {
+    "new_report_files": true,
+    "wsl_housekeeping": true,
+    "implementation_or_configuration_changed": false,
+    "kernel_built": false,
+    "backup_created": false,
+    "git_commit_or_branch_created": false,
+    "phone_queried": false,
+    "phone_booted": false,
+    "partition_written": false,
+    "qemu_executed": false
+  },
+  "next_phase": "Verified independent backup, curated initial Git snapshot/backup branch, then full HakiOS iOS16 device integration/build; report and stop",
+  "reports": {
+    "files": "reports/hakios-ios16-migration-files.csv",
+    "common_deltas": "reports/hakios-ios16-migration-common-deltas.csv",
+    "kernel_deltas": "reports/hakios-ios16-migration-kernel-deltas.csv",
+    "patch_hunks": "reports/hakios-ios16-migration-patch-hunks.csv",
+    "raw_evidence": "reports/local/ios16-migration-phase1/"
+  }
+}

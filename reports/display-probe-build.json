@@ -1,0 +1,748 @@
+{
+  "schema": 1,
+  "profile": "display",
+  "purpose": "ARM64 observer chained to unchanged stock kernel body",
+  "target_os": "iOS 14 (diagnostic preparatory stage; this image runs stock Android)",
+  "stock_boot_sha256": "2c070c67b07000a02de42fa05a6bcd93b7c32b3770d3fa9e495f321626278f44",
+  "image_sha256": "7ab7d822a7840f7263bb7558d4b154a09d72143d658787a1a46f5af49fc5b761",
+  "image_path": "out/display-probe/lithium-display-probe.img",
+  "image_bytes": 23498752,
+  "ramdisk_bytes": 2264305,
+  "image_header_declared_bytes": 37957632,
+  "stock_image_file_bytes": 33518592,
+  "probe_offset": "0x1ff8000",
+  "probe_bytes": 4096,
+  "probe_sha256": "def034905ff24317c918c6614bc3d740421066e8a7cca93a7d3a0a100d8808ab",
+  "modified_original_kernel_bytes": [
+    4,
+    5,
+    6,
+    7
+  ],
+  "ramdisk_unchanged": true,
+  "stock_boot_signature_removed_as_invalidated": true,
+  "diagnostic_is_signed": false,
+  "all_twenty_dtbs_preserved_with_one_added_property_each": true,
+  "image_size_header_unchanged": true,
+  "android_sha1_roundtrip_valid": true,
+  "property": "mix1,display-probe-v1",
+  "marker": "MIX1DISPLAYPROBE",
+  "record_bytes": 4096,
+  "fields": [
+    "entry_pc",
+    "image_base",
+    "continuation_pc",
+    "fdt_address",
+    "fdt_size",
+    "x0",
+    "x1",
+    "x2",
+    "x3",
+    "sp",
+    "current_el_raw",
+    "daif",
+    "midr_el1",
+    "mpidr_el1",
+    "id_aa64mmfr0_el1",
+    "id_aa64mmfr1_el1",
+    "id_aa64isar0_el1",
+    "id_aa64isar1_el1",
+    "id_aa64pfr0_el1",
+    "ctr_el0",
+    "dczid_el0",
+    "cntfrq_el0",
+    "sctlr_el1",
+    "tcr_el1",
+    "ttbr0_el1",
+    "ttbr1_el1",
+    "mair_el1",
+    "vbar_el1",
+    "cpacr_el1",
+    "sctlr_el2",
+    "tcr_el2",
+    "ttbr0_el2",
+    "mair_el2",
+    "vbar_el2",
+    "hcr_el2",
+    "vttbr_el2",
+    "vtcr_el2",
+    "cntvoff_el2"
+  ],
+  "qemu_validation_status": "10 execution cases passed, including EL1/EL2 exception recovery",
+  "device_validation_status": "1 temporary boots: entry records acquired; Android returned",
+  "expected_addresses": {
+    "kernel": "0x40080000",
+    "fdt": "0x42800000",
+    "ramdisk": "0x42a00000"
+  },
+  "limitations": [
+    "Expected addresses are aboot inference until actual probe PC is collected.",
+    "Same-EL synchronous trap recovery only; higher-EL trapping is outside this observer.",
+    "Does not establish UEFI/XNU boot or display scanout parameters."
+  ],
+  "display_registers": [
+    {
+      "group": "MDSS",
+      "name": "HW_VERSION",
+      "address": 9437184
+    },
+    {
+      "group": "VIG0",
+      "name": "SRC_SIZE",
+      "address": 9457664
+    },
+    {
+      "group": "VIG0",
+      "name": "SRC_IMG_SIZE",
+      "address": 9457668
+    },
+    {
+      "group": "VIG0",
+      "name": "SRC_XY",
+      "address": 9457672
+    },
+    {
+      "group": "VIG0",
+      "name": "OUT_SIZE",
+      "address": 9457676
+    },
+    {
+      "group": "VIG0",
+      "name": "OUT_XY",
+      "address": 9457680
+    },
+    {
+      "group": "VIG0",
+      "name": "SRC0_ADDR",
+      "address": 9457684
+    },
+    {
+      "group": "VIG0",
+      "name": "SRC_YSTRIDE0",
+      "address": 9457700
+    },
+    {
+      "group": "VIG0",
+      "name": "SRC_FORMAT",
+      "address": 9457712
+    },
+    {
+      "group": "VIG0",
+      "name": "SRC_UNPACK_PATTERN",
+      "address": 9457716
+    },
+    {
+      "group": "VIG0",
+      "name": "SRC_OP_MODE",
+      "address": 9457720
+    },
+    {
+      "group": "VIG1",
+      "name": "SRC_SIZE",
+      "address": 9465856
+    },
+    {
+      "group": "VIG1",
+      "name": "SRC_IMG_SIZE",
+      "address": 9465860
+    },
+    {
+      "group": "VIG1",
+      "name": "SRC_XY",
+      "address": 9465864
+    },
+    {
+      "group": "VIG1",
+      "name": "OUT_SIZE",
+      "address": 9465868
+    },
+    {
+      "group": "VIG1",
+      "name": "OUT_XY",
+      "address": 9465872
+    },
+    {
+      "group": "VIG1",
+      "name": "SRC0_ADDR",
+      "address": 9465876
+    },
+    {
+      "group": "VIG1",
+      "name": "SRC_YSTRIDE0",
+      "address": 9465892
+    },
+    {
+      "group": "VIG1",
+      "name": "SRC_FORMAT",
+      "address": 9465904
+    },
+    {
+      "group": "VIG1",
+      "name": "SRC_UNPACK_PATTERN",
+      "address": 9465908
+    },
+    {
+      "group": "VIG1",
+      "name": "SRC_OP_MODE",
+      "address": 9465912
+    },
+    {
+      "group": "VIG2",
+      "name": "SRC_SIZE",
+      "address": 9474048
+    },
+    {
+      "group": "VIG2",
+      "name": "SRC_IMG_SIZE",
+      "address": 9474052
+    },
+    {
+      "group": "VIG2",
+      "name": "SRC_XY",
+      "address": 9474056
+    },
+    {
+      "group": "VIG2",
+      "name": "OUT_SIZE",
+      "address": 9474060
+    },
+    {
+      "group": "VIG2",
+      "name": "OUT_XY",
+      "address": 9474064
+    },
+    {
+      "group": "VIG2",
+      "name": "SRC0_ADDR",
+      "address": 9474068
+    },
+    {
+      "group": "VIG2",
+      "name": "SRC_YSTRIDE0",
+      "address": 9474084
+    },
+    {
+      "group": "VIG2",
+      "name": "SRC_FORMAT",
+      "address": 9474096
+    },
+    {
+      "group": "VIG2",
+      "name": "SRC_UNPACK_PATTERN",
+      "address": 9474100
+    },
+    {
+      "group": "VIG2",
+      "name": "SRC_OP_MODE",
+      "address": 9474104
+    },
+    {
+      "group": "VIG3",
+      "name": "SRC_SIZE",
+      "address": 9482240
+    },
+    {
+      "group": "VIG3",
+      "name": "SRC_IMG_SIZE",
+      "address": 9482244
+    },
+    {
+      "group": "VIG3",
+      "name": "SRC_XY",
+      "address": 9482248
+    },
+    {
+      "group": "VIG3",
+      "name": "OUT_SIZE",
+      "address": 9482252
+    },
+    {
+      "group": "VIG3",
+      "name": "OUT_XY",
+      "address": 9482256
+    },
+    {
+      "group": "VIG3",
+      "name": "SRC0_ADDR",
+      "address": 9482260
+    },
+    {
+      "group": "VIG3",
+      "name": "SRC_YSTRIDE0",
+      "address": 9482276
+    },
+    {
+      "group": "VIG3",
+      "name": "SRC_FORMAT",
+      "address": 9482288
+    },
+    {
+      "group": "VIG3",
+      "name": "SRC_UNPACK_PATTERN",
+      "address": 9482292
+    },
+    {
+      "group": "VIG3",
+      "name": "SRC_OP_MODE",
+      "address": 9482296
+    },
+    {
+      "group": "RGB0",
+      "name": "SRC_SIZE",
+      "address": 9523200
+    },
+    {
+      "group": "RGB0",
+      "name": "SRC_IMG_SIZE",
+      "address": 9523204
+    },
+    {
+      "group": "RGB0",
+      "name": "SRC_XY",
+      "address": 9523208
+    },
+    {
+      "group": "RGB0",
+      "name": "OUT_SIZE",
+      "address": 9523212
+    },
+    {
+      "group": "RGB0",
+      "name": "OUT_XY",
+      "address": 9523216
+    },
+    {
+      "group": "RGB0",
+      "name": "SRC0_ADDR",
+      "address": 9523220
+    },
+    {
+      "group": "RGB0",
+      "name": "SRC_YSTRIDE0",
+      "address": 9523236
+    },
+    {
+      "group": "RGB0",
+      "name": "SRC_FORMAT",
+      "address": 9523248
+    },
+    {
+      "group": "RGB0",
+      "name": "SRC_UNPACK_PATTERN",
+      "address": 9523252
+    },
+    {
+      "group": "RGB0",
+      "name": "SRC_OP_MODE",
+      "address": 9523256
+    },
+    {
+      "group": "RGB1",
+      "name": "SRC_SIZE",
+      "address": 9531392
+    },
+    {
+      "group": "RGB1",
+      "name": "SRC_IMG_SIZE",
+      "address": 9531396
+    },
+    {
+      "group": "RGB1",
+      "name": "SRC_XY",
+      "address": 9531400
+    },
+    {
+      "group": "RGB1",
+      "name": "OUT_SIZE",
+      "address": 9531404
+    },
+    {
+      "group": "RGB1",
+      "name": "OUT_XY",
+      "address": 9531408
+    },
+    {
+      "group": "RGB1",
+      "name": "SRC0_ADDR",
+      "address": 9531412
+    },
+    {
+      "group": "RGB1",
+      "name": "SRC_YSTRIDE0",
+      "address": 9531428
+    },
+    {
+      "group": "RGB1",
+      "name": "SRC_FORMAT",
+      "address": 9531440
+    },
+    {
+      "group": "RGB1",
+      "name": "SRC_UNPACK_PATTERN",
+      "address": 9531444
+    },
+    {
+      "group": "RGB1",
+      "name": "SRC_OP_MODE",
+      "address": 9531448
+    },
+    {
+      "group": "RGB2",
+      "name": "SRC_SIZE",
+      "address": 9539584
+    },
+    {
+      "group": "RGB2",
+      "name": "SRC_IMG_SIZE",
+      "address": 9539588
+    },
+    {
+      "group": "RGB2",
+      "name": "SRC_XY",
+      "address": 9539592
+    },
+    {
+      "group": "RGB2",
+      "name": "OUT_SIZE",
+      "address": 9539596
+    },
+    {
+      "group": "RGB2",
+      "name": "OUT_XY",
+      "address": 9539600
+    },
+    {
+      "group": "RGB2",
+      "name": "SRC0_ADDR",
+      "address": 9539604
+    },
+    {
+      "group": "RGB2",
+      "name": "SRC_YSTRIDE0",
+      "address": 9539620
+    },
+    {
+      "group": "RGB2",
+      "name": "SRC_FORMAT",
+      "address": 9539632
+    },
+    {
+      "group": "RGB2",
+      "name": "SRC_UNPACK_PATTERN",
+      "address": 9539636
+    },
+    {
+      "group": "RGB2",
+      "name": "SRC_OP_MODE",
+      "address": 9539640
+    },
+    {
+      "group": "RGB3",
+      "name": "SRC_SIZE",
+      "address": 9547776
+    },
+    {
+      "group": "RGB3",
+      "name": "SRC_IMG_SIZE",
+      "address": 9547780
+    },
+    {
+      "group": "RGB3",
+      "name": "SRC_XY",
+      "address": 9547784
+    },
+    {
+      "group": "RGB3",
+      "name": "OUT_SIZE",
+      "address": 9547788
+    },
+    {
+      "group": "RGB3",
+      "name": "OUT_XY",
+      "address": 9547792
+    },
+    {
+      "group": "RGB3",
+      "name": "SRC0_ADDR",
+      "address": 9547796
+    },
+    {
+      "group": "RGB3",
+      "name": "SRC_YSTRIDE0",
+      "address": 9547812
+    },
+    {
+      "group": "RGB3",
+      "name": "SRC_FORMAT",
+      "address": 9547824
+    },
+    {
+      "group": "RGB3",
+      "name": "SRC_UNPACK_PATTERN",
+      "address": 9547828
+    },
+    {
+      "group": "RGB3",
+      "name": "SRC_OP_MODE",
+      "address": 9547832
+    },
+    {
+      "group": "DMA0",
+      "name": "SRC_SIZE",
+      "address": 9588736
+    },
+    {
+      "group": "DMA0",
+      "name": "SRC_IMG_SIZE",
+      "address": 9588740
+    },
+    {
+      "group": "DMA0",
+      "name": "SRC_XY",
+      "address": 9588744
+    },
+    {
+      "group": "DMA0",
+      "name": "OUT_SIZE",
+      "address": 9588748
+    },
+    {
+      "group": "DMA0",
+      "name": "OUT_XY",
+      "address": 9588752
+    },
+    {
+      "group": "DMA0",
+      "name": "SRC0_ADDR",
+      "address": 9588756
+    },
+    {
+      "group": "DMA0",
+      "name": "SRC_YSTRIDE0",
+      "address": 9588772
+    },
+    {
+      "group": "DMA0",
+      "name": "SRC_FORMAT",
+      "address": 9588784
+    },
+    {
+      "group": "DMA0",
+      "name": "SRC_UNPACK_PATTERN",
+      "address": 9588788
+    },
+    {
+      "group": "DMA0",
+      "name": "SRC_OP_MODE",
+      "address": 9588792
+    },
+    {
+      "group": "DMA1",
+      "name": "SRC_SIZE",
+      "address": 9596928
+    },
+    {
+      "group": "DMA1",
+      "name": "SRC_IMG_SIZE",
+      "address": 9596932
+    },
+    {
+      "group": "DMA1",
+      "name": "SRC_XY",
+      "address": 9596936
+    },
+    {
+      "group": "DMA1",
+      "name": "OUT_SIZE",
+      "address": 9596940
+    },
+    {
+      "group": "DMA1",
+      "name": "OUT_XY",
+      "address": 9596944
+    },
+    {
+      "group": "DMA1",
+      "name": "SRC0_ADDR",
+      "address": 9596948
+    },
+    {
+      "group": "DMA1",
+      "name": "SRC_YSTRIDE0",
+      "address": 9596964
+    },
+    {
+      "group": "DMA1",
+      "name": "SRC_FORMAT",
+      "address": 9596976
+    },
+    {
+      "group": "DMA1",
+      "name": "SRC_UNPACK_PATTERN",
+      "address": 9596980
+    },
+    {
+      "group": "DMA1",
+      "name": "SRC_OP_MODE",
+      "address": 9596984
+    },
+    {
+      "group": "CTL0",
+      "name": "LAYER0",
+      "address": 9445376
+    },
+    {
+      "group": "CTL0",
+      "name": "LAYER1",
+      "address": 9445380
+    },
+    {
+      "group": "CTL0",
+      "name": "LAYER2",
+      "address": 9445384
+    },
+    {
+      "group": "CTL0",
+      "name": "LAYER3",
+      "address": 9445388
+    },
+    {
+      "group": "CTL0",
+      "name": "TOP",
+      "address": 9445396
+    },
+    {
+      "group": "CTL1",
+      "name": "LAYER0",
+      "address": 9445888
+    },
+    {
+      "group": "CTL1",
+      "name": "LAYER1",
+      "address": 9445892
+    },
+    {
+      "group": "CTL1",
+      "name": "LAYER2",
+      "address": 9445896
+    },
+    {
+      "group": "CTL1",
+      "name": "LAYER3",
+      "address": 9445900
+    },
+    {
+      "group": "CTL1",
+      "name": "TOP",
+      "address": 9445908
+    },
+    {
+      "group": "CTL2",
+      "name": "LAYER0",
+      "address": 9446400
+    },
+    {
+      "group": "CTL2",
+      "name": "LAYER1",
+      "address": 9446404
+    },
+    {
+      "group": "CTL2",
+      "name": "LAYER2",
+      "address": 9446408
+    },
+    {
+      "group": "CTL2",
+      "name": "LAYER3",
+      "address": 9446412
+    },
+    {
+      "group": "CTL2",
+      "name": "TOP",
+      "address": 9446420
+    },
+    {
+      "group": "CTL3",
+      "name": "LAYER0",
+      "address": 9446912
+    },
+    {
+      "group": "CTL3",
+      "name": "LAYER1",
+      "address": 9446916
+    },
+    {
+      "group": "CTL3",
+      "name": "LAYER2",
+      "address": 9446920
+    },
+    {
+      "group": "CTL3",
+      "name": "LAYER3",
+      "address": 9446924
+    },
+    {
+      "group": "CTL3",
+      "name": "TOP",
+      "address": 9446932
+    },
+    {
+      "group": "CTL4",
+      "name": "LAYER0",
+      "address": 9447424
+    },
+    {
+      "group": "CTL4",
+      "name": "LAYER1",
+      "address": 9447428
+    },
+    {
+      "group": "CTL4",
+      "name": "LAYER2",
+      "address": 9447432
+    },
+    {
+      "group": "CTL4",
+      "name": "LAYER3",
+      "address": 9447436
+    },
+    {
+      "group": "CTL4",
+      "name": "TOP",
+      "address": 9447444
+    }
+  ],
+  "display_mmio_operations": "read-only; whitelist derived from matching stock DT and mdss source",
+  "mdss_sources": [
+    {
+      "name": "mdss_mdp_hwio.h",
+      "url": "https://raw.githubusercontent.com/LineageOS/android_kernel_xiaomi_msm8996/lineage-18.1/drivers/video/msm/mdss/mdss_mdp_hwio.h",
+      "sha256": "0ab1e7e0baa62e425b359f09ead6c0885f1b45f1e70fbca1ba319de7b1091116",
+      "bytes": 31266
+    },
+    {
+      "name": "mdss_mdp_pipe.c",
+      "url": "https://raw.githubusercontent.com/LineageOS/android_kernel_xiaomi_msm8996/lineage-18.1/drivers/video/msm/mdss/mdss_mdp_pipe.c",
+      "sha256": "effc8e56d83c6044e195505ccf5761e3857d62b45b514f4b92332a778482ebb2",
+      "bytes": 87779
+    },
+    {
+      "name": "mdss_mdp.c",
+      "url": "https://raw.githubusercontent.com/LineageOS/android_kernel_xiaomi_msm8996/lineage-18.1/drivers/video/msm/mdss/mdss_mdp.c",
+      "sha256": "2ca38d0d2453ed7fe460aff756cf242afc6bd99e251200539bea3afadcc0f2bd",
+      "bytes": 136780
+    },
+    {
+      "name": "mdss_mdp_ctl.c",
+      "url": "https://raw.githubusercontent.com/LineageOS/android_kernel_xiaomi_msm8996/lineage-18.1/drivers/video/msm/mdss/mdss_mdp_ctl.c",
+      "sha256": "a7207d63802916a3f452e53ce0ddb39630c0b8bc6affdcd4de5c4ef4f6b869a3",
+      "bytes": 162714
+    },
+    {
+      "name": "mdss_mdp_splash_logo.c",
+      "url": "https://raw.githubusercontent.com/LineageOS/android_kernel_xiaomi_msm8996/lineage-18.1/drivers/video/msm/mdss/mdss_mdp_splash_logo.c",
+      "sha256": "df981fcb2b1b620e6964166af4e40a5e905a954dbc40180816f84f023d37e3f7",
+      "bytes": 20293
+    }
+  ]
+}

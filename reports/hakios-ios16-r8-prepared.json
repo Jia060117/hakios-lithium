@@ -1,0 +1,66 @@
+{
+  "prepared_at": "2026-11-17T04:32:04.193830+08:00",
+  "revision": 8,
+  "status": "boot_accepted_live_usb_observation",
+  "image_sha256": "b5fba1b39c2da034b957e5b977fe81ce08dbe1ebbbbd0171de73e34556c4b18f",
+  "kernel_sha256": "f272e7b5c6b8bc3c91f15dc270d8f41e4c65970fd9e7c5def602478317654b36",
+  "image_bytes": 16236544,
+  "readiness_report": "reports/hakios-ios16-boot-ready.json",
+  "backup_branch": "archive/ios16-r7-20261117",
+  "previous_evidence_archive": "reports/history/hakios-ios16-phase4-r7-20261117",
+  "source_baseline": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+  "complete_loader_command_budget": {
+    "capacity_including_nul": 608,
+    "reserved_bytes": 517,
+    "spare_bytes": 91,
+    "loader_prefix": "debug=0x8 rd=md0 ufs_shared_pa=0x0000000000000000 hakios_kver=2.3.4-hakios-darwin22.5-msm8996-g63fc2b46-dirty ",
+    "watchdog_reserve_bytes": 13
+  },
+  "changes": [
+    "full process names include both container daemons and install coordination",
+    "finite R8 defaults enable top without exceeding loader command capacity",
+    "upstream drain_uart_sync preserves long kernel printf records",
+    "current Mach message send-port receiver sampled with normal XNU read-only API",
+    "enable existing upstream OSLOG for LaunchServices and container/install coordination jobs",
+    "BGR24 packs four pixels into 12 bytes; same scaling/filtering/damage accounting"
+  ],
+  "validation": {
+    "full_hakios_kernel": true,
+    "full_upstream_userspace": true,
+    "launchd_jobs": 413,
+    "real_d22ap_loader_and_mu": true,
+    "instruction_scans": 46,
+    "real_package_checks": 16,
+    "actual_code_asan_ubsan": true,
+    "pixel_and_damage_comparisons": 1650,
+    "thread_profile_cases": 50,
+    "upstream_console_cases": 14,
+    "complete_loader_budget_boundary_checked": true,
+    "dependency_handoff_regression": true,
+    "usb_host_checks": true
+  },
+  "fixes_explained": {
+    "command_truncation": "R7 tail did not fit 608-byte boot_args; finite diagnostic defaults and exact full-prefix budget, plus runtime rejection.",
+    "printf_truncation": "Use XNU8796 drain_uart_sync=1; actual console code reproduces old loss and preserves 8191-byte text with sync.",
+    "process_selection": "Use XNU proc_best_name instead of 16-character p_comm; no substring guess.",
+    "framebuffer": "Only panel storage writes packed; 1650 comparisons against frozen R7 function including clipping, tails and unaligned BGR24."
+  },
+  "limitations": {
+    "historical_ipc_peer_or_deadlock_proven": false,
+    "desktop_verified": false,
+    "hardware_speedup_verified": false,
+    "physical_touch_verified": false,
+    "a530_verified": false,
+    "all_6gb_exposed": false,
+    "xnu_cpus": 1,
+    "kernel_memory_mib": 2880
+  },
+  "live_fastboot_identity_verified": true,
+  "boot_issued": true,
+  "userdata_reflash_issued": false,
+  "qemu_used": false,
+  "legacy_7195_used": false,
+  "started_at": "2026-11-17T04:32:13.786515+08:00",
+  "preparation_commit": "5c6b7ab",
+  "runtime_report": "reports/hakios-ios16-device-r8.json"
+}

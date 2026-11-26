@@ -1,0 +1,213 @@
+"""Package a built FD as a stock-aboot-compatible temporary boot image.
+
+Runs in Windows or WSL. Never contacts a device. Hardware and QEMU outputs
+are separate and explicitly labeled. Stock DTBs and ramdisk stay unmodified.
+"""
+import argparse
+import gzip
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import struct
+import subprocess
+import sys
+import zlib
+
+ROOT=Path(__file__).resolve().parents[1]
+spec=importlib.util.spec_from_file_location('stock',ROOT/'scripts/extract-stock.py')
+stock=importlib.util.module_from_spec(spec); spec.loader.exec_module(stock)
+def sha(b): return hashlib.sha256(b).hexdigest()
+
+def main():
+    p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--qemu',action='store_true'); args=p.parse_args()
+    out=ROOT/'out/uefi'/('qemu' if args.qemu else 'lithium')
+    build=json.loads((out/'inputs.json').read_text())
+    fd=(out/'lithium.fd').read_bytes()
+    assert build['build_success'] and build['qemu_variant']==args.qemu
+    assert len(fd)==0x300000 and sha(fd)==build['fd_sha256']
+    def linux(*argv):
+        if sys.platform=='win32': argv=['wsl','-d','Ubuntu','--exec',*argv]
+        return subprocess.check_output(list(map(str,argv)))
+    def lp(path):
+        path=path.resolve()
+        return '/mnt/'+path.drive[0].lower()+path.as_posix()[2:] if sys.platform=='win32' else str(path)
+    collector_build=json.loads((ROOT/'reports/journal-probe-build.json').read_text())
+    collector_qemu=json.loads((ROOT/'reports/journal-probe-qemu.json').read_text())
+    assert collector_qemu['all_passed'] and collector_qemu['production_probe_sha256']==collector_build['probe_sha256']
+    symbols={line.split()[0]:int(line.split()[2],16) for line in
+        linux('llvm-nm','--defined-only','--format=posix',lp(ROOT/'out/journal-probe/probe.elf')).decode().splitlines()}
+    assert symbols['probe_entry']==int(collector_build['probe_offset'],16)
+    collector_entry=0x40080000+symbols['probe_entry']
+    restore_defines=['-DLITHIUM_QEMU=1'] if args.qemu else []
+    linux('clang','--target=aarch64-none-elf','-march=armv8-a',*restore_defines,f'-DCOLLECTOR_ENTRY={collector_entry:#x}',
+        '-c',lp(ROOT/'firmware/RestoreStock.S'),'-o',lp(out/'restore.o'))
+    linux('ld.lld','-Ttext=0x42400000','-e','restore_stock','-o',lp(out/'restore.elf'),lp(out/'restore.o'))
+    linux('llvm-objcopy','-O','binary',lp(out/'restore.elf'),lp(out/'restore.bin'))
+    assert (out/'restore.bin').stat().st_size<=4096
+    restore_symbols={line.split()[0]:int(line.split()[2],16) for line in
+        linux('llvm-nm','--defined-only','--format=posix',lp(out/'restore.elf')).decode().splitlines()}
+    assert all(0x42400000<=restore_symbols[name]<0x42401000 for name in
+        ('restore_stock','collector_entry_marker','linux_entry_marker'))
+    linux('clang','--target=aarch64-none-elf','-march=armv8-a','-c',lp(ROOT/'firmware/BootShim.S'),
+        '-Wa,-I'+lp(out),'-o',lp(out/'shim.o'))
+    (out/'shim.ld').write_text('ENTRY(_start)\nSECTIONS { . = 0x40080000; .text : { *(.text) } /DISCARD/ : { *(.comment) *(.note*) } }\n')
+    linux('ld.lld','-T',lp(out/'shim.ld'),'-o',lp(out/'shim.elf'),lp(out/'shim.o'))
+    linux('llvm-objcopy','-O','binary',lp(out/'shim.elf'),lp(out/'Image'))
+    image=(out/'Image').read_bytes()
+    shim_symbols={line.split()[0]:int(line.split()[2],16) for line in
+        linux('llvm-nm','--defined-only','--format=posix',lp(out/'shim.elf')).decode().splitlines()}
+    qemu_mmu_gate_offset=shim_symbols['restore_payload']-0x40080000+restore_symbols['linux_qemu_run_mmu']-0x42400000
+    assert struct.unpack_from('<I',image,qemu_mmu_gate_offset)[0]==0
+    assert image[56:60]==b'ARMd' and image[4096:4096+len(fd)]==fd
+    assert struct.unpack_from('<QQ',image,8)==(0x80000,0x2433000)
+    assert len(image)<=0x380000
+    original=(ROOT/'artifacts/stock/V9.5.2.0.NAHCNFA/boot/boot.img').read_bytes()
+    assert sha(original)=='2c070c67b07000a02de42fa05a6bcd93b7c32b3770d3fa9e495f321626278f44'
+    ks,ka,rs,ra,ss,sa,tags,page,reserved,osfield=struct.unpack_from('<10I',original,8)
+    align=lambda n:(n+page-1)//page*page
+    assert page==4096 and ss==0
+    stock_ramdisk=original[page+align(ks):page+align(ks)+rs]
+    assert rs==2264305
+    backup=(ROOT/'out/journal-probe/Image.probe').read_bytes()
+    assert len(backup)==0x1ff9000 and sha(backup[int(collector_build['probe_offset'],16):])==collector_build['probe_sha256']
+    def branch_at(offset,target):
+        delta=target-(0x40080000+offset)
+        assert delta%4==0 and -(1<<27)<=delta<(1<<27)
+        return 0x14000000|((delta//4)&0x3ffffff)
+    resume_offset=symbols['resume_stock']
+    assert struct.unpack_from('<I',backup,4)[0]==branch_at(4,collector_entry)
+    assert struct.unpack_from('<I',backup,resume_offset)[0]==branch_at(resume_offset,0x40081000)
+    backup=bytearray(backup)
+    struct.pack_into('<I',backup,4,branch_at(4,restore_symbols['collector_entry_marker']))
+    struct.pack_into('<I',backup,resume_offset,branch_at(resume_offset,restore_symbols['linux_entry_marker']))
+    collector_patched_sha256=sha(backup[symbols['probe_entry']:])
+    # Pinned stock instructions only: replay each displaced operation in the
+    # stackless stub and keep every other original Linux body byte unchanged.
+    hooks=[
+        (0x1000,'f50300aa','linux_hook_entry',1),
+        (0x1008,'09fe0594','linux_hook_el_setup',2),
+        (0x100c,'c5fd0594','linux_hook_phys_offset',3),
+        (0x1010,'160038d5','linux_hook_boot_mode',4),
+        (0x101c,'f70300aa','linux_hook_cpu_lookup',5),
+        (0x1030,'5b0e0058','linux_hook_page_tables',6),
+        (0x180800,'c5060058','linux_hook_cpu_setup',7),
+        (0x180820,'001018d5','linux_hook_mmu_enable',8),
+        (0x1230,'83feff10','linux_hook_post_mmu',9),
+    ]
+    assert struct.unpack_from('<Q',backup,0x11f8)[0]==0xffffffc000081230
+    assert struct.unpack_from('<Q',backup,0x1808d8)[0]==0xffffffc000203000
+    assert struct.unpack_from('<Q',backup,0x11e0)[0]==0x711
+    assert struct.unpack_from('<Q',backup,0x11d8)[0]==0xffffffc0024af000
+    for offset,expected,name,code in hooks:
+        assert backup[offset:offset+4]==bytes.fromhex(expected),(name,offset)
+        assert 0x42400000<=restore_symbols[name]<0x42400800,name
+        struct.pack_into('<I',backup,offset,branch_at(offset,restore_symbols[name]))
+    assert restore_symbols['linux_early_vectors']==0x42400800
+    backup=bytes(backup)
+    early_backup=backup
+    if args.qemu:
+        # Stop at the original continuation instead of executing Qualcomm Linux
+        # on virt. The actual restore loop and collector remain identical.
+        backup=bytearray(backup); struct.pack_into('<I',backup,0x1000,0x14000000); backup=bytes(backup)
+    ramdisk=backup+bytes(0x2000000-len(backup))+stock_ramdisk
+    payload=(out/'payload.fat').read_bytes()
+    assert len(payload)==0x100000 and sha(payload)==build['payload']['sha256']
+    assert len(ramdisk)<0x2300000
+    ramdisk+=bytes(0x2300000-len(ramdisk))+payload
+    assert 0x42a00000+len(ramdisk)==0x44e00000
+    (out/'handoff-ramdisk.bin').write_bytes(ramdisk)
+    if args.qemu:
+        early_ramdisk=early_backup+ramdisk[len(early_backup):]
+        (out/'linux-early-ramdisk.bin').write_bytes(early_ramdisk)
+    (out/'restored-kernel-expected.bin').write_bytes(backup)
+    decoder=zlib.decompressobj(31)
+    oldimage=decoder.decompress(original[page:page+ks])+decoder.flush()
+    assert decoder.eof and struct.unpack_from('<Q',oldimage,16)[0]==0x2433000
+    dtbs=decoder.unused_data
+    pos=0; count=0
+    while pos<len(dtbs):
+        assert dtbs[pos:pos+4]==bytes.fromhex('d00dfeed')
+        n=struct.unpack_from('>I',dtbs,pos+4)[0]
+        stock.parse_fdt(dtbs[pos:pos+n]); pos+=n; count+=1
+    assert pos==len(dtbs) and count==20
+    dtbs=b''.join((ROOT/f'out/journal-probe/dtb-{i:02d}.dtb').read_bytes() for i in range(20))
+    kernel=gzip.compress(image,compresslevel=9,mtime=0)+dtbs
+    header=bytearray(original[:page]); struct.pack_into('<I',header,8,len(kernel))
+    struct.pack_into('<I',header,16,len(ramdisk))
+    digest=hashlib.sha1()
+    for b in (kernel,ramdisk,b''): digest.update(b); digest.update(struct.pack('<I',len(b)))
+    header[576:608]=digest.digest()+bytes(12)
+    result=bytes(header)+kernel+bytes(align(len(kernel))-len(kernel))+ramdisk+bytes(align(len(ramdisk))-len(ramdisk))
+    assert len(result)<64*1024**2
+    target=out/('lithium-qemu-DO-NOT-BOOT.img' if args.qemu else 'lithium-uefi.img')
+    target.write_bytes(result)
+    check,tail=stock.unpack_boot(target,out/'roundtrip',require_linux=False,parse_ramdisk=False)
+    assert check['android_sha1_id_valid'] and tail==dtbs
+    assert (out/'roundtrip/Image').read_bytes()==image
+    assert (out/'roundtrip/ramdisk.bin').read_bytes()==ramdisk
+    # Source of truth for intervals is the actual board MemoryMap.c, not a
+    # second hand-written address list.
+    import re
+    maptext=(ROOT/'firmware/lithiumPkg/Library/MemoryMapLib/MemoryMap.c').read_text()
+    maptext=re.sub(r'#ifdef LITHIUM_QEMU.*?#else\n','',maptext,flags=re.S)
+    maptext=maptext.replace('#endif','')
+    regions=[]
+    memory=json.loads((ROOT/'reports/live-memory.json').read_text())
+    for name,s,n,kind in re.findall(r'\{"([^"]+)",\s*(0x[0-9a-f]+),(0x[0-9a-f]+),([^,]+),',maptext):
+        start,size=int(s,16),int(n,16); end=start+size
+        for prev in regions: assert end<=prev['start'] or prev['end']<=start,(name,prev['name'])
+        if kind=='AddMem' and name not in ('Display Reserved','Resident aboot'):
+            assert any(int(b['start'],16)<=start<end<=int(b['end_exclusive'],16) for b in memory['ram_ranges']),name
+            for r in memory['reserved_memory']:
+                for b in r.get('fixed_ranges',[]):
+                    assert end<=int(b['start'],16) or int(b['end_exclusive'],16)<=start,(name,r['node'])
+            if name not in ('Bootloader FDT','Stock initrd','Stock image copy','RAM payload'):
+                assert 0x40080000<=start<end<=0x424b3000,name
+            if name=='RAM payload': assert start==0x44d00000 and end==0x42a00000+len(ramdisk)
+        regions.append(dict(name=name,start=start,end=end))
+    assert len(regions)==19
+    info={'schema':1,'target_os':'iOS 14.8; preparatory UEFI firmware only',
+        'qemu_variant':args.qemu,'phone_boot_allowed':not args.qemu,'fd_sha256':sha(fd),
+        'image_path':target.relative_to(ROOT).as_posix(),'image_sha256':sha(result),'image_bytes':len(result),
+        'kernel_image_sha256':sha(image),'kernel_image_bytes':len(image),'declared_reservation_bytes':0x2433000,
+        'fd_copy_source':'0x40081000','fd_copy_target':'0x41000000','fd_copy_bytes':len(fd),
+        'stock_ramdisk_bytes_unchanged_at_blob_offset':'0x2000000',
+        'aboot_ramdisk_payload_bytes':len(ramdisk),'stock_initrd_start_after_handoff':'0x44a00000',
+        'ram_payload':build['payload'],
+        'stock_initrd_end_after_handoff':hex(0x44a00000+len(stock_ramdisk)),
+        'stock_twenty_dtbs_one_added_journal_property_each':True,'boot_signature_removed':True,
+        'return_method':'restore-stock-observer','restore_stub_address':'0x42400000',
+        'restore_stub_sha256':sha((out/'restore.bin').read_bytes()),
+        'restored_kernel_sha256':sha(backup),'collector_probe_sha256':collector_patched_sha256,
+        'collector_original_probe_sha256':collector_build['probe_sha256'],
+        'collector_resume_branch_offset':hex(resume_offset),
+        'collector_entry_marker_address':hex(restore_symbols['collector_entry_marker']),
+        'linux_entry_marker_address':hex(restore_symbols['linux_entry_marker']),
+        'diagnostic_branch_hooks_only':True,'original_el1_state_saved_and_restored':True,
+        'linux_early_hooks':[dict(offset=hex(o),original_instruction=orig,stub_symbol=n,checkpoint=c) for o,orig,n,c in hooks],
+        'linux_early_vectors':hex(restore_symbols['linux_early_vectors']),
+        'linux_early_record_offset':4712,
+        'linux_post_mmu_sctlr_record_offset':4752,
+        'linux_post_mmu_pc_record_offset':4760,
+        'linux_post_mmu_hook_virtual_address':hex(restore_symbols['linux_hook_post_mmu']-0x40000000+0xffffffc000000000),
+        'qemu_mmu_gate_image_offset':hex(qemu_mmu_gate_offset) if args.qemu else None,
+        'linux_temporary_display_l2_address':'0x42402000',
+        'linux_stub_identity_block_descriptor':'0x42400711',
+        'linux_early_ramdisk_sha256':sha(early_ramdisk) if args.qemu else None,
+        'same_boot_entry_state_record_offset':4608,
+        'android_sha1_roundtrip_valid':True,'static_occupancy_check_passed':True,
+        'regions':[{**r,'start':hex(r['start']),'end':hex(r['end'])} for r in regions],
+        'limits':['QEMU GIC addresses differ from phone; each build is hash bound.',
+            'Only explicitly described RAM is allocated. Not a map of all free DDR.',
+            'Unknown aboot download/decompression scratch remains managed by unchanged aboot.',
+            'Nine checked Linux-head branch hooks replay displaced instructions; temporary identity/display page-table entries support the diagnostic stub.',
+            'Normal QEMU stops before Linux head; early-head stops at checkpoint 8; post-MMU case checks real translation and stops at checkpoint 9 before BSS clearing. These do not validate Qualcomm hardware.',
+            'Extra RAM is loaded and reserved as an explicit aboot ramdisk; its placement is validated again at handoff.',
+            'No Android ADB driver in UEFI; original Android returns only after restoring its kernel and initrd.',
+            'No XNU or iOS user space loaded.']}
+    (out/'package.json').write_text(json.dumps(info,indent=2)+'\n')
+    print(json.dumps({k:info[k] for k in ('image_path','image_bytes','image_sha256','static_occupancy_check_passed')},indent=2))
+
+if __name__=='__main__': main()

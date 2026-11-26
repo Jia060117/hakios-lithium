@@ -1,0 +1,207 @@
+{
+  "schema": 1,
+  "attempt": "HakiOS lithium R7",
+  "started_at": "2026-11-14T21:29:33.728760+08:00",
+  "recorded_at": "2026-11-14T22:00:51.026227+08:00",
+  "baseline": {
+    "project": "HakiOS",
+    "commit": "63fc2b4633bac3af8e57dadab9f5a8d4cb940438",
+    "xnu_version": "8796.121.2"
+  },
+  "package": {
+    "image_sha256": "0cec5c9c5ac2921e24438959e50a55a99a34f64477655d7eb39f10c86d3f730c",
+    "image_bytes": 15683584,
+    "kernel_sha256": "02357c2cdb8b6d3cf700071adf3a77d2987667bc2a238bfc5383bdb907cd6698",
+    "loader_sha256": "3f3a90ac5adfb60731c21cce2226d6b3e62ab6b1e6cef29141caa7b06b413c4c",
+    "fd_sha256": "5a098615a627f989c6eaa627ff71eecb4b38129d63a7157c0ad546488d39de85",
+    "hello_sha256": "c6ce7932427b0980316497bbdf62f10cd6f19057f1309a34d3cff25fd6522bbe",
+    "payload_sha256": "967d668435f473bd389df665a180f1926654814938049e281bc8a0b7974eeb98",
+    "cmdline": "cores=1 serial=3 -v hello_wait=600",
+    "stock_dtb_table_sha256": "ab929abf55ad4822ae83489a58d6b550b7b24ea8398ce8ead1de7b1d2caed6aa"
+  },
+  "frozen_artifacts_path": "artifacts/hakios/device-tests/20261114-212933",
+  "identity_verified": true,
+  "bootloader_unlocked": true,
+  "userdata_bytes": 250710192128,
+  "temporary_boot_issued": true,
+  "fastboot_returncode": 0,
+  "command_accepted": true,
+  "fastboot_boot_output": "Sending 'boot.img' (15316 KB)                      OKAY [  0.373s]\nBooting                                            OKAY [  0.739s]\nFinished. Total time: 1.118s\n",
+  "user_screen_observation": {
+    "source": "four_user_photos_and_text",
+    "observation_pending": false,
+    "running_feedback": "仍在该画面，日志继续增加",
+    "later_feedback": "突然崩溃了好像，花屏了",
+    "ordered_observations": [
+      "kernel_and_hello_running",
+      "memory_lines_increased",
+      "panic_return_screen_with_garbled_text"
+    ],
+    "automatic_reboot_observed": false,
+    "return_to_fastboot_confirmed_by_user": true,
+    "return_to_fastboot_user_text": "已进入 Fastboot 并保持连接",
+    "recovery": "user_physical_keys_after_panic"
+  },
+  "latest_usb": {
+    "checked_at": "2026-11-14T21:29:35.718734+08:00",
+    "authorized_device_in_fastboot": false,
+    "adb_present": false,
+    "local_log_path": "reports/local/20261114-212933-702989-hakios-preflight/post-boot-usb.json"
+  },
+  "verified_stages": {
+    "fastboot_command": true,
+    "uefi": true,
+    "mmu_hobs": false,
+    "bds": false,
+    "gop": false,
+    "efi_file_hash": false,
+    "loader": true,
+    "kernel": true,
+    "hello": true,
+    "kernel_prepared": true,
+    "initial_kernel_thread_scheduling": true,
+    "periodic_memory_callback_progress": true,
+    "kernel_return_to_loader": true
+  },
+  "outcome": "kernel_and_hello_executed_periodic_memory_progress_then_panic_and_loader_return",
+  "exact_failure_stage": "post_userspace_runtime_panic_reason_not_captured",
+  "loader_pe": {
+    "preferred_base": "0x40400000",
+    "size_of_image": 9875456,
+    "mapped_window": [
+      "0x40400000",
+      "0x41000000"
+    ],
+    "fits_mapped_window": true,
+    "relocations_present": true
+  },
+  "uefi_heap": {
+    "base": "0x124000000",
+    "end_exclusive": "0x128000000",
+    "size_bytes": 67108864,
+    "measured_ddr_checked": true,
+    "reservation_ranges_checked": 10,
+    "other_board_regions_disjoint": true,
+    "memory_evidence_path": "reports/live-memory.json",
+    "memory_evidence_sha256": "38cc2d64f1b8b2f760492a78cbdd9f8916b9dd6f7041a641f7c11f4aafd9414d",
+    "memory_map_sha256": "6d63cc3bdae336dc8429d10e74bede596bdd281c92c0fa70a8484dc5fc977145",
+    "runtime_availability_verified": false
+  },
+  "hardware_verified": true,
+  "ios14_compatibility_verified": false,
+  "partition_writes_performed": false,
+  "qemu_used": false,
+  "stack_contract": {
+    "base": "0x41590000",
+    "end_exclusive": "0x415d0000",
+    "size_bytes": 262144,
+    "memory_map_pcd_loader_bounds_match": true,
+    "cache_line_aligned": true,
+    "hardware_handoff_verified": true
+  },
+  "screen_evidence": {
+    "photos": [
+      {
+        "source": "user_photo",
+        "source_filename": "c7a2193be5c6d0820a2b87b1adcd0bbc.jpg",
+        "path": "reports/local/20261114-212933-702989-hakios-preflight/hello-running.jpg",
+        "frozen_path": "artifacts/hakios/device-tests/20261114-212933/hello-running.jpg",
+        "sha256": "9f7a30d6acb730478d485681ed9f00fcb80c8b5266aa454dbd199989cd8c13cd",
+        "observed_scope": "kernel_and_pid1_hello"
+      },
+      {
+        "source": "user_photo",
+        "source_filename": "5fbc0da01f642b753c4f4ab4743b9aa0.jpg",
+        "path": "reports/local/20261114-212933-702989-hakios-preflight/hello-memory-1.jpg",
+        "frozen_path": "artifacts/hakios/device-tests/20261114-212933/hello-memory-1.jpg",
+        "sha256": "8a4901abca16db14e0240f688431a62cf16e87af3725481b31dfd2b2fd613367",
+        "observed_scope": "one_memory_report"
+      },
+      {
+        "source": "user_photo",
+        "source_filename": "8e1c1f01b807b7d53a63e25c571afd0f.jpg",
+        "path": "reports/local/20261114-212933-702989-hakios-preflight/hello-memory-2.jpg",
+        "frozen_path": "artifacts/hakios/device-tests/20261114-212933/hello-memory-2.jpg",
+        "sha256": "a5465e1eebd17ba82a9e3bd93c7154a62f9b0b179dd08648fc221dc107b31393",
+        "observed_scope": "two_memory_reports"
+      },
+      {
+        "source": "user_photo",
+        "source_filename": "codex-clipboard-89b72a8e-c2e7-4aee-824e-4e30d8527ab2.jpg",
+        "path": "reports/local/20261114-212933-702989-hakios-preflight/panic-return-screen.jpg",
+        "frozen_path": "artifacts/hakios/device-tests/20261114-212933/panic-return-screen.jpg",
+        "sha256": "41ce4aad16f326d2a566b6d25343e6c3a48fde2c5da1585a6ce3cd123ad2fd96",
+        "observed_scope": "panic_and_loader_test_ended_with_garbled_text"
+      }
+    ],
+    "visible_lines": [
+      "Hello from user space on Darwin!",
+      "I am process 1, uid 0, console fd 0.",
+      "kernel.ver=2.3.4-hakios-darwin22.5-msm8996-g63fc2b46-dirty",
+      "GenericARMCPU: cpu 0 (phys id 0x0) registered",
+      "dlil_init: All the created dlil kernel threads have been scheduled at least once. Proceeding.",
+      "BSD root: md0, major 1, minor 0",
+      "memory: free 469, files 0, programs 0, wired 42 (0 surfaces 0, ramfs 0), compressor 0 (holding 0) MB; available 469, kills below 22 (the idle) and 22 (anybody)",
+      "MiniIOMobileFramebuffer: no usable boot framebuffer (1080x2040, depth 24)",
+      "CORE 0 is the one that panicked.",
+      "STACKSHOT SUCCEEDED",
+      "END OF LOG",
+      "LITHIUM TEST ENDED USE POWER VOLUME DOWN FOR FASTBOOT"
+    ],
+    "panic_reason_line_visible": false,
+    "photo_capture_timestamps_verified": false
+  },
+  "stage_evidence_basis": {
+    "kernel": "direct_user_photo_with_same_package_kernel_version",
+    "hello": "direct_user_photo_pid1_console_and_version",
+    "uefi": "inferred_from_this_package_kernel_execution",
+    "loader": "inferred_from_this_package_kernel_execution_and_return_banner",
+    "kernel_prepared": "inferred_from_kernel_execution",
+    "mmu_hobs": "not_directly_photographed_in_R7",
+    "bds": "not_directly_photographed_in_R7",
+    "gop": "not_directly_photographed_in_R7",
+    "efi_file_hash": "not_directly_photographed_in_R7",
+    "initial_kernel_thread_scheduling": "direct_dlil_log_only",
+    "periodic_memory_callback_progress": "two_photos_and_user_text",
+    "kernel_return_to_loader": "direct_test_ended_banner_and_source_contract"
+  },
+  "hardware_verification_scope": "kernel_hello_execution_and_loader_handoff_only_not_full_P1",
+  "runtime_acceptance": {
+    "P1_passed": false,
+    "timed_callback_progress_observed": true,
+    "direct_timer_irq_counter_observed": false,
+    "select_sleep_wake_duration_verified": false,
+    "continuous_ten_minutes_verified": false,
+    "consecutive_successful_ten_minute_boots": 0,
+    "elapsed_wallclock_not_inferred_from_message_receipt": true,
+    "ios14_boot_verified": false,
+    "graphics_and_touch_verified": false
+  },
+  "panic_analysis": {
+    "source_evidence": {
+      "userland/src/hello.c": {
+        "path": "reports/local/20261114-212933-702989-hakios-preflight/hello-source.c",
+        "sha256": "f3c07a5e6a3f43e985b154178e8c3eaa7d36e03f62e409de1ddc14a4c0761e7a"
+      },
+      "xnu/files/osfmk/arm64/loader_return.c": {
+        "path": "reports/local/20261114-212933-702989-hakios-preflight/kernel-loader-return-source.c",
+        "sha256": "f20ea69ae40c30b8e4644377093b20aa08f1b22b9a99c820a587352004dd6d89"
+      },
+      "xnuloader/loader.c": {
+        "path": "reports/local/20261114-212933-702989-hakios-preflight/loader-source.c",
+        "sha256": "21b4ecec5fe2defa395a3df404366ebe725290c54a5b4345b51dbc05874ab576"
+      }
+    },
+    "configured_hello_wait_seconds": 600,
+    "upstream_hello_select_iterations": 600,
+    "upstream_hello_exits_pid1_after_wait": true,
+    "pid1_exit_panics_kernel_by_design": true,
+    "cause_hypothesis": "hello_wait_completed_then_pid1_exit",
+    "hypothesis_verified": false,
+    "limitation": "Photo shows panic tail only; select errors/elapsed duration and exact panic reason were not captured.",
+    "memory_report_nominal_period_seconds": 60,
+    "memory_period_basis": "HV_WDT_PET_SECONDS=10 and MEMORY_REPORT_BEATS=6; not independent wall-clock measurement",
+    "garbled_text_hypothesis": "raw panic/stackshot bytes replayed through console",
+    "garbled_text_cause_verified": false
+  }
+}

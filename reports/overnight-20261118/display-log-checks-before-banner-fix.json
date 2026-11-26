@@ -1,0 +1,55 @@
+{
+  "scope": "Host-only numeric-log checker; no hardware acceptance",
+  "recorded_at_utc": "2026-11-18T12:16:15.625809+00:00",
+  "suite_command": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "--exec",
+    "python3",
+    "-B",
+    "/mnt/f/IOS-MIX1/scripts/test-hakios-ios16-display-log.py"
+  ],
+  "suite_exit_code": 0,
+  "tests_run": 22,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "reported_suite_seconds": 0.965,
+  "suite_output_reference": "exec_command terminal chunk 99bfb9; full output retained by tool transcript, not copied to a local raw file",
+  "source_sha256": {
+    "scripts/analyze-hakios-ios16-display-log.py": "304c5765fd0883bd90e04491b976d42a1da5cc1024c6c9dd621f4a14e93d1cd3",
+    "scripts/test-hakios-ios16-display-log.py": "7319f165fb6c6892fbaa12cb2112732967648bc97990e7f1035a2a396353b91d"
+  },
+  "saved_log_sha256": "ca8555361421ec1d1111d45064fd51a7c2db7c759e386816f44902fcb3b08212",
+  "saved_log_analysis_sha256": "cb11f44f19036bd00e2cca45706263828beb9b6354b27ded7e9c2fe76861ca89",
+  "saved_log_cli_exit_code": 1,
+  "saved_log_statuses": {
+    "capture_boundary": "fail",
+    "cpu": "pass",
+    "kernel_dt": "fail",
+    "geometry": "pass",
+    "backboardd": "fail",
+    "mobilegestalt": "fail",
+    "uiscreen": "fail",
+    "surface": "pass",
+    "home_window_geometry": "fail",
+    "loader": "unverified",
+    "profile_markers": "unverified"
+  },
+  "initial_independent_test_findings": [
+    "incomplete MG answer classified fail instead of unverified",
+    "truncated window rectangle classified fail instead of unverified",
+    "invalid UIScreen selector classified fail instead of unverified",
+    "invalid DT property classified fail instead of unverified"
+  ],
+  "findings_resolution": "Tri-state validators now distinguish unavailable evidence from observed numeric contradiction; unchanged independent suite then passed",
+  "test_author": "Godel",
+  "main_review": "Read complete independent test suite; fixed classification in analyzer; independently ran all22 tests with zero skips and real savedR16 fixture",
+  "device_operations": false,
+  "qemu_used": false,
+  "runtime_source_changed": false,
+  "boot_image_produced": false,
+  "visual_acceptance": "unverified",
+  "goal_complete": false
+}

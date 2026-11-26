@@ -1,0 +1,19 @@
+From: ios14-lithium
+Subject: [build] use current crypto assembly syntax with upstream Clang
+
+Reuses the ISA_APPLE/ISA_ANY adjustment in UniXNU c34f018aafd6befd5dc93c05a8dccd5bdce6724b,
+scripts/linux/prepare-xnu.py. Non-Apple Clang supports the standard vN.4s
+syntax, not the pre-2014 qN spelling. The algorithm is unchanged.
+
+diff --git a/osfmk/arm64/corecrypto/arm64_isa_compatibility.h b/osfmk/arm64/corecrypto/arm64_isa_compatibility.h
+--- a/osfmk/arm64/corecrypto/arm64_isa_compatibility.h
++++ b/osfmk/arm64/corecrypto/arm64_isa_compatibility.h
+@@ -28,7 +28,7 @@
+ // #include <Availability.h>
+ #include <sys/cdefs.h>
+ 
+-#if defined(__clang__) && ((defined(__apple_build_version__) && __apple_build_version__ > 5010000))
++#if defined(__clang__) && (!defined(__apple_build_version__) || __apple_build_version__ > 5010000)
+ #define __USES_V_CRYPTO_INTRINSICS 1
+ #else
+ #define __USES_V_CRYPTO_INTRINSICS 0
